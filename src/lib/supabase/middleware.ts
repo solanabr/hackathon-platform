@@ -5,9 +5,10 @@ const PUBLIC_ROUTES = [
   "/",
   "/auth",
   "/auth/callback",
-  "/invite",
   "/api/cron/lock-submissions",
 ];
+
+const PUBLIC_EDITION_LANDING = /^\/h\/[^/]+$/;
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,9 +39,9 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => path === route || path.startsWith(route + "/"),
-  );
+  const isPublicRoute =
+    PUBLIC_ROUTES.some((route) => path === route || path.startsWith(route + "/")) ||
+    PUBLIC_EDITION_LANDING.test(path);
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
