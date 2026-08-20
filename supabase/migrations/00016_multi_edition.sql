@@ -15,7 +15,8 @@ alter table hackathons
   add column prize_summary          text,
   add column rules_url              text,
   add column community_url          text,
-  add column updated_at             timestamptz not null default now();
+  add column updated_at             timestamptz not null default now(),
+  drop column is_active;
 
 create trigger hackathons_touch_updated_at
   before update on hackathons
@@ -84,6 +85,9 @@ alter table submissions
 
 alter table submission_ratings rename column admin_id to judge_id;
 
+alter index submission_ratings_admin_id_idx
+  rename to submission_ratings_judge_id_idx;
+
 alter table submission_ratings
   add column round  text not null default 'triagem'
       check (round in ('triagem','final')),
@@ -118,6 +122,25 @@ grant select, insert, update on hackathon_registrations to authenticated;
 grant select                 on hackathon_contents      to authenticated;
 grant select                 on platform_roles          to authenticated;
 grant all on hackathon_registrations, hackathon_contents, platform_roles to service_role;
+
+-- Public schedule: the edition landing is a public page (anon client). The
+-- view keeps youtube_id/external_url out of anon reach — an unlisted video is
+-- only protected because its id never leaks.
+create view public_schedule as
+select
+  id, hackathon_id, kind, title, speaker, description,
+  scheduled_at, location, position, published
+from hackathon_contents;
+
+alter view public_schedule enable row level security;
+
+create policy public_schedule_select_anon on public_schedule
+  for select to anon using (published);
+create policy public_schedule_select_auth on public_schedule
+  for select to authenticated using (published);
+
+grant select on public_schedule to anon, authenticated;
+grant all on public_schedule to service_role;
 
 create or replace function public.submit_team(p_team_id uuid)
 returns void
