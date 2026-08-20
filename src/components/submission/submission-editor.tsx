@@ -27,6 +27,7 @@ type FormState = {
   github_url: string;
   twitter_url: string;
   website_url: string;
+  github_access_granted: boolean;
 };
 
 function formatSavedAt(date: Date): string {
@@ -50,6 +51,7 @@ function toForm(s: Submission): FormState {
     github_url: s.github_url ?? "",
     twitter_url: s.twitter_url ?? "",
     website_url: s.website_url ?? "",
+    github_access_granted: s.github_access_granted ?? false,
   };
 }
 
@@ -79,7 +81,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  async function save(forSubmit = false): Promise<boolean> {
+  async function save(): Promise<boolean> {
     if (!editable) return false;
     setSaving(true);
     setSubmitError(null);
@@ -94,7 +96,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
       twitter_url: sanitizeUrl(form.twitter_url),
       website_url: sanitizeUrl(form.website_url),
       image_path: imagePath,
-      ...(forSubmit ? { github_access_granted: true } : {}),
+      github_access_granted: form.github_access_granted,
     };
 
     const { error } = await supabase.from("submissions").update(payload).eq("team_id", teamId);
@@ -112,7 +114,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     if (!editable || !isLeader) return;
     if (!confirm("Após submeter, ninguém do time pode editar. Confirma?")) return;
 
-    const saved = await save(true);
+    const saved = await save();
     if (!saved) return;
 
     startSubmit(async () => {
@@ -140,7 +142,8 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     !!form.description.trim() &&
     !!sanitizeUrl(form.pitch_deck_url) &&
     !!sanitizeUrl(form.pitch_video_url) &&
-    !!sanitizeUrl(form.github_url);
+    !!sanitizeUrl(form.github_url) &&
+    form.github_access_granted;
 
   return (
     <div className="space-y-6">
@@ -210,6 +213,28 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
               </a>{" "}
               como colaborador para os juízes terem acesso.
             </p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="flex items-start gap-3 rounded-xl border border-green/15 bg-surface-raised p-4">
+              <input
+                type="checkbox"
+                checked={form.github_access_granted}
+                onChange={(e) => set("github_access_granted", e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-emerald"
+              />
+              <span className="text-sm text-ink">
+                Confirmo que adicionei{" "}
+                <a
+                  href="https://github.com/kauenet"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium underline-offset-2 hover:text-emerald hover:underline"
+                >
+                  @kauenet
+                </a>{" "}
+                como colaborador do repositório, para os juízes acessarem o código.*
+              </span>
+            </label>
           </div>
           <div>
             <Label htmlFor="twitter_url" hint="opcional">X / Twitter</Label>

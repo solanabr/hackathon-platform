@@ -218,18 +218,17 @@ grant all on hackathon_registrations, hackathon_contents, platform_roles to serv
 -- view keeps youtube_id/external_url out of anon reach — an unlisted video is
 -- only protected because its id never leaks. All rows are visible: the dates
 -- are public information even before the recordings exist.
-create view public_schedule as
+-- The view runs as its owner (postgres, which owns hackathon_contents and
+-- bypasses its RLS), so anon sees every row with no policy involved. That is
+-- deliberate: the schedule is public, and the protection is the column list
+-- omitting the video fields. Supabase's linter flags postgres-owned views
+-- exposed to anon — this one is intentional.
+create view public_schedule
+with (security_barrier = true) as
 select
   id, hackathon_id, kind, title, speaker, description,
-  scheduled_at, location, position, published
+  scheduled_at, location, position
 from hackathon_contents;
-
-alter view public_schedule enable row level security;
-
-create policy public_schedule_select_anon on public_schedule
-  for select to anon;
-create policy public_schedule_select_auth on public_schedule
-  for select to authenticated;
 
 grant select on public_schedule to anon, authenticated;
 grant all on public_schedule to service_role;

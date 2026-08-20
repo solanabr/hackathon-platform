@@ -28,15 +28,30 @@ export async function grantRole(
     return { error: "Ninguém com esse e-mail entrou na plataforma ainda. Peça para fazer login uma vez." };
   }
 
-  const { error } = await supabase.from("platform_roles").upsert(
-    {
-      user_id: (user as { id: string }).id,
-      role,
-      hackathon_id: role === "admin" ? null : hackathonId,
-      granted_by: gate.state.userId,
-    },
-    { onConflict: "user_id,role,hackathon_id" },
-  );
+  // Admin and judge rows have different keys (admin: user_id+role with a NULL
+  // hackathon_id, judge: user_id+role+hackathon_id), so an upsert cannot
+  // target both. Check-then-insert reads the two shapes honestly.
+  let existingQuery = supabase
+    .from("platform_roles")
+    .select("id")
+    .eq("user_id", (user as { id: string }).id)
+    .eq("role", role);
+  existingQuery =
+    role === "admin"
+      ? existingQuery.is("hackathon_id", null)
+      : existingQuery.eq("hackathon_id", hackathonId);
+
+  const { data: existing } = await existingQuery.maybeSingle();
+  if (existing) {
+    return { error: "Essa pessoa já tem esse papel." };
+  }
+
+  const { error } = await supabase.from("platform_roles").insert({
+    user_id: (user as { id: string }).id,
+    role,
+    hackathon_id: role === "admin" ? null : hackathonId,
+    granted_by: gate.state.userId,
+  });
 
   if (error) return { error: "Não foi possível salvar o papel." };
 
