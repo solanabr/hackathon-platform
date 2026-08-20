@@ -15,6 +15,7 @@ type Props = {
   editable: boolean;
   initial: Submission;
   initialImageUrl: string | null;
+  painelHref: string;
 };
 
 type FormState = {
@@ -64,7 +65,7 @@ const SUBMIT_ERRORS: Record<string, string> = {
     "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
 };
 
-export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl }: Props) {
+export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl, painelHref }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
@@ -128,7 +129,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
         );
         return;
       }
-      router.push("/dashboard");
+      router.push(painelHref);
       router.refresh();
     });
   }
@@ -196,13 +197,13 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
               value={form.github_url}
               onChange={(e) => set("github_url", e.target.value)}
             />
-            <p className="mt-1.5 text-xs text-bh-muted">
+            <p className="mt-1.5 text-xs text-muted">
               Se o repositório for privado, adicione{" "}
               <a
                 href="https://github.com/kauenet"
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium text-bh-text underline-offset-2 hover:text-bh-violet hover:underline"
+                className="font-medium text-ink underline-offset-2 hover:text-emerald hover:underline"
               >
                 @kauenet
               </a>{" "}
@@ -261,8 +262,8 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
         </p>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-bh-border pt-6">
-        <p className="text-xs text-bh-muted" suppressHydrationWarning>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-green/15 pt-6">
+        <p className="text-xs text-muted" suppressHydrationWarning>
           {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">

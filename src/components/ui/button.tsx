@@ -11,12 +11,13 @@ const variants: Record<Variant, string> = {
 
 export function Button({
   variant = "primary",
+  fullWidth = false,
   className = "",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; fullWidth?: boolean }) {
   return (
     <button
-      className={`${variants[variant]} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`${variants[variant]} ${fullWidth ? "w-full" : ""} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     />
   );

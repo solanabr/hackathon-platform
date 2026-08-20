@@ -1,26 +1,34 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
-import { getActiveHackathon, isSubmissionWindowOpen } from "@/lib/hackathon";
+import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
+import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function SubmissionPage() {
+export default async function SubmissionPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const state = await requireUser();
-  if (!state.profile?.full_name || !state.profile?.luma_registered_at) {
-    redirect("/onboarding");
-  }
-  const hackathon = await getActiveHackathon();
-  if (!hackathon) redirect("/dashboard");
+  const hackathon = await getHackathonBySlug(slug);
+  if (!hackathon || hackathon.status === "draft") notFound();
+
+  if (!isProfileComplete(state.profile)) redirect(`/conta?next=/h/${slug}/submissao`);
+
+  const registration = await getRegistration(state.userId, hackathon.id);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
 
   const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
-  if (!snapshot) redirect("/dashboard");
+  if (!snapshot) redirect(`/h/${slug}/painel`);
 
   const { team, submission, isLeader } = snapshot;
   const open = isSubmissionWindowOpen(hackathon);
@@ -36,20 +44,20 @@ export default async function SubmissionPage() {
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <Link href="/dashboard" className="text-sm text-bh-muted hover:text-bh-text">
+        <Link href={`/h/${slug}/painel`} className="text-sm text-muted hover:text-ink">
           ← voltar ao painel
         </Link>
 
         <header className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <Badge tone={submission.status === "submitted" ? "emerald" : "violet"}>
+            <Badge tone={submission.status === "submitted" ? "emerald" : "neutral"}>
               {submission.status === "submitted" ? "Submetido" : editable ? "Rascunho · Editável" : "Bloqueado"}
             </Badge>
             <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">Submissão · {team.name}</h1>
             {editable && (
-              <p className="mt-1 text-sm text-bh-muted">
+              <p className="mt-1 text-sm text-muted">
                 Você pode editar e salvar quantas vezes quiser até o prazo final. Encerra em{" "}
-                <strong className="text-bh-text">
+                <strong className="text-ink">
                   <Countdown deadlineIso={hackathon.submission_deadline_at} />
                 </strong>
                 .
@@ -70,6 +78,7 @@ export default async function SubmissionPage() {
             editable={editable}
             initial={submission}
             initialImageUrl={imagePublicUrl}
+            painelHref={`/h/${slug}/painel`}
           />
         </Card>
       </div>

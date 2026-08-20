@@ -64,7 +64,7 @@ export function ImageUpload({ teamId, currentPath, currentUrl, disabled, onUploa
         <img
           src={previewUrl}
           alt="Capa do projeto"
-          className="h-40 w-40 rounded-xl border border-bh-border object-cover"
+          className="h-40 w-40 rounded-xl border border-green/15 object-cover"
         />
       )}
       <input
