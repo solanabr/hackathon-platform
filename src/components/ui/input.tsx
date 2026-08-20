@@ -1,7 +1,7 @@
 import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 const BASE =
-  "w-full rounded-xl border border-bh-border bg-bh-surface px-4 py-3 text-bh-text placeholder:text-bh-muted focus:border-bh-violet focus:outline-none focus:ring-2 focus:ring-bh-violet/40 transition-colors";
+  "w-full rounded-xl border border-green/15 bg-surface-raised px-4 py-3 text-ink placeholder:text-muted focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/40 transition-colors";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement>;
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>;
@@ -29,9 +29,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
 
 export function Label({ children, htmlFor, hint }: { children: React.ReactNode; htmlFor?: string; hint?: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 flex items-center justify-between text-sm font-medium text-bh-text">
+    <label htmlFor={htmlFor} className="mb-1.5 flex items-center justify-between text-sm font-medium text-ink">
       <span>{children}</span>
-      {hint && <span className="text-xs font-normal text-bh-muted">{hint}</span>}
+      {hint && <span className="text-xs font-normal text-muted">{hint}</span>}
     </label>
   );
 }

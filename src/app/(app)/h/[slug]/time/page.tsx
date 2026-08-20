@@ -1,35 +1,43 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm } from "@/components/team/add-member-form";
 import { MemberRow } from "@/components/team/member-row";
-import { getActiveHackathon } from "@/lib/hackathon";
-import { getCurrentUserTeam } from "@/lib/team";
+import { getHackathonBySlug } from "@/lib/hackathon";
+import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
+import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 
 export const dynamic = "force-dynamic";
 
-export default async function TeamPage() {
+export default async function TeamPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const state = await requireUser();
-  if (!state.profile?.full_name || !state.profile?.luma_registered_at) {
-    redirect("/onboarding");
-  }
-  const hackathon = await getActiveHackathon();
-  if (!hackathon) redirect("/dashboard");
+  const hackathon = await getHackathonBySlug(slug);
+  if (!hackathon || hackathon.status === "draft") notFound();
 
-  const snapshot = await getCurrentUserTeam(state.userId, hackathon.id);
+  if (!isProfileComplete(state.profile)) redirect(`/conta?next=/h/${slug}/inscricao`);
+
+  const registration = await getRegistration(state.userId, hackathon.id);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+
+  const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
   if (!snapshot) {
     return (
       <div className="px-4 py-16 sm:px-6 lg:px-8">
         <Card className="mx-auto max-w-xl p-8 text-center">
           <h1 className="font-heading text-2xl font-bold">Você não está em um time</h1>
-          <p className="mt-2 text-bh-muted">
+          <p className="mt-2 text-muted">
             Crie um time como líder, ou peça ao líder para te adicionar pelo e-mail que você usa aqui.
           </p>
           <div className="mt-6">
-            <Link href="/team/new">
+            <Link href={`/h/${slug}/time/novo`}>
               <Button variant="primary">Criar time</Button>
             </Link>
           </div>
@@ -45,20 +53,20 @@ export default async function TeamPage() {
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
-        <Link href="/dashboard" className="text-sm text-bh-muted hover:text-bh-text">
+        <Link href={`/h/${slug}/painel`} className="text-sm text-muted hover:text-ink">
           ← voltar ao painel
         </Link>
 
         <Card className="p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <Badge tone={team.locked ? "neutral" : "violet"}>
+              <Badge tone={team.locked ? "neutral" : "emerald"}>
                 {team.locked ? "Bloqueado" : "Em edição"}
               </Badge>
               <h1 className="mt-3 font-heading text-3xl font-bold">{team.name}</h1>
-              {team.description && <p className="mt-2 text-sm text-bh-muted">{team.description}</p>}
+              {team.description && <p className="mt-2 text-sm text-muted">{team.description}</p>}
             </div>
-            <Link href="/submission">
+            <Link href={`/h/${slug}/submissao`}>
               <Button variant="secondary">Ver submissão</Button>
             </Link>
           </div>
@@ -69,7 +77,7 @@ export default async function TeamPage() {
             <h2 className="font-heading text-lg font-semibold">Integrantes ({acceptedCount}/4)</h2>
             {team.locked && <Badge tone="neutral">Submetido</Badge>}
           </div>
-          <ul className="mt-4 divide-y divide-bh-border">
+          <ul className="mt-4 divide-y divide-green/15">
             {members.map((m) => (
               <MemberRow
                 key={m.id}
@@ -88,7 +96,7 @@ export default async function TeamPage() {
         {canInvite && (
           <Card className="p-7">
             <h2 className="font-heading text-lg font-semibold">Adicionar integrante</h2>
-            <p className="mt-1 text-sm text-bh-muted">
+            <p className="mt-1 text-sm text-muted">
               Digite o e-mail. Se a pessoa já tiver conta, entra direto no time.
               Senão, vai aparecer automaticamente quando ela se cadastrar com este e-mail.
             </p>

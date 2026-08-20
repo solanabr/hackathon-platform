@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const admin = state ? (await requireAdmin()).ok : false;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-bh-bg">
+    <main className="relative min-h-screen overflow-hidden bg-surface">
       <GradientBackground fullHeight />
       <div className="relative z-10 flex min-h-screen flex-col">
         <Header isAuthenticated={true} primaryHref={primaryHref} isAdmin={admin} />

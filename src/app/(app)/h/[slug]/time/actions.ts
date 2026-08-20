@@ -98,6 +98,6 @@ export async function addMemberByEmail(input: {
     return { ok: false, error: insertError.message };
   }
 
-  revalidatePath("/team");
+  revalidatePath("/h/[slug]/time");
   return { ok: true, hasAccount: !!existingUser, email };
 }

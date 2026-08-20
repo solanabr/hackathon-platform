@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
 import { getActiveHackathon, isSubmissionWindowOpen } from "@/lib/hackathon";
-import { getCurrentUserTeam } from "@/lib/team";
+import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -19,7 +19,7 @@ export default async function SubmissionPage() {
   const hackathon = await getActiveHackathon();
   if (!hackathon) redirect("/dashboard");
 
-  const snapshot = await getCurrentUserTeam(state.userId, hackathon.id);
+  const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
   if (!snapshot) redirect("/dashboard");
 
   const { team, submission, isLeader } = snapshot;

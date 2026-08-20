@@ -41,13 +41,13 @@ export function AuthForm() {
       <div className="text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bh/symbol.png"
-          alt="BH Onchain"
+          src="/brand/stbr/logo/SYMBOL-EMERALD-GREEN.svg"
+          alt="Superteam Brasil"
           className="mx-auto h-16 w-16 object-contain"
         />
         <h1 className="mt-5 font-heading text-2xl font-bold">Acessar a plataforma</h1>
-        <p className="mt-2 text-sm text-bh-muted">
-          Entre para submeter seu projeto no Hackathon BH Onchain.
+        <p className="mt-2 text-sm text-muted">
+          Entre para participar dos hackathons da Superteam Brasil.
         </p>
       </div>
 
@@ -95,8 +95,8 @@ export function AuthForm() {
         </Button>
       </div>
 
-      <p className="mt-7 text-center text-xs text-bh-muted">
-        Ao entrar você concorda com o regulamento do Hackathon BH Onchain.
+      <p className="mt-7 text-center text-xs text-muted">
+        Ao entrar você concorda com o regulamento dos hackathons da Superteam Brasil.
       </p>
     </Card>
   );
