@@ -306,7 +306,7 @@ export default async function LandingPage() {
         <section className={SECTION_SPACING}>
           <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.85fr_1.15fr]">
             <div>
-              <Badge tone="violet">Sobre a trilha</Badge>
+              <Badge tone="emerald">Sobre a trilha</Badge>
               <h2 className="mt-5 font-heading text-4xl font-bold leading-tight sm:text-5xl">
                 A trilha de construção
                 <span className="block gradient-text">do BH Onchain.</span>
@@ -563,7 +563,7 @@ function SectionHeader({
 }) {
   return (
     <div className="mx-auto max-w-3xl text-center">
-      <Badge tone="violet">{eyebrow}</Badge>
+      <Badge tone="emerald">{eyebrow}</Badge>
       <h2 className="mt-5 font-heading text-4xl font-bold leading-tight sm:text-5xl">
         {title}
       </h2>

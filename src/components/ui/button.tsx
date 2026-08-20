@@ -1,39 +1,23 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "yellow" | "danger";
+type Variant = "primary" | "secondary" | "ghost";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: Variant;
-  fullWidth?: boolean;
-  children: ReactNode;
-};
-
-const VARIANT_CLASSES: Record<Variant, string> = {
-  primary:
-    "bg-white text-bh-bg font-semibold hover:bg-stbr-off-white disabled:opacity-50 shadow-[0_12px_32px_rgba(255,255,255,0.18)]",
-  secondary:
-    "border-2 border-bh-violet bg-transparent text-bh-text font-semibold hover:border-bh-fuchsia hover:bg-bh-violet/12 disabled:opacity-50",
+const variants: Record<Variant, string> = {
+  primary: "btn-primary",
+  secondary: "btn-secondary",
   ghost:
-    "text-bh-text hover:bg-bh-surface-2 disabled:opacity-50",
-  yellow:
-    "bg-stbr-yellow text-stbr-dark-green font-semibold hover:brightness-95 disabled:opacity-50",
-  danger:
-    "bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold text-muted transition-colors hover:text-ink",
 };
 
-export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = "primary", fullWidth, className = "", children, ...rest },
-  ref,
-) {
+export function Button({
+  variant = "primary",
+  className = "",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   return (
     <button
-      ref={ref}
-      className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm transition-all disabled:cursor-not-allowed ${
-        VARIANT_CLASSES[variant]
-      } ${fullWidth ? "w-full" : ""} ${className}`}
-      {...rest}
-    >
-      {children}
-    </button>
+      className={`${variants[variant]} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      {...props}
+    />
   );
-});
+}

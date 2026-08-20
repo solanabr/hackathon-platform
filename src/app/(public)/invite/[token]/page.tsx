@@ -63,7 +63,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
               </div>
             ) : (
               <div className="text-center">
-                <Badge tone="violet">Convite para time</Badge>
+                <Badge tone="emerald">Convite para time</Badge>
                 <h1 className="mt-4 font-heading text-2xl font-bold">
                   Entrar no time <span className="gradient-text">{invite.teamName}</span>
                 </h1>

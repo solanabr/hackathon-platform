@@ -23,7 +23,7 @@ export default async function NewTeamPage() {
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
-        <Badge tone="violet">Passo 2 de 3 · Time</Badge>
+        <Badge tone="emerald">Passo 2 de 3 · Time</Badge>
         <h1 className="mt-4 font-heading text-3xl font-bold sm:text-4xl">Criar seu time</h1>
         <p className="mt-2 text-bh-muted">
           Você vira o líder do time. Depois pode convidar até 3 pessoas por e-mail.

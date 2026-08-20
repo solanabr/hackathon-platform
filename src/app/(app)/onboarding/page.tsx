@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         <div className="text-center">
-          <Badge tone="violet">Passo 1 de 3</Badge>
+          <Badge tone="emerald">Passo 1 de 3</Badge>
           <h1 className="mt-4 font-heading text-3xl font-bold sm:text-4xl">
             Vamos preparar seu perfil
           </h1>
