@@ -81,7 +81,11 @@ when it applies, and note which task closes it.
 Repository conventions live in `CLAUDE.md` and win over anything here. The ones that
 come up most in review:
 
-- UI copy in pt-BR, code and identifiers in English.
+- **Everything written into git or GitHub is in English** — commit messages, branch
+  names, PR titles and bodies, review comments, replies on threads, code comments.
+  No exceptions, for either agent.
+- pt-BR is for what a participant reads: UI copy, and seeded content in the database.
+  Code and identifiers stay English.
 - No code comments unless they explain a why.
 - `.maybeSingle()`, never `.single()`.
 - Every `(app)/` page exports `dynamic = "force-dynamic"`.

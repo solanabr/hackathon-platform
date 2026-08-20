@@ -25,6 +25,8 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Submission flow for th
 ## Conventions
 
 - **Language:** UI copy in Portuguese (pt-BR). Routes and code in English.
+  **Anything written into git or GitHub is English** — commits, branch names, PR
+  titles and bodies, review comments. pt-BR is only for what a participant reads.
 - **Brand:** BH Onchain purple background + gradient with Superteam BR yellow/emerald accents. Tokens are in `@theme` in `src/app/globals.css`.
 - **Typography:** Outfit headings, Inter body — both via `next/font/google`.
 - **Supabase queries:** use `.maybeSingle()` over `.single()` — `.single()` throws on 0 rows.
