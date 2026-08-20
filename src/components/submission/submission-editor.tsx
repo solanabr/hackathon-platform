@@ -21,7 +21,7 @@ type Props = {
 type FormState = {
   project_name: string;
   description: string;
-  pitch_url: string;
+  pitch_deck_url: string;
   pitch_video_url: string;
   demo_video_url: string;
   github_url: string;
@@ -44,7 +44,7 @@ function toForm(s: Submission): FormState {
   return {
     project_name: s.project_name ?? "",
     description: s.description ?? "",
-    pitch_url: s.pitch_url ?? "",
+    pitch_deck_url: s.pitch_deck_url ?? "",
     pitch_video_url: s.pitch_video_url ?? "",
     demo_video_url: s.demo_video_url ?? "",
     github_url: s.github_url ?? "",
@@ -79,7 +79,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  async function save(): Promise<boolean> {
+  async function save(forSubmit = false): Promise<boolean> {
     if (!editable) return false;
     setSaving(true);
     setSubmitError(null);
@@ -87,13 +87,14 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     const payload = {
       project_name: sanitizeText(form.project_name, 120),
       description: sanitizeText(form.description, 4000),
-      pitch_url: sanitizeUrl(form.pitch_url),
+      pitch_deck_url: sanitizeUrl(form.pitch_deck_url),
       pitch_video_url: sanitizeUrl(form.pitch_video_url),
       demo_video_url: sanitizeUrl(form.demo_video_url),
       github_url: sanitizeUrl(form.github_url),
       twitter_url: sanitizeUrl(form.twitter_url),
       website_url: sanitizeUrl(form.website_url),
       image_path: imagePath,
+      ...(forSubmit ? { github_access_granted: true } : {}),
     };
 
     const { error } = await supabase.from("submissions").update(payload).eq("team_id", teamId);
@@ -111,7 +112,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     if (!editable || !isLeader) return;
     if (!confirm("Após submeter, ninguém do time pode editar. Confirma?")) return;
 
-    const saved = await save();
+    const saved = await save(true);
     if (!saved) return;
 
     startSubmit(async () => {
@@ -137,7 +138,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
   const allRequiredFilled =
     !!form.project_name.trim() &&
     !!form.description.trim() &&
-    !!sanitizeUrl(form.pitch_url) &&
+    !!sanitizeUrl(form.pitch_deck_url) &&
     !!sanitizeUrl(form.pitch_video_url) &&
     !!sanitizeUrl(form.github_url);
 
@@ -169,13 +170,13 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
             />
           </div>
           <div>
-            <Label htmlFor="pitch_url">Deck (PDF / Notion / Slides)*</Label>
+            <Label htmlFor="pitch_deck_url">Deck (PDF / Notion / Slides)*</Label>
             <Input
-              id="pitch_url"
+              id="pitch_deck_url"
               type="url"
               placeholder="https://"
-              value={form.pitch_url}
-              onChange={(e) => set("pitch_url", e.target.value)}
+              value={form.pitch_deck_url}
+              onChange={(e) => set("pitch_deck_url", e.target.value)}
             />
           </div>
           <div>
@@ -267,7 +268,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
           {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button type="button" variant="secondary" onClick={save} disabled={!editable || saving}>
+          <Button type="button" variant="secondary" onClick={() => save()} disabled={!editable || saving}>
             {saving ? "Salvando..." : "Salvar rascunho"}
           </Button>
           {isLeader && (

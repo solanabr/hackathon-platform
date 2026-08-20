@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/user-state";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -98,6 +97,5 @@ export async function addMemberByEmail(input: {
     return { ok: false, error: insertError.message };
   }
 
-  revalidatePath("/h/[slug]/time");
   return { ok: true, hasAccount: !!existingUser, email };
 }

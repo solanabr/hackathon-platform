@@ -16,7 +16,7 @@ export default async function ContentPage({
   const { slug, contentId } = await params;
   const state = await requireUser();
   const hackathon = await getHackathonBySlug(slug);
-  if (!hackathon) notFound();
+  if (!hackathon || hackathon.status === "draft") notFound();
 
   const registration = await getRegistration(state.userId, hackathon.id);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
