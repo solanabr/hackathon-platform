@@ -163,6 +163,12 @@ create table platform_roles (
 
 create index platform_roles_user_idx on platform_roles(user_id);
 
+-- NULL hackathon_id (admin) is exempt from the composite unique above, so a
+-- second grant would insert a duplicate row. Dedupe admins explicitly.
+create unique index platform_roles_admin_uk
+  on platform_roles(user_id, role)
+  where hackathon_id is null;
+
 alter table teams
   add column is_finalist          boolean not null default false,
   add column finalist_notified_at timestamptz;
@@ -1554,7 +1560,7 @@ git commit -m "feat: public home lists every published edition"
 - Create: `src/app/(public)/h/[slug]/page.tsx`
 
 **Interfaces:**
-- Consumes: `getHackathonBySlug()`, `isRegistrationOpen()`, and the `public_schedule` view (anon-readable, published rows only).
+- Consumes: `getHackathonBySlug()`, `isRegistrationOpen()`, and the `public_schedule` view (anon-readable, lists every content row).
 - Produces: the public page at `/h/[slug]`; its CTA points at `/h/[slug]/inscricao` (Task 12).
 
 - [ ] **Step 1: Write the page**
