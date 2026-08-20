@@ -31,12 +31,13 @@ export async function upsertRating(input: {
   const { error } = await admin.from("submission_ratings").upsert(
     {
       submission_id: input.submissionId,
-      admin_id: gate.state.userId,
+      judge_id: gate.state.userId,
+      round: "triagem",
       grade,
       comment,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "submission_id,admin_id" },
+    { onConflict: "submission_id,judge_id,round" },
   );
 
   if (error) {
@@ -60,7 +61,7 @@ export async function deleteRating(input: {
     .from("submission_ratings")
     .delete()
     .eq("submission_id", input.submissionId)
-    .eq("admin_id", gate.state.userId);
+    .eq("judge_id", gate.state.userId);
 
   if (error) {
     return { ok: false, error: error.message };

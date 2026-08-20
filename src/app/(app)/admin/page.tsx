@@ -56,42 +56,42 @@ export default async function AdminPage({
     submissionIds.length > 0
       ? await admin
           .from("submission_ratings")
-          .select("submission_id, admin_id, grade, comment, updated_at")
+          .select("submission_id, judge_id, grade, comment, updated_at")
           .in("submission_id", submissionIds)
       : { data: [] };
 
-  const ratingAdminIds = [
-    ...new Set((ratingsRaw ?? []).map((r) => r.admin_id as string)),
+  const ratingJudgeIds = [
+    ...new Set((ratingsRaw ?? []).map((r) => r.judge_id as string)),
   ];
-  const { data: ratingAdmins } =
-    ratingAdminIds.length > 0
+  const { data: ratingJudges } =
+    ratingJudgeIds.length > 0
       ? await admin
           .from("users")
           .select("id, email, full_name")
-          .in("id", ratingAdminIds)
+          .in("id", ratingJudgeIds)
       : { data: [] };
 
   type RatingRaw = {
     submission_id: string;
-    admin_id: string;
+    judge_id: string;
     grade: number | null;
     comment: string | null;
     updated_at: string;
   };
-  type AdminUser = { id: string; email: string; full_name: string | null };
+  type JudgeUser = { id: string; email: string; full_name: string | null };
 
-  const adminById = new Map<string, AdminUser>(
-    (ratingAdmins ?? []).map((u) => [u.id as string, u as AdminUser]),
+  const judgeById = new Map<string, JudgeUser>(
+    (ratingJudges ?? []).map((u) => [u.id as string, u as JudgeUser]),
   );
 
   const ratingsBySubmission = new Map<string, Rating[]>();
   for (const r of (ratingsRaw ?? []) as RatingRaw[]) {
-    const u = adminById.get(r.admin_id);
+    const u = judgeById.get(r.judge_id);
     const arr = ratingsBySubmission.get(r.submission_id) ?? [];
     arr.push({
-      admin_id: r.admin_id,
-      admin_email: u?.email ?? "—",
-      admin_full_name: u?.full_name ?? null,
+      judge_id: r.judge_id,
+      judge_email: u?.email ?? "—",
+      judge_full_name: u?.full_name ?? null,
       grade: r.grade,
       comment: r.comment,
       updated_at: r.updated_at,
@@ -128,7 +128,7 @@ export default async function AdminPage({
     users: UserRow | UserRow[] | null;
   };
 
-  const myAdminId = gate.state.userId;
+  const myJudgeId = gate.state.userId;
 
   const rows: Row[] = (teams ?? []).map((t) => {
     const sub = Array.isArray(t.submissions)
@@ -152,7 +152,7 @@ export default async function AdminPage({
 
     const submissionId = sub?.id ?? null;
     const ratings = submissionId ? (ratingsBySubmission.get(submissionId) ?? []) : [];
-    const myRating = ratings.find((r) => r.admin_id === myAdminId) ?? null;
+    const myRating = ratings.find((r) => r.judge_id === myJudgeId) ?? null;
 
     return {
       team_id: t.id,

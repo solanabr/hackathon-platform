@@ -15,9 +15,9 @@ export type Member = {
 };
 
 export type Rating = {
-  admin_id: string;
-  admin_email: string;
-  admin_full_name: string | null;
+  judge_id: string;
+  judge_email: string;
+  judge_full_name: string | null;
   grade: number | null;
   comment: string | null;
   updated_at: string;
@@ -82,9 +82,9 @@ export function SubmissionCard({ row }: { row: Row }) {
     gradedRatings.length > 0
       ? gradedRatings.reduce((sum, r) => sum + (r.grade ?? 0), 0) / gradedRatings.length
       : null;
-  const myAdminId = row.my_rating?.admin_id ?? null;
-  const otherRatings = myAdminId
-    ? row.ratings.filter((r) => r.admin_id !== myAdminId)
+  const myJudgeId = row.my_rating?.judge_id ?? null;
+  const otherRatings = myJudgeId
+    ? row.ratings.filter((r) => r.judge_id !== myJudgeId)
     : row.ratings;
 
   function open() {
@@ -278,7 +278,7 @@ export function SubmissionCard({ row }: { row: Row }) {
                 </p>
                 <ul className="mt-3 space-y-3">
                   {otherRatings.map((r) => (
-                    <RatingRow key={r.admin_id} rating={r} />
+                    <RatingRow key={r.judge_id} rating={r} />
                   ))}
                 </ul>
               </section>
@@ -345,7 +345,7 @@ function MemberRow({ member }: { member: Member }) {
 }
 
 function RatingRow({ rating }: { rating: Rating }) {
-  const display = rating.admin_full_name ?? rating.admin_email;
+  const display = rating.judge_full_name ?? rating.judge_email;
   const initials =
     display
       .split(/\s+/)
@@ -363,8 +363,8 @@ function RatingRow({ rating }: { rating: Rating }) {
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-medium text-bh-text">{display}</p>
-            {rating.admin_full_name && (
-              <p className="truncate text-xs text-bh-muted">{rating.admin_email}</p>
+            {rating.judge_full_name && (
+              <p className="truncate text-xs text-bh-muted">{rating.judge_email}</p>
             )}
           </div>
           {rating.grade !== null && (

@@ -41,7 +41,6 @@ export type Hackathon = {
   prize_summary: string | null;
   rules_url: string | null;
   metadata: Record<string, unknown>;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 };
