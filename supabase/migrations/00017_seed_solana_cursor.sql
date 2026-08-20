@@ -3,7 +3,7 @@ insert into hackathons (
   status, starts_at, registration_closes_at, submission_deadline_at,
   finalists_announced_at, presential_at, voting_opens_at, voting_closes_at,
   finalists_count, location_name, location_city,
-  luma_url, community_url, prize_summary, is_active
+  luma_url, community_url, prize_summary
 ) values (
   'solana-cursor-passo-fundo-2026',
   'Hackathon Solana & Cursor',
@@ -22,9 +22,9 @@ insert into hackathons (
   'Passo Fundo, RS',
   'https://lu.ma/superteambrasil',
   'https://chat.whatsapp.com/KZcKC67KpTIHgSS3aiKc2i',
-  'US$ 3.000 (Solana) · US$ 200 em créditos Cursor para os 3 primeiros · créditos Cursor para todas as equipes · merch kit para o 1º lugar · pré-incubação Apollo para os 4 primeiros',
-  true
-);
+  'US$ 3.000 (Solana) · US$ 200 em créditos Cursor para os 3 primeiros · créditos Cursor para todas as equipes · merch kit para o 1º lugar · pré-incubação Apollo para os 4 primeiros'
+)
+on conflict (slug) do nothing;
 
 insert into hackathon_contents
   (hackathon_id, kind, title, speaker, description, scheduled_at, position, published)
@@ -38,4 +38,7 @@ from hackathons h,
   ('aula','Business model + pitch','Aceleradora','Como estruturar o modelo de negócio e montar o pitch.','2026-09-04 19:00-03'::timestamptz,5),
   ('mentoria','Mentorias 1:1',null,'Suporte direto pelos grupos de WhatsApp ao longo do sábado. Horários e mentores a confirmar.','2026-09-05 10:00-03'::timestamptz,6)
 ) as v(kind,title,speaker,description,scheduled_at,position)
-where h.slug = 'solana-cursor-passo-fundo-2026';
+where h.slug = 'solana-cursor-passo-fundo-2026'
+  and not exists (
+    select 1 from hackathon_contents c where c.hackathon_id = h.id
+  );
