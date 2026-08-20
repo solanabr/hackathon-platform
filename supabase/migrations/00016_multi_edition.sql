@@ -125,7 +125,8 @@ grant all on hackathon_registrations, hackathon_contents, platform_roles to serv
 
 -- Public schedule: the edition landing is a public page (anon client). The
 -- view keeps youtube_id/external_url out of anon reach — an unlisted video is
--- only protected because its id never leaks.
+-- only protected because its id never leaks. All rows are visible: the dates
+-- are public information even before the recordings exist.
 create view public_schedule as
 select
   id, hackathon_id, kind, title, speaker, description,
@@ -135,9 +136,9 @@ from hackathon_contents;
 alter view public_schedule enable row level security;
 
 create policy public_schedule_select_anon on public_schedule
-  for select to anon using (published);
+  for select to anon;
 create policy public_schedule_select_auth on public_schedule
-  for select to authenticated using (published);
+  for select to authenticated;
 
 grant select on public_schedule to anon, authenticated;
 grant all on public_schedule to service_role;
