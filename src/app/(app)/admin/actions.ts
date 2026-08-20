@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export type RatingActionResult = { ok: true } | { ok: false; error: string };

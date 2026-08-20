@@ -3,14 +3,14 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { GradientBackground } from "@/components/layout/background";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { isAdmin } from "@/lib/admin";
+import { requireAdmin } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const state = await resolveAuthenticatedUserState();
   const primaryHref = state?.redirectPath ?? "/dashboard";
-  const admin = state ? isAdmin(state.email, state.userId) : false;
+  const admin = state ? (await requireAdmin()).ok : false;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-bh-bg">

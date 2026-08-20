@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { getActiveHackathon } from "@/lib/hackathon";
 import {
