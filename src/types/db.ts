@@ -7,6 +7,8 @@ export type User = {
   linkedin_url: string | null;
   telegram_handle: string | null;
   avatar_url: string | null;
+  headline: string | null;
+  bio: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-surface">
+    <main className="relative min-h-screen overflow-x-clip bg-surface">
       <Background />
       <div className="relative z-10 flex min-h-screen flex-col">
         <Header />

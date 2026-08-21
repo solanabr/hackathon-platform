@@ -15,7 +15,8 @@ type Props = {
   editable: boolean;
   initial: Submission;
   initialImageUrl: string | null;
-  painelHref: string;
+  dashboardHref: string;
+  membersPending: number;
 };
 
 type FormState = {
@@ -67,7 +68,15 @@ const SUBMIT_ERRORS: Record<string, string> = {
     "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
 };
 
-export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl, painelHref }: Props) {
+export function SubmissionEditor({
+  teamId,
+  isLeader,
+  editable,
+  initial,
+  initialImageUrl,
+  dashboardHref,
+  membersPending,
+}: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
@@ -132,7 +141,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
         );
         return;
       }
-      router.push(painelHref);
+      router.push(dashboardHref);
       router.refresh();
     });
   }
@@ -144,6 +153,13 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     !!sanitizeUrl(form.pitch_video_url) &&
     !!sanitizeUrl(form.github_url) &&
     form.github_access_granted;
+
+  const canSubmit = allRequiredFilled && membersPending === 0;
+  const blockedReason = !allRequiredFilled
+    ? "Preencha todos os campos obrigatórios"
+    : membersPending > 0
+      ? `${membersPending} ${membersPending === 1 ? "integrante ainda não confirmou" : "integrantes ainda não confirmaram"} a inscrição`
+      : "";
 
   return (
     <div className="space-y-6">
@@ -293,16 +309,18 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
           {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button type="button" variant="secondary" onClick={() => save()} disabled={!editable || saving}>
+          {editable && (
+          <Button type="button" variant="secondary" onClick={() => save()} disabled={saving}>
             {saving ? "Salvando..." : "Salvar rascunho"}
           </Button>
+          )}
           {isLeader && (
             <Button
               type="button"
               variant="primary"
               onClick={submit}
-              disabled={!editable || pendingSubmit || !allRequiredFilled}
-              title={allRequiredFilled ? "" : "Preencha todos os campos obrigatórios"}
+              disabled={!editable || pendingSubmit || !canSubmit}
+              title={blockedReason}
             >
               {pendingSubmit ? "Submetendo..." : "Submeter projeto"}
             </Button>

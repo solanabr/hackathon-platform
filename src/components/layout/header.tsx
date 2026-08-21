@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { isAdminFor } from "@/lib/roles";
 
 export async function Header() {
   const state = await resolveAuthenticatedUserState();
+  const admin = state ? await isAdminFor(state) : false;
 
   return (
     <header className="sticky top-0 z-50 border-b border-green/10 bg-surface/85 backdrop-blur-md">
@@ -19,12 +21,14 @@ export async function Header() {
         </Link>
 
         <nav className="flex items-center gap-4 text-sm font-semibold">
-          <Link href="/" className="text-muted transition-colors hover:text-ink">
-            Hackathons
-          </Link>
           {state ? (
             <>
-              <Link href="/conta" className="text-muted transition-colors hover:text-ink">
+              {admin && (
+                <Link href="/admin" className="text-muted transition-colors hover:text-ink">
+                  Admin
+                </Link>
+              )}
+              <Link href="/account" className="text-muted transition-colors hover:text-ink">
                 Minha conta
               </Link>
               <form action="/api/auth/signout" method="post">

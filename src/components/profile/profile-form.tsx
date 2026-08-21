@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { updateProfile } from "@/app/(app)/conta/actions";
+import { updateProfile } from "@/app/(app)/account/actions";
 import type { User } from "@/types/db";
 
 export function ProfileForm({ profile, next }: { profile: User | null; next?: string }) {
@@ -15,6 +15,28 @@ export function ProfileForm({ profile, next }: { profile: User | null; next?: st
       <div>
         <Label htmlFor="full_name">Nome completo</Label>
         <Input id="full_name" name="full_name" required defaultValue={profile?.full_name ?? ""} />
+      </div>
+      <div>
+        <Label htmlFor="headline">Título</Label>
+        <Input
+          id="headline"
+          name="headline"
+          maxLength={80}
+          placeholder="Ex.: Desenvolvedor backend, estudante de ADS"
+          defaultValue={profile?.headline ?? ""}
+        />
+      </div>
+      <div>
+        <Label htmlFor="bio">Bio</Label>
+        <textarea
+          id="bio"
+          name="bio"
+          rows={3}
+          maxLength={400}
+          placeholder="Em uma ou duas frases: o que você faz e o que quer construir."
+          defaultValue={profile?.bio ?? ""}
+          className="mt-1.5 w-full rounded-xl border border-green/25 bg-surface-raised px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
+        />
       </div>
       <div>
         <Label htmlFor="github_url">GitHub</Label>

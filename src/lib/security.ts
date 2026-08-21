@@ -35,3 +35,22 @@ export function sanitizeRedirect(input: string | null): string | null {
   if (input.startsWith("/\\")) return null;
   return input;
 }
+
+/**
+ * The avatar URL round-trips through a hidden form field, so it is client
+ * input. Accept only what our own bucket serves or what the OAuth provider gave
+ * us at signup, never an arbitrary URL.
+ */
+export function sanitizeAvatarUrl(input: string | null | undefined): string | null {
+  const url = sanitizeUrl(input);
+  if (!url) return null;
+  try {
+    const { hostname, pathname } = new URL(url);
+    if (hostname === "avatars.githubusercontent.com") return url;
+    if (hostname === "lh3.googleusercontent.com") return url;
+    if (hostname.endsWith(".supabase.co") && pathname.includes("/avatars/")) return url;
+    return null;
+  } catch {
+    return null;
+  }
+}

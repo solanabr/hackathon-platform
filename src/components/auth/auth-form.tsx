@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeRedirect } from "@/lib/security";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input, Label } from "@/components/ui/input";
 
 type Provider = "google" | "github";
 
@@ -16,9 +18,12 @@ const PROVIDER_LABELS: Record<Provider, string> = {
 export function AuthForm() {
   const [loading, setLoading] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const inviteRedirect = searchParams.get("redirect");
+  const inviteRedirect = sanitizeRedirect(searchParams.get("redirect"));
 
   async function signIn(provider: Provider) {
     setLoading(provider);
@@ -34,6 +39,45 @@ export function AuthForm() {
       setError(`Não foi possível conectar com ${PROVIDER_LABELS[provider]}. Tente novamente.`);
       setLoading(null);
     }
+  }
+
+  function redirectTarget() {
+    return `${window.location.origin}/auth/callback${
+      inviteRedirect ? `?redirect=${encodeURIComponent(inviteRedirect)}` : ""
+    }`;
+  }
+
+  async function sendCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setStage("sending");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: redirectTarget() },
+    });
+    if (error) {
+      setError("Não foi possível enviar o código. Confira o e-mail e tente de novo.");
+      setStage("idle");
+      return;
+    }
+    setStage("sent");
+  }
+
+  async function verifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setStage("verifying");
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: code.trim(),
+      type: "email",
+    });
+    if (error) {
+      setError("Código inválido ou expirado. Peça um novo.");
+      setStage("sent");
+      return;
+    }
+    window.location.assign(inviteRedirect ?? "/");
   }
 
   return (
@@ -94,6 +138,64 @@ export function AuthForm() {
           {loading === "github" ? "Conectando..." : "Entrar com GitHub"}
         </Button>
       </div>
+
+      <div className="mt-7 flex items-center gap-3">
+        <span className="h-px flex-1 bg-green/15" />
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted">ou</span>
+        <span className="h-px flex-1 bg-green/15" />
+      </div>
+
+      {stage === "sent" || stage === "verifying" ? (
+        <form onSubmit={verifyCode} className="mt-6 space-y-4">
+          <div>
+            <Label htmlFor="code">Código enviado para {email}</Label>
+            <Input
+              id="code"
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              spellCheck={false}
+              required
+              placeholder="000000"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+          </div>
+          <Button type="submit" fullWidth disabled={stage === "verifying"}>
+            {stage === "verifying" ? "Verificando..." : "Entrar"}
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              setStage("idle");
+              setCode("");
+            }}
+            className="w-full text-center text-xs font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
+          >
+            Usar outro e-mail
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={sendCode} className="mt-6 space-y-4">
+          <div>
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              spellCheck={false}
+              required
+              placeholder="voce@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <Button type="submit" fullWidth disabled={stage === "sending" || loading !== null}>
+            {stage === "sending" ? "Enviando..." : "Enviar código"}
+          </Button>
+        </form>
+      )}
 
       <p className="mt-7 text-center text-xs text-muted">
         Ao entrar você concorda com o regulamento dos hackathons da Superteam Brasil.

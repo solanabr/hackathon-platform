@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { registerForHackathon } from "@/app/(app)/h/[slug]/inscricao/actions";
+import { registerForHackathon } from "@/app/(app)/h/[slug]/register/actions";
 
 export function RegistrationForm({
   hackathonId,
@@ -24,7 +24,7 @@ export function RegistrationForm({
         startTransition(async () => {
           const result = await registerForHackathon(hackathonId, slug, formData);
           if (result.error) setError(result.error);
-          else router.push(`/h/${slug}/painel`);
+          else router.push(`/h/${slug}/dashboard`);
         })
       }
       className="space-y-5"

@@ -4,11 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addMemberByEmail } from "@/app/(app)/h/[slug]/time/actions";
+import { addMemberByEmail } from "@/app/(app)/h/[slug]/team/actions";
 
 type Message =
-  | { type: "ok-account"; email: string }
-  | { type: "ok-noaccount"; email: string }
+  | { type: "ok-account"; email: string; emailSent: boolean }
+  | { type: "ok-noaccount"; email: string; emailSent: boolean }
   | { type: "error"; text: string };
 
 export function AddMemberForm({ teamId }: { teamId: string }) {
@@ -29,6 +29,7 @@ export function AddMemberForm({ teamId }: { teamId: string }) {
       setMessage({
         type: res.hasAccount ? "ok-account" : "ok-noaccount",
         email: res.email,
+        emailSent: res.emailSent,
       });
       setEmail("");
       router.refresh();
@@ -49,19 +50,23 @@ export function AddMemberForm({ teamId }: { teamId: string }) {
           {pending ? "Adicionando..." : "Adicionar"}
         </Button>
       </div>
-      {message?.type === "ok-account" && (
-        <p className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-          <strong>{message.email}</strong> foi adicionado ao time.
-        </p>
-      )}
-      {message?.type === "ok-noaccount" && (
-        <p className="rounded-xl border border-stbr-yellow/40 bg-stbr-yellow/10 px-4 py-3 text-sm text-stbr-yellow">
-          <strong>{message.email}</strong> ainda não tem conta. Vai aparecer no
-          time assim que essa pessoa se cadastrar com este e-mail.
-        </p>
+      {(message?.type === "ok-account" || message?.type === "ok-noaccount") && (
+        <div className="rounded-xl border border-emerald/30 bg-emerald/10 px-4 py-3 text-sm">
+          <p className="text-ink">
+            <strong>{message.email}</strong>{" "}
+            {message.type === "ok-account"
+              ? "foi adicionado ao time."
+              : "ainda não tem conta. Vai aparecer no time assim que essa pessoa entrar com este e-mail."}
+          </p>
+          <p className="mt-1 text-muted">
+            {message.emailSent
+              ? "Enviamos um e-mail avisando."
+              : "Não conseguimos enviar o e-mail de aviso, então avise a pessoa por outro canal."}
+          </p>
+        </div>
       )}
       {message?.type === "error" && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {message.text}
         </p>
       )}
