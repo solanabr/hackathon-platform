@@ -53,3 +53,17 @@ export async function requireJudge(hackathonId: string): Promise<RoleCheck> {
     ? { ok: true, state }
     : { ok: false, reason: "forbidden" };
 }
+
+export type RoleState = {
+  state: AuthenticatedState;
+  isAdmin: boolean;
+  judgeFor: string[];
+};
+
+/** One round-trip for callers that need both the identity and the roles. */
+export async function resolveRoleState(): Promise<RoleState | null> {
+  const state = await resolveAuthenticatedUserState();
+  if (!state) return null;
+  const { isAdmin, judgeFor } = resolveRoles(await loadRoles(state.userId), state.email);
+  return { state, isAdmin, judgeFor };
+}
