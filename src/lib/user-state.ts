@@ -23,14 +23,13 @@ export async function resolveAuthenticatedUserState(): Promise<AuthenticatedStat
     .maybeSingle();
 
   const typed = profile as User | null;
-  const needsOnboarding =
-    !typed?.full_name || !typed?.luma_registered_at || !typed?.age_attestation_at;
+  const needsProfile = !typed?.full_name;
 
   return {
     userId: user.id,
     email: user.email!,
     profile: typed,
-    redirectPath: needsOnboarding ? "/onboarding" : "/dashboard",
+    redirectPath: needsProfile ? "/conta" : "/",
   };
 }
 
