@@ -55,7 +55,7 @@ export async function grantRole(
 
   if (error) return { error: "Não foi possível salvar o papel." };
 
-  revalidatePath("/admin/pessoas");
+  revalidatePath("/admin/people");
   return {};
 }
 
@@ -67,6 +67,6 @@ export async function revokeRole(roleId: string): Promise<{ error?: string }> {
   const { error } = await supabase.from("platform_roles").delete().eq("id", roleId);
   if (error) return { error: "Não foi possível remover o papel." };
 
-  revalidatePath("/admin/pessoas");
+  revalidatePath("/admin/people");
   return {};
 }

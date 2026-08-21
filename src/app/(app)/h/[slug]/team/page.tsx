@@ -22,10 +22,10 @@ export default async function TeamPage({
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
 
-  if (!isProfileComplete(state.profile)) redirect(`/conta?next=/h/${slug}/inscricao`);
+  if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/register`);
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
   if (!snapshot) {
@@ -37,7 +37,7 @@ export default async function TeamPage({
             Crie um time como líder, ou peça ao líder para te adicionar pelo e-mail que você usa aqui.
           </p>
           <div className="mt-6">
-            <Link href={`/h/${slug}/time/novo`}>
+            <Link href={`/h/${slug}/team/new`}>
               <Button variant="primary">Criar time</Button>
             </Link>
           </div>
@@ -53,7 +53,7 @@ export default async function TeamPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
-        <Link href={`/h/${slug}/painel`} className="text-sm text-muted hover:text-ink">
+        <Link href={`/h/${slug}/dashboard`} className="text-sm text-muted hover:text-ink">
           ← voltar ao painel
         </Link>
 
@@ -66,7 +66,7 @@ export default async function TeamPage({
               <h1 className="mt-3 font-heading text-3xl font-bold">{team.name}</h1>
               {team.description && <p className="mt-2 text-sm text-muted">{team.description}</p>}
             </div>
-            <Link href={`/h/${slug}/submissao`}>
+            <Link href={`/h/${slug}/submission`}>
               <Button variant="secondary">Ver submissão</Button>
             </Link>
           </div>

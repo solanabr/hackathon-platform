@@ -18,10 +18,10 @@ export default async function RegistrationPage({
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
 
-  if (!isProfileComplete(state.profile)) redirect(`/conta?next=/h/${slug}/inscricao`);
+  if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/register`);
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (isRegistrationComplete(registration)) redirect(`/h/${slug}/painel`);
+  if (isRegistrationComplete(registration)) redirect(`/h/${slug}/dashboard`);
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">

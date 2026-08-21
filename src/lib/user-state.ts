@@ -29,7 +29,7 @@ export async function resolveAuthenticatedUserState(): Promise<AuthenticatedStat
     userId: user.id,
     email: user.email!,
     profile: typed,
-    redirectPath: needsProfile ? "/conta" : "/",
+    redirectPath: needsProfile ? "/account" : "/",
   };
 }
 

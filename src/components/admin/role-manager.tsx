@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { grantRole, revokeRole } from "@/app/(app)/admin/pessoas/actions";
+import { grantRole, revokeRole } from "@/app/(app)/admin/people/actions";
 import type { Hackathon } from "@/types/db";
 
 type Row = { id: string; role: "admin" | "judge"; email: string; hackathonName: string | null };

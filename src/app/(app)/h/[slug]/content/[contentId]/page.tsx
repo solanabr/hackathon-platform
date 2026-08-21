@@ -19,7 +19,7 @@ export default async function ContentPage({
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const content = await getContent(contentId, hackathon.id);
   if (!content) notFound();
@@ -27,7 +27,7 @@ export default async function ContentPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <Link href={`/h/${slug}/conteudos`} className="text-sm text-muted hover:text-ink">
+        <Link href={`/h/${slug}/content`} className="text-sm text-muted hover:text-ink">
           ← todos os conteúdos
         </Link>
 

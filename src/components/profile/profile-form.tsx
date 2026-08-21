@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { updateProfile } from "@/app/(app)/conta/actions";
+import { updateProfile } from "@/app/(app)/account/actions";
 import type { User } from "@/types/db";
 
 export function ProfileForm({ profile, next }: { profile: User | null; next?: string }) {

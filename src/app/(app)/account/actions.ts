@@ -29,7 +29,7 @@ export async function updateProfile(
 
   if (error) return { error: "Não foi possível salvar. Tente novamente." };
 
-  revalidatePath("/conta");
+  revalidatePath("/account");
   const next = sanitizeRedirect(String(formData.get("next") ?? ""));
   if (next) redirect(next);
   return {};

@@ -15,7 +15,7 @@ type Props = {
   editable: boolean;
   initial: Submission;
   initialImageUrl: string | null;
-  painelHref: string;
+  dashboardHref: string;
 };
 
 type FormState = {
@@ -67,7 +67,7 @@ const SUBMIT_ERRORS: Record<string, string> = {
     "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
 };
 
-export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl, painelHref }: Props) {
+export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl, dashboardHref }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
@@ -132,7 +132,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
         );
         return;
       }
-      router.push(painelHref);
+      router.push(dashboardHref);
       router.refresh();
     });
   }

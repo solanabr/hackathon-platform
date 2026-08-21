@@ -57,7 +57,7 @@ export default async function AdminPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="font-heading text-3xl font-bold">Administração</h1>
-          <Link href="/admin/pessoas" className="btn-secondary px-5 py-2 text-sm">
+          <Link href="/admin/people" className="btn-secondary px-5 py-2 text-sm">
             Pessoas
           </Link>
         </div>

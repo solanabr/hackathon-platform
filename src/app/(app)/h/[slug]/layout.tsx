@@ -38,10 +38,10 @@ export default async function EditionLayout({
 
   const base = `/h/${slug}`;
   const items: NavItem[] = [
-    { href: `${base}/painel`, label: "Painel" },
-    { href: `${base}/conteudos`, label: "Conteúdos", badge: available ? String(available) : null },
-    { href: snapshot ? `${base}/time` : `${base}/time/novo`, label: "Time" },
-    ...(snapshot ? [{ href: `${base}/submissao`, label: "Submissão" }] : []),
+    { href: `${base}/dashboard`, label: "Painel" },
+    { href: `${base}/content`, label: "Conteúdos", badge: available ? String(available) : null },
+    { href: snapshot ? `${base}/team` : `${base}/team/new`, label: "Time" },
+    ...(snapshot ? [{ href: `${base}/submission`, label: "Submissão" }] : []),
   ];
 
   return (

@@ -7,9 +7,9 @@ describe("isPublicRoute", () => {
   });
 
   it("gates everything nested under an edition", () => {
-    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/conteudos")).toBe(false);
-    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/inscricao")).toBe(false);
-    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/painel")).toBe(false);
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/content")).toBe(false);
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/register")).toBe(false);
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/dashboard")).toBe(false);
   });
 
   it("gates deeper edition paths", () => {
@@ -25,6 +25,6 @@ describe("isPublicRoute", () => {
   it("gates everything else", () => {
     expect(isPublicRoute("/")).toBe(true);
     expect(isPublicRoute("/admin")).toBe(false);
-    expect(isPublicRoute("/conta")).toBe(false);
+    expect(isPublicRoute("/account")).toBe(false);
   });
 });

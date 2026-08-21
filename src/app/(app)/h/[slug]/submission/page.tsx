@@ -22,13 +22,13 @@ export default async function SubmissionPage({
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
 
-  if (!isProfileComplete(state.profile)) redirect(`/conta?next=/h/${slug}/submissao`);
+  if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/submission`);
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
-  if (!snapshot) redirect(`/h/${slug}/painel`);
+  if (!snapshot) redirect(`/h/${slug}/dashboard`);
 
   const { team, submission, isLeader } = snapshot;
   const open = isSubmissionWindowOpen(hackathon);
@@ -44,7 +44,7 @@ export default async function SubmissionPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <Link href={`/h/${slug}/painel`} className="text-sm text-muted hover:text-ink">
+        <Link href={`/h/${slug}/dashboard`} className="text-sm text-muted hover:text-ink">
           ← voltar ao painel
         </Link>
 
@@ -78,7 +78,7 @@ export default async function SubmissionPage({
             editable={editable}
             initial={submission}
             initialImageUrl={imagePublicUrl}
-            painelHref={`/h/${slug}/painel`}
+            dashboardHref={`/h/${slug}/dashboard`}
           />
         </Card>
       </div>

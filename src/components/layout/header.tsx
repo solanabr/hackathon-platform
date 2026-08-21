@@ -28,7 +28,7 @@ export async function Header() {
                   Admin
                 </Link>
               )}
-              <Link href="/conta" className="text-muted transition-colors hover:text-ink">
+              <Link href="/account" className="text-muted transition-colors hover:text-ink">
                 Minha conta
               </Link>
               <form action="/api/auth/signout" method="post">

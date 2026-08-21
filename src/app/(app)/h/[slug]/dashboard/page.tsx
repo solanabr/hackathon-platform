@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Countdown } from "@/components/ui/countdown";
+import { Card } from "@/components/ui/card";
+import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
@@ -50,7 +52,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
   const open = isSubmissionWindowOpen(hackathon);
@@ -142,7 +144,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             <p className="mt-1 text-muted">{hackathon.name}</p>
           </div>
 
-          <div className="rounded-2xl border border-green/15 bg-surface-raised px-5 py-3">
+          <Card className="px-5 py-3">
             <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
               {open ? "Submissão fecha em" : "Submissão encerrada"}
             </p>
@@ -160,7 +162,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                 {FULL.format(new Date(hackathon.submission_deadline_at))}
               </p>
             )}
-          </div>
+          </Card>
         </header>
 
         <section aria-label="Etapas">
@@ -168,27 +170,14 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
         </section>
 
         <div className="grid gap-5 lg:grid-cols-2">
-          <section
-            aria-label="Seu time"
-            className="rounded-2xl border border-green/15 bg-surface-raised/70 p-6"
+          <SectionCard
+            eyebrow="Seu time"
+            title={snapshot ? snapshot.team.name : "Você ainda não tem time"}
+            action={snapshot ? { href: `/h/${slug}/team`, label: "Gerenciar" } : undefined}
           >
-            <div className="flex items-start justify-between gap-4">
-              <h2 className="font-heading text-xl font-bold">
-                {snapshot ? snapshot.team.name : "Seu time"}
-              </h2>
-              {snapshot && (
-                <Link
-                  href={`/h/${slug}/time`}
-                  className="shrink-0 text-sm font-semibold text-emerald underline-offset-4 hover:underline"
-                >
-                  Gerenciar
-                </Link>
-              )}
-            </div>
-
             {snapshot ? (
               <>
-                <ul className="mt-4 space-y-2.5">
+                <ul className="space-y-2.5">
                   {snapshot.members.map((m) => {
                     const name = m.user?.full_name ?? m.invited_email;
                     const confirmed = m.user_id ? confirmedIds.has(m.user_id) : false;
@@ -202,15 +191,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                             </span>
                           )}
                         </span>
-                        <span
-                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                            confirmed
-                              ? "bg-emerald/12 text-emerald"
-                              : "bg-yellow/25 text-ink"
-                          }`}
-                        >
+                        <StatusChip tone={confirmed ? "ok" : "pending"}>
                           {confirmed ? "inscrição ok" : "falta confirmar"}
-                        </span>
+                        </StatusChip>
                       </li>
                     );
                   })}
@@ -223,39 +206,32 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </>
             ) : (
               <>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
-                  Você ainda não está em um time. Crie o seu como líder, ou peça para o líder do seu
-                  time te adicionar pelo e-mail <strong className="text-ink">{state.email}</strong>.
+                <p className="text-sm leading-relaxed text-muted">
+                  Crie o seu como líder, ou peça para o líder do seu time te adicionar pelo e-mail{" "}
+                  <strong className="text-ink">{state.email}</strong>.
                 </p>
-                <Link href={`/h/${slug}/time/novo`} className="btn-primary mt-5 px-5 py-2 text-sm">
+                <Link href={`/h/${slug}/team/new`} className="btn-primary mt-5 px-5 py-2 text-sm">
                   Criar time
                 </Link>
               </>
             )}
-          </section>
+          </SectionCard>
 
-          <section
-            aria-label="Sua submissão"
-            className="rounded-2xl border border-green/15 bg-surface-raised/70 p-6"
+          <SectionCard
+            eyebrow="Projeto"
+            title="Submissão"
+            action={
+              snapshot
+                ? { href: `/h/${slug}/submission`, label: submitted ? "Ver" : "Editar" }
+                : undefined
+            }
           >
-            <div className="flex items-start justify-between gap-4">
-              <h2 className="font-heading text-xl font-bold">Submissão</h2>
-              {snapshot && (
-                <Link
-                  href={`/h/${slug}/submissao`}
-                  className="shrink-0 text-sm font-semibold text-emerald underline-offset-4 hover:underline"
-                >
-                  {submitted ? "Ver" : "Editar"}
-                </Link>
-              )}
-            </div>
-
             {!snapshot ? (
-              <p className="mt-3 text-sm leading-relaxed text-muted">
+              <p className="text-sm leading-relaxed text-muted">
                 Disponível assim que você estiver em um time.
               </p>
             ) : submitted ? (
-              <div className="mt-4">
+              <div>
                 <p className="inline-flex items-center gap-2 rounded-full bg-emerald px-3 py-1 text-sm font-semibold text-surface">
                   Projeto enviado
                 </p>
@@ -282,37 +258,24 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </div>
             ) : (
               <>
-                <p className="mt-3 text-sm text-muted">
+                <p className="text-sm text-muted">
                   {missing.length === 0
                     ? "Tudo preenchido. O líder pode enviar."
                     : `Faltam ${missing.length} de ${REQUIRED.length} itens.`}
                 </p>
-                <ul className="mt-4 space-y-2">
-                  {REQUIRED.map((f) => {
-                    const done = !missing.some((m) => m.key === f.key);
-                    return (
-                      <li key={f.key} className="flex items-center gap-2.5 text-sm">
-                        <span
-                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-                            done ? "bg-emerald text-surface" : "bg-green/10 text-muted"
-                          }`}
-                        >
-                          {done ? "✓" : ""}
-                        </span>
-                        <span className={done ? "text-muted line-through" : ""}>{f.label}</span>
-                      </li>
-                    );
-                  })}
+                <ul className="mt-4 space-y-2.5">
+                  {REQUIRED.map((f) => (
+                    <CheckRow key={f.key} done={!missing.some((m) => m.key === f.key)}>
+                      {f.label}
+                    </CheckRow>
+                  ))}
                 </ul>
               </>
             )}
-          </section>
+          </SectionCard>
         </div>
 
-        <section
-          aria-label="Conteúdos"
-          className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-green/15 bg-surface-raised/70 p-6"
-        >
+        <Card className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
           <div>
             <h2 className="font-heading text-xl font-bold">Conteúdos</h2>
             <p className="mt-1 text-sm text-muted">
@@ -321,7 +284,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href={`/h/${slug}/conteudos`} className="btn-primary px-5 py-2 text-sm">
+            <Link href={`/h/${slug}/content`} className="btn-primary px-5 py-2 text-sm">
               Ver conteúdos
             </Link>
             {hackathon.community_url && (
@@ -335,7 +298,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </a>
             )}
           </div>
-        </section>
+        </Card>
       </div>
     </div>
   );

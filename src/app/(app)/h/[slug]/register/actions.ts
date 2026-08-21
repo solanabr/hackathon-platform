@@ -33,6 +33,6 @@ export async function registerForHackathon(
 
   if (error) return { error: "Não foi possível concluir a inscrição. Tente novamente." };
 
-  revalidatePath(`/h/${slug}/painel`);
+  revalidatePath(`/h/${slug}/dashboard`);
   return {};
 }

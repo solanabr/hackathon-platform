@@ -71,7 +71,7 @@ export function Countdown({
         {tiles.map((tile) => (
           <div
             key={tile.label}
-            className="rounded-2xl border border-green/15 bg-surface/70 px-2 py-4 text-center"
+            className="rounded-2xl border border-green/15 bg-surface-raised px-2 py-4 text-center"
           >
             <p
               className="font-heading text-3xl font-bold tabular-nums text-ink sm:text-4xl"

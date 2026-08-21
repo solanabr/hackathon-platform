@@ -191,11 +191,11 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
             <div className="mt-8 flex flex-wrap gap-3">
               {registered ? (
-                <Link href={`/h/${hackathon.slug}/painel`} className="btn-primary">
+                <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
                   Acessar painel
                 </Link>
               ) : (
-                <Link href={`/h/${hackathon.slug}/inscricao`} className="btn-primary">
+                <Link href={`/h/${hackathon.slug}/register`} className="btn-primary">
                   {open ? "Quero participar" : "Ver detalhes"}
                 </Link>
               )}
@@ -260,7 +260,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 return (
                   <li
                     key={item.id}
-                    className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised/70 p-5"
+                    className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised p-5"
                   >
                     <div className="w-16 shrink-0 text-center">
                       {at ? (
@@ -315,7 +315,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {DELIVERABLES.map((d) => (
-              <div key={d.label} className="rounded-2xl border border-green/15 bg-surface-raised/70 p-6">
+              <div key={d.label} className="rounded-2xl border border-green/15 bg-surface-raised p-6">
                 <p className="font-heading text-4xl font-bold leading-none text-emerald">
                   {d.value}
                   <span className="ml-1.5 align-middle text-sm font-semibold text-muted">

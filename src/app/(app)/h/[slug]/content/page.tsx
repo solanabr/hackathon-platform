@@ -29,7 +29,7 @@ export default async function ContentsPage({
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const contents = await listContents(hackathon.id);
 
@@ -49,7 +49,7 @@ export default async function ContentsPage({
         ) : (
           <div className="mt-8 grid gap-4">
             {contents.map((content) => (
-              <Link key={content.id} href={`/h/${slug}/conteudos/${content.id}`}>
+              <Link key={content.id} href={`/h/${slug}/content/${content.id}`}>
                 <Card className="card-hover p-6">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge tone={content.kind === "mentoria" ? "yellow" : "emerald"}>

@@ -19,15 +19,15 @@ export default async function NewTeamPage({
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
 
-  if (!isProfileComplete(state.profile)) redirect(`/conta?next=/h/${slug}/inscricao`);
+  if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/register`);
 
   const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/inscricao`);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
-  if (!isSubmissionWindowOpen(hackathon)) redirect(`/h/${slug}/painel`);
+  if (!isSubmissionWindowOpen(hackathon)) redirect(`/h/${slug}/dashboard`);
 
   const existing = await getTeamForHackathon(state.userId, hackathon.id);
-  if (existing) redirect(`/h/${slug}/time`);
+  if (existing) redirect(`/h/${slug}/team`);
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">

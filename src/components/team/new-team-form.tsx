@@ -54,7 +54,7 @@ export function NewTeamForm({
       return;
     }
 
-    router.push(`/h/${slug}/time`);
+    router.push(`/h/${slug}/team`);
     router.refresh();
   }
 

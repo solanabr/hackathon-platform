@@ -50,7 +50,7 @@ a, button, [role="button"], summary { cursor: pointer; }
   }
 
   .stats-card {
-    @apply rounded-2xl border border-green/10 bg-surface-raised/80 p-6 backdrop-blur-sm;
+    @apply rounded-2xl border border-green/15 bg-surface-raised p-6;
   }
 
   .service-card {

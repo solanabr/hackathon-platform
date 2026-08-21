@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addMemberByEmail } from "@/app/(app)/h/[slug]/time/actions";
+import { addMemberByEmail } from "@/app/(app)/h/[slug]/team/actions";
 
 type Message =
   | { type: "ok-account"; email: string }

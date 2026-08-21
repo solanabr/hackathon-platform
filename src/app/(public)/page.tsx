@@ -124,7 +124,7 @@ export default async function HomePage({
             {STEPS.map((step, i) => (
               <li
                 key={step.title}
-                className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised/70 p-6 backdrop-blur-sm"
+                className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised p-6"
               >
                 <span className="font-heading text-3xl font-bold leading-none text-emerald/40">
                   {String(i + 1).padStart(2, "0")}
