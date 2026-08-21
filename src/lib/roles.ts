@@ -29,12 +29,18 @@ export function resolveRoles(
 }
 
 async function loadRoles(userId: string): Promise<PlatformRole[]> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
   const supabase = await createServiceRoleClient();
   const { data } = await supabase
     .from("platform_roles")
     .select("*")
     .eq("user_id", userId);
   return (data as PlatformRole[] | null) ?? [];
+}
+
+export async function isAdminFor(state: AuthenticatedState): Promise<boolean> {
+  const { isAdmin } = resolveRoles(await loadRoles(state.userId), state.email, bootstrapEmails());
+  return isAdmin;
 }
 
 export async function requireAdmin(): Promise<RoleCheck> {
