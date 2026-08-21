@@ -33,7 +33,8 @@ export default async function SubmissionPage({
 
   const { team, submission, isLeader } = snapshot;
   const open = isSubmissionWindowOpen(hackathon);
-  const editable = open && !team.locked;
+  const canEdit = open && !team.locked && isLeader;
+  const windowOpen = open && !team.locked;
 
   let imagePublicUrl: string | null = null;
   if (submission.image_path) {
@@ -50,10 +51,16 @@ export default async function SubmissionPage({
         <header className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <Badge tone={submission.status === "submitted" ? "emerald" : "neutral"}>
-              {submission.status === "submitted" ? "Submetido" : editable ? "Rascunho · Editável" : "Bloqueado"}
+              {submission.status === "submitted"
+                ? "Submetido"
+                : canEdit
+                  ? "Rascunho · Editável"
+                  : windowOpen
+                    ? "Somente leitura"
+                    : "Bloqueado"}
             </Badge>
             <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">Submissão · {team.name}</h1>
-            {editable && (
+            {canEdit && (
               <p className="mt-1 text-sm text-muted">
                 Você pode editar e salvar quantas vezes quiser até o prazo final. Encerra em{" "}
                 <strong className="text-ink">
@@ -62,7 +69,12 @@ export default async function SubmissionPage({
                 .
               </p>
             )}
-            {!editable && submission.status !== "submitted" && (
+            {windowOpen && !isLeader && submission.status !== "submitted" && (
+              <p className="mt-1 text-sm text-muted">
+                Só o líder do time edita e envia a submissão. Você acompanha por aqui.
+              </p>
+            )}
+            {!windowOpen && submission.status !== "submitted" && (
               <p className="mt-1 text-sm text-amber-300">
                 Prazo encerrado. As edições estão bloqueadas; o rascunho atual será considerado.
               </p>
@@ -74,7 +86,7 @@ export default async function SubmissionPage({
           <SubmissionEditor
             teamId={team.id}
             isLeader={isLeader}
-            editable={editable}
+            editable={canEdit}
             initial={submission}
             initialImageUrl={imagePublicUrl}
             dashboardHref={`/h/${slug}/dashboard`}

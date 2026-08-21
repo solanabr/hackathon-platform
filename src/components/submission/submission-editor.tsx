@@ -293,9 +293,11 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
           {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button type="button" variant="secondary" onClick={() => save()} disabled={!editable || saving}>
+          {editable && (
+          <Button type="button" variant="secondary" onClick={() => save()} disabled={saving}>
             {saving ? "Salvando..." : "Salvar rascunho"}
           </Button>
+          )}
           {isLeader && (
             <Button
               type="button"
