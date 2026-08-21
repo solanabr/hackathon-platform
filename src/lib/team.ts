@@ -8,7 +8,7 @@ export type TeamSnapshot = {
   isLeader: boolean;
 };
 
-export async function getCurrentUserTeam(userId: string, hackathonId: string): Promise<TeamSnapshot | null> {
+export async function getTeamForHackathon(userId: string, hackathonId: string): Promise<TeamSnapshot | null> {
   const supabase = await createServerSupabaseClient();
 
   const { data: memberships } = await supabase

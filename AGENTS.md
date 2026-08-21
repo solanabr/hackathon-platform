@@ -13,7 +13,7 @@ Next.js 16 App Router-specific warnings for contributors (human or AI).
 ## Do
 
 - Use `createServerSupabaseClient()` from `src/lib/supabase/server.ts` for server components and route handlers. RLS handles auth.
-- Use `createServiceRoleClient()` only in three places, all already wired: invite issuance (`/api/team/invite`), invite preview for unauth users (`/invite/[token]`), cron lock (`/api/cron/lock-submissions`).
+- Use `createServiceRoleClient()` only in the wired places: role resolution (`src/lib/roles.ts`), role management (`/admin/pessoas` actions), cron lock (`/api/cron/lock-submissions`).
 - Add `export const dynamic = 'force-dynamic'` on any new `(app)/*` page that reads auth state. Without it you'll cache a stale `auth.uid()` and redirect users to the wrong place.
 - Mirror the pattern in `lib/user-state.ts` for any new gated page: call `requireUser()` server-side and redirect on missing profile fields.
 - When adding fields to `submissions`, prefer additive SQL — the `submit_team` RPC and the `SubmissionEditor` component both reference field names directly.

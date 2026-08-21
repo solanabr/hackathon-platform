@@ -163,6 +163,12 @@ create table platform_roles (
 
 create index platform_roles_user_idx on platform_roles(user_id);
 
+-- NULL hackathon_id (admin) is exempt from the composite unique above, so a
+-- second grant would insert a duplicate row. Dedupe admins explicitly.
+create unique index platform_roles_admin_uk
+  on platform_roles(user_id, role)
+  where hackathon_id is null;
+
 alter table teams
   add column is_finalist          boolean not null default false,
   add column finalist_notified_at timestamptz;
@@ -212,18 +218,17 @@ grant all on hackathon_registrations, hackathon_contents, platform_roles to serv
 -- view keeps youtube_id/external_url out of anon reach — an unlisted video is
 -- only protected because its id never leaks. All rows are visible: the dates
 -- are public information even before the recordings exist.
-create view public_schedule as
+-- The view runs as its owner (postgres, which owns hackathon_contents and
+-- bypasses its RLS), so anon sees every row with no policy involved. That is
+-- deliberate: the schedule is public, and the protection is the column list
+-- omitting the video fields. Supabase's linter flags postgres-owned views
+-- exposed to anon — this one is intentional.
+create view public_schedule
+with (security_barrier = true) as
 select
   id, hackathon_id, kind, title, speaker, description,
-  scheduled_at, location, position, published
+  scheduled_at, location, position
 from hackathon_contents;
-
-alter view public_schedule enable row level security;
-
-create policy public_schedule_select_anon on public_schedule
-  for select to anon;
-create policy public_schedule_select_auth on public_schedule
-  for select to authenticated;
 
 grant select on public_schedule to anon, authenticated;
 grant all on public_schedule to service_role;
@@ -1554,7 +1559,7 @@ git commit -m "feat: public home lists every published edition"
 - Create: `src/app/(public)/h/[slug]/page.tsx`
 
 **Interfaces:**
-- Consumes: `getHackathonBySlug()`, `isRegistrationOpen()`, and the `public_schedule` view (anon-readable, published rows only).
+- Consumes: `getHackathonBySlug()`, `isRegistrationOpen()`, and the `public_schedule` view (anon-readable, lists every content row).
 - Produces: the public page at `/h/[slug]`; its CTA points at `/h/[slug]/inscricao` (Task 12).
 
 - [ ] **Step 1: Write the page**

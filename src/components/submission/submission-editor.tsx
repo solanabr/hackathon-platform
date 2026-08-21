@@ -15,17 +15,19 @@ type Props = {
   editable: boolean;
   initial: Submission;
   initialImageUrl: string | null;
+  painelHref: string;
 };
 
 type FormState = {
   project_name: string;
   description: string;
-  pitch_url: string;
+  pitch_deck_url: string;
   pitch_video_url: string;
   demo_video_url: string;
   github_url: string;
   twitter_url: string;
   website_url: string;
+  github_access_granted: boolean;
 };
 
 function formatSavedAt(date: Date): string {
@@ -43,12 +45,13 @@ function toForm(s: Submission): FormState {
   return {
     project_name: s.project_name ?? "",
     description: s.description ?? "",
-    pitch_url: s.pitch_url ?? "",
+    pitch_deck_url: s.pitch_deck_url ?? "",
     pitch_video_url: s.pitch_video_url ?? "",
     demo_video_url: s.demo_video_url ?? "",
     github_url: s.github_url ?? "",
     twitter_url: s.twitter_url ?? "",
     website_url: s.website_url ?? "",
+    github_access_granted: s.github_access_granted ?? false,
   };
 }
 
@@ -64,7 +67,7 @@ const SUBMIT_ERRORS: Record<string, string> = {
     "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
 };
 
-export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl }: Props) {
+export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl, painelHref }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
@@ -86,13 +89,14 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     const payload = {
       project_name: sanitizeText(form.project_name, 120),
       description: sanitizeText(form.description, 4000),
-      pitch_url: sanitizeUrl(form.pitch_url),
+      pitch_deck_url: sanitizeUrl(form.pitch_deck_url),
       pitch_video_url: sanitizeUrl(form.pitch_video_url),
       demo_video_url: sanitizeUrl(form.demo_video_url),
       github_url: sanitizeUrl(form.github_url),
       twitter_url: sanitizeUrl(form.twitter_url),
       website_url: sanitizeUrl(form.website_url),
       image_path: imagePath,
+      github_access_granted: form.github_access_granted,
     };
 
     const { error } = await supabase.from("submissions").update(payload).eq("team_id", teamId);
@@ -128,7 +132,7 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
         );
         return;
       }
-      router.push("/dashboard");
+      router.push(painelHref);
       router.refresh();
     });
   }
@@ -136,9 +140,10 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
   const allRequiredFilled =
     !!form.project_name.trim() &&
     !!form.description.trim() &&
-    !!sanitizeUrl(form.pitch_url) &&
+    !!sanitizeUrl(form.pitch_deck_url) &&
     !!sanitizeUrl(form.pitch_video_url) &&
-    !!sanitizeUrl(form.github_url);
+    !!sanitizeUrl(form.github_url) &&
+    form.github_access_granted;
 
   return (
     <div className="space-y-6">
@@ -168,13 +173,13 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
             />
           </div>
           <div>
-            <Label htmlFor="pitch_url">Deck (PDF / Notion / Slides)*</Label>
+            <Label htmlFor="pitch_deck_url">Deck (PDF / Notion / Slides)*</Label>
             <Input
-              id="pitch_url"
+              id="pitch_deck_url"
               type="url"
               placeholder="https://"
-              value={form.pitch_url}
-              onChange={(e) => set("pitch_url", e.target.value)}
+              value={form.pitch_deck_url}
+              onChange={(e) => set("pitch_deck_url", e.target.value)}
             />
           </div>
           <div>
@@ -196,18 +201,40 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
               value={form.github_url}
               onChange={(e) => set("github_url", e.target.value)}
             />
-            <p className="mt-1.5 text-xs text-bh-muted">
+            <p className="mt-1.5 text-xs text-muted">
               Se o repositório for privado, adicione{" "}
               <a
                 href="https://github.com/kauenet"
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium text-bh-text underline-offset-2 hover:text-bh-violet hover:underline"
+                className="font-medium text-ink underline-offset-2 hover:text-emerald hover:underline"
               >
                 @kauenet
               </a>{" "}
               como colaborador para os juízes terem acesso.
             </p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="flex items-start gap-3 rounded-xl border border-green/15 bg-surface-raised p-4">
+              <input
+                type="checkbox"
+                checked={form.github_access_granted}
+                onChange={(e) => set("github_access_granted", e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-emerald"
+              />
+              <span className="text-sm text-ink">
+                Confirmo que adicionei{" "}
+                <a
+                  href="https://github.com/kauenet"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium underline-offset-2 hover:text-emerald hover:underline"
+                >
+                  @kauenet
+                </a>{" "}
+                como colaborador do repositório, para os juízes acessarem o código.*
+              </span>
+            </label>
           </div>
           <div>
             <Label htmlFor="twitter_url" hint="opcional">X / Twitter</Label>
@@ -261,12 +288,12 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
         </p>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-bh-border pt-6">
-        <p className="text-xs text-bh-muted" suppressHydrationWarning>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-green/15 pt-6">
+        <p className="text-xs text-muted" suppressHydrationWarning>
           {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button type="button" variant="secondary" onClick={save} disabled={!editable || saving}>
+          <Button type="button" variant="secondary" onClick={() => save()} disabled={!editable || saving}>
             {saving ? "Salvando..." : "Salvar rascunho"}
           </Button>
           {isLeader && (

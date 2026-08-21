@@ -12,7 +12,13 @@ const ERRORS: Record<string, string> = {
   duplicate_name: "Já existe um time com esse nome.",
 };
 
-export function NewTeamForm({ hackathonId }: { hackathonId: string }) {
+export function NewTeamForm({
+  hackathonId,
+  slug,
+}: {
+  hackathonId: string;
+  slug: string;
+}) {
   const router = useRouter();
   const supabase = createClient();
   const [name, setName] = useState("");
@@ -48,7 +54,7 @@ export function NewTeamForm({ hackathonId }: { hackathonId: string }) {
       return;
     }
 
-    router.push("/team");
+    router.push(`/h/${slug}/time`);
     router.refresh();
   }
 
