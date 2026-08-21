@@ -19,9 +19,6 @@ export async function Header() {
         </Link>
 
         <nav className="flex items-center gap-4 text-sm font-semibold">
-          <Link href="/" className="text-muted transition-colors hover:text-ink">
-            Hackathons
-          </Link>
           {state ? (
             <>
               <Link href="/conta" className="text-muted transition-colors hover:text-ink">

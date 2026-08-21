@@ -28,19 +28,19 @@ function clean(s: string): string {
 const STEPS = [
   {
     title: "Entre com GitHub",
-    body: "Uma conta só, para todos os hackathons. Seu perfil e seus times ficam com você.",
+    body: "Uma conta para todos os hackathons. Seu perfil e seus times ficam com você.",
   },
   {
     title: "Confirme sua inscrição",
-    body: "Cada edição tem sua inscrição no Luma. Você confirma na plataforma e libera o conteúdo.",
+    body: "Cada edição tem inscrição no Luma. Confirme por aqui e libere as aulas.",
   },
   {
     title: "Monte seu time",
-    body: "Crie o time como líder e adicione integrantes pelo e-mail. De 1 a 4 pessoas.",
+    body: "Crie o time como líder e adicione os integrantes pelo e-mail. De 1 a 4 pessoas.",
   },
   {
-    title: "Aprenda, construa e submeta",
-    body: "Aulas e mentorias dentro da plataforma. No prazo, o líder submete deck, demo e repositório.",
+    title: "Envie seu projeto",
+    body: "No prazo, o líder envia o deck, a demo e o repositório. Depois disso, trava.",
   },
 ];
 
@@ -62,7 +62,9 @@ export default async function HomePage({
       name: h.name,
       tagline: h.tagline,
       coverUrl: h.cover_image_path
-        ? supabase.storage.from("hackathon-covers").getPublicUrl(h.cover_image_path).data.publicUrl
+        ? h.cover_image_path.startsWith("/")
+          ? h.cover_image_path
+          : supabase.storage.from("hackathon-covers").getPublicUrl(h.cover_image_path).data.publicUrl
         : null,
       stage: editionStage(h),
       registrationOpen: isRegistrationOpen(h) && editionStage(h) !== "finished",
@@ -70,7 +72,7 @@ export default async function HomePage({
         new Intl.DateTimeFormat("pt-BR", { day: "numeric", timeZone: "America/Sao_Paulo" }).format(start),
       ),
       startMonth: MONTHS[Number(new Intl.DateTimeFormat("en-US", { month: "numeric", timeZone: "America/Sao_Paulo" }).format(start)) - 1],
-      dateRange: `${clean(RANGE.format(start))} — ${clean(RANGE.format(end))}`,
+      dateRange: `${clean(RANGE.format(start))} a ${clean(RANGE.format(end))}`,
       locationName: h.location_name,
       locationCity: h.location_city,
       prizeSummary: h.prize_summary,
@@ -78,7 +80,8 @@ export default async function HomePage({
     };
   });
 
-  const liveCount = editions.filter((e) => e.registrationOpen).length;
+  const live = editions.filter((e) => e.registrationOpen);
+  const liveCount = live.length;
 
   return (
     <div className="px-4 py-14 sm:px-6 lg:px-8">
@@ -98,8 +101,7 @@ export default async function HomePage({
             <span className="block text-emerald">Superteam Brasil</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Aprenda com quem constrói em Solana, monte seu time e apresente seu projeto. Tudo em um
-            lugar: aulas, submissão e Pitch Day.
+            Inscrição, formação de time e submissão de projeto em um só lugar.
           </p>
         </header>
 
@@ -110,13 +112,11 @@ export default async function HomePage({
 
         <section className="mt-28 grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" aria-label="Como funciona">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald">Como funciona</p>
-            <h2 className="mt-3 text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl">
-              Da inscrição ao palco, sem fricção.
+            <h2 className="text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl">
+              Como funciona
             </h2>
             <p className="mt-4 max-w-md leading-relaxed text-muted">
-              A plataforma acompanha cada etapa da sua participação — e mostra exatamente o que falta
-              entregar e até quando.
+              Quatro passos, do cadastro até a entrega do projeto.
             </p>
           </div>
 
@@ -151,14 +151,17 @@ export default async function HomePage({
             <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
               <div>
                 <h2 className="font-heading text-3xl font-bold text-surface sm:text-4xl">
-                  Pronto para construir?
+                  Participe do próximo
                 </h2>
                 <p className="mt-3 max-w-md leading-relaxed text-surface/70">
-                  Entre com sua conta do GitHub e garanta seu lugar na próxima edição.
+                  Inscrições abertas. Entre, monte seu time e comece.
                 </p>
               </div>
-              <Link href="/auth" className="btn-primary shrink-0 whitespace-nowrap px-8 text-base">
-                Entrar com GitHub
+              <Link
+                href={live[0] ? `/h/${live[0].slug}` : "/auth"}
+                className="btn-primary shrink-0 whitespace-nowrap px-8 text-base"
+              >
+                {live[0] ? "Quero participar" : "Entrar"}
               </Link>
             </div>
           </div>

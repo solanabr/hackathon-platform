@@ -66,7 +66,7 @@ export default async function EditionPage({
           <Card className="p-6">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Quando</p>
             <p className="mt-2 font-heading text-lg font-bold">
-              {DATE.format(new Date(hackathon.starts_at))} —{" "}
+              {DATE.format(new Date(hackathon.starts_at))} a{" "}
               {DATE.format(new Date(hackathon.presential_at ?? hackathon.submission_deadline_at))}
             </p>
           </Card>

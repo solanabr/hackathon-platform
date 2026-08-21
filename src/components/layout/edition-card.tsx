@@ -64,12 +64,17 @@ export function EditionCard({ edition, index }: { edition: EditionCardData; inde
           </span>
         )}
 
-        <h3 className="relative z-10 px-8 text-center font-heading text-2xl font-bold leading-tight text-surface">
-          {e.name}
-        </h3>
+        {!e.coverUrl && (
+          <h3 className="relative z-10 px-8 text-center font-heading text-2xl font-bold leading-tight text-surface">
+            {e.name}
+          </h3>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
+        {e.coverUrl && (
+          <h3 className="font-heading text-xl font-bold leading-tight text-surface">{e.name}</h3>
+        )}
         {e.tagline && <p className="line-clamp-2 text-sm leading-relaxed text-surface/75">{e.tagline}</p>}
 
         <dl className="mt-auto space-y-1.5 text-sm text-surface/85">
