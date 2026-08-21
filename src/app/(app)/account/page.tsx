@@ -82,7 +82,7 @@ export default async function AccountPage({
   const participations: Participation[] = rows
     .map((r) => {
       const h = Array.isArray(r.hackathons) ? r.hackathons[0] : r.hackathons;
-      if (!h) return null;
+      if (!h || h.status === "draft") return null;
       const team = teamByHackathon.get(h.id);
       return {
         hackathon: h,

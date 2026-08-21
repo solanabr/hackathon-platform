@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
 import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
-import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
+import {
+  confirmedMemberIds,
+  getRegistration,
+  isProfileComplete,
+  isRegistrationComplete,
+  membersPendingRegistration,
+} from "@/lib/registration";
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -32,6 +38,11 @@ export default async function SubmissionPage({
   if (!snapshot) redirect(`/h/${slug}/dashboard`);
 
   const { team, submission, isLeader } = snapshot;
+  const confirmed = await confirmedMemberIds(
+    hackathon.id,
+    snapshot.members.map((m) => m.user_id).filter(Boolean) as string[],
+  );
+  const membersPending = membersPendingRegistration(snapshot.members, confirmed).length;
   const open = isSubmissionWindowOpen(hackathon);
   const canEdit = open && !team.locked && isLeader;
   const windowOpen = open && !team.locked;
@@ -90,6 +101,7 @@ export default async function SubmissionPage({
             initial={submission}
             initialImageUrl={imagePublicUrl}
             dashboardHref={`/h/${slug}/dashboard`}
+            membersPending={membersPending}
           />
         </Card>
       </div>

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-surface">
+    <main className="relative min-h-screen overflow-x-clip bg-surface">
       <Background />
       <a
         href="#conteudo"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeRedirect } from "@/lib/security";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -22,7 +23,7 @@ export function AuthForm() {
   const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const inviteRedirect = searchParams.get("redirect");
+  const inviteRedirect = sanitizeRedirect(searchParams.get("redirect"));
 
   async function signIn(provider: Provider) {
     setLoading(provider);

@@ -16,6 +16,7 @@ type Props = {
   initial: Submission;
   initialImageUrl: string | null;
   dashboardHref: string;
+  membersPending: number;
 };
 
 type FormState = {
@@ -67,7 +68,15 @@ const SUBMIT_ERRORS: Record<string, string> = {
     "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
 };
 
-export function SubmissionEditor({ teamId, isLeader, editable, initial, initialImageUrl, dashboardHref }: Props) {
+export function SubmissionEditor({
+  teamId,
+  isLeader,
+  editable,
+  initial,
+  initialImageUrl,
+  dashboardHref,
+  membersPending,
+}: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
@@ -144,6 +153,13 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
     !!sanitizeUrl(form.pitch_video_url) &&
     !!sanitizeUrl(form.github_url) &&
     form.github_access_granted;
+
+  const canSubmit = allRequiredFilled && membersPending === 0;
+  const blockedReason = !allRequiredFilled
+    ? "Preencha todos os campos obrigatórios"
+    : membersPending > 0
+      ? `${membersPending} ${membersPending === 1 ? "integrante ainda não confirmou" : "integrantes ainda não confirmaram"} a inscrição`
+      : "";
 
   return (
     <div className="space-y-6">
@@ -303,8 +319,8 @@ export function SubmissionEditor({ teamId, isLeader, editable, initial, initialI
               type="button"
               variant="primary"
               onClick={submit}
-              disabled={!editable || pendingSubmit || !allRequiredFilled}
-              title={allRequiredFilled ? "" : "Preencha todos os campos obrigatórios"}
+              disabled={!editable || pendingSubmit || !canSubmit}
+              title={blockedReason}
             >
               {pendingSubmit ? "Submetendo..." : "Submeter projeto"}
             </Button>
