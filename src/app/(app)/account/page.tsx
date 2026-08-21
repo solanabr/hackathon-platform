@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
@@ -104,6 +105,8 @@ export default async function AccountPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
+        <BackLink href="/" label="Hackathons" />
+
         <Card className="p-6 sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
             {profile?.avatar_url ? (

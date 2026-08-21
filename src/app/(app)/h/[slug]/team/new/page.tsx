@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { NewTeamForm } from "@/components/team/new-team-form";
@@ -32,6 +33,8 @@ export default async function NewTeamPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
+        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
+
         <Badge tone="emerald">Passo 2 de 3 · Time</Badge>
         <h1 className="mt-4 font-heading text-3xl font-bold sm:text-4xl">Criar seu time</h1>
         <p className="mt-2 text-muted">

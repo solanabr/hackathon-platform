@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BackLink } from "@/components/ui/back-link";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm } from "@/components/team/add-member-form";
 import { MemberRow } from "@/components/team/member-row";
@@ -53,9 +54,7 @@ export default async function TeamPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
-        <Link href={`/h/${slug}/dashboard`} className="text-sm text-muted hover:text-ink">
-          ← voltar ao painel
-        </Link>
+        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
 
         <Card className="p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">

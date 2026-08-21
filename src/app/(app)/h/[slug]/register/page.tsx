@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { BackLink } from "@/components/ui/back-link";
 import { RegistrationForm } from "@/components/registration/registration-form";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
@@ -26,9 +27,7 @@ export default async function RegistrationPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
-        <Link href={`/h/${slug}`} className="text-sm text-muted hover:text-ink">
-          ← voltar
-        </Link>
+        <BackLink href={`/h/${slug}`} label="Voltar" />
         <h1 className="mt-4 font-heading text-3xl font-bold">Inscrição · {hackathon.name}</h1>
         <p className="mt-2 text-muted">
           Falta pouco. Confirme os dois itens abaixo para liberar as aulas e a criação de time.

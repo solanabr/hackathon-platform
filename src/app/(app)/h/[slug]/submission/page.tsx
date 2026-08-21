@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { BackLink } from "@/components/ui/back-link";
 import { Badge } from "@/components/ui/badge";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
@@ -44,9 +45,7 @@ export default async function SubmissionPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <Link href={`/h/${slug}/dashboard`} className="text-sm text-muted hover:text-ink">
-          ← voltar ao painel
-        </Link>
+        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
 
         <header className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div>

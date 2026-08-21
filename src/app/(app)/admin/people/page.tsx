@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { RoleManager } from "@/components/admin/role-manager";
 import { requireAdmin } from "@/lib/roles";
 import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
@@ -42,6 +43,8 @@ export default async function PeoplePage() {
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
+        <BackLink href="/admin" label="Administração" />
+
         <h1 className="font-heading text-3xl font-bold">Pessoas</h1>
         <p className="mt-2 text-muted">
           Admins enxergam tudo. Jurados só votam no hackathon em que foram indicados.
