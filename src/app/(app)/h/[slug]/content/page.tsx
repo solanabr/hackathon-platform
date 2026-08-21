@@ -1,29 +1,39 @@
-import { notFound } from "next/navigation";
-import { BackLink } from "@/components/ui/back-link";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusChip } from "@/components/ui/section-card";
 import { getHackathonBySlug } from "@/lib/hackathon";
-import { listContents } from "@/lib/content";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
-import { redirect } from "next/navigation";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { HackathonContent } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
 const WHEN = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
-  month: "2-digit",
+  month: "short",
   hour: "2-digit",
   minute: "2-digit",
   timeZone: "America/Sao_Paulo",
 });
 
-export default async function ContentsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+const KIND_LABEL: Record<string, string> = {
+  aula: "Aula",
+  workshop: "Workshop",
+  mentoria: "Mentoria",
+  material: "Material",
+  link: "Link",
+  evento: "Evento",
+};
+
+type ScheduleRow = Pick<
+  HackathonContent,
+  "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "position"
+>;
+
+export default async function ContentsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const state = await requireUser();
   const hackathon = await getHackathonBySlug(slug);
@@ -32,43 +42,80 @@ export default async function ContentsPage({
   const registration = await getRegistration(state.userId, hackathon.id);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
-  const contents = await listContents(hackathon.id);
+  const supabase = await createServerSupabaseClient();
+
+  // Every scheduled item is listed; RLS keeps the unpublished ones out of the
+  // second query, which is what marks an item as watchable.
+  const [{ data: scheduleData }, { data: availableData }] = await Promise.all([
+    supabase
+      .from("public_schedule")
+      .select("id, kind, title, speaker, description, scheduled_at, position")
+      .eq("hackathon_id", hackathon.id)
+      .order("position", { ascending: true }),
+    supabase.from("hackathon_contents").select("id").eq("hackathon_id", hackathon.id),
+  ]);
+
+  const schedule = (scheduleData as ScheduleRow[] | null) ?? [];
+  const available = new Set(((availableData as { id: string }[] | null) ?? []).map((c) => c.id));
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
-          <h1 className="font-heading text-3xl font-bold sm:text-4xl">Conteúdos</h1>
+
+        <h1 className="mt-8 font-heading text-3xl font-bold sm:text-4xl">Conteúdos</h1>
         <p className="mt-2 text-muted">
-          As aulas ficam disponíveis aqui depois de cada encontro.
+          {available.size} de {schedule.length} disponíveis. As gravações entram depois de cada
+          encontro.
         </p>
 
-        {contents.length === 0 ? (
+        {schedule.length === 0 ? (
           <Card className="mt-8 p-8 text-muted">
-            Nenhum conteúdo liberado ainda. A primeira aula é em{" "}
-            {WHEN.format(new Date(hackathon.starts_at))}.
+            Nenhum conteúdo cadastrado ainda para esta edição.
           </Card>
         ) : (
-          <div className="mt-8 grid gap-4">
-            {contents.map((content) => (
-              <Link key={content.id} href={`/h/${slug}/content/${content.id}`}>
-                <Card className="card-hover p-6">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge tone={content.kind === "mentoria" ? "yellow" : "emerald"}>
-                      {content.kind}
-                    </Badge>
-                    {content.scheduled_at && (
-                      <span className="text-sm text-muted">
-                        {WHEN.format(new Date(content.scheduled_at))}
-                      </span>
-                    )}
+          <ul className="mt-8 grid gap-4">
+            {schedule.map((item) => {
+              const ready = available.has(item.id);
+              const when = item.scheduled_at
+                ? WHEN.format(new Date(item.scheduled_at)).replace(/\./g, "")
+                : null;
+
+              const body = (
+                <Card className={`p-6 ${ready ? "card-hover" : "opacity-75"}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                      {when ? `${when} · ` : ""}
+                      {KIND_LABEL[item.kind] ?? item.kind}
+                    </p>
+                    <StatusChip tone={ready ? "ok" : "muted"}>
+                      {ready ? "disponível" : "em breve"}
+                    </StatusChip>
                   </div>
-                  <h2 className="mt-3 font-heading text-xl font-bold">{content.title}</h2>
-                  {content.speaker && <p className="text-sm text-muted">{content.speaker}</p>}
+
+                  <h2 className="mt-3 font-heading text-xl font-bold leading-tight">
+                    {item.title}
+                  </h2>
+                  {item.speaker && (
+                    <p className="mt-0.5 text-sm font-semibold text-emerald">{item.speaker}</p>
+                  )}
+                  {item.description && (
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
+                  )}
                 </Card>
-              </Link>
-            ))}
-          </div>
+              );
+
+              return (
+                <li key={item.id}>
+                  {ready ? (
+                    <Link href={`/h/${slug}/content/${item.id}`}>{body}</Link>
+                  ) : (
+                    body
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </div>

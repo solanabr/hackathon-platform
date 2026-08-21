@@ -73,9 +73,17 @@ export default async function AdminPage() {
                     <h2 className="mt-2 font-heading text-xl font-bold">{h.name}</h2>
                     <p className="text-sm text-muted">/{h.slug}</p>
                   </div>
-                  <p className="text-sm text-muted">
-                    {c?.registrations ?? 0} inscritos · {c?.teams ?? 0} times
-                  </p>
+                  <div className="flex items-center gap-4">
+                    <p className="text-sm text-muted">
+                      {c?.registrations ?? 0} inscritos · {c?.teams ?? 0} times
+                    </p>
+                    <Link
+                      href={`/admin/h/${h.slug}/content`}
+                      className="shrink-0 rounded-full border border-green/20 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-green/50 hover:bg-green/5"
+                    >
+                      Conteúdos
+                    </Link>
+                  </div>
                 </div>
               </Card>
             );

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm } from "@/components/team/add-member-form";
+import { TeamDangerZone } from "@/components/team/team-danger-zone";
 import { MemberRow } from "@/components/team/member-row";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
@@ -90,6 +91,25 @@ export default async function TeamPage({
               />
             ))}
           </ul>
+        </Card>
+
+        <Card className="p-7">
+          <h2 className="font-heading text-lg font-semibold">Gerenciar time</h2>
+          <div className="mt-5">
+            <TeamDangerZone
+              teamId={team.id}
+              slug={slug}
+              isLeader={isLeader}
+              locked={team.locked}
+              aloneInTeam={acceptedCount === 1}
+              candidates={members
+                .filter((m) => !m.is_leader && m.status === "accepted" && m.user_id)
+                .map((m) => ({
+                  userId: m.user_id as string,
+                  label: m.user?.full_name ?? m.invited_email,
+                }))}
+            />
+          </div>
         </Card>
 
         {canInvite && (
