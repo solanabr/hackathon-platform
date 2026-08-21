@@ -103,7 +103,8 @@ alter table hackathons
   add column prize_summary          text,
   add column rules_url              text,
   add column community_url          text,
-  add column updated_at             timestamptz not null default now();
+  add column updated_at             timestamptz not null default now(),
+  drop column is_active;
 
 create trigger hackathons_touch_updated_at
   before update on hackathons
@@ -162,6 +163,12 @@ create table platform_roles (
 
 create index platform_roles_user_idx on platform_roles(user_id);
 
+-- NULL hackathon_id (admin) is exempt from the composite unique above, so a
+-- second grant would insert a duplicate row. Dedupe admins explicitly.
+create unique index platform_roles_admin_uk
+  on platform_roles(user_id, role)
+  where hackathon_id is null;
+
 alter table teams
   add column is_finalist          boolean not null default false,
   add column finalist_notified_at timestamptz;
@@ -206,6 +213,25 @@ grant select, insert, update on hackathon_registrations to authenticated;
 grant select                 on hackathon_contents      to authenticated;
 grant select                 on platform_roles          to authenticated;
 grant all on hackathon_registrations, hackathon_contents, platform_roles to service_role;
+
+-- Public schedule: the edition landing is a public page (anon client). The
+-- view keeps youtube_id/external_url out of anon reach — an unlisted video is
+-- only protected because its id never leaks. All rows are visible: the dates
+-- are public information even before the recordings exist.
+-- The view runs as its owner (postgres, which owns hackathon_contents and
+-- bypasses its RLS), so anon sees every row with no policy involved. That is
+-- deliberate: the schedule is public, and the protection is the column list
+-- omitting the video fields. Supabase's linter flags postgres-owned views
+-- exposed to anon — this one is intentional.
+create view public_schedule
+with (security_barrier = true) as
+select
+  id, hackathon_id, kind, title, speaker, description,
+  scheduled_at, location, position
+from hackathon_contents;
+
+grant select on public_schedule to anon, authenticated;
+grant all on public_schedule to service_role;
 ```
 
 - [ ] **Step 2: Redefine `submit_team` in the same migration**
@@ -327,7 +353,7 @@ insert into hackathons (
   status, starts_at, registration_closes_at, submission_deadline_at,
   finalists_announced_at, presential_at, voting_opens_at, voting_closes_at,
   finalists_count, location_name, location_city,
-  luma_url, community_url, prize_summary, is_active
+  luma_url, community_url, prize_summary
 ) values (
   'solana-cursor-passo-fundo-2026',
   'Hackathon Solana & Cursor',
@@ -346,8 +372,7 @@ insert into hackathons (
   'Passo Fundo, RS',
   'https://lu.ma/superteambrasil',
   'https://chat.whatsapp.com/KZcKC67KpTIHgSS3aiKc2i',
-  'US$ 3.000 (Solana) · US$ 200 em créditos Cursor para os 3 primeiros · créditos Cursor para todas as equipes · merch kit para o 1º lugar · pré-incubação Apollo para os 4 primeiros',
-  true
+  'US$ 3.000 (Solana) · US$ 200 em créditos Cursor para os 3 primeiros · créditos Cursor para todas as equipes · merch kit para o 1º lugar · pré-incubação Apollo para os 4 primeiros'
 );
 
 insert into hackathon_contents
@@ -510,7 +535,6 @@ export type Hackathon = {
   prize_summary: string | null;
   rules_url: string | null;
   metadata: Record<string, unknown>;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -1535,7 +1559,7 @@ git commit -m "feat: public home lists every published edition"
 - Create: `src/app/(public)/h/[slug]/page.tsx`
 
 **Interfaces:**
-- Consumes: `getHackathonBySlug()`, `isRegistrationOpen()`.
+- Consumes: `getHackathonBySlug()`, `isRegistrationOpen()`, and the `public_schedule` view (anon-readable, lists every content row).
 - Produces: the public page at `/h/[slug]`; its CTA points at `/h/[slug]/inscricao` (Task 12).
 
 - [ ] **Step 1: Write the page**
@@ -1568,11 +1592,15 @@ export default async function EditionPage({
 
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
-    .from("hackathon_contents")
-    .select("*")
+    .from("public_schedule")
+    .select("id, kind, title, speaker, description, scheduled_at, location, position")
     .eq("hackathon_id", hackathon.id)
     .order("position", { ascending: true });
-  const schedule = (data as HackathonContent[] | null) ?? [];
+  const schedule =
+    (data as Pick<
+      HackathonContent,
+      "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "location" | "position"
+    >[] | null) ?? [];
 
   const open = isRegistrationOpen(hackathon);
 
@@ -1649,7 +1677,7 @@ export default async function EditionPage({
 }
 ```
 
-The schedule is listed from every content row, published or not — the dates are public information even before the recordings exist. Only the video itself sits behind login.
+The schedule is read from the `public_schedule` view, which lists every content row — the dates are public information even before the recordings exist. The view keeps `youtube_id` and `external_url` out of anon reach — an unlisted video is only protected because its id never leaks.
 
 - [ ] **Step 2: Verify**
 
@@ -2814,7 +2842,7 @@ git commit -m "feat(admin): manage admins and judges from the UI"
 - [ ] **Step 1: Find every remaining reference**
 
 ```bash
-grep -rn "HACKATHON_SLUG\|getActiveHackathon\|getCurrentUserTeam\|luma_registered_at\|age_attestation_at\|bh-\|lib/admin" src/ middleware.ts
+grep -rn "HACKATHON_SLUG\|getActiveHackathon\|getCurrentUserTeam\|luma_registered_at\|age_attestation_at\|admin_id\|bh-\|lib/admin" src/ middleware.ts
 ```
 
 Expected at the end of this task: no output.

@@ -1,13 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-
-const PUBLIC_ROUTES = [
-  "/",
-  "/auth",
-  "/auth/callback",
-  "/invite",
-  "/api/cron/lock-submissions",
-];
+import { isPublicRoute } from "@/lib/routes";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,13 +31,11 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => path === route || path.startsWith(route + "/"),
-  );
 
-  if (!user && !isPublicRoute) {
+  if (!user && !isPublicRoute(path)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
+    url.searchParams.set("redirect", path);
     return createRedirectWithCookies(url, supabaseResponse);
   }
 

@@ -7,24 +7,42 @@ export type User = {
   linkedin_url: string | null;
   telegram_handle: string | null;
   avatar_url: string | null;
-  luma_registered_at: string | null;
-  age_attestation_at: string | null;
   created_at: string;
   updated_at: string;
 };
+
+export type HackathonStatus =
+  | "draft"
+  | "published"
+  | "submissions_open"
+  | "judging"
+  | "closed";
 
 export type Hackathon = {
   id: string;
   slug: string;
   name: string;
+  tagline: string | null;
   description: string | null;
+  status: HackathonStatus;
   starts_at: string;
+  registration_closes_at: string | null;
   submission_deadline_at: string;
+  finalists_announced_at: string | null;
   presential_at: string | null;
+  voting_opens_at: string | null;
+  voting_closes_at: string | null;
+  finalists_count: number;
+  cover_image_path: string | null;
+  location_name: string | null;
+  location_city: string | null;
   luma_url: string | null;
+  community_url: string | null;
+  prize_summary: string | null;
+  rules_url: string | null;
   metadata: Record<string, unknown>;
-  is_active: boolean;
   created_at: string;
+  updated_at: string;
 };
 
 export type Team = {
@@ -34,6 +52,8 @@ export type Team = {
   description: string | null;
   leader_id: string;
   locked: boolean;
+  is_finalist: boolean;
+  finalist_notified_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -63,6 +83,8 @@ export type Submission = {
   twitter_url: string | null;
   website_url: string | null;
   image_path: string | null;
+  pitch_deck_url: string | null;
+  github_access_granted: boolean;
   status: "draft" | "submitted";
   submitted_at: string | null;
   last_edited_by: string | null;
@@ -70,4 +92,46 @@ export type Submission = {
   updated_at: string;
 };
 
-export const HACKATHON_SLUG = "bh-onchain-2026";
+export type ContentKind =
+  | "aula"
+  | "workshop"
+  | "mentoria"
+  | "material"
+  | "link"
+  | "evento";
+
+export type HackathonContent = {
+  id: string;
+  hackathon_id: string;
+  kind: ContentKind;
+  title: string;
+  speaker: string | null;
+  description: string | null;
+  youtube_id: string | null;
+  external_url: string | null;
+  location: string | null;
+  scheduled_at: string | null;
+  duration_minutes: number | null;
+  position: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HackathonRegistration = {
+  id: string;
+  hackathon_id: string;
+  user_id: string;
+  registered_at: string;
+  luma_confirmed_at: string | null;
+  terms_accepted_at: string | null;
+};
+
+export type PlatformRole = {
+  id: string;
+  user_id: string;
+  role: "admin" | "judge";
+  hackathon_id: string | null;
+  granted_by: string | null;
+  granted_at: string;
+};
