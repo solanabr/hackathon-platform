@@ -84,6 +84,7 @@ export default async function TeamPage({
                 memberId={m.id}
                 email={m.user?.email ?? m.invited_email}
                 fullName={m.user?.full_name ?? null}
+                avatarUrl={m.user?.avatar_url ?? null}
                 isLeader={m.is_leader}
                 status={m.status}
                 hasAccount={!!m.user}

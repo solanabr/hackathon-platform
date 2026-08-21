@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
-import { sanitizeUrl, sanitizeText, sanitizeRedirect } from "@/lib/security";
+import { sanitizeUrl, sanitizeText, sanitizeRedirect, sanitizeAvatarUrl } from "@/lib/security";
 
 export async function updateProfile(
   _prevState: { error?: string },
@@ -20,6 +20,7 @@ export async function updateProfile(
     .from("users")
     .update({
       full_name: fullName,
+      avatar_url: sanitizeAvatarUrl(String(formData.get("avatar_url") ?? "")),
       headline: sanitizeText(String(formData.get("headline") ?? ""), 80) || null,
       bio: sanitizeText(String(formData.get("bio") ?? ""), 400) || null,
       github_url: sanitizeUrl(String(formData.get("github_url") ?? "")),

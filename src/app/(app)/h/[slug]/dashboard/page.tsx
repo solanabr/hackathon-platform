@@ -4,6 +4,7 @@ import { Countdown } from "@/components/ui/countdown";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
+import { Avatar } from "@/components/ui/avatar";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import { getHackathonBySlug, isSubmissionWindowOpen, phaseBoundaries } from "@/lib/hackathon";
 import {
@@ -181,13 +182,16 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                     const confirmed = m.user_id ? confirmedIds.has(m.user_id) : false;
                     return (
                       <li key={m.id} className="flex items-center justify-between gap-3 text-sm">
-                        <span className="min-w-0 truncate">
-                          {name}
-                          {m.is_leader && (
-                            <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-muted">
-                              líder
-                            </span>
-                          )}
+                        <span className="flex min-w-0 items-center gap-2.5">
+                          <Avatar src={m.user?.avatar_url} name={name} size="sm" />
+                          <span className="min-w-0 truncate">
+                            {name}
+                            {m.is_leader && (
+                              <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-muted">
+                                líder
+                              </span>
+                            )}
+                          </span>
                         </span>
                         <StatusChip tone={confirmed ? "ok" : "pending"}>
                           {confirmed ? "inscrição ok" : "falta confirmar"}

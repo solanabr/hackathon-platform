@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
 
 type Props = {
   memberId: string;
   email: string;
   fullName: string | null;
+  avatarUrl: string | null;
   isLeader: boolean;
   status: "pending" | "accepted" | "removed";
   hasAccount: boolean;
@@ -18,6 +20,7 @@ export function MemberRow({
   memberId,
   email,
   fullName,
+  avatarUrl,
   isLeader,
   status,
   hasAccount,
@@ -44,14 +47,17 @@ export function MemberRow({
 
   return (
     <li className="flex items-center justify-between gap-3 py-3">
-      <div>
-        <p className="font-medium text-ink">
-          {fullName ?? email}
-          {isLeader && (
-            <span className="ml-2 text-xs uppercase tracking-wider text-yellow">Líder</span>
-          )}
-        </p>
-        <p className="text-xs text-muted">{email}</p>
+      <div className="flex min-w-0 items-center gap-3">
+        <Avatar src={avatarUrl} name={fullName ?? email} size="sm" />
+        <div className="min-w-0">
+          <p className="font-medium text-ink">
+            {fullName ?? email}
+            {isLeader && (
+              <span className="ml-2 text-xs uppercase tracking-wider text-yellow">Líder</span>
+            )}
+          </p>
+          <p className="truncate text-xs text-muted">{email}</p>
+        </div>
       </div>
       <div className="flex items-center gap-3">
         {status === "pending" && (

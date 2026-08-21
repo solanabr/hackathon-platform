@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { BackLink } from "@/components/ui/back-link";
-import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
+import { Avatar } from "@/components/ui/avatar";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/user-state";
 import { editionStage } from "@/lib/hackathon";
@@ -109,19 +109,7 @@ export default async function AccountPage({
 
         <Card className="p-6 sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-            {profile?.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt=""
-                width={96}
-                height={96}
-                className="h-24 w-24 shrink-0 rounded-2xl border border-green/15 object-cover"
-              />
-            ) : (
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-emerald text-3xl font-bold text-surface">
-                {(profile?.full_name ?? state.email).charAt(0).toUpperCase()}
-              </div>
-            )}
+            <Avatar src={profile?.avatar_url} name={profile?.full_name ?? state.email} size="lg" />
 
             <div className="min-w-0 flex-1">
               <h1 className="font-heading text-3xl font-bold">
@@ -228,7 +216,7 @@ export default async function AccountPage({
               Seu nome e sua foto aparecem para o seu time e para a organização.
             </p>
             <div className="mt-6">
-              <ProfileForm profile={profile} next={next} />
+              <ProfileForm profile={profile} next={next} userId={state.userId} />
             </div>
           </Card>
         </section>
