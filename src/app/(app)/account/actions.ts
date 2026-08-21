@@ -20,6 +20,8 @@ export async function updateProfile(
     .from("users")
     .update({
       full_name: fullName,
+      headline: sanitizeText(String(formData.get("headline") ?? ""), 80) || null,
+      bio: sanitizeText(String(formData.get("bio") ?? ""), 400) || null,
       github_url: sanitizeUrl(String(formData.get("github_url") ?? "")),
       twitter_url: sanitizeUrl(String(formData.get("twitter_url") ?? "")),
       linkedin_url: sanitizeUrl(String(formData.get("linkedin_url") ?? "")),

@@ -189,25 +189,15 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               )}
             </dl>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8">
               {registered ? (
                 <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
                   Acessar painel
                 </Link>
               ) : (
                 <Link href={`/h/${hackathon.slug}/register`} className="btn-primary">
-                  {open ? "Quero participar" : "Ver detalhes"}
+                  {open ? "Fazer inscrição" : "Ver detalhes"}
                 </Link>
-              )}
-              {!registered && hackathon.luma_url && (
-                <a
-                  href={hackathon.luma_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-secondary"
-                >
-                  Inscrição no Luma
-                </a>
               )}
             </div>
           </div>

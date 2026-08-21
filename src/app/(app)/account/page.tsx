@@ -1,8 +1,32 @@
+import Link from "next/link";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
+import { StatusChip } from "@/components/ui/section-card";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/user-state";
+import { editionStage } from "@/lib/hackathon";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
+
+const DAY = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  timeZone: "America/Sao_Paulo",
+});
+
+function clean(s: string): string {
+  return s.replace(/\./g, "");
+}
+
+type Participation = {
+  hackathon: Hackathon;
+  teamName: string | null;
+  submitted: boolean;
+  isFinalist: boolean;
+};
 
 export default async function AccountPage({
   searchParams,
@@ -11,18 +35,200 @@ export default async function AccountPage({
 }) {
   const { next } = await searchParams;
   const state = await requireUser();
+  const profile = state.profile;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: regs } = await supabase
+    .from("hackathon_registrations")
+    .select("hackathon_id, registered_at, hackathons(*)")
+    .eq("user_id", state.userId)
+    .order("registered_at", { ascending: false });
+
+  type RegRow = { hackathon_id: string; hackathons: Hackathon | Hackathon[] | null };
+  const rows = (regs as RegRow[] | null) ?? [];
+
+  const { data: memberships } = await supabase
+    .from("team_members")
+    .select("team_id, teams(id, name, hackathon_id, is_finalist), submissions:teams(id)")
+    .eq("user_id", state.userId)
+    .eq("status", "accepted");
+
+  type TeamRow = {
+    teams:
+      | { id: string; name: string; hackathon_id: string; is_finalist: boolean }
+      | { id: string; name: string; hackathon_id: string; is_finalist: boolean }[]
+      | null;
+  };
+  const teamByHackathon = new Map<
+    string,
+    { id: string; name: string; is_finalist: boolean }
+  >();
+  for (const m of (memberships as TeamRow[] | null) ?? []) {
+    const t = Array.isArray(m.teams) ? m.teams[0] : m.teams;
+    if (t) teamByHackathon.set(t.hackathon_id, { id: t.id, name: t.name, is_finalist: t.is_finalist });
+  }
+
+  const teamIds = [...teamByHackathon.values()].map((t) => t.id);
+  const { data: subs } = teamIds.length
+    ? await supabase.from("submissions").select("team_id, status").in("team_id", teamIds)
+    : { data: [] };
+  const submittedTeams = new Set(
+    ((subs as { team_id: string; status: string }[] | null) ?? [])
+      .filter((s) => s.status === "submitted")
+      .map((s) => s.team_id),
+  );
+
+  const participations: Participation[] = rows
+    .map((r) => {
+      const h = Array.isArray(r.hackathons) ? r.hackathons[0] : r.hackathons;
+      if (!h) return null;
+      const team = teamByHackathon.get(h.id);
+      return {
+        hackathon: h,
+        teamName: team?.name ?? null,
+        submitted: team ? submittedTeams.has(team.id) : false,
+        isFinalist: team?.is_finalist ?? false,
+      };
+    })
+    .filter(Boolean) as Participation[];
+
+  const active = participations.filter((p) => editionStage(p.hackathon) !== "finished");
+  const past = participations.filter((p) => editionStage(p.hackathon) === "finished");
+
+  const socials = [
+    { href: profile?.github_url, label: "GitHub" },
+    { href: profile?.twitter_url, label: "X" },
+    { href: profile?.linkedin_url, label: "LinkedIn" },
+  ].filter((s) => s.href) as Array<{ href: string; label: string }>;
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-2xl">
-        <h1 className="font-heading text-3xl font-bold">Minha conta</h1>
-        <p className="mt-2 text-muted">
-          Esses dados valem para todos os hackathons da Superteam Brasil.
-        </p>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <Card className="p-6 sm:p-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+            {profile?.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt=""
+                width={96}
+                height={96}
+                className="h-24 w-24 shrink-0 rounded-2xl border border-green/15 object-cover"
+              />
+            ) : (
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-emerald text-3xl font-bold text-surface">
+                {(profile?.full_name ?? state.email).charAt(0).toUpperCase()}
+              </div>
+            )}
 
-        <Card className="mt-8 p-6 sm:p-8">
-          <ProfileForm profile={state.profile} next={next} />
+            <div className="min-w-0 flex-1">
+              <h1 className="font-heading text-3xl font-bold">
+                {profile?.full_name ?? "Sua conta"}
+              </h1>
+              {profile?.headline && <p className="mt-1 text-muted">{profile.headline}</p>}
+              <p className="mt-2 text-sm text-muted">{state.email}</p>
+
+              {profile?.bio && (
+                <p className="mt-4 max-w-xl leading-relaxed text-ink">{profile.bio}</p>
+              )}
+
+              {socials.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {socials.map((s) => (
+                    <a
+                      key={s.label}
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-green/20 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+                    >
+                      {s.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </Card>
+
+        <section aria-label="Meus hackathons" className="space-y-4">
+          <h2 className="font-heading text-2xl font-bold">Meus hackathons</h2>
+
+          {participations.length === 0 ? (
+            <Card className="p-8">
+              <p className="text-muted">
+                Você ainda não se inscreveu em nenhum hackathon.{" "}
+                <Link href="/" className="font-semibold text-emerald underline-offset-4 hover:underline">
+                  Ver os abertos
+                </Link>
+                .
+              </p>
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[...active, ...past].map((p) => {
+                const finished = editionStage(p.hackathon) === "finished";
+                return (
+                  <Card key={p.hackathon.id} className="p-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate font-heading text-lg font-bold">
+                          {p.hackathon.name}
+                        </h3>
+                        <p className="mt-0.5 text-sm text-muted">
+                          {clean(DAY.format(new Date(p.hackathon.starts_at)))}
+                          {p.hackathon.location_city ? ` · ${p.hackathon.location_city}` : ""}
+                        </p>
+                      </div>
+                      {p.isFinalist ? (
+                        <StatusChip tone="ok">finalista</StatusChip>
+                      ) : finished ? (
+                        <StatusChip tone="muted">encerrado</StatusChip>
+                      ) : (
+                        <StatusChip tone="ok">inscrito</StatusChip>
+                      )}
+                    </div>
+
+                    <dl className="mt-4 space-y-1.5 text-sm">
+                      <div className="flex gap-2">
+                        <dt className="w-16 shrink-0 text-muted">Time</dt>
+                        <dd className="min-w-0 truncate font-semibold">
+                          {p.teamName ?? "sem time"}
+                        </dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="w-16 shrink-0 text-muted">Projeto</dt>
+                        <dd className="font-semibold">
+                          {p.submitted ? "enviado" : finished ? "não enviado" : "em edição"}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    {!finished && (
+                      <Link
+                        href={`/h/${p.hackathon.slug}/dashboard`}
+                        className="btn-secondary mt-5 px-5 py-2 text-sm"
+                      >
+                        Abrir painel
+                      </Link>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <section aria-label="Editar perfil">
+          <Card className="p-6 sm:p-8">
+            <h2 className="font-heading text-xl font-bold">Editar perfil</h2>
+            <p className="mt-1 text-sm text-muted">
+              Seu nome e sua foto aparecem para o seu time e para a organização.
+            </p>
+            <div className="mt-6">
+              <ProfileForm profile={profile} next={next} />
+            </div>
+          </Card>
+        </section>
       </div>
     </div>
   );
