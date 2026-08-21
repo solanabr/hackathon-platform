@@ -6,22 +6,12 @@ type RoleCheck =
   | { ok: true; state: AuthenticatedState }
   | { ok: false; reason: "unauthenticated" | "forbidden" };
 
-function bootstrapEmails(): string[] {
-  return (process.env.ADMIN_EMAIL_ALLOWLIST ?? "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-}
-
 export function resolveRoles(
   rows: PlatformRole[],
   email: string | null,
-  bootstrap: string[],
 ): { isAdmin: boolean; judgeFor: string[] } {
   if (!email) return { isAdmin: false, judgeFor: [] };
-  const isAdmin =
-    bootstrap.includes(email.toLowerCase()) ||
-    rows.some((r) => r.role === "admin");
+  const isAdmin = rows.some((r) => r.role === "admin");
   const judgeFor = rows
     .filter((r) => r.role === "judge" && r.hackathon_id)
     .map((r) => r.hackathon_id as string);
@@ -29,7 +19,6 @@ export function resolveRoles(
 }
 
 async function loadRoles(userId: string): Promise<PlatformRole[]> {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
   const supabase = await createServiceRoleClient();
   const { data } = await supabase
     .from("platform_roles")
@@ -39,7 +28,7 @@ async function loadRoles(userId: string): Promise<PlatformRole[]> {
 }
 
 export async function isAdminFor(state: AuthenticatedState): Promise<boolean> {
-  const { isAdmin } = resolveRoles(await loadRoles(state.userId), state.email, bootstrapEmails());
+  const { isAdmin } = resolveRoles(await loadRoles(state.userId), state.email);
   return isAdmin;
 }
 
@@ -49,7 +38,6 @@ export async function requireAdmin(): Promise<RoleCheck> {
   const { isAdmin } = resolveRoles(
     await loadRoles(state.userId),
     state.email,
-    bootstrapEmails(),
   );
   return isAdmin ? { ok: true, state } : { ok: false, reason: "forbidden" };
 }
@@ -60,7 +48,6 @@ export async function requireJudge(hackathonId: string): Promise<RoleCheck> {
   const { isAdmin, judgeFor } = resolveRoles(
     await loadRoles(state.userId),
     state.email,
-    bootstrapEmails(),
   );
   return isAdmin || judgeFor.includes(hackathonId)
     ? { ok: true, state }
