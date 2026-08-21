@@ -2,7 +2,6 @@ const PUBLIC_ROUTES = [
   "/",
   "/auth",
   "/auth/callback",
-  "/api/cron/lock-submissions",
 ];
 
 const PUBLIC_EDITION_LANDING = /^\/h\/[^/]+$/;

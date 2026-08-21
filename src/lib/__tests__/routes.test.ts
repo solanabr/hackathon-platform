@@ -19,7 +19,6 @@ describe("isPublicRoute", () => {
   it("keeps auth and cron routes public", () => {
     expect(isPublicRoute("/auth")).toBe(true);
     expect(isPublicRoute("/auth/callback")).toBe(true);
-    expect(isPublicRoute("/api/cron/lock-submissions")).toBe(true);
   });
 
   it("gates everything else", () => {

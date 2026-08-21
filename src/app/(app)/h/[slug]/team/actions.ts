@@ -1,10 +1,11 @@
 "use server";
 
 import { requireUser } from "@/lib/user-state";
+import { sendTeamInvite } from "@/lib/email";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export type AddMemberResult =
-  | { ok: true; hasAccount: boolean; email: string }
+  | { ok: true; hasAccount: boolean; email: string; emailSent: boolean }
   | { ok: false; error: string };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -97,5 +98,31 @@ export async function addMemberByEmail(input: {
     return { ok: false, error: insertError.message };
   }
 
-  return { ok: true, hasAccount: !!existingUser, email };
+  // The invite is only useful if the person knows it happened, and the ghost row
+  // only resolves when they sign up with this exact address. A failed send must
+  // not undo the membership, so it is reported, not thrown.
+  const { data: context } = await admin
+    .from("teams")
+    .select("name, hackathons(name, slug)")
+    .eq("id", input.teamId)
+    .maybeSingle();
+
+  const teamRow = context as
+    | { name: string; hackathons: { name: string; slug: string } | { name: string; slug: string }[] | null }
+    | null;
+  const edition = Array.isArray(teamRow?.hackathons) ? teamRow?.hackathons[0] : teamRow?.hackathons;
+
+  let emailSent = false;
+  if (teamRow && edition) {
+    const result = await sendTeamInvite({
+      to: email,
+      teamName: teamRow.name,
+      leaderName: state.profile?.full_name ?? "O líder do time",
+      hackathonName: edition.name,
+      slug: edition.slug,
+    });
+    emailSent = result.ok;
+  }
+
+  return { ok: true, hasAccount: !!existingUser, email, emailSent };
 }
