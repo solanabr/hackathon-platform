@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Countdown } from "@/components/ui/countdown";
 import { Card } from "@/components/ui/card";
+import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
@@ -136,6 +137,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-10">
+        <BackLink href={`/h/${slug}`} label={hackathon.name} />
+
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-heading text-3xl font-bold sm:text-4xl">
