@@ -5,8 +5,13 @@ import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
-import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
-import { getRegistration, isRegistrationComplete } from "@/lib/registration";
+import { getHackathonBySlug, isSubmissionWindowOpen, phaseBoundaries } from "@/lib/hackathon";
+import {
+  confirmedMemberIds,
+  getRegistration,
+  isRegistrationComplete,
+  membersPendingRegistration,
+} from "@/lib/registration";
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -73,19 +78,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     .eq("hackathon_id", hackathon.id);
 
   const memberIds = (snapshot?.members ?? []).map((m) => m.user_id).filter(Boolean) as string[];
-  const { data: memberRegs } = memberIds.length
-    ? await supabase
-        .from("hackathon_registrations")
-        .select("user_id, luma_confirmed_at")
-        .eq("hackathon_id", hackathon.id)
-        .in("user_id", memberIds)
-    : { data: [] };
-
-  const confirmedIds = new Set(
-    ((memberRegs as { user_id: string; luma_confirmed_at: string | null }[] | null) ?? [])
-      .filter((r) => r.luma_confirmed_at)
-      .map((r) => r.user_id),
-  );
+  const confirmedIds = await confirmedMemberIds(hackathon.id, memberIds);
+  const pendingMembers = membersPendingRegistration(snapshot?.members ?? [], confirmedIds);
 
   const submission = snapshot?.submission;
   const missing = submission
@@ -95,40 +89,41 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       })
     : REQUIRED;
 
+  const bounds = phaseBoundaries(hackathon);
   const phases: Phase[] = [
     {
+      ...bounds.fase1,
       key: "fase1",
       label: "Fase 1, online",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(hackathon.registration_closes_at ?? hackathon.submission_deadline_at)))}`,
+      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt)))}`,
       detail: "Aulas e mentorias. Monte seu time nesse período.",
-      at: new Date(hackathon.starts_at).getTime(),
     },
     {
+      ...bounds.submissao,
       key: "submissao",
       label: "Submissão",
       when: `${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
       detail: "O líder envia deck, demo e repositório.",
-      at: new Date(hackathon.submission_deadline_at).getTime(),
     },
-    ...(hackathon.finalists_announced_at
+    ...(bounds.selecao && hackathon.finalists_announced_at
       ? [
           {
+            ...bounds.selecao,
             key: "selecao",
             label: "Seleção",
             when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
             detail: `Os ${hackathon.finalists_count} finalistas são anunciados.`,
-            at: new Date(hackathon.finalists_announced_at).getTime(),
           },
         ]
       : []),
-    ...(hackathon.presential_at
+    ...(bounds.fase2 && hackathon.presential_at
       ? [
           {
+            ...bounds.fase2,
             key: "fase2",
             label: "Fase 2, presencial",
             when: clean(DAY.format(new Date(hackathon.presential_at))),
             detail: "Pitch Day e premiação.",
-            at: new Date(hackathon.presential_at).getTime(),
           },
         ]
       : []),
@@ -201,7 +196,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                     );
                   })}
                 </ul>
-                {snapshot.members.some((m) => !(m.user_id && confirmedIds.has(m.user_id))) && (
+                {pendingMembers.length > 0 && (
                   <p className="mt-4 text-sm leading-relaxed text-muted">
                     Todos os integrantes precisam confirmar a inscrição antes de o líder submeter.
                   </p>
@@ -262,9 +257,13 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             ) : (
               <>
                 <p className="text-sm text-muted">
-                  {missing.length === 0
-                    ? "Tudo preenchido. O líder pode enviar."
-                    : `Faltam ${missing.length} de ${REQUIRED.length} itens.`}
+                  {missing.length === 0 && pendingMembers.length === 0
+                    ? "Tudo pronto. O líder pode enviar."
+                    : pendingMembers.length > 0 && missing.length === 0
+                      ? `Falta a inscrição de ${pendingMembers.length} ${
+                          pendingMembers.length === 1 ? "integrante" : "integrantes"
+                        }.`
+                      : `Faltam ${missing.length} de ${REQUIRED.length} itens.`}
                 </p>
                 <ul className="mt-4 space-y-2.5">
                   {REQUIRED.map((f) => (
@@ -272,6 +271,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                       {f.label}
                     </CheckRow>
                   ))}
+                  <CheckRow done={pendingMembers.length === 0}>
+                    Time todo confirmado na inscrição
+                  </CheckRow>
                 </ul>
               </>
             )}

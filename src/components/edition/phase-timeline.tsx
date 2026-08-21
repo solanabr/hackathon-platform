@@ -1,22 +1,17 @@
-export type Phase = {
+import { phaseState, type PhaseBounds } from "@/lib/hackathon";
+
+export type Phase = PhaseBounds & {
   key: string;
   label: string;
   when: string;
   detail: string;
-  at: number;
 };
-
-function stateOf(phases: Phase[], index: number, now: number) {
-  const next = phases[index + 1];
-  if (now >= phases[index].at && (!next || now < next.at)) return "current" as const;
-  return now >= phases[index].at ? ("done" as const) : ("todo" as const);
-}
 
 export function PhaseTimeline({ phases, now }: { phases: Phase[]; now: number }) {
   return (
     <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {phases.map((phase, i) => {
-        const state = stateOf(phases, i, now);
+      {phases.map((phase) => {
+        const state = phaseState(phase, now);
         const current = state === "current";
         const done = state === "done";
 

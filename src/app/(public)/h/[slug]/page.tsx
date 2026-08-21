@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getHackathonBySlug, isRegistrationOpen } from "@/lib/hackathon";
+import { getHackathonBySlug, isRegistrationOpen, phaseBoundaries } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -90,40 +90,41 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           .publicUrl
     : null;
 
+  const bounds = phaseBoundaries(hackathon);
   const phases: Phase[] = [
     {
+      ...bounds.fase1,
       key: "fase1",
       label: "Fase 1, online",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(hackathon.registration_closes_at ?? hackathon.submission_deadline_at)))}`,
+      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt)))}`,
       detail: "Aulas, workshops e mentorias ao vivo. Monte seu time nesse período.",
-      at: new Date(hackathon.starts_at).getTime(),
     },
     {
+      ...bounds.submissao,
       key: "submissao",
       label: "Submissão",
       when: `${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
       detail: "O líder envia deck, demo e repositório. Depois do prazo, trava.",
-      at: new Date(hackathon.submission_deadline_at).getTime(),
     },
-    ...(hackathon.finalists_announced_at
+    ...(bounds.selecao && hackathon.finalists_announced_at
       ? [
           {
+            ...bounds.selecao,
             key: "selecao",
             label: "Seleção",
             when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
             detail: `Os ${hackathon.finalists_count} finalistas são anunciados por e-mail.`,
-            at: new Date(hackathon.finalists_announced_at).getTime(),
           },
         ]
       : []),
-    ...(hackathon.presential_at
+    ...(bounds.fase2 && hackathon.presential_at
       ? [
           {
+            ...bounds.fase2,
             key: "fase2",
             label: "Fase 2, presencial",
             when: clean(DAY.format(new Date(hackathon.presential_at))),
             detail: "Pitch Day, apresentação para a banca e premiação.",
-            at: new Date(hackathon.presential_at).getTime(),
           },
         ]
       : []),
