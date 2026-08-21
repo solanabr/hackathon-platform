@@ -45,13 +45,13 @@ export function MemberRow({
   return (
     <li className="flex items-center justify-between gap-3 py-3">
       <div>
-        <p className="font-medium text-bh-text">
+        <p className="font-medium text-ink">
           {fullName ?? email}
           {isLeader && (
-            <span className="ml-2 text-xs uppercase tracking-wider text-stbr-yellow">Líder</span>
+            <span className="ml-2 text-xs uppercase tracking-wider text-yellow">Líder</span>
           )}
         </p>
-        <p className="text-xs text-bh-muted">{email}</p>
+        <p className="text-xs text-muted">{email}</p>
       </div>
       <div className="flex items-center gap-3">
         {status === "pending" && (

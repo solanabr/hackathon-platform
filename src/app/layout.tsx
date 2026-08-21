@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-archivo",
+  axes: ["wdth"],
   display: "swap",
 });
 
@@ -15,18 +16,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BH Onchain Hackathon — Submissões | SuperteamBR",
+  title: "Hackathons · Superteam Brasil",
   description:
-    "Plataforma oficial de submissão do Hackathon BH Onchain. Construa em Solana, submeta seu projeto, dispute USD 3.000 em prêmios.",
+    "Plataforma de hackathons da Superteam Brasil. Participe, monte seu time e submeta seu projeto.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${spaceGrotesk.variable} ${inter.variable}`}>
+    <html lang="pt-BR" className={`${archivo.variable} ${inter.variable}`}>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   );

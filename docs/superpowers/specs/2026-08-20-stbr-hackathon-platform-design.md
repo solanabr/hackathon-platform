@@ -392,7 +392,7 @@ Blocking the seed, not the build:
 1. Exact judge emails for Cokinha, Marcelo, Apollo and Ronaldo.
 2. Judging criteria and their weights, for both rounds.
 3. Sender domain and address for Resend, plus DNS access.
-4. The organizers' GitHub account that teams add as a collaborator.
+4. ~~The organizers' GitHub account that teams add as a collaborator.~~ **Resolved:** `@kauenet`, confirmed by Gabriel (2026-08-20).
 5. Whether the Semana Solana & Cursor side events (09–11 Sep) appear as
    `kind: 'evento'` content or stay off the platform.
 6. Whether non-finalists receive a notification too.

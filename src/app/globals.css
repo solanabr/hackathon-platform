@@ -1,67 +1,96 @@
 @import "tailwindcss";
 
 @theme {
-  /* BH Onchain palette — aligned to the canonical event site
-     (github.com/lucaslimaa2/bh-onchain). Token names kept for backwards
-     compat with existing components; only the values changed. */
-  --color-bh-bg: #0a0a1a;
-  --color-bh-surface: #12122a;
-  --color-bh-surface-2: #1a1a3a;
-  --color-bh-border: #1f1f3a;
-  --color-bh-violet: #a135de;
-  --color-bh-violet-strong: #6935de;
-  --color-bh-fuchsia: #da2be0;
-  --color-bh-blue: #2629e0;
-  --color-bh-cyan: #3e73e0;
-  --color-bh-text: #ffffff;
-  --color-bh-muted: #a0a0c0;
-  --color-bh-dim: #6a6a8a;
+  --color-surface: #f7eacb;
+  --color-surface-raised: #fffdf6;
+  --color-ink: #1b231d;
+  --color-muted: #2f6b3f;
+  --color-emerald: #008c4c;
+  --color-yellow: #ffd23f;
+  --color-yellow-strong: #ffc107;
+  --color-green-*: initial;
+  --color-green: #2f6b3f;
+  --color-green-dark: #1b231d;
 
-  /* Superteam BR co-brand */
-  --color-stbr-dark-green: #1b231d;
-  --color-stbr-emerald: #008b4c;
-  --color-stbr-yellow: #ffd23f;
-  --color-stbr-off-white: #f5e8ca;
-
-  --font-heading: var(--font-space-grotesk);
+  --font-heading: var(--font-archivo);
   --font-body: var(--font-inter);
 }
 
 body {
-  background-color: var(--color-bh-bg);
-  color: var(--color-bh-text);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
   font-family: var(--font-body);
 }
 
+a, button, [role="button"], summary { cursor: pointer; }
+
 ::selection {
-  background-color: var(--color-bh-violet);
-  color: var(--color-bh-text);
+  background-color: var(--color-yellow);
+  color: var(--color-ink);
 }
 
-/* Canonical BH Onchain brand gradient — cyan → purple → pink at 135°.
-   Used on hero/section title accents and the primary gradient button. */
-.gradient-text {
-  background: linear-gradient(135deg, #3e73e0 0%, #a135de 50%, #da2be0 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
+           font-semibold text-ink transition-all duration-200 hover:bg-yellow-strong hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-ink
+           bg-transparent px-6 py-3 font-semibold text-ink transition-all duration-200
+           hover:bg-ink hover:text-surface;
+  }
+
+  .card-hover {
+    @apply transition-transform duration-300 ease-out;
+  }
+
+  .card-hover:hover {
+    @apply -translate-y-1;
+  }
+
+  .stats-card {
+    @apply rounded-2xl border border-green/10 bg-surface-raised/80 p-6 backdrop-blur-sm;
+  }
+
+  .service-card {
+    @apply rounded-2xl bg-emerald p-6 text-surface;
+  }
 }
 
-.gradient-button {
-  background: linear-gradient(135deg, #3e73e0 0%, #a135de 50%, #da2be0 100%);
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-yellow to-emerald bg-clip-text text-transparent;
+  }
+
+  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+  .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
+  .animate-float-a { animation: floatA 6s ease-in-out infinite; }
+  .animate-float-b { animation: floatB 7s ease-in-out infinite; }
+  .animate-float-c { animation: floatC 8s ease-in-out infinite; }
 }
 
-.gradient-button:hover {
-  background: linear-gradient(135deg, #2629e0 0%, #6935de 50%, #a135de 100%);
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-/* Slow heartbeat for the countdown eyebrow — single restrained animation
-   that signals "this is live" without being annoying. */
-@keyframes pulse-eyebrow {
-  0%, 100% { opacity: 0.62; }
-  50% { opacity: 1; }
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-.pulse-eyebrow {
-  animation: pulse-eyebrow 2.6s ease-in-out infinite;
+@keyframes floatA {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes floatC {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
