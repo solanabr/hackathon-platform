@@ -2,59 +2,107 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { Hackathon } from "@/types/db";
 import { useEntranceAnimation } from "@/hooks/use-entrance-animation";
 
-const MONTHS = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
-
-export function EditionCard({
-  hackathon,
-  coverUrl,
-  index,
-}: {
-  hackathon: Hackathon;
+export type EditionCardData = {
+  slug: string;
+  name: string;
+  tagline: string | null;
   coverUrl: string | null;
-  index: number;
-}) {
+  stage: "upcoming" | "running" | "finished";
+  registrationOpen: boolean;
+  startDay: number;
+  startMonth: string;
+  dateRange: string;
+  locationName: string | null;
+  locationCity: string | null;
+  prizeSummary: string | null;
+  registrationClosesLabel: string | null;
+};
+
+const STAGE_LABEL: Record<EditionCardData["stage"], string> = {
+  upcoming: "Em breve",
+  running: "Acontecendo agora",
+  finished: "Encerrado",
+};
+
+export function EditionCard({ edition, index }: { edition: EditionCardData; index: number }) {
   const { ref, isVisible } = useEntranceAnimation<HTMLAnchorElement>();
-  const start = new Date(hackathon.starts_at);
+  const e = edition;
 
   return (
     <Link
       ref={ref}
-      href={`/h/${hackathon.slug}`}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-green/30 bg-green-dark shadow-[0_8px_32px_rgba(0,140,76,0.12)] transition-all duration-500 hover:border-emerald/50 hover:shadow-[0_16px_48px_rgba(0,140,76,0.25)] ${
+      href={`/h/${e.slug}`}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-green/30 bg-green-dark shadow-[0_8px_32px_rgba(0,140,76,0.12)] transition-[transform,opacity,border-color,box-shadow] duration-500 hover:-translate-y-1 hover:border-emerald/50 hover:shadow-[0_16px_48px_rgba(0,140,76,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
       }`}
-      style={{ transitionDelay: `${200 + index * 150}ms` }}
+      style={{ transitionDelay: `${150 + index * 120}ms` }}
     >
-      <div className="relative flex h-56 items-center justify-center overflow-hidden">
-        {coverUrl && <Image src={coverUrl} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-green-dark/85 via-green-dark/40 to-green-dark/20" />
+      <div className="relative flex h-44 items-center justify-center overflow-hidden">
+        {e.coverUrl && (
+          <Image src={e.coverUrl} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-green-dark via-green-dark/40 to-green-dark/10" />
 
-        <div className="absolute left-3 top-3 rounded-xl bg-surface px-3 py-2 text-center shadow-lg">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald">
-            {MONTHS[start.getMonth()]}
-          </p>
-          <p className="font-heading text-2xl font-bold leading-none text-ink">
-            {start.getDate()}
-          </p>
+        <div className="absolute left-4 top-4 rounded-xl bg-surface px-3 py-2 text-center shadow-lg">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald">{e.startMonth}</p>
+          <p className="font-heading text-2xl font-bold leading-none text-ink">{e.startDay}</p>
         </div>
 
-        <h3 className="relative z-10 px-6 text-center font-heading text-xl font-bold leading-tight text-surface">
-          {hackathon.name}
+        {e.registrationOpen ? (
+          <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-yellow px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink shadow-lg">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute h-full w-full animate-ping rounded-full bg-ink/40" />
+              <span className="relative h-2 w-2 rounded-full bg-ink" />
+            </span>
+            Inscrições abertas
+          </span>
+        ) : (
+          <span className="absolute right-4 top-4 rounded-full bg-surface/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-surface backdrop-blur-sm">
+            {STAGE_LABEL[e.stage]}
+          </span>
+        )}
+
+        <h3 className="relative z-10 px-8 text-center font-heading text-2xl font-bold leading-tight text-surface">
+          {e.name}
         </h3>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        {hackathon.tagline && (
-          <p className="line-clamp-2 text-sm text-surface/70">{hackathon.tagline}</p>
-        )}
-        {hackathon.location_city && (
-          <p className="text-xs font-semibold uppercase tracking-wider text-yellow">
-            {hackathon.location_city}
-          </p>
-        )}
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        {e.tagline && <p className="line-clamp-2 text-sm leading-relaxed text-surface/75">{e.tagline}</p>}
+
+        <dl className="mt-auto space-y-1.5 text-sm text-surface/85">
+          <div className="flex items-baseline gap-2">
+            <dt className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-surface/50">Quando</dt>
+            <dd className="min-w-0 font-semibold">{e.dateRange}</dd>
+          </div>
+          {(e.locationName || e.locationCity) && (
+            <div className="flex items-baseline gap-2">
+              <dt className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-surface/50">Onde</dt>
+              <dd className="min-w-0 line-clamp-1">{e.locationCity ?? e.locationName}</dd>
+            </div>
+          )}
+          {e.prizeSummary && (
+            <div className="flex items-baseline gap-2">
+              <dt className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-surface/50">Prêmios</dt>
+              <dd className="min-w-0 line-clamp-1">{e.prizeSummary}</dd>
+            </div>
+          )}
+        </dl>
+
+        <div className="flex items-center justify-between border-t border-surface/10 pt-3">
+          {e.registrationOpen && e.registrationClosesLabel ? (
+            <p className="text-xs text-surface/60">
+              Inscrições até <strong className="text-yellow">{e.registrationClosesLabel}</strong>
+            </p>
+          ) : (
+            <span />
+          )}
+          <span className="text-sm font-semibold text-yellow transition-transform duration-300 group-hover:translate-x-1">
+            Ver detalhes →
+          </span>
+        </div>
       </div>
     </Link>
   );

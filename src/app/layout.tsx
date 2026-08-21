@@ -15,6 +15,10 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport = {
+  themeColor: "#f7eacb",
+};
+
 export const metadata: Metadata = {
   title: "Hackathons · Superteam Brasil",
   description:
