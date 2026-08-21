@@ -47,9 +47,9 @@ const DELIVERABLES = [
 ];
 
 const PARTNERS = [
-  { src: "/brand/events/logo-solana.png", name: "Solana" },
-  { src: "/brand/events/logo-cursor.png", name: "Cursor" },
-  { src: "/brand/events/logo-stbr.png", name: "Superteam Brasil" },
+  { src: "/brand/events/solana-light.png", name: "Solana", w: 2584, h: 384 },
+  { src: "/brand/events/cursor-light.png", name: "Cursor", w: 6717, h: 1597 },
+  { src: "/brand/stbr/logo/horizontal-offwhite.svg", name: "Superteam Brasil", w: 600, h: 112 },
 ];
 
 type ScheduleRow = Pick<
@@ -350,24 +350,23 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-heading text-2xl font-bold">Realização</h2>
-          <div className="mt-6 grid grid-cols-3 gap-4 sm:max-w-2xl">
-            {PARTNERS.map((p) => (
-              <div
-                key={p.name}
-                className="flex items-center justify-center overflow-hidden rounded-2xl bg-green-dark p-2"
-              >
+          <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
+            <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+              Realização
+            </h2>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
+              {PARTNERS.map((p) => (
                 <Image
+                  key={p.name}
                   src={p.src}
                   alt={p.name}
-                  width={300}
-                  height={300}
+                  width={p.w}
+                  height={p.h}
                   loading="lazy"
-                  className="h-20 w-full object-contain"
-                  sizes="(max-width: 640px) 30vw, 200px"
+                  className="h-7 w-auto opacity-90 sm:h-8"
                 />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
