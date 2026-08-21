@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { RoleManager } from "@/components/admin/role-manager";
 import { requireAdmin } from "@/lib/roles";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -9,15 +9,17 @@ export default async function PeoplePage() {
   const gate = await requireAdmin();
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
-  const supabase = await createServiceRoleClient();
+  const supabase = hasServiceRoleKey() ? await createServiceRoleClient() : null;
 
-  const [{ data: roles }, { data: hackathons }] = await Promise.all([
-    supabase
-      .from("platform_roles")
-      .select("id, role, hackathon_id, users(email), hackathons(name)")
-      .order("granted_at", { ascending: true }),
-    supabase.from("hackathons").select("id, name").order("starts_at", { ascending: false }),
-  ]);
+  const [{ data: roles }, { data: hackathons }] = supabase
+    ? await Promise.all([
+        supabase
+          .from("platform_roles")
+          .select("id, role, hackathon_id, users(email), hackathons(name)")
+          .order("granted_at", { ascending: true }),
+        supabase.from("hackathons").select("id, name").order("starts_at", { ascending: false }),
+      ])
+    : [{ data: null }, { data: null }];
 
   type Joined = {
     id: string;

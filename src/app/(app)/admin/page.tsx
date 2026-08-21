@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin } from "@/lib/roles";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -12,32 +12,49 @@ export default async function AdminPage() {
   const gate = await requireAdmin();
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
-  const supabase = await createServiceRoleClient();
-  const { data } = await supabase
-    .from("hackathons")
-    .select("*")
-    .order("starts_at", { ascending: false });
+  const ready = hasServiceRoleKey();
+  const supabase = ready ? await createServiceRoleClient() : null;
+
+  const { data } = supabase
+    ? await supabase.from("hackathons").select("*").order("starts_at", { ascending: false })
+    : { data: null };
   const hackathons = (data as Hackathon[] | null) ?? [];
 
-  const counts = await Promise.all(
-    hackathons.map(async (h) => {
-      const [registrations, teams] = await Promise.all([
-        supabase
-          .from("hackathon_registrations")
-          .select("id", { count: "exact", head: true })
-          .eq("hackathon_id", h.id),
-        supabase
-          .from("teams")
-          .select("id", { count: "exact", head: true })
-          .eq("hackathon_id", h.id),
-      ]);
-      return { id: h.id, registrations: registrations.count ?? 0, teams: teams.count ?? 0 };
-    }),
-  );
+  const counts = supabase
+    ? await Promise.all(
+        hackathons.map(async (h) => {
+          const [registrations, teams] = await Promise.all([
+            supabase
+              .from("hackathon_registrations")
+              .select("id", { count: "exact", head: true })
+              .eq("hackathon_id", h.id),
+            supabase
+              .from("teams")
+              .select("id", { count: "exact", head: true })
+              .eq("hackathon_id", h.id),
+          ]);
+          return { id: h.id, registrations: registrations.count ?? 0, teams: teams.count ?? 0 };
+        }),
+      )
+    : [];
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
+        {!ready && (
+          <div className="mb-8 rounded-2xl border border-yellow bg-yellow/15 p-5">
+            <p className="font-heading font-bold">Falta a chave de service role</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">
+              Copie a <strong>service_role</strong> em Supabase, Project Settings, API para{" "}
+              <code className="rounded bg-surface px-1.5 py-0.5 text-xs">
+                SUPABASE_SERVICE_ROLE_KEY
+              </code>{" "}
+              no <code className="rounded bg-surface px-1.5 py-0.5 text-xs">.env.local</code> e
+              reinicie o servidor. Sem ela esta página não lê dados de todos os times.
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="font-heading text-3xl font-bold">Administração</h1>
           <Link href="/admin/pessoas" className="btn-secondary px-5 py-2 text-sm">

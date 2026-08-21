@@ -26,10 +26,17 @@ export async function createServerSupabaseClient() {
   );
 }
 
+export function hasServiceRoleKey(): boolean {
+  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 export async function createServiceRoleClient() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is not set. Copy it from Supabase > Project Settings > API into .env.local and restart the dev server.",
+    );
+  }
   const { createClient } = await import("@supabase/supabase-js");
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
 }
