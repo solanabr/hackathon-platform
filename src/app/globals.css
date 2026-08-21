@@ -59,6 +59,15 @@ a, button, [role="button"], summary { cursor: pointer; }
 }
 
 @layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   .text-gradient {
     @apply bg-gradient-to-r from-yellow to-emerald bg-clip-text text-transparent;
   }

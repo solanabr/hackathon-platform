@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getHackathonBySlug, isRegistrationOpen } from "@/lib/hackathon";
+import { getRegistration, isRegistrationComplete } from "@/lib/registration";
+import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import type { HackathonContent } from "@/types/db";
@@ -76,6 +78,10 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   const open = isRegistrationOpen(hackathon);
   const now = Date.now();
+
+  const viewer = await resolveAuthenticatedUserState();
+  const registered =
+    viewer !== null && isRegistrationComplete(await getRegistration(viewer.userId, hackathon.id));
 
   const coverUrl = hackathon.cover_image_path
     ? hackathon.cover_image_path.startsWith("/")
@@ -184,10 +190,16 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
             </dl>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={`/h/${hackathon.slug}/inscricao`} className="btn-primary">
-                {open ? "Quero participar" : "Ver detalhes"}
-              </Link>
-              {hackathon.luma_url && (
+              {registered ? (
+                <Link href={`/h/${hackathon.slug}/painel`} className="btn-primary">
+                  Acessar painel
+                </Link>
+              ) : (
+                <Link href={`/h/${hackathon.slug}/inscricao`} className="btn-primary">
+                  {open ? "Quero participar" : "Ver detalhes"}
+                </Link>
+              )}
+              {!registered && hackathon.luma_url && (
                 <a
                   href={hackathon.luma_url}
                   target="_blank"
