@@ -20,7 +20,6 @@ export async function updateProfile(
     .from("users")
     .update({
       full_name: fullName,
-      avatar_url: sanitizeAvatarUrl(String(formData.get("avatar_url") ?? "")),
       headline: sanitizeText(String(formData.get("headline") ?? ""), 80) || null,
       bio: sanitizeText(String(formData.get("bio") ?? ""), 400) || null,
       github_url: sanitizeUrl(String(formData.get("github_url") ?? "")),
@@ -35,5 +34,23 @@ export async function updateProfile(
   revalidatePath("/account");
   const next = sanitizeRedirect(String(formData.get("next") ?? ""));
   if (next) redirect(next);
+  return {};
+}
+
+export async function updateAvatar(url: string): Promise<{ error?: string }> {
+  const state = await requireUser();
+
+  const avatarUrl = sanitizeAvatarUrl(url);
+  if (!avatarUrl) return { error: "Imagem inválida." };
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("users")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", state.userId);
+
+  if (error) return { error: "Não foi possível salvar a foto." };
+
+  revalidatePath("/account");
   return {};
 }

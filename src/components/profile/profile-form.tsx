@@ -3,31 +3,15 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { updateProfile } from "@/app/(app)/account/actions";
 import type { User } from "@/types/db";
 
-export function ProfileForm({
-  profile,
-  next,
-  userId,
-}: {
-  profile: User | null;
-  next?: string;
-  userId: string;
-}) {
+export function ProfileForm({ profile, next }: { profile: User | null; next?: string }) {
   const [state, formAction, pending] = useActionState(updateProfile, {});
 
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="next" value={next ?? ""} />
-
-      <AvatarUpload
-        userId={userId}
-        currentUrl={profile?.avatar_url ?? null}
-        name={profile?.full_name ?? null}
-      />
-
       <div>
         <Label htmlFor="full_name">Nome completo</Label>
         <Input id="full_name" name="full_name" required defaultValue={profile?.full_name ?? ""} />

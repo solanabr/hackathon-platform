@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
-import { Avatar } from "@/components/ui/avatar";
+import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/user-state";
 import { editionStage } from "@/lib/hackathon";
@@ -109,7 +109,11 @@ export default async function AccountPage({
 
         <Card className="p-6 sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-            <Avatar src={profile?.avatar_url} name={profile?.full_name ?? state.email} size="lg" />
+            <AvatarUpload
+              userId={state.userId}
+              currentUrl={profile?.avatar_url ?? null}
+              name={profile?.full_name ?? state.email}
+            />
 
             <div className="min-w-0 flex-1">
               <h1 className="font-heading text-3xl font-bold">
@@ -213,10 +217,10 @@ export default async function AccountPage({
           <Card className="p-6 sm:p-8">
             <h2 className="font-heading text-xl font-bold">Editar perfil</h2>
             <p className="mt-1 text-sm text-muted">
-              Seu nome e sua foto aparecem para o seu time e para a organização.
+              Essas informações aparecem para o seu time e para a organização.
             </p>
             <div className="mt-6">
-              <ProfileForm profile={profile} next={next} userId={state.userId} />
+              <ProfileForm profile={profile} next={next} />
             </div>
           </Card>
         </section>
