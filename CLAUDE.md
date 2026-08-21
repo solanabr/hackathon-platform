@@ -11,7 +11,7 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Submission flow for th
 
 ## Architecture
 
-- **Route groups:** `(public)/` = no auth, `(app)/` = auth required. Middleware gates auth — do NOT add auth checks in `(app)/layout.tsx` (causes redirect loops).
+- **Route groups:** `(public)/` = no auth, `(app)/` = auth required. Middleware gates auth — do NOT add auth checks in `(app)/layout.tsx` (causes redirect loops). The middleware **must** live at `src/middleware.ts`: this project keeps its app in `src/`, and a `middleware.ts` at the repo root is silently ignored, which leaves every protected route rendering a 404 instead of redirecting to `/auth`.
 - **Supabase clients:**
   - `createClient()` (browser) — user-scoped, RLS-enforced.
   - `createServerSupabaseClient()` (server) — same scoping, used in server components and route handlers.
