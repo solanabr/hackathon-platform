@@ -47,6 +47,7 @@ export default async function AdminContentPage({
       ? WHEN.format(new Date(c.scheduled_at)).replace(/\./g, "")
       : "sem data",
     youtubeId: c.youtube_id,
+    fileUrl: c.external_url,
     published: c.published,
   }));
 

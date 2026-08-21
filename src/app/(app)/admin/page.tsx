@@ -78,10 +78,10 @@ export default async function AdminPage() {
                       {c?.registrations ?? 0} inscritos · {c?.teams ?? 0} times
                     </p>
                     <Link
-                      href={`/admin/h/${h.slug}/content`}
+                      href={`/admin/h/${h.slug}`}
                       className="shrink-0 rounded-full border border-green/20 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-green/50 hover:bg-green/5"
                     >
-                      Conteúdos
+                      Editar
                     </Link>
                   </div>
                 </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusChip } from "@/components/ui/section-card";
-import { updateContent } from "@/app/(app)/admin/h/[slug]/content/actions";
+import { updateContent, uploadContentFile } from "@/app/(app)/admin/h/[slug]/content/actions";
 
 export type AdminContentItem = {
   id: string;
@@ -13,6 +13,7 @@ export type AdminContentItem = {
   speaker: string | null;
   scheduledLabel: string;
   youtubeId: string | null;
+  fileUrl: string | null;
   published: boolean;
 };
 
@@ -24,6 +25,19 @@ export function ContentRow({ item, slug }: { item: AdminContentItem; slug: strin
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function upload(file: File) {
+    setError(null);
+    setSaved(false);
+    const formData = new FormData();
+    formData.set("file", file);
+    startTransition(async () => {
+      const result = await uploadContentFile({ contentId: item.id, slug, formData });
+      if (result.ok) setSaved(true);
+      else setError(result.error);
+    });
+  }
 
   function save(nextPublished: boolean) {
     setError(null);
@@ -98,6 +112,41 @@ export function ContentRow({ item, slug }: { item: AdminContentItem; slug: strin
         >
           {published ? "Despublicar" : "Publicar"}
         </Button>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-green/10 pt-4">
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) upload(file);
+            e.target.value = "";
+          }}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={pending}
+          onClick={() => fileRef.current?.click()}
+          className="px-5 py-2 text-sm"
+        >
+          {item.fileUrl ? "Trocar arquivo" : "Enviar arquivo"}
+        </Button>
+        {item.fileUrl ? (
+          <a
+            href={item.fileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-semibold text-emerald underline-offset-4 hover:underline"
+          >
+            Ver arquivo atual
+          </a>
+        ) : (
+          <p className="text-xs text-muted">PDF, imagem, PPTX ou DOCX, até 25 MB.</p>
+        )}
       </div>
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
