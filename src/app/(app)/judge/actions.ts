@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireJudge } from "@/lib/roles";
+import type { RatingRound } from "@/lib/hackathon";
 import { sanitizeText } from "@/lib/security";
 
 export type RatingResult = { ok: true } | { ok: false; error: string };
@@ -41,6 +42,7 @@ export async function upsertRating(input: {
   hackathonId: string;
   submissionId: string;
   slug: string;
+  round: RatingRound;
   grade: number | null;
   comment: string;
 }): Promise<RatingResult> {
@@ -54,12 +56,13 @@ export async function upsertRating(input: {
   const { error } = await g.supabase.from("submission_ratings").upsert(
     {
       submission_id: input.submissionId,
-      admin_id: g.userId,
+      judge_id: g.userId,
+      round: input.round,
       grade: input.grade,
       comment: sanitizeText(input.comment, 2000),
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "submission_id,admin_id" },
+    { onConflict: "submission_id,judge_id,round" },
   );
 
   if (error) return { ok: false, error: "Não foi possível salvar a nota." };
@@ -72,6 +75,7 @@ export async function deleteRating(input: {
   hackathonId: string;
   submissionId: string;
   slug: string;
+  round: RatingRound;
 }): Promise<RatingResult> {
   const g = await gate(input.hackathonId, input.submissionId);
   if (!g.ok) return { ok: false, error: g.error };
@@ -80,7 +84,8 @@ export async function deleteRating(input: {
     .from("submission_ratings")
     .delete()
     .eq("submission_id", input.submissionId)
-    .eq("admin_id", g.userId);
+    .eq("judge_id", g.userId)
+    .eq("round", input.round);
 
   if (error) return { ok: false, error: "Não foi possível limpar a nota." };
 

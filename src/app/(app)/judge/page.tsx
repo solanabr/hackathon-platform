@@ -5,7 +5,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { StatusChip } from "@/components/ui/section-card";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { editionStage } from "@/lib/hackathon";
+import { editionStage, ratingRound } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +53,8 @@ export default async function JudgeIndexPage() {
           .from("submission_ratings")
           .select("submission_id", { count: "exact", head: true })
           .in("submission_id", ids)
-          .eq("admin_id", roles.state.userId)
+          .eq("judge_id", roles.state.userId)
+          .eq("round", ratingRound(edition))
       : { count: 0 };
 
     counts.set(edition.id, { total: ids.length, rated: count ?? 0 });

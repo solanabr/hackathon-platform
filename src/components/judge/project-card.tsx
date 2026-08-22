@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RatingForm } from "@/components/judge/rating-form";
+import type { RatingRound } from "@/lib/hackathon";
 
 export type JudgeProject = {
   submissionId: string;
@@ -26,11 +27,13 @@ export function JudgeProjectCard({
   project,
   hackathonId,
   slug,
+  round,
   rating,
 }: {
   project: JudgeProject;
   hackathonId: string;
   slug: string;
+  round: RatingRound;
   rating: { grade: number | null; comment: string };
 }) {
   return (
@@ -94,6 +97,7 @@ export function JudgeProjectCard({
           hackathonId={hackathonId}
           submissionId={project.submissionId}
           slug={slug}
+          round={round}
           initialGrade={rating.grade}
           initialComment={rating.comment}
         />

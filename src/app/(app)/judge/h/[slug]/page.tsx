@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { JudgeProjectCard, type JudgeProject } from "@/components/judge/project-card";
 import { requireJudge } from "@/lib/roles";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +87,8 @@ export default async function JudgeEditionPage({
     })
     .filter((p): p is JudgeProject => p !== null);
 
+  const round = ratingRound(hackathon);
+
   const { data: ratingRows } = projects.length
     ? await supabase
         .from("submission_ratings")
@@ -95,7 +97,8 @@ export default async function JudgeEditionPage({
           "submission_id",
           projects.map((p) => p.submissionId),
         )
-        .eq("admin_id", gate.state.userId)
+        .eq("judge_id", gate.state.userId)
+        .eq("round", round)
     : { data: [] };
 
   const mine = new Map(
@@ -116,7 +119,9 @@ export default async function JudgeEditionPage({
           <p className="mt-2 text-muted">
             {projects.length === 0
               ? "Nenhum projeto submetido ainda."
-              : `${ratedCount} de ${projects.length} avaliados por você. A nota de cada jurado é privada.`}
+              : `${ratedCount} de ${projects.length} avaliados por você na ${
+                  round === "triagem" ? "triagem" : "banca final"
+                }. A nota de cada jurado é privada.`}
           </p>
         </header>
 
@@ -128,6 +133,7 @@ export default async function JudgeEditionPage({
                   project={project}
                   hackathonId={hackathon.id}
                   slug={slug}
+                  round={round}
                   rating={mine.get(project.submissionId) ?? { grade: null, comment: "" }}
                 />
               </li>

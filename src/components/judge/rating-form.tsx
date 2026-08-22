@@ -4,17 +4,20 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { upsertRating, deleteRating } from "@/app/(app)/judge/actions";
+import type { RatingRound } from "@/lib/hackathon";
 
 export function RatingForm({
   hackathonId,
   submissionId,
   slug,
+  round,
   initialGrade,
   initialComment,
 }: {
   hackathonId: string;
   submissionId: string;
   slug: string;
+  round: RatingRound;
   initialGrade: number | null;
   initialComment: string;
 }) {
@@ -32,7 +35,7 @@ export function RatingForm({
     setError(null);
     setSaved(false);
     start(async () => {
-      const res = await upsertRating({ hackathonId, submissionId, slug, grade, comment });
+      const res = await upsertRating({ hackathonId, submissionId, slug, round, grade, comment });
       if (!res.ok) return setError(res.error);
       setSaved(true);
       router.refresh();
@@ -43,7 +46,7 @@ export function RatingForm({
     setError(null);
     setSaved(false);
     start(async () => {
-      const res = await deleteRating({ hackathonId, submissionId, slug });
+      const res = await deleteRating({ hackathonId, submissionId, slug, round });
       if (!res.ok) return setError(res.error);
       setGrade(null);
       setComment("");
