@@ -11,6 +11,10 @@ const RPC_ERRORS: Record<string, { status: number; message: string }> = {
     status: 422,
     message: "Preencha todos os campos obrigatórios (incluindo imagem do projeto).",
   },
+  team_too_small: {
+    status: 422,
+    message: "O time precisa de pelo menos 2 integrantes aceitos para submeter.",
+  },
   members_missing_luma: {
     status: 422,
     message: "Todos os integrantes precisam confirmar a inscrição no Luma antes de submeter.",

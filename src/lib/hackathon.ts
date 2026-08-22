@@ -90,3 +90,15 @@ export function phaseState(bounds: PhaseBounds, now: number): PhaseState {
   if (now < bounds.endsAt) return "current";
   return "done";
 }
+
+export type RatingRound = "triagem" | "final";
+
+/**
+ * Regulamento 7.1/7.2: the first cut happens before the finalists are announced,
+ * the panel scores again on Pitch Day. Both rounds live in submission_ratings,
+ * keyed by (submission_id, judge_id, round).
+ */
+export function ratingRound(h: Hackathon, now: Date = new Date()): RatingRound {
+  if (!h.finalists_announced_at) return "triagem";
+  return now.getTime() >= new Date(h.finalists_announced_at).getTime() ? "final" : "triagem";
+}

@@ -113,7 +113,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
             key: "selecao",
             label: "Seleção",
             when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
-            detail: `Os ${hackathon.finalists_count} finalistas são anunciados por e-mail.`,
+            detail: hackathon.finalists_count
+              ? `Os ${hackathon.finalists_count} finalistas são anunciados por e-mail.`
+              : "As equipes classificadas são anunciadas por e-mail.",
           },
         ]
       : []),

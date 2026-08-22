@@ -17,6 +17,7 @@ type Props = {
   initialImageUrl: string | null;
   dashboardHref: string;
   membersPending: number;
+  membersAccepted: number;
 };
 
 type FormState = {
@@ -64,6 +65,7 @@ const SUBMIT_ERRORS: Record<string, string> = {
   deadline_passed: "Prazo encerrado.",
   missing_required_fields:
     "Preencha todos os campos obrigatórios (incluindo a imagem do projeto) antes de submeter.",
+  team_too_small: "O time precisa de pelo menos 2 integrantes para submeter.",
   members_missing_luma:
     "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
 };
@@ -76,6 +78,7 @@ export function SubmissionEditor({
   initialImageUrl,
   dashboardHref,
   membersPending,
+  membersAccepted,
 }: Props) {
   const router = useRouter();
   const supabase = createClient();
@@ -154,10 +157,12 @@ export function SubmissionEditor({
     !!sanitizeUrl(form.github_url) &&
     form.github_access_granted;
 
-  const canSubmit = allRequiredFilled && membersPending === 0;
+  const canSubmit = allRequiredFilled && membersPending === 0 && membersAccepted >= 2;
   const blockedReason = !allRequiredFilled
     ? "Preencha todos os campos obrigatórios"
-    : membersPending > 0
+    : membersAccepted < 2
+      ? "O time precisa de pelo menos 2 integrantes"
+      : membersPending > 0
       ? `${membersPending} ${membersPending === 1 ? "integrante ainda não confirmou" : "integrantes ainda não confirmaram"} a inscrição`
       : "";
 

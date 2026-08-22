@@ -34,7 +34,7 @@ export type Hackathon = {
   presential_at: string | null;
   voting_opens_at: string | null;
   voting_closes_at: string | null;
-  finalists_count: number;
+  finalists_count: number | null;
   cover_image_path: string | null;
   location_name: string | null;
   location_city: string | null;
