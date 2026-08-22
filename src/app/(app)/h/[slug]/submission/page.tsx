@@ -43,6 +43,7 @@ export default async function SubmissionPage({
     snapshot.members.map((m) => m.user_id).filter(Boolean) as string[],
   );
   const membersPending = membersPendingRegistration(snapshot.members, confirmed).length;
+  const membersAccepted = snapshot.members.filter((m) => m.status === "accepted").length;
   const open = isSubmissionWindowOpen(hackathon);
   const canEdit = open && !team.locked && isLeader;
   const windowOpen = open && !team.locked;
@@ -102,6 +103,7 @@ export default async function SubmissionPage({
             initialImageUrl={imagePublicUrl}
             dashboardHref={`/h/${slug}/dashboard`}
             membersPending={membersPending}
+            membersAccepted={membersAccepted}
           />
         </Card>
       </div>

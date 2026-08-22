@@ -81,6 +81,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const memberIds = (snapshot?.members ?? []).map((m) => m.user_id).filter(Boolean) as string[];
   const confirmedIds = await confirmedMemberIds(hackathon.id, memberIds);
   const pendingMembers = membersPendingRegistration(snapshot?.members ?? [], confirmedIds);
+  const acceptedMembers = (snapshot?.members ?? []).filter((m) => m.status === "accepted").length;
 
   const submission = snapshot?.submission;
   const missing = submission
@@ -263,13 +264,15 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             ) : (
               <>
                 <p className="text-sm text-muted">
-                  {missing.length === 0 && pendingMembers.length === 0
+                  {missing.length === 0 && pendingMembers.length === 0 && acceptedMembers >= 2
                     ? "Tudo pronto. O líder pode enviar."
-                    : pendingMembers.length > 0 && missing.length === 0
-                      ? `Falta a inscrição de ${pendingMembers.length} ${
-                          pendingMembers.length === 1 ? "integrante" : "integrantes"
-                        }.`
-                      : `Faltam ${missing.length} de ${REQUIRED.length} itens.`}
+                    : missing.length > 0
+                      ? `Faltam ${missing.length} de ${REQUIRED.length} itens.`
+                      : acceptedMembers < 2
+                        ? "O time precisa de pelo menos 2 integrantes."
+                        : `Falta a inscrição de ${pendingMembers.length} ${
+                            pendingMembers.length === 1 ? "integrante" : "integrantes"
+                          }.`}
                 </p>
                 <ul className="mt-4 space-y-2.5">
                   {REQUIRED.map((f) => (
@@ -277,6 +280,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                       {f.label}
                     </CheckRow>
                   ))}
+                  <CheckRow done={acceptedMembers >= 2}>
+                    Pelo menos 2 integrantes no time
+                  </CheckRow>
                   <CheckRow done={pendingMembers.length === 0}>
                     Time todo confirmado na inscrição
                   </CheckRow>
