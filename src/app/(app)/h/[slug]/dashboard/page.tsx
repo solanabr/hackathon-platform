@@ -113,7 +113,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             key: "selecao",
             label: "Seleção",
             when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
-            detail: `Os ${hackathon.finalists_count} finalistas são anunciados.`,
+            detail: hackathon.finalists_count
+              ? `Os ${hackathon.finalists_count} finalistas são anunciados.`
+              : "As equipes classificadas são anunciadas.",
           },
         ]
       : []),

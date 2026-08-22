@@ -54,7 +54,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "rules_url", label: "Regulamento", kind: "url", group: "Local e links" },
 
   { key: "prize_summary", label: "Premiação", kind: "textarea", group: "Prêmios", help: "Separe os itens com ·" },
-  { key: "finalists_count", label: "Número de finalistas", kind: "number", group: "Prêmios" },
+  {
+    key: "finalists_count",
+    label: "Número de finalistas",
+    kind: "number",
+    group: "Prêmios",
+    help: "Em branco enquanto a organização não fecha o número.",
+  },
 ];
 
 const OFFSET = "-03:00";

@@ -30,6 +30,10 @@ export async function updateEdition(
         patch[field.key as string] = fromLocalInput(value);
         break;
       case "number": {
+        if (!value.trim()) {
+          patch[field.key as string] = null;
+          break;
+        }
         const n = Number(value);
         if (!Number.isFinite(n) || n < 0) return { ok: false, error: `${field.label} inválido.` };
         patch[field.key as string] = Math.trunc(n);
