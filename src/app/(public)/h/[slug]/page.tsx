@@ -95,16 +95,16 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
     {
       ...bounds.fase1,
       key: "fase1",
-      label: "Fase 1, online",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt)))}`,
-      detail: "Aulas, workshops e mentorias ao vivo. Monte seu time nesse período.",
+      label: "Fase 1, capacitação",
+      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt - 1)))}`,
+      detail: "Minicursos e conteúdos preparatórios para nivelar todo mundo. Monte seu time nesse período.",
     },
     {
       ...bounds.submissao,
       key: "submissao",
-      label: "Submissão",
-      when: `${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
-      detail: "O líder envia deck, demo e repositório. Depois do prazo, trava.",
+      label: "Desenvolvimento e submissão",
+      when: `${clean(DAY.format(new Date(bounds.submissao.startsAt)))} a ${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
+      detail: "Mentoria no dia 5. O líder envia deck, vídeo e repositório até o prazo.",
     },
     ...(bounds.selecao && hackathon.finalists_announced_at
       ? [

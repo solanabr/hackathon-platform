@@ -72,14 +72,21 @@ export function phaseBoundaries(h: Hackathon): {
   const deadline = at(h.submission_deadline_at);
   const announced = h.finalists_announced_at ? at(h.finalists_announced_at) : null;
   const presential = h.presential_at ? at(h.presential_at) : null;
-  const submissionStarts = Math.min(
-    h.registration_closes_at ? at(h.registration_closes_at) : deadline,
+
+  // Building starts when the classes end. Editions that never set that date
+  // fall back to the registration close, which is what this used to assume.
+  const buildStarts = Math.min(
+    h.development_starts_at
+      ? at(h.development_starts_at)
+      : h.registration_closes_at
+        ? at(h.registration_closes_at)
+        : deadline,
     deadline,
   );
 
   return {
-    fase1: { startsAt: starts, endsAt: submissionStarts },
-    submissao: { startsAt: submissionStarts, endsAt: deadline },
+    fase1: { startsAt: starts, endsAt: buildStarts },
+    submissao: { startsAt: buildStarts, endsAt: deadline },
     selecao: announced ? { startsAt: deadline, endsAt: presential ?? announced } : null,
     fase2: presential ? { startsAt: presential, endsAt: presential + DAY_MS } : null,
   };

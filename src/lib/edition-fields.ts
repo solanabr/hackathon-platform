@@ -36,6 +36,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "starts_at", label: "Início", kind: "datetime", group: "Datas" },
   { key: "registration_closes_at", label: "Fim das inscrições", kind: "datetime", group: "Datas" },
   {
+    key: "development_starts_at",
+    label: "Início do desenvolvimento",
+    kind: "datetime",
+    group: "Datas",
+    help: "Separa a capacitação da fase de construção na linha do tempo.",
+  },
+  {
     key: "submission_deadline_at",
     label: "Prazo de submissão",
     kind: "datetime",

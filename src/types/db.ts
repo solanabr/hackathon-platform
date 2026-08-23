@@ -29,6 +29,7 @@ export type Hackathon = {
   status: HackathonStatus;
   starts_at: string;
   registration_closes_at: string | null;
+  development_starts_at: string | null;
   submission_deadline_at: string;
   finalists_announced_at: string | null;
   presential_at: string | null;
