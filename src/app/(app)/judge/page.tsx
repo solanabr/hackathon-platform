@@ -30,7 +30,11 @@ export default async function JudgeIndexPage() {
 
   const supabase = await createServiceRoleClient();
 
-  let query = supabase.from("hackathons").select("*").order("starts_at", { ascending: false });
+  let query = supabase
+    .from("hackathons")
+    .select("*")
+    .neq("status", "draft")
+    .order("starts_at", { ascending: false });
   if (!roles.isAdmin) query = query.in("id", roles.judgeFor);
 
   const { data } = await query;
@@ -43,10 +47,26 @@ export default async function JudgeIndexPage() {
       .select("submissions!inner(id, status)")
       .eq("hackathon_id", edition.id);
 
-    const ids = ((teams as Array<{ submissions: { id: string; status: string } | { id: string; status: string }[] }> | null) ?? [])
+    let ids = ((teams as Array<{ submissions: { id: string; status: string } | { id: string; status: string }[] }> | null) ?? [])
       .flatMap((t) => (Array.isArray(t.submissions) ? t.submissions : [t.submissions]))
       .filter((s) => s?.status === "submitted")
       .map((s) => s.id);
+
+    // The denominator has to be what this judge can open, not every submission,
+    // or their progress never reaches the total and "done" is unreachable.
+    if (!roles.isAdmin && ids.length) {
+      const { data: mine } = await supabase
+        .from("submission_assignments")
+        .select("submission_id")
+        .eq("judge_id", roles.state.userId)
+        .eq("round", ratingRound(edition))
+        .in("submission_id", ids);
+
+      const allowed = new Set(
+        ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
+      );
+      ids = ids.filter((id) => allowed.has(id));
+    }
 
     const { count } = ids.length
       ? await supabase
@@ -104,13 +124,17 @@ export default async function JudgeIndexPage() {
                           : "a definir"}
                         {" · "}
                         {c.total === 0
-                          ? "nenhum projeto submetido"
+                          ? roles.isAdmin
+                            ? "nenhum projeto submetido"
+                            : "nenhum projeto atribuído a você"
                           : `${c.rated} de ${c.total} avaliados`}
                       </p>
                     </div>
 
                     {c.total === 0 ? (
-                      <span className="text-sm text-muted">Aguardando submissões</span>
+                      <span className="text-sm text-muted">
+                        {roles.isAdmin ? "Aguardando submissões" : "Nada atribuído ainda"}
+                      </span>
                     ) : (
                       <Link
                         href={`/judge/h/${edition.slug}`}

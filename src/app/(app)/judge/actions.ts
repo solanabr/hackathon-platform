@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { requireJudge } from "@/lib/roles";
+import { requireJudge, resolveRoleState } from "@/lib/roles";
 import type { RatingRound } from "@/lib/hackathon";
 import { sanitizeText } from "@/lib/security";
 
@@ -13,7 +13,7 @@ export type RatingResult = { ok: true } | { ok: false; error: string };
  * through the service role after requireJudge. The gate is the only thing
  * standing between a judge and another edition's projects - keep it first.
  */
-async function gate(hackathonId: string, submissionId: string) {
+async function gate(hackathonId: string, submissionId: string, round: RatingRound) {
   const check = await requireJudge(hackathonId);
   if (!check.ok) return { ok: false as const, error: "Sem permissão." };
 
@@ -35,6 +35,24 @@ async function gate(hackathonId: string, submissionId: string) {
     return { ok: false as const, error: "Projeto ainda não foi submetido." };
   }
 
+  // Filtering the list is presentation. The rule that a judge scores only their
+  // assigned projects has to hold here too, or an extra rating shifts the
+  // average that decides classification (regulamento 7.1).
+  const roles = await resolveRoleState();
+  if (!roles?.isAdmin) {
+    const { data: assignment } = await supabase
+      .from("submission_assignments")
+      .select("submission_id")
+      .eq("submission_id", submissionId)
+      .eq("judge_id", check.state.userId)
+      .eq("round", round)
+      .maybeSingle();
+
+    if (!assignment) {
+      return { ok: false as const, error: "Este projeto não foi atribuído a você." };
+    }
+  }
+
   return { ok: true as const, userId: check.state.userId, supabase };
 }
 
@@ -46,7 +64,7 @@ export async function upsertRating(input: {
   grade: number | null;
   comment: string;
 }): Promise<RatingResult> {
-  const g = await gate(input.hackathonId, input.submissionId);
+  const g = await gate(input.hackathonId, input.submissionId, input.round);
   if (!g.ok) return { ok: false, error: g.error };
 
   if (input.grade !== null && (!Number.isInteger(input.grade) || input.grade < 0 || input.grade > 10)) {
@@ -77,7 +95,7 @@ export async function deleteRating(input: {
   slug: string;
   round: RatingRound;
 }): Promise<RatingResult> {
-  const g = await gate(input.hackathonId, input.submissionId);
+  const g = await gate(input.hackathonId, input.submissionId, input.round);
   if (!g.ok) return { ok: false, error: g.error };
 
   const { error } = await g.supabase

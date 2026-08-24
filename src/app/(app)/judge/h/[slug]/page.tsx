@@ -29,7 +29,7 @@ export default async function JudgeEditionPage({
 }) {
   const { slug } = await params;
   const hackathon = await getHackathonBySlug(slug);
-  if (!hackathon) notFound();
+  if (!hackathon || hackathon.status === "draft") notFound();
 
   const gate = await requireJudge(hackathon.id);
   if (!gate.ok) {

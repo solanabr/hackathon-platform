@@ -29,12 +29,21 @@ export function AssignmentGrid({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  function toggle(submissionId: string, judgeId: string) {
-    const current = state[submissionId];
+  /**
+   * Local state is seeded once, but the server re-renders this component after
+   * every assignment. A team submitting while the page is open adds a project
+   * the map has never seen, so fall back to what the server just sent.
+   */
+  function currentFor(project: AssignmentProject): Set<string> {
+    return state[project.submissionId] ?? new Set(project.judgeIds);
+  }
+
+  function toggle(submissionId: string, judgeId: string, fallback: Set<string>) {
+    const current = state[submissionId] ?? fallback;
     const assigned = !current.has(judgeId);
 
     setState((prev) => {
-      const next = new Set(prev[submissionId]);
+      const next = new Set(prev[submissionId] ?? current);
       if (assigned) next.add(judgeId);
       else next.delete(judgeId);
       return { ...prev, [submissionId]: next };
@@ -46,7 +55,7 @@ export function AssignmentGrid({
       if (!result.ok) {
         setError(result.error);
         setState((prev) => {
-          const next = new Set(prev[submissionId]);
+          const next = new Set(prev[submissionId] ?? current);
           if (assigned) next.delete(judgeId);
           else next.add(judgeId);
           return { ...prev, [submissionId]: next };
@@ -61,7 +70,7 @@ export function AssignmentGrid({
 
       <ul className="space-y-3">
         {projects.map((project) => {
-          const assigned = state[project.submissionId];
+          const assigned = currentFor(project);
           const short = assigned.size < 2;
 
           return (
@@ -88,7 +97,7 @@ export function AssignmentGrid({
                       type="button"
                       disabled={pending}
                       aria-pressed={on}
-                      onClick={() => toggle(project.submissionId, judge.id)}
+                      onClick={() => toggle(project.submissionId, judge.id, assigned)}
                       className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
                         on
                           ? "border-emerald bg-emerald text-surface"
