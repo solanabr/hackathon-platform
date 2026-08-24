@@ -81,6 +81,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const memberIds = (snapshot?.members ?? []).map((m) => m.user_id).filter(Boolean) as string[];
   const confirmedIds = await confirmedMemberIds(hackathon.id, memberIds);
   const pendingMembers = membersPendingRegistration(snapshot?.members ?? [], confirmedIds);
+  const acceptedMembers = (snapshot?.members ?? []).filter((m) => m.status === "accepted").length;
 
   const submission = snapshot?.submission;
   const missing = submission
@@ -95,16 +96,16 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     {
       ...bounds.fase1,
       key: "fase1",
-      label: "Fase 1, online",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt)))}`,
-      detail: "Aulas e mentorias. Monte seu time nesse período.",
+      label: "Fase 1, capacitação",
+      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt - 1)))}`,
+      detail: "Minicursos e conteúdos preparatórios. Monte seu time nesse período.",
     },
     {
       ...bounds.submissao,
       key: "submissao",
-      label: "Submissão",
-      when: `${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
-      detail: "O líder envia deck, demo e repositório.",
+      label: "Desenvolvimento e submissão",
+      when: `${clean(DAY.format(new Date(bounds.submissao.startsAt)))} a ${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
+      detail: "Mentoria no dia 5. O líder envia deck, vídeo e repositório.",
     },
     ...(bounds.selecao && hackathon.finalists_announced_at
       ? [
@@ -113,7 +114,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             key: "selecao",
             label: "Seleção",
             when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
-            detail: `Os ${hackathon.finalists_count} finalistas são anunciados.`,
+            detail: hackathon.finalists_count
+              ? `Os ${hackathon.finalists_count} finalistas são anunciados.`
+              : "As equipes classificadas são anunciadas.",
           },
         ]
       : []),
@@ -261,13 +264,15 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             ) : (
               <>
                 <p className="text-sm text-muted">
-                  {missing.length === 0 && pendingMembers.length === 0
+                  {missing.length === 0 && pendingMembers.length === 0 && acceptedMembers >= 2
                     ? "Tudo pronto. O líder pode enviar."
-                    : pendingMembers.length > 0 && missing.length === 0
-                      ? `Falta a inscrição de ${pendingMembers.length} ${
-                          pendingMembers.length === 1 ? "integrante" : "integrantes"
-                        }.`
-                      : `Faltam ${missing.length} de ${REQUIRED.length} itens.`}
+                    : missing.length > 0
+                      ? `Faltam ${missing.length} de ${REQUIRED.length} itens.`
+                      : acceptedMembers < 2
+                        ? "O time precisa de pelo menos 2 integrantes."
+                        : `Falta a inscrição de ${pendingMembers.length} ${
+                            pendingMembers.length === 1 ? "integrante" : "integrantes"
+                          }.`}
                 </p>
                 <ul className="mt-4 space-y-2.5">
                   {REQUIRED.map((f) => (
@@ -275,6 +280,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                       {f.label}
                     </CheckRow>
                   ))}
+                  <CheckRow done={acceptedMembers >= 2}>
+                    Pelo menos 2 integrantes no time
+                  </CheckRow>
                   <CheckRow done={pendingMembers.length === 0}>
                     Time todo confirmado na inscrição
                   </CheckRow>

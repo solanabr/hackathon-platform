@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { isAdminFor } from "@/lib/roles";
+import { resolveRoleState } from "@/lib/roles";
 
 export async function Header() {
-  const state = await resolveAuthenticatedUserState();
-  const admin = state ? await isAdminFor(state) : false;
+  const roles = await resolveRoleState();
+  const state = roles?.state ?? null;
+  const admin = roles?.isAdmin ?? false;
+  const judge = admin || (roles?.judgeFor.length ?? 0) > 0;
 
   return (
     <header className="sticky top-0 z-50 border-b border-green/10 bg-surface/85 backdrop-blur-md">
@@ -23,6 +24,11 @@ export async function Header() {
         <nav className="flex items-center gap-4 text-sm font-semibold">
           {state ? (
             <>
+              {judge && (
+                <Link href="/judge" className="text-muted transition-colors hover:text-ink">
+                  Avaliação
+                </Link>
+              )}
               {admin && (
                 <Link href="/admin" className="text-muted transition-colors hover:text-ink">
                   Admin

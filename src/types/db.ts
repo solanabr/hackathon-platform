@@ -29,12 +29,13 @@ export type Hackathon = {
   status: HackathonStatus;
   starts_at: string;
   registration_closes_at: string | null;
+  development_starts_at: string | null;
   submission_deadline_at: string;
   finalists_announced_at: string | null;
   presential_at: string | null;
   voting_opens_at: string | null;
   voting_closes_at: string | null;
-  finalists_count: number;
+  finalists_count: number | null;
   cover_image_path: string | null;
   location_name: string | null;
   location_city: string | null;
@@ -116,6 +117,7 @@ export type HackathonContent = {
   duration_minutes: number | null;
   position: number;
   published: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -36,6 +36,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "starts_at", label: "Início", kind: "datetime", group: "Datas" },
   { key: "registration_closes_at", label: "Fim das inscrições", kind: "datetime", group: "Datas" },
   {
+    key: "development_starts_at",
+    label: "Início do desenvolvimento",
+    kind: "datetime",
+    group: "Datas",
+    help: "Separa a capacitação da fase de construção na linha do tempo.",
+  },
+  {
     key: "submission_deadline_at",
     label: "Prazo de submissão",
     kind: "datetime",
@@ -54,7 +61,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "rules_url", label: "Regulamento", kind: "url", group: "Local e links" },
 
   { key: "prize_summary", label: "Premiação", kind: "textarea", group: "Prêmios", help: "Separe os itens com ·" },
-  { key: "finalists_count", label: "Número de finalistas", kind: "number", group: "Prêmios" },
+  {
+    key: "finalists_count",
+    label: "Número de finalistas",
+    kind: "number",
+    group: "Prêmios",
+    help: "Em branco enquanto a organização não fecha o número.",
+  },
 ];
 
 const OFFSET = "-03:00";

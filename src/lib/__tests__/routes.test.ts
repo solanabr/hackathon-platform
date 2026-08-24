@@ -27,3 +27,9 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/account")).toBe(false);
   });
 });
+describe("judge routes are gated", () => {
+  it("keeps the judge surface behind auth", () => {
+    expect(isPublicRoute("/judge")).toBe(false);
+    expect(isPublicRoute("/judge/h/solana-cursor-passo-fundo-2026")).toBe(false);
+  });
+});

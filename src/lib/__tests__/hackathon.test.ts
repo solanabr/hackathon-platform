@@ -16,6 +16,7 @@ const base = {
   status: "published",
   starts_at: "2026-08-31T12:00:00Z",
   registration_closes_at: "2026-09-08T02:59:00Z",
+  development_starts_at: "2026-09-05T03:00:00Z",
   submission_deadline_at: "2026-09-09T15:00:00Z",
   finalists_announced_at: "2026-09-10T15:00:00Z",
   voting_opens_at: "2026-09-12T17:00:00Z",
@@ -108,5 +109,36 @@ describe("phaseBoundaries", () => {
     } as Hackathon);
     expect(bare.selecao).toBeNull();
     expect(bare.fase2).toBeNull();
+  });
+});
+
+describe("phase one split", () => {
+  it("ends the classes when building starts, not when registration closes", () => {
+    const b = phaseBoundaries(base);
+    expect(b.fase1.endsAt).toBe(new Date("2026-09-05T03:00:00Z").getTime());
+    expect(b.submissao.startsAt).toBe(b.fase1.endsAt);
+  });
+
+  it("puts a day inside the build window in the right phase", () => {
+    const b = phaseBoundaries(base);
+    const sixth = new Date("2026-09-06T12:00:00Z").getTime();
+    expect(phaseState(b.fase1, sixth)).toBe("done");
+    expect(phaseState(b.submissao, sixth)).toBe("current");
+  });
+
+  it("registration closing mid-build does not move any phase", () => {
+    const later = phaseBoundaries({
+      ...base,
+      registration_closes_at: "2026-09-08T02:59:00Z",
+    } as Hackathon);
+    expect(later.fase1.endsAt).toBe(new Date("2026-09-05T03:00:00Z").getTime());
+  });
+
+  it("falls back to the old behaviour when an edition sets no build date", () => {
+    const legacy = phaseBoundaries({
+      ...base,
+      development_starts_at: null,
+    } as Hackathon);
+    expect(legacy.fase1.endsAt).toBe(new Date("2026-09-08T02:59:00Z").getTime());
   });
 });

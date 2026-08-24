@@ -51,3 +51,14 @@ describe("resolveRoles", () => {
     });
   });
 });
+describe("judge scoping", () => {
+  it("ignores a judge row with no edition, which would otherwise judge nothing", () => {
+    const out = resolveRoles([role({ role: "judge", hackathon_id: null })], "j@b.com");
+    expect(out.judgeFor).toEqual([]);
+  });
+
+  it("keeps a judge out of editions they were not assigned to", () => {
+    const out = resolveRoles([role({ role: "judge", hackathon_id: "h1" })], "j@b.com");
+    expect(out.judgeFor.includes("h2")).toBe(false);
+  });
+});

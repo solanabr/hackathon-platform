@@ -48,6 +48,12 @@ export default async function AdminEditionPage({
             >
               Conteúdos
             </Link>
+            <Link
+              href={`/admin/h/${hackathon.slug}/judges`}
+              className="btn-secondary px-5 py-2 text-sm"
+            >
+              Jurados
+            </Link>
             <Link href={`/h/${hackathon.slug}`} className="btn-secondary px-5 py-2 text-sm">
               Ver página
             </Link>
