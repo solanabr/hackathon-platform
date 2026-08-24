@@ -157,6 +157,7 @@ export async function createContent(input: {
     .from("hackathon_contents")
     .select("position")
     .eq("hackathon_id", input.hackathonId)
+    .is("deleted_at", null)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -198,6 +199,11 @@ export async function updateContentDetails(input: {
   return { ok: true };
 }
 
+/**
+ * Soft delete: an admin removing an item mid-event should not take it away from
+ * participants who are part-way through it, and should be able to undo a misclick.
+ * The RLS policy and public_schedule both filter on deleted_at.
+ */
 export async function deleteContent(input: {
   contentId: string;
   slug: string;
@@ -208,7 +214,7 @@ export async function deleteContent(input: {
   const supabase = await createServiceRoleClient();
   const { error } = await supabase
     .from("hackathon_contents")
-    .delete()
+    .update({ deleted_at: new Date().toISOString(), published: false })
     .eq("id", input.contentId);
 
   if (error) return { ok: false, error: "Não foi possível remover." };
@@ -233,6 +239,7 @@ export async function moveContent(input: {
     .from("hackathon_contents")
     .select("id, position")
     .eq("hackathon_id", input.hackathonId)
+    .is("deleted_at", null)
     .order("position", { ascending: true });
 
   const rows = (data as Array<{ id: string; position: number }> | null) ?? [];
@@ -250,6 +257,26 @@ export async function moveContent(input: {
     .from("hackathon_contents")
     .update({ position: rows[index].position })
     .eq("id", rows[target].id);
+
+  revalidatePath(`/admin/h/${input.slug}/content`);
+  revalidatePath(`/h/${input.slug}/content`);
+  return { ok: true };
+}
+
+export async function restoreContent(input: {
+  contentId: string;
+  slug: string;
+}): Promise<ContentActionResult> {
+  const gate = await requireAdmin();
+  if (!gate.ok) return { ok: false, error: "Sem permissão." };
+
+  const supabase = await createServiceRoleClient();
+  const { error } = await supabase
+    .from("hackathon_contents")
+    .update({ deleted_at: null })
+    .eq("id", input.contentId);
+
+  if (error) return { ok: false, error: "Não foi possível restaurar." };
 
   revalidatePath(`/admin/h/${input.slug}/content`);
   revalidatePath(`/h/${input.slug}/content`);

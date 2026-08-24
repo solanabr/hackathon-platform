@@ -68,7 +68,7 @@ export function ContentRow({
   }
 
   function remove() {
-    if (!confirm(`Remover "${item.title}"? Isso apaga o conteúdo para todo mundo.`)) return;
+    if (!confirm(`Remover "${item.title}"? Some para os participantes; dá para restaurar depois.`)) return;
     setError(null);
     startTransition(async () => {
       const result = await deleteContent({ contentId: item.id, slug });

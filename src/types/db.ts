@@ -117,6 +117,7 @@ export type HackathonContent = {
   duration_minutes: number | null;
   position: number;
   published: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 };

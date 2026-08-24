@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { JudgeProjectCard, type JudgeProject } from "@/components/judge/project-card";
-import { requireJudge } from "@/lib/roles";
+import { requireJudge, resolveRoleState } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -48,7 +48,7 @@ export default async function JudgeEditionPage({
     .eq("hackathon_id", hackathon.id)
     .order("name", { ascending: true });
 
-  const projects: JudgeProject[] = ((data as TeamRow[] | null) ?? [])
+  let projects: JudgeProject[] = ((data as TeamRow[] | null) ?? [])
     .map((team) => {
       const s = (Array.isArray(team.submissions) ? team.submissions[0] : team.submissions) as
         | Record<string, unknown>
@@ -89,6 +89,22 @@ export default async function JudgeEditionPage({
 
   const round = ratingRound(hackathon);
 
+  // A judge only sees what an admin gave them (regulamento 7.1: two per project).
+  // Admins see everything, so they can spot-check without being assigned.
+  const roles = await resolveRoleState();
+  if (!roles?.isAdmin) {
+    const { data: mine } = await supabase
+      .from("submission_assignments")
+      .select("submission_id")
+      .eq("judge_id", gate.state.userId)
+      .eq("round", round);
+
+    const allowed = new Set(
+      ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
+    );
+    projects = projects.filter((p) => allowed.has(p.submissionId));
+  }
+
   const { data: ratingRows } = projects.length
     ? await supabase
         .from("submission_ratings")
@@ -118,7 +134,7 @@ export default async function JudgeEditionPage({
           <h1 className="font-heading text-3xl font-bold sm:text-4xl">{hackathon.name}</h1>
           <p className="mt-2 text-muted">
             {projects.length === 0
-              ? "Nenhum projeto submetido ainda."
+              ? "Nenhum projeto atribuído a você nesta rodada."
               : `${ratedCount} de ${projects.length} avaliados por você na ${
                   round === "triagem" ? "triagem" : "banca final"
                 }. A nota de cada jurado é privada.`}

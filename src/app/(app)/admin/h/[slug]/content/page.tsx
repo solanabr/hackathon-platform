@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { ContentRow, type AdminContentItem } from "@/components/admin/content-row";
 import { NewContentForm } from "@/components/admin/new-content-form";
+import { RemovedContent } from "@/components/admin/removed-content";
 import { toLocalInput } from "@/lib/edition-fields";
 import { requireAdmin } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -37,7 +38,9 @@ export default async function AdminContentPage({
     .eq("hackathon_id", hackathon.id)
     .order("position", { ascending: true });
 
-  const contents = (data as HackathonContent[] | null) ?? [];
+  const all = (data as HackathonContent[] | null) ?? [];
+  const contents = all.filter((c) => !c.deleted_at);
+  const removed = all.filter((c) => c.deleted_at);
   const publishedCount = contents.filter((c) => c.published).length;
 
   const items: AdminContentItem[] = contents.map((c) => ({
@@ -91,6 +94,10 @@ export default async function AdminContentPage({
             ))}
           </ul>
         )}
+        <RemovedContent
+          slug={slug}
+          items={removed.map((c) => ({ id: c.id, title: c.title, kind: c.kind }))}
+        />
       </div>
     </div>
   );
