@@ -192,7 +192,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               )}
             </dl>
 
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap gap-3">
               {registered ? (
                 <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
                   Acessar painel
@@ -210,6 +210,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                   Inscrições encerradas
                 </button>
               )}
+              <Link href={`/h/${hackathon.slug}/projetos`} className="btn-secondary">
+                Ver projetos
+              </Link>
             </div>
           </div>
 

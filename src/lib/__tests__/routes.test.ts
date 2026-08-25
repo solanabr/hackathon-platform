@@ -33,3 +33,23 @@ describe("judge routes are gated", () => {
     expect(isPublicRoute("/judge/h/solana-cursor-passo-fundo-2026")).toBe(false);
   });
 });
+describe("public project gallery is public", () => {
+  it("lets anon into the gallery and one detail level", () => {
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/projetos")).toBe(true);
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/projetos/abc-123")).toBe(true);
+  });
+
+  it("still gates deeper project paths and sibling edition routes", () => {
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/projetos/a/b")).toBe(false);
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/content")).toBe(false);
+  });
+});
+describe("builder profiles are public", () => {
+  it("lets anon into a profile by id", () => {
+    expect(isPublicRoute("/u/123e4567-e89b-12d3-a456-426614174000")).toBe(true);
+  });
+
+  it("gates deeper profile paths", () => {
+    expect(isPublicRoute("/u/123/projetos")).toBe(false);
+  });
+});
