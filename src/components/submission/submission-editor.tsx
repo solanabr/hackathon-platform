@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,16 @@ type FormState = {
 
 function formatSavedAt(date: Date): string {
   // Pin to America/Sao_Paulo so SSR (UTC) and client (BRT) format identically.
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatSubmittedAt(date: Date): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: "America/Sao_Paulo",
     day: "2-digit",
@@ -148,6 +158,28 @@ export function SubmissionEditor({
       router.refresh();
     });
   }
+
+  const isDraft = initial.status !== "submitted";
+  const saveRef = useRef(save);
+  useEffect(() => {
+    saveRef.current = save;
+  });
+
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    // Autosave drafts 800ms after the last keystroke, but never while a
+    // submit is in flight; the manual "Salvar rascunho" button still saves
+    // on click.
+    if (!editable || pendingSubmit || !isDraft) return;
+    const id = setTimeout(() => {
+      void saveRef.current();
+    }, 800);
+    return () => clearTimeout(id);
+  }, [form, pendingSubmit, editable, isDraft]);
 
   const allRequiredFilled =
     !!form.project_name.trim() &&
@@ -311,7 +343,11 @@ export function SubmissionEditor({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-green/15 pt-6">
         <p className="text-xs text-muted" suppressHydrationWarning>
-          {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
+          {initial.submitted_at
+            ? `Submetido em ${formatSubmittedAt(new Date(initial.submitted_at))} (horário de Brasília).`
+            : savedAt
+              ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).`
+              : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">
           {editable && (
@@ -332,6 +368,9 @@ export function SubmissionEditor({
           )}
         </div>
       </div>
+      {isLeader && blockedReason && (
+        <p className="text-sm text-amber-300">{blockedReason}</p>
+      )}
     </div>
   );
 }

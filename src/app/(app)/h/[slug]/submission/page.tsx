@@ -19,6 +19,24 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const DAY = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  timeZone: "America/Sao_Paulo",
+});
+
+const FULL = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "America/Sao_Paulo",
+});
+
+function clean(s: string): string {
+  return s.replace(/\./g, "");
+}
+
 export default async function SubmissionPage({
   params,
 }: {
@@ -94,18 +112,74 @@ export default async function SubmissionPage({
           </div>
         </header>
 
-        <Card className="mt-8 p-6 sm:p-8">
-          <SubmissionEditor
-            teamId={team.id}
-            isLeader={isLeader}
-            editable={canEdit}
-            initial={submission}
-            initialImageUrl={imagePublicUrl}
-            dashboardHref={`/h/${slug}/dashboard`}
-            membersPending={membersPending}
-            membersAccepted={membersAccepted}
-          />
-        </Card>
+        {submission.status === "submitted" ? (
+          <Card className="mt-8 p-6 sm:p-8">
+            <div className="flex items-center gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald text-surface">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-5 w-5"
+                  aria-hidden
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              <div>
+                <h2 className="font-heading text-xl font-bold">Projeto submetido</h2>
+                {submission.submitted_at && (
+                  <p className="mt-0.5 text-sm text-muted">
+                    Submetido em {FULL.format(new Date(submission.submitted_at))} (horário de
+                    Brasília).
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="mt-6 text-sm leading-relaxed text-muted">
+              {hackathon.finalists_announced_at && (
+                <>
+                  Os finalistas saem em{" "}
+                  <strong className="text-ink">
+                    {clean(DAY.format(new Date(hackathon.finalists_announced_at)))}
+                  </strong>
+                  .{" "}
+                </>
+              )}
+              {hackathon.presential_at && (
+                <>
+                  O Pitch Day é em{" "}
+                  <strong className="text-ink">
+                    {clean(DAY.format(new Date(hackathon.presential_at)))}
+                  </strong>
+                  {hackathon.location_city ? `, em ${hackathon.location_city}` : ""}.
+                </>
+              )}
+            </p>
+            <div className="mt-6">
+              <Link href={`/h/${slug}/dashboard`} className="btn-secondary">
+                Voltar ao painel
+              </Link>
+            </div>
+          </Card>
+        ) : (
+          <Card className="mt-8 p-6 sm:p-8">
+            <SubmissionEditor
+              teamId={team.id}
+              isLeader={isLeader}
+              editable={canEdit}
+              initial={submission}
+              initialImageUrl={imagePublicUrl}
+              dashboardHref={`/h/${slug}/dashboard`}
+              membersPending={membersPending}
+              membersAccepted={membersAccepted}
+            />
+          </Card>
+        )}
       </div>
     </div>
   );
