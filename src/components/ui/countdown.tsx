@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 type Segments = { days: number; hours: number; minutes: number; seconds: number };
 
@@ -28,8 +28,8 @@ const pad = (n: number) => n.toString().padStart(2, "0");
  * Renders the time-until a deadline. Two variants:
  *   - "compact" (default): single string like "2d 7h", ticks every 30s. Used
  *     in the dashboard and submission page.
- *   - "segments": four big tiles (DIAS / HORAS / MIN / SEG), ticks every 1s.
- *     Used in the hero countdown card.
+ *   - "segments": four large mono digits (DIAS / HORAS / MIN / SEG), ticks
+ *     every 1s. Used in the hero countdown card.
  *
  * SSR renders the `placeholder` (compact) or zeroed tiles (segments) to
  * avoid hydration mismatch from Date.now() differing between server and
@@ -67,22 +67,27 @@ export function Countdown({
       { value: seg?.seconds ?? 0, label: "seg" },
     ];
     return (
-      <div className={`grid grid-cols-4 gap-2 sm:gap-3 ${className}`}>
-        {tiles.map((tile) => (
-          <div
-            key={tile.label}
-            className="rounded-2xl border border-green/15 bg-surface-raised px-2 py-4 text-center"
-          >
-            <p
-              className="font-heading text-3xl font-bold tabular-nums text-ink sm:text-4xl"
-              suppressHydrationWarning
-            >
-              {mounted ? pad(tile.value) : "00"}
-            </p>
-            <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted">
-              {tile.label}
-            </p>
-          </div>
+      <div className={`flex items-start justify-center gap-3 sm:gap-5 ${className}`}>
+        {tiles.map((tile, i) => (
+          <Fragment key={tile.label}>
+            {i > 0 && (
+              <span
+                aria-hidden
+                className="mt-3 h-[2px] w-[2px] shrink-0 rounded-full bg-emerald/60 sm:mt-4"
+              />
+            )}
+            <div className="text-center">
+              <p
+                className="font-mono text-4xl font-bold tabular-nums tracking-tight text-ink sm:text-5xl"
+                suppressHydrationWarning
+              >
+                {mounted ? pad(tile.value) : "00"}
+              </p>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted">
+                {tile.label}
+              </p>
+            </div>
+          </Fragment>
         ))}
       </div>
     );
