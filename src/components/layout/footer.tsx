@@ -2,14 +2,22 @@ import Image from "next/image";
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-green/10 py-10">
+    <footer className="mt-24 border-t border-white/10 py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:px-6">
-        <Image
-          src="/brand/stbr/logo/SYMBOL-EMERALD-GREEN.svg"
-          alt="Superteam Brasil"
-          width={32}
-          height={32}
-        />
+        <div className="flex items-center gap-3">
+          <Image
+            src="/brand/stbr/logo/SYMBOL-EMERALD-GREEN.svg"
+            alt=""
+            width={28}
+            height={28}
+          />
+          <Image
+            src="/brand/stbr/logo/horizontal-fwhite.svg"
+            alt="Superteam Brasil"
+            width={170}
+            height={27}
+          />
+        </div>
         <p className="text-sm text-muted">
           Plataforma de hackathons da Superteam Brasil.
         </p>
