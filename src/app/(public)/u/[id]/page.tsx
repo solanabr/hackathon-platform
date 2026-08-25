@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { PublicProfile, PublicSubmission } from "@/types/public";
 
@@ -78,7 +79,8 @@ export default async function BuilderProfilePage({ params }: Props) {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
             <Avatar src={profile.avatar_url} name={profile.full_name} size="lg" />
             <div className="min-w-0 flex-1">
-              <h1 className="font-heading text-3xl font-bold">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald">Builder</p>
+              <h1 className="mt-2 font-heading text-3xl font-bold uppercase leading-tight tracking-tight sm:text-4xl">
                 {profile.full_name ?? "Builder"}
               </h1>
               {profile.headline && <p className="mt-1 text-muted">{profile.headline}</p>}
@@ -95,7 +97,7 @@ export default async function BuilderProfilePage({ params }: Props) {
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-green/20 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+                      className="rounded-full border border-white-10 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
                     >
                       {s.label}
                     </a>
@@ -107,7 +109,8 @@ export default async function BuilderProfilePage({ params }: Props) {
         </Card>
 
         <section className="mt-10" aria-label="Projetos do builder">
-          <h2 className="font-heading text-2xl font-bold">Projetos</h2>
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald">Projetos</p>
+          <h2 className="mt-2 font-heading text-2xl font-bold">Projetos</h2>
           {error ? (
             <Card className="mt-4 p-8">
               <p className="font-heading text-lg font-bold text-ink">
@@ -116,9 +119,9 @@ export default async function BuilderProfilePage({ params }: Props) {
               <p className="mt-1 text-sm text-muted">Tente novamente em instantes.</p>
             </Card>
           ) : projects.length === 0 ? (
-            <Card className="mt-4 p-8">
-              <p className="text-muted">Nenhum projeto publicado ainda.</p>
-            </Card>
+            <div className="mt-4">
+              <EmptyState />
+            </div>
           ) : (
             <ul className="mt-4 grid gap-6 sm:grid-cols-2">
               {projects.map((p) => {
@@ -130,7 +133,7 @@ export default async function BuilderProfilePage({ params }: Props) {
                   <li key={p.id}>
                     <Link
                       href={`/h/${p.hackathon_slug}/projetos/${p.id}`}
-                      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-green/20 bg-surface-raised shadow-[0_8px_32px_rgba(0,140,76,0.08)] transition-colors hover:border-emerald/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white-10 bg-surface-raised shadow-[0_8px_32px_rgba(0,140,76,0.08)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-emerald/50 hover:ring-2 hover:ring-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     >
                       <div className="relative h-40 overflow-hidden bg-green-dark">
                         {imageUrl ? (
@@ -142,13 +145,13 @@ export default async function BuilderProfilePage({ params }: Props) {
                             sizes="(max-width: 640px) 100vw, 50vw"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center px-6 font-heading text-lg font-bold text-surface">
+                          <div className="flex h-full items-center justify-center px-6 font-heading text-lg font-bold text-ink">
                             {p.project_name}
                           </div>
                         )}
                       </div>
                       <div className="flex flex-1 flex-col gap-2 p-5">
-                        <h3 className="truncate font-heading text-lg font-bold">
+                        <h3 className="truncate font-heading text-lg font-bold text-ink">
                           {p.project_name}
                         </h3>
                         <p className="text-sm text-muted">

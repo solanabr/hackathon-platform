@@ -102,17 +102,18 @@ export default async function ProjectDetailPage({ params }: Props) {
         <BackLink href={`/h/${slug}/projetos`} label="Projetos" />
 
         <header className="mt-4">
-          <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald">Projeto</p>
+          <h1 className="mt-3 font-heading text-4xl font-bold uppercase leading-none tracking-tight sm:text-5xl">
             {submission.project_name ?? submission.team_name}
           </h1>
-          <p className="mt-1 text-muted">
+          <p className="mt-3 text-muted">
             {submission.team_name}
             {submission.team_leader_name ? ` · ${submission.team_leader_name}` : ""}
           </p>
         </header>
 
         {imageUrl && (
-          <div className="relative mt-8 h-72 overflow-hidden rounded-2xl border border-green/20 bg-green-dark sm:h-96">
+          <div className="relative mt-8 h-72 overflow-hidden rounded-2xl border border-white-10 bg-green-dark sm:h-96">
             <Image
               src={imageUrl}
               alt={`Imagem do projeto ${submission.project_name ?? ""}`}
@@ -148,7 +149,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 <li key={m.user_id}>
                   <Link
                     href={`/u/${m.user_id}`}
-                    className="flex items-center gap-3 rounded-2xl border border-green/15 bg-surface-raised p-4 transition-colors hover:border-emerald/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    className="flex items-center gap-3 rounded-2xl border border-white-10 bg-surface-raised p-4 transition-colors hover:border-emerald/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   >
                     <Avatar src={m.avatar_url} name={m.full_name} size="md" />
                     <div className="min-w-0">
@@ -174,7 +175,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                   href={l.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full border border-green/20 px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+                  className="rounded-full border border-white-10 px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
                 >
                   {l.label}
                 </a>
