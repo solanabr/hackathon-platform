@@ -336,9 +336,9 @@ export default async function HomePage({
 
           <div className="relative grid gap-10 lg:grid-cols-12 lg:items-center">
             <div className="min-w-0 lg:col-span-8">
-              <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.04] tracking-tight text-surface [font-stretch:118%] sm:text-5xl">
+              <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.22] tracking-tight text-surface [font-stretch:118%] sm:text-5xl">
                 O próximo{" "}
-                <span className="inline-block -rotate-1 bg-yellow px-3 py-0.5 text-green-dark">
+                <span className="inline-block -rotate-1 bg-yellow px-3 text-green-dark">
                   vencedor
                 </span>{" "}
                 ainda não se inscreveu
@@ -346,12 +346,12 @@ export default async function HomePage({
             </div>
 
             <div className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
-              <Link
-                href={live ? `/h/${live.slug}` : "/auth"}
+              <a
+                href="#edicoes"
                 className="rounded-full bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-[6px_6px_0_rgba(0,0,0,0.35)] transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
               >
-                {live ? "Garantir minha vaga" : "Entrar"}
-              </Link>
+                Garantir minha vaga
+              </a>
             </div>
           </div>
         </div>
