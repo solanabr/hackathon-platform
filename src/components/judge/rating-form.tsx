@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { upsertRating, deleteRating } from "@/app/(app)/judge/actions";
 import type { RatingRound } from "@/lib/hackathon";
+
+const AUTOSAVE_DELAY = 800;
 
 export function RatingForm({
   hackathonId,
@@ -31,7 +33,41 @@ export function RatingForm({
   const rated = initialGrade !== null || initialComment.length > 0;
   const dirty = grade !== initialGrade || comment !== initialComment;
 
+  // Debounced autosave for the comment, gated on a grade already existing.
+  // latestRef holds the values the timer will flush, so a slider move right
+  // before the timer fires is captured too. Manual save cancels the timer so
+  // the two never race.
+  const latestRef = useRef({ grade: initialGrade, comment: initialComment });
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  function scheduleAutosave() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      const { grade: g, comment: c } = latestRef.current;
+      if (g === null) return;
+      setError(null);
+      setSaved(false);
+      start(async () => {
+        const res = await upsertRating({ hackathonId, submissionId, slug, round, grade: g, comment: c });
+        if (!res.ok) return setError(res.error);
+        setSaved(true);
+        router.refresh();
+      });
+    }, AUTOSAVE_DELAY);
+  }
+
   function save() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     setError(null);
     setSaved(false);
     start(async () => {
@@ -43,6 +79,11 @@ export function RatingForm({
   }
 
   function clear() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    latestRef.current = { grade: null, comment: "" };
     setError(null);
     setSaved(false);
     start(async () => {
@@ -70,6 +111,10 @@ export function RatingForm({
         </span>
       </div>
 
+      <p className="mt-3 text-xs leading-relaxed text-muted">
+        Critérios do regulamento: execução técnica, inovação, impacto e relevância, apresentação.
+      </p>
+
       <input
         id={`grade-${submissionId}`}
         type="range"
@@ -78,7 +123,9 @@ export function RatingForm({
         step={1}
         value={grade ?? 0}
         onChange={(e) => {
-          setGrade(Number(e.target.value));
+          const value = Number(e.target.value);
+          setGrade(value);
+          latestRef.current = { grade: value, comment };
           setSaved(false);
         }}
         className="mt-3 w-full accent-emerald"
@@ -102,8 +149,11 @@ export function RatingForm({
         value={comment}
         placeholder="O que pesou na nota."
         onChange={(e) => {
-          setComment(e.target.value);
+          const value = e.target.value;
+          setComment(value);
+          latestRef.current = { grade, comment: value };
           setSaved(false);
+          if (grade !== null) scheduleAutosave();
         }}
         className="mt-1.5 w-full rounded-xl border border-green/25 bg-surface px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
       />
