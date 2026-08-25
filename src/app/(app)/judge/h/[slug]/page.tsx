@@ -1,11 +1,19 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
+import { StatusChip } from "@/components/ui/section-card";
 import { JudgeProjectCard, type JudgeProject } from "@/components/judge/project-card";
 import { requireJudge, resolveRoleState } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+const DAY = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  timeZone: "America/Sao_Paulo",
+});
 
 type TeamRow = {
   id: string;
@@ -142,20 +150,32 @@ export default async function JudgeEditionPage({
   // Only a row with a grade counts as rated — a comment-only save is a draft.
   const ratedCount = projects.filter((p) => mine.get(p.submissionId)?.grade != null).length;
 
+  const roundLabel = round === "triagem" ? "Triagem" : "Final";
+  const roundDeadline =
+    round === "triagem"
+      ? hackathon.finalists_announced_at
+      : (hackathon.voting_closes_at ?? hackathon.presential_at);
+
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
         <BackLink href="/judge" label="Avaliação" />
 
         <header>
-          <h1 className="font-heading text-3xl font-bold sm:text-4xl">{hackathon.name}</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-heading text-3xl font-bold sm:text-4xl">{hackathon.name}</h1>
+            <StatusChip tone={round === "triagem" ? "pending" : "ok"}>{roundLabel}</StatusChip>
+          </div>
           <p className="mt-2 text-muted">
             {projects.length === 0
               ? "Nenhum projeto atribuído a você nesta rodada."
-              : `${ratedCount} de ${projects.length} avaliados por você na ${
-                  round === "triagem" ? "triagem" : "banca final"
-                }. A nota de cada jurado é privada.`}
+              : `${ratedCount} de ${projects.length} avaliados por você. A nota de cada jurado é privada.`}
           </p>
+          {roundDeadline && (
+            <p className="mt-1 text-sm text-muted">
+              Avaliações até {DAY.format(new Date(roundDeadline)).replace(/\./g, "")}.
+            </p>
+          )}
         </header>
 
         {projects.length > 0 && (
