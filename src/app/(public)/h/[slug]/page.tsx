@@ -63,6 +63,18 @@ const PARTNERS = [
 
 const EYEBROW = "text-xs font-bold uppercase tracking-wider text-emerald";
 
+type SupporterLogo = { src: string; name: string; w: number; h: number; cls: string };
+
+const SUPPORTERS: Record<string, SupporterLogo[] | undefined> = {
+  "solana-cursor-passo-fundo-2026": [
+    { src: "/brand/events/upf-light.png", name: "UPF", w: 308, h: 240, cls: "h-10 sm:h-12" },
+    { src: "/brand/events/upf-parque-light.png", name: "UPF Parque", w: 603, h: 240, cls: "h-9 sm:h-10" },
+    { src: "/brand/events/passo-fundo-valley-light.png", name: "Passo Fundo Valley", w: 697, h: 240, cls: "h-8 sm:h-9" },
+    { src: "/brand/events/apollo-light.png", name: "Apollo", w: 925, h: 240, cls: "h-7 sm:h-8" },
+    { src: "/brand/events/vertice-light.png", name: "Vértice", w: 998, h: 240, cls: "h-7 sm:h-8" },
+  ],
+};
+
 type ScheduleRow = Pick<
   HackathonContent,
   "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "location" | "position"
@@ -91,6 +103,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const viewer = await resolveAuthenticatedUserState();
   const registered =
     viewer !== null && isRegistrationComplete(await getRegistration(viewer.userId, hackathon.id));
+
+  const supporters = SUPPORTERS[hackathon.slug] ?? [];
 
   const coverUrl = hackathon.cover_image_path
     ? hackathon.cover_image_path.startsWith("/")
@@ -450,11 +464,10 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      {finalists.length > 0 && (
+{finalists.length > 0 && (
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">
           <div className="mx-auto max-w-6xl">
-            <p className={EYEBROW}>Finalistas</p>
-            <h2 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">
+            <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
               Finalistas
             </h2>
             <p className="mt-3 max-w-xl leading-relaxed text-muted">
@@ -465,10 +478,10 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               {finalists.map((f) => (
                 <li
                   key={f.teamId}
-                  className="rounded-2xl border border-white-10 bg-surface-raised p-6"
+                  className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-6"
                 >
                   {f.placement !== null && (
-                    <p className="font-mono text-sm font-bold tabular-nums text-yellow">
+                    <p className="font-mono text-sm font-bold tabular-nums text-emerald">
                       {f.placement}º lugar
                     </p>
                   )}
@@ -480,7 +493,10 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização">
+      <section
+        className={`px-4 sm:px-6 lg:px-8 ${supporters.length > 0 ? "pb-4" : "pb-24"}`}
+        aria-label="Realização"
+      >
         <div className="mx-auto max-w-6xl">
           <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
             <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
@@ -502,6 +518,31 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
       </section>
+
+      {supporters.length > 0 && (
+        <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Apoiadores">
+          <div className="mx-auto max-w-6xl">
+            <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
+              <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+                Apoiadores
+              </h2>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
+                {supporters.map((s) => (
+                  <Image
+                    key={s.name}
+                    src={s.src}
+                    alt={s.name}
+                    width={s.w}
+                    height={s.h}
+                    loading="lazy"
+                    className={`w-auto opacity-90 ${s.cls}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
