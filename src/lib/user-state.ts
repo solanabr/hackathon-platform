@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "./supabase/server";
 import { sanitizeRedirect } from "./security";
 import { editionStage } from "./hackathon";
@@ -14,24 +15,14 @@ export type AuthenticatedState = {
 };
 
 /**
- * The header and every gated page resolve this state on each render, so the
- * membership lookup must be deduped per request.
+ * Painel of the newest live hackathon among `hackathonIds`, or null when none
+ * of them is live. Live means the edition has left draft and has not finished.
  */
-const liveDashboardPath = cache(async (userId: string): Promise<string> => {
-  const supabase = await createServerSupabaseClient();
-  // Only confirmed memberships route to the dashboard. A pending member has
-  // never confirmed registration, so they'd land on the dashboard, get bounced
-  // to /register, and hit the landing's disabled CTA once registration closes.
-  const { data: memberships } = await supabase
-    .from("team_members")
-    .select("hackathon_id")
-    .eq("user_id", userId)
-    .eq("status", "accepted");
-
-  const hackathonIds = Array.from(
-    new Set(((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id)),
-  );
-  if (hackathonIds.length === 0) return "/";
+async function latestLiveDashboard(
+  supabase: SupabaseClient,
+  hackathonIds: string[],
+): Promise<string | null> {
+  if (hackathonIds.length === 0) return null;
 
   const { data: hackathons } = await supabase
     .from("hackathons")
@@ -41,11 +32,51 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const live = ((hackathons as Hackathon[] | null) ?? []).filter(
     (h) => h.status !== "draft" && editionStage(h) !== "finished",
   );
-  if (live.length === 0) return "/";
+  if (live.length === 0) return null;
+
   const target = live.sort(
     (a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime(),
   )[0];
   return `/h/${target.slug}/dashboard`;
+}
+
+/**
+ * The header and every gated page resolve this state on each render, so the
+ * membership lookup must be deduped per request.
+ *
+ * Precedence for the painel path: an accepted membership in a live edition
+ * wins; otherwise the newest live edition the user registered for — even with
+ * no team yet — so a registered participant is never stranded on `/`.
+ */
+const liveDashboardPath = cache(async (userId: string): Promise<string> => {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: memberships } = await supabase
+    .from("team_members")
+    .select("hackathon_id")
+    .eq("user_id", userId)
+    .eq("status", "accepted");
+
+  const membershipIds = Array.from(
+    new Set(((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id)),
+  );
+
+  const fromMembership = await latestLiveDashboard(supabase, membershipIds);
+  if (fromMembership) return fromMembership;
+
+  const { data: registrations } = await supabase
+    .from("hackathon_registrations")
+    .select("hackathon_id")
+    .eq("user_id", userId);
+
+  const registrationIds = Array.from(
+    new Set(((registrations as { hackathon_id: string }[] | null) ?? []).map((r) => r.hackathon_id)),
+  );
+
+  const fromRegistration = await latestLiveDashboard(supabase, registrationIds);
+  if (fromRegistration) return fromRegistration;
+
+  return "/";
 });
 
 export async function resolveAuthenticatedUserState(): Promise<AuthenticatedState | null> {
