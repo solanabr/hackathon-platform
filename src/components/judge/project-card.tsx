@@ -108,7 +108,9 @@ export function JudgeProjectCard({
                     {member.id && (
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {member.email && (
-                          <MemberContactLink href={`/u/${member.id}`}>{member.email}</MemberContactLink>
+                          <MemberContactLink href={`mailto:${member.email}`}>
+                            {member.email}
+                          </MemberContactLink>
                         )}
                         {member.githubUrl && (
                           <MemberContactLink href={`/u/${member.id}`}>GitHub</MemberContactLink>
@@ -117,7 +119,10 @@ export function JudgeProjectCard({
                           <MemberContactLink href={`/u/${member.id}`}>LinkedIn</MemberContactLink>
                         )}
                         {member.telegramHandle && (
-                          <MemberContactLink href={`/u/${member.id}`}>
+                          <MemberContactLink
+                            href={`https://t.me/${member.telegramHandle.replace(/^@/, "")}`}
+                            external
+                          >
                             {member.telegramHandle}
                           </MemberContactLink>
                         )}
@@ -161,10 +166,19 @@ export function JudgeProjectCard({
   );
 }
 
-function MemberContactLink({ href, children }: { href: string; children: React.ReactNode }) {
+function MemberContactLink({
+  href,
+  external,
+  children,
+}: {
+  href: string;
+  external?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
+      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
       className="max-w-full truncate rounded-full border border-green/20 px-2.5 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
     >
       {children}
