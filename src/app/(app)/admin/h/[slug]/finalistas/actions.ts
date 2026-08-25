@@ -98,7 +98,14 @@ export async function notifyFinalists(input: {
   const gate = await requireAdmin();
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
-  const result = await notifyFinalistsByEmail(input.hackathonId);
+  // Same posture as the other actions here: the slug decides the edition,
+  // the client-supplied id only has to agree with it.
+  const hackathon = await getHackathonBySlug(input.slug);
+  if (!hackathon || hackathon.id !== input.hackathonId) {
+    return { ok: false, error: "Edição não confere." };
+  }
+
+  const result = await notifyFinalistsByEmail(hackathon.id);
   if (!result.ok) return result;
 
   revalidatePath(`/admin/h/${input.slug}/finalistas`);

@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
 import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
   }
 
   // The RPC only lets the team leader through, so the session email is the
-  // leader's. Fire-and-forget: a failed or slow Resend call must never fail
-  // an accepted submission or delay the client's response.
-  void (async () => {
+  // leader's. after() runs once the response is flushed and, unlike a floated
+  // promise, survives the serverless instance being frozen at flush time.
+  after(async () => {
     try {
       const { data: teamRow } = await supabase
         .from("teams")
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error("sendSubmissionReceived error:", err);
     }
-  })();
+  });
 
   return NextResponse.json({ ok: true });
 }
