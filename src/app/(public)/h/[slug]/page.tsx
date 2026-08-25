@@ -242,14 +242,15 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               )}
 
             {countdownTarget && (
-              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-6 py-4 shadow-[6px_6px_0_#1b231d]">
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-[6px_6px_0_#1b231d]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald">
                   {countdownTarget.label}
                 </p>
                 <Countdown
                   deadlineIso={countdownTarget.iso}
                   variant="segments"
-                  className="mt-2 !justify-start"
+                  size="md"
+                  className="mt-1.5 !justify-start !gap-3"
                 />
               </div>
             )}

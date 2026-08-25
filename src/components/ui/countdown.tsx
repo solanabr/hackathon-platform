@@ -40,11 +40,13 @@ export function Countdown({
   placeholder = "-",
   className = "",
   variant = "compact",
+  size = "lg",
 }: {
   deadlineIso: string;
   placeholder?: string;
   className?: string;
   variant?: "compact" | "segments";
+  size?: "md" | "lg";
 }) {
   const deadlineMs = new Date(deadlineIso).getTime();
   const [seg, setSeg] = useState<Segments | null>(null);
@@ -78,12 +80,14 @@ export function Countdown({
             )}
             <div className="text-center">
               <p
-                className="font-mono text-4xl font-bold tabular-nums tracking-tight text-ink sm:text-5xl"
+                className={`font-mono font-bold tabular-nums tracking-tight text-ink ${
+                  size === "md" ? "text-2xl sm:text-3xl" : "text-4xl sm:text-5xl"
+                }`}
                 suppressHydrationWarning
               >
                 {mounted ? pad(tile.value) : "00"}
               </p>
-              <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted">
+              <p className={`font-mono uppercase tracking-wider text-muted ${size === "md" ? "mt-1 text-[10px]" : "mt-2 text-[11px]"}`}>
                 {tile.label}
               </p>
             </div>
