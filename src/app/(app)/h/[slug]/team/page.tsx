@@ -40,8 +40,10 @@ export default async function TeamPage({
               Você foi adicionado ao time {pendingTeam.teamName}
             </h1>
             <p className="mt-2 text-muted">
-              {pendingTeam.leaderName ?? "O líder do time"} te adicionou por e-mail. A entrada é
-              confirmada assim que você mantiver a inscrição completa.
+              {pendingTeam.leaderName ?? "O líder do time"} te adicionou por e-mail.{" "}
+              {pendingTeam.locked || pendingTeam.full
+                ? "O time já está com a submissão fechada ou sem vagas: sua entrada continua pendente até o líder liberar um lugar."
+                : "A entrada é confirmada assim que você mantiver a inscrição completa."}
             </p>
             <div className="mt-6">
               <Link href={`/h/${slug}/dashboard`}>
