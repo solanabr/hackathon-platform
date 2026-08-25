@@ -31,7 +31,9 @@ export default async function ProjectsGalleryPage({
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("public_submissions")
-    .select("*")
+    .select(
+      "id, project_name, description, image_path, team_name, team_leader_name, submitted_at",
+    )
     .eq("hackathon_slug", slug)
     .order("submitted_at", { ascending: false });
   const projects = (data as PublicSubmission[] | null) ?? [];

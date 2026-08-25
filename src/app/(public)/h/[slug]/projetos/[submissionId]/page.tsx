@@ -17,7 +17,9 @@ async function getSubmission(slug: string, id: string) {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("public_submissions")
-    .select("*")
+    .select(
+      "id, project_name, description, image_path, github_url, twitter_url, website_url, demo_video_url, pitch_video_url, team_id, team_name, team_leader_name, hackathon_name",
+    )
     .eq("id", id)
     .eq("hackathon_slug", slug)
     .maybeSingle();
@@ -61,7 +63,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   const { data: membersData } = await supabase
     .from("public_team_members")
-    .select("*")
+    .select("user_id, full_name, avatar_url, headline")
     .eq("team_id", submission.team_id)
     .order("full_name");
   const members = (membersData as PublicTeamMember[] | null) ?? [];
