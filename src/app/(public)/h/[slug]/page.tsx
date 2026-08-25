@@ -11,6 +11,7 @@ import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
+import { Countdown } from "@/components/ui/countdown";
 import type { HackathonContent } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,8 @@ const PARTNERS = [
   { src: "/brand/events/cursor-light.png", name: "Cursor", w: 6717, h: 1597 },
   { src: "/brand/stbr/logo/horizontal-offwhite.svg", name: "Superteam Brasil", w: 600, h: 112 },
 ];
+
+const EYEBROW = "text-xs font-bold uppercase tracking-wider text-emerald";
 
 type ScheduleRow = Pick<
   HackathonContent,
@@ -153,17 +156,42 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   ];
 
   const online = schedule.filter((s) => s.kind !== "evento");
+  const editionYear = new Date(hackathon.starts_at).getFullYear();
 
   return (
     <div>
-      <section className="px-4 pt-10 sm:px-6 lg:px-8" aria-label={hackathon.name}>
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
+      <section className="relative overflow-hidden px-4 pt-10 sm:px-6 lg:px-8" aria-label={hackathon.name}>
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-emerald/20 to-transparent" />
+          <div className="absolute -left-24 top-8 h-[24rem] w-44 opacity-[0.08] sm:w-56">
+            <Image
+              src="/brand/stbr/elements/morth-01.svg"
+              alt=""
+              fill
+              className="object-contain"
+              sizes="224px"
+            />
+          </div>
+          <div className="absolute -right-20 bottom-0 h-64 w-80 opacity-[0.08]">
+            <Image
+              src="/brand/stbr/elements/morth-05.svg"
+              alt=""
+              fill
+              className="object-contain"
+              sizes="320px"
+            />
+          </div>
+        </div>
+
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
           <div>
+            <p className={EYEBROW}>Edition · {editionYear}</p>
+
             <p
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${
+              className={`mt-5 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${
                 open
                   ? "border border-emerald/30 bg-emerald/10 text-emerald"
-                  : "border border-green/20 bg-surface-raised text-muted"
+                  : "border border-white-10 bg-surface-raised text-muted"
               }`}
             >
               {open && (
@@ -175,7 +203,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               {open ? "Inscrições abertas" : "Inscrições encerradas"}
             </p>
 
-            <h1 className="mt-5 text-balance font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
+            <h1 className="mt-5 text-balance font-heading text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl">
               {hackathon.name}
             </h1>
             {hackathon.tagline && (
@@ -230,14 +258,30 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                   Inscrições encerradas
                 </button>
               )}
-              <Link href={`/h/${hackathon.slug}/projetos`} className="btn-secondary">
+              <Link
+                href={`/h/${hackathon.slug}/projetos`}
+                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-yellow/70 px-6 py-3 font-semibold text-yellow transition-all duration-200 hover:bg-yellow hover:text-green-dark"
+              >
                 Ver projetos
               </Link>
             </div>
+
+            {open && hackathon.registration_closes_at && (
+              <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-white-10 bg-surface-raised px-4 py-1.5 text-sm text-muted">
+                <span className="text-[11px] font-bold uppercase tracking-wider">
+                  Inscrições encerram em
+                </span>
+                <Countdown
+                  deadlineIso={hackathon.registration_closes_at}
+                  variant="compact"
+                  className="font-mono font-bold tabular-nums text-ink"
+                />
+              </p>
+            )}
           </div>
 
           {coverUrl && (
-            <div className="relative overflow-hidden rounded-3xl border border-green/20 bg-green-dark shadow-[0_16px_48px_rgba(0,140,76,0.18)]">
+            <div className="relative overflow-hidden rounded-3xl border border-white-10 bg-green-dark shadow-[0_16px_48px_rgba(0,140,76,0.18)]">
               <Image
                 src={coverUrl}
                 alt={`Arte do ${hackathon.name}`}
@@ -254,7 +298,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
       <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Etapas">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl">
+          <p className={EYEBROW}>Como acontece</p>
+          <h2 className="mt-3 text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl">
             Como o hackathon acontece
           </h2>
           <p className="mt-3 max-w-xl leading-relaxed text-muted">
@@ -270,9 +315,12 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Programação">
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
-                Programação da Fase 1
-              </h2>
+              <div>
+                <p className={EYEBROW}>Programação</p>
+                <h2 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">
+                  Programação da Fase 1
+                </h2>
+              </div>
               <p className="text-sm text-muted">
                 As gravações ficam disponíveis na plataforma depois de cada encontro.
               </p>
@@ -284,7 +332,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 return (
                   <li
                     key={item.id}
-                    className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised p-5"
+                    className="flex gap-5 rounded-2xl border border-white-10 bg-surface-raised p-5"
                   >
                     <div className="w-16 shrink-0 text-center">
                       {at ? (
@@ -329,7 +377,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Entregáveis">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
+          <p className={EYEBROW}>Entregáveis</p>
+          <h2 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">
             O que seu time entrega
           </h2>
           <p className="mt-3 max-w-xl leading-relaxed text-muted">
@@ -339,8 +388,11 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {DELIVERABLES.map((d) => (
-              <div key={d.label} className="rounded-2xl border border-green/15 bg-surface-raised p-6">
-                <p className="font-heading text-4xl font-bold leading-none text-emerald">
+              <div
+                key={d.label}
+                className="rounded-2xl border border-white-10 bg-surface-raised p-6"
+              >
+                <p className="font-mono text-4xl font-bold leading-none tabular-nums text-emerald">
                   {d.value}
                   <span className="ml-1.5 align-middle text-sm font-semibold text-muted">
                     {d.unit}
@@ -367,13 +419,21 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 }}
               />
               <div className="relative">
-                <h2 className="font-heading text-3xl font-bold text-surface sm:text-4xl">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-yellow">
+                  Prêmios
+                </p>
+                <h2 className="mt-3 font-heading text-3xl font-bold text-ink sm:text-4xl">
                   Premiação
                 </h2>
-                <ul className="mt-6 grid gap-x-10 gap-y-3 text-surface/85 sm:grid-cols-2">
-                  {hackathon.prize_summary.split("·").map((prize) => (
+                <ul className="mt-6 grid gap-x-10 gap-y-3 text-muted sm:grid-cols-2">
+                  {hackathon.prize_summary.split("·").map((prize, i) => (
                     <li key={prize} className="flex gap-3 leading-relaxed">
-                      <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow" />
+                      <span
+                        aria-hidden
+                        className="mt-0.5 shrink-0 font-mono text-sm font-bold tabular-nums text-yellow"
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
                       <span>{prize.trim()}</span>
                     </li>
                   ))}
@@ -387,7 +447,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       {finalists.length > 0 && (
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">
           <div className="mx-auto max-w-6xl">
-            <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
+            <p className={EYEBROW}>Finalistas</p>
+            <h2 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">
               Finalistas
             </h2>
             <p className="mt-3 max-w-xl leading-relaxed text-muted">
@@ -398,10 +459,10 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               {finalists.map((f) => (
                 <li
                   key={f.teamId}
-                  className="rounded-2xl border border-green/15 bg-surface-raised p-6"
+                  className="rounded-2xl border border-white-10 bg-surface-raised p-6"
                 >
                   {f.placement !== null && (
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald">
+                    <p className="font-mono text-sm font-bold tabular-nums text-yellow">
                       {f.placement}º lugar
                     </p>
                   )}
@@ -416,7 +477,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização">
         <div className="mx-auto max-w-6xl">
           <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
-            <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+            <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
               Realização
             </h2>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
