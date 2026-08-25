@@ -1,8 +1,22 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
 import { RatingForm } from "@/components/judge/rating-form";
 import type { RatingRound } from "@/lib/hackathon";
+
+export type JudgeMember = {
+  id: string | null;
+  name: string;
+  isLeader: boolean;
+  headline: string | null;
+  avatarUrl: string | null;
+  email: string | null;
+  githubUrl: string | null;
+  linkedinUrl: string | null;
+  telegramHandle: string | null;
+};
 
 export type JudgeProject = {
   submissionId: string;
@@ -12,7 +26,7 @@ export type JudgeProject = {
   imageUrl: string | null;
   submittedAt: string | null;
   links: Array<{ label: string; href: string }>;
-  members: Array<{ name: string; isLeader: boolean }>;
+  members: JudgeMember[];
 };
 
 const WHEN = new Intl.DateTimeFormat("pt-BR", {
@@ -68,11 +82,52 @@ export function JudgeProjectCard({
         )}
 
         {project.members.length > 0 && (
-          <p className="mt-5 text-sm text-muted">
-            {project.members
-              .map((m) => (m.isLeader ? `${m.name} (líder)` : m.name))
-              .join(" · ")}
-          </p>
+          <div className="mt-5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Time</p>
+            <ul className="mt-3 space-y-3">
+              {project.members.map((member) => (
+                <li key={member.id ?? member.name} className="flex items-start gap-3">
+                  <Avatar src={member.avatarUrl} name={member.name} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {member.id ? (
+                        <Link
+                          href={`/u/${member.id}`}
+                          className="text-sm font-semibold text-ink hover:text-emerald hover:underline"
+                        >
+                          {member.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm font-semibold text-ink">{member.name}</span>
+                      )}
+                      {member.isLeader && <Badge tone="yellow">Líder</Badge>}
+                    </div>
+                    {member.headline && (
+                      <p className="mt-0.5 truncate text-xs text-muted">{member.headline}</p>
+                    )}
+                    {member.id && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {member.email && (
+                          <MemberContactLink href={`/u/${member.id}`}>{member.email}</MemberContactLink>
+                        )}
+                        {member.githubUrl && (
+                          <MemberContactLink href={`/u/${member.id}`}>GitHub</MemberContactLink>
+                        )}
+                        {member.linkedinUrl && (
+                          <MemberContactLink href={`/u/${member.id}`}>LinkedIn</MemberContactLink>
+                        )}
+                        {member.telegramHandle && (
+                          <MemberContactLink href={`/u/${member.id}`}>
+                            {member.telegramHandle}
+                          </MemberContactLink>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {project.links.length > 0 && (
@@ -103,5 +158,16 @@ export function JudgeProjectCard({
         />
       </div>
     </Card>
+  );
+}
+
+function MemberContactLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="max-w-full truncate rounded-full border border-green/20 px-2.5 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+    >
+      {children}
+    </Link>
   );
 }

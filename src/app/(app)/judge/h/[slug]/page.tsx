@@ -18,7 +18,16 @@ type TeamRow = {
     is_leader: boolean;
     status: string;
     invited_email: string;
-    users: { full_name: string | null; email: string } | null;
+    users: {
+      id: string;
+      full_name: string | null;
+      email: string;
+      avatar_url: string | null;
+      headline: string | null;
+      github_url: string | null;
+      linkedin_url: string | null;
+      telegram_handle: string | null;
+    } | null;
   }> | null;
 };
 
@@ -43,7 +52,7 @@ export default async function JudgeEditionPage({
     .select(
       `id, name,
        submissions(id, project_name, description, pitch_deck_url, pitch_video_url, demo_video_url, github_url, website_url, twitter_url, image_path, status, submitted_at),
-       team_members(is_leader, status, invited_email, users(full_name, email))`,
+       team_members(is_leader, status, invited_email, users(id, full_name, email, avatar_url, headline, github_url, linkedin_url, telegram_handle))`,
     )
     .eq("hackathon_id", hackathon.id)
     .order("name", { ascending: true });
@@ -58,8 +67,15 @@ export default async function JudgeEditionPage({
       const members = (team.team_members ?? [])
         .filter((m) => m.status === "accepted")
         .map((m) => ({
+          id: m.users?.id ?? null,
           name: m.users?.full_name ?? m.users?.email ?? m.invited_email,
           isLeader: m.is_leader,
+          headline: m.users?.headline ?? null,
+          avatarUrl: m.users?.avatar_url ?? null,
+          email: m.users?.email ?? null,
+          githubUrl: m.users?.github_url ?? null,
+          linkedinUrl: m.users?.linkedin_url ?? null,
+          telegramHandle: m.users?.telegram_handle ?? null,
         }));
 
       const imagePath = s.image_path as string | null;
