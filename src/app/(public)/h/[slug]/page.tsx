@@ -13,6 +13,7 @@ import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supab
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import { Countdown } from "@/components/ui/countdown";
 import type { HackathonContent } from "@/types/db";
+import { TickerStrip } from "@/components/layout/ticker-strip";
 
 export const dynamic = "force-dynamic";
 
@@ -157,6 +158,20 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   const online = schedule.filter((s) => s.kind !== "evento");
 
+  const T_DAY = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
+  const T_TIME = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
+  const up = (v: string) => v.replace(/\./g, "").toUpperCase();
+  const tickerItems = [
+    hackathon.registration_closes_at
+      ? `Inscrições até ${up(T_DAY.format(new Date(hackathon.registration_closes_at)))}`
+      : null,
+    `Submissão até ${up(T_DAY.format(new Date(hackathon.submission_deadline_at)))}, ${T_TIME.format(new Date(hackathon.submission_deadline_at))}`,
+    hackathon.presential_at
+      ? `Pitch Day ${up(T_DAY.format(new Date(hackathon.presential_at)))}${hackathon.location_city ? ` em ${hackathon.location_city}` : ""}`
+      : null,
+    "US$ 3.000 em prêmios",
+  ].filter((v): v is string => Boolean(v));
+
   return (
     <div>
       <section className="relative overflow-hidden px-4 pt-10 sm:px-6 lg:px-8" aria-label={hackathon.name}>
@@ -256,6 +271,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           )}
         </div>
       </section>
+
+      <TickerStrip items={tickerItems} />
 
       <section className="px-4 pb-8 sm:px-6 lg:px-8" aria-label="Informações da edição">
         <div className="mx-auto max-w-6xl">

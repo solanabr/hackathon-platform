@@ -3,6 +3,8 @@ import Image from "next/image";
 import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
+import { TickerStrip } from "@/components/layout/ticker-strip";
+import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 
 export const dynamic = "force-dynamic";
 
@@ -93,22 +95,25 @@ export default async function HomePage({
   for (const e of editions) counts[e.stage] = (counts[e.stage] ?? 0) + 1;
   const filtered = filter === "todos" ? editions : editions.filter((e) => e.stage === filter);
 
-  // The ticker carries only real deadlines from the live edition.
-  const tickerItems = live
-    ? [
-        live.registration_closes_at
-          ? `INSCRIÇÕES ATÉ ${clean(TICKER_DAY.format(new Date(live.registration_closes_at)))}`
-          : "INSCRIÇÕES ABERTAS",
-        `SUBMISSÃO ATÉ ${clean(TICKER_DAY.format(new Date(live.submission_deadline_at)))}, ${TICKER_TIME.format(new Date(live.submission_deadline_at))}`,
-        live.presential_at
-          ? `PITCH DAY ${clean(TICKER_DAY.format(new Date(live.presential_at)))}${live.location_city ? ` EM ${live.location_city.toUpperCase()}` : ""}`
-          : null,
-        "US$ 3.000 EM PRÊMIOS",
-      ].filter((s): s is string => Boolean(s))
-    : [];
+  const tickerItems = [
+    "Construa no ecossistema Solana",
+    live ? "Inscrições abertas" : "Novas edições em breve",
+    "Do primeiro commit ao Pitch Day",
+    "Times de 2 a 4 builders",
+  ];
+
+  const deck: DeckCard[] = editions.slice(0, 3).map((e) => ({
+    key: e.slug,
+    href: `/h/${e.slug}`,
+    label: e.name,
+    coverUrl: e.coverUrl,
+  }));
+  while (deck.length < 3) {
+    deck.push({ key: `brand-${deck.length}`, href: null, label: "Superteam Brasil", coverUrl: null });
+  }
 
   return (
-    <div className="bg-[#f7eacb] text-[#1b231d]">
+    <div className="bg-surface text-ink">
       {/* Hero: the morth shapes are the canvas, DoraHacks-style, in LP paint */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -130,13 +135,13 @@ export default async function HomePage({
           />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 lg:pb-20 lg:pt-20">
-          <div className="max-w-3xl">
+        <div className="relative mx-auto grid max-w-6xl gap-14 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-8 lg:pb-24 lg:pt-20">
+          <div className="min-w-0 lg:col-span-7">
             {live && (
-              <p className="inline-flex items-center gap-2.5 rounded-full bg-[#1b231d] px-4 py-2 text-sm font-semibold text-[#f7eacb]">
+              <p className="inline-flex items-center gap-2.5 rounded-full bg-green-dark px-4 py-2 text-sm font-semibold text-surface">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute h-full w-full animate-ping rounded-full bg-[#ffd23f]/70" />
-                  <span className="relative h-2 w-2 rounded-full bg-[#ffd23f]" />
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-yellow/70" />
+                  <span className="relative h-2 w-2 rounded-full bg-yellow" />
                 </span>
                 Inscrições abertas
               </p>
@@ -144,12 +149,12 @@ export default async function HomePage({
 
             <h1 className="mt-6 text-balance font-heading font-black uppercase leading-[0.92] tracking-tight">
               <span className="block text-5xl [font-stretch:122%] sm:text-6xl lg:text-7xl">Hackathons</span>
-              <span className="mt-3 inline-block -rotate-1 bg-[#1b231d] px-4 py-1.5 text-3xl text-[#ffd23f] [font-stretch:110%] sm:text-4xl lg:text-5xl">
+              <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-3xl text-yellow [font-stretch:110%] sm:text-4xl lg:text-5xl">
                 da Superteam Brasil
               </span>
             </h1>
 
-            <p className="mt-7 max-w-xl text-pretty text-lg leading-relaxed text-[#1b231d]/80">
+            <p className="mt-7 max-w-xl text-pretty text-lg leading-relaxed text-ink/80">
               Competições reais no ecossistema Solana. Inscrição, time e submissão em um só lugar, do
               primeiro commit ao Pitch Day.
             </p>
@@ -157,100 +162,27 @@ export default async function HomePage({
             <div className="mt-9 flex flex-wrap items-center gap-4">
               <a
                 href="#edicoes"
-                className="rounded-full bg-[#ffd23f] px-8 py-3.5 text-base font-bold text-[#1b231d] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
+                className="rounded-full bg-yellow px-8 py-3.5 text-base font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               >
                 Explorar edições
               </a>
               <a
                 href="#como-funciona"
-                className="rounded-full border-2 border-[#1b231d] px-7 py-3 text-base font-bold text-[#1b231d] transition-colors duration-200 hover:bg-[#1b231d] hover:text-[#f7eacb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
+                className="rounded-full border-2 border-green-dark px-7 py-3 text-base font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               >
                 Como funciona
               </a>
             </div>
           </div>
+
+          <div className="relative min-w-0 lg:col-span-5">
+            <HeroDeck cards={deck} />
+          </div>
         </div>
 
-        {tickerItems.length > 0 && (
-          <div aria-hidden className="relative overflow-hidden border-y-4 border-[#1b231d] bg-[#1b231d] py-3">
-            <div className="animate-marquee flex w-max whitespace-nowrap">
-              {[0, 1].map((half) => (
-                <div key={half} className="flex">
-                  {tickerItems.map((item) => (
-                    <span
-                      key={`${half}-${item}`}
-                      className="px-8 font-heading text-sm font-bold uppercase tracking-[0.14em] text-[#ffd23f] [font-stretch:110%]"
-                    >
-                      {item}
-                      <span className="ml-16 inline-block h-2 w-2 rounded-full bg-[#008c4c] align-middle" />
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <TickerStrip items={tickerItems} />
       </section>
 
-
-      {/* The next hackathon, featured */}
-      {live && (
-        <section className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Em destaque">
-          <div className="mx-auto max-w-6xl">
-            <div className="grid overflow-hidden rounded-3xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-[8px_8px_0_#1b231d] lg:grid-cols-12">
-              <div className="relative min-h-64 border-b-2 border-[#1b231d] bg-[#1b231d] lg:col-span-5 lg:border-b-0 lg:border-r-2">
-                {editions[0]?.coverUrl && (
-                  <Image
-                    src={editions[0].coverUrl}
-                    alt={`Arte da edição ${editions[0].name}`}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 460px, 100vw"
-                    className="object-cover"
-                  />
-                )}
-              </div>
-              <div className="flex flex-col justify-center gap-5 p-8 sm:p-10 lg:col-span-7">
-                <p className="inline-flex w-fit items-center rounded-full bg-[#ffd23f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#1b231d]">
-                  Próximo hackathon
-                </p>
-                <h2 className="text-balance font-heading text-3xl font-black uppercase tracking-tight [font-stretch:115%] sm:text-4xl">
-                  {live.name}
-                </h2>
-                <p className="text-pretty leading-relaxed text-[#1b231d]/75">
-                  {live.tagline ?? "Duas fases: online e presencial. Times de 2 a 4 builders."}
-                </p>
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t-2 border-[#1b231d]/10 pt-5 sm:grid-cols-4">
-                  {[
-                    { dt: "Início", dd: editions[0]?.dateRange.split(" A ")[0] ?? "" },
-                    { dt: "Pitch Day", dd: live.presential_at ? clean(TICKER_DAY.format(new Date(live.presential_at))) : "A definir" },
-                    { dt: "Onde", dd: live.location_city ?? "Online" },
-                    { dt: "Prêmios", dd: "US$ 3.000" },
-                  ].map((i) => (
-                    <div key={i.dt} className="min-w-0">
-                      <dt className="text-xs font-bold uppercase tracking-widest text-[#008c4c]">{i.dt}</dt>
-                      <dd className="mt-1 truncate font-heading text-lg font-bold tabular-nums">{i.dd}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="mt-2 flex flex-wrap items-center gap-4">
-                  <Link
-                    href={`/h/${live.slug}`}
-                    className="rounded-full bg-[#1b231d] px-7 py-3 text-base font-bold text-[#f7eacb] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf6]"
-                  >
-                    Ver edição
-                  </Link>
-                  {editions[0]?.registrationClosesLabel && (
-                    <p className="text-sm font-bold text-[#008c4c]">
-                      Inscrições até {editions[0].registrationClosesLabel}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* The hub: DoraHacks structure in LP skin */}
       <section id="edicoes" className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Edições">

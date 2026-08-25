@@ -18,7 +18,7 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={`transition-colors ${active ? "text-emerald" : "text-muted hover:text-ink"} ${className}`}
+      className={`transition-colors ${active ? "text-yellow" : "text-surface/80 hover:text-surface"} ${className}`}
     >
       {children}
     </Link>
