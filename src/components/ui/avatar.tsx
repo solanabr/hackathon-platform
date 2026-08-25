@@ -34,14 +34,16 @@ export function Avatar({
   name,
   size = "sm",
   className = "",
+  ring = "ring-emerald/20",
 }: {
   src?: string | null;
   name?: string | null;
   size?: keyof typeof SIZES;
   className?: string;
+  ring?: string;
 }) {
   const { px, box, text } = SIZES[size];
-  const shared = `${box} shrink-0 object-cover ring-2 ring-emerald/20 ${className}`;
+  const shared = `${box} shrink-0 object-cover ring-2 ${ring} ${className}`;
 
   if (renderable(src)) {
     return (

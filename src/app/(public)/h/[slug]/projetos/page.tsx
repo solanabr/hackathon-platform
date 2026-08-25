@@ -4,9 +4,10 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Avatar } from "@/components/ui/avatar";
 import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
-import type { PublicSubmission } from "@/types/public";
+import type { PublicSubmission, PublicTeamMember } from "@/types/public";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function ProjectsGalleryPage({
   const { data, error } = await supabase
     .from("public_submissions")
     .select(
-      "id, project_name, description, image_path, team_name, team_leader_name, submitted_at, team_id",
+      "id, project_name, description, image_path, team_name, team_leader_id, team_leader_name, submitted_at, team_id",
     )
     .eq("hackathon_slug", slug)
     .order("submitted_at", { ascending: false });
@@ -43,6 +44,24 @@ export default async function ProjectsGalleryPage({
   // must not read as "no projects yet" — surface it instead.
   if (error) {
     console.error(`[gallery ${slug}] public_submissions query failed:`, error);
+  }
+
+  // Member avatars come from the public_team_members view, keyed by team.
+  // A missing view or an empty team degrades to no stack, not a broken card.
+  const teamIds = [...new Set(projects.map((p) => p.team_id))];
+  const { data: teamMembers } =
+    teamIds.length > 0
+      ? await supabase
+          .from("public_team_members")
+          .select("team_id, user_id, full_name, avatar_url")
+          .in("team_id", teamIds)
+      : { data: null };
+
+  const membersByTeam = new Map<string, PublicTeamMember[]>();
+  for (const m of (teamMembers as PublicTeamMember[] | null) ?? []) {
+    const list = membersByTeam.get(m.team_id) ?? [];
+    list.push(m);
+    membersByTeam.set(m.team_id, list);
   }
 
   // Winners are placement on the team, not on the submission row, so the base
@@ -108,6 +127,11 @@ export default async function ProjectsGalleryPage({
                 ? supabase.storage.from("project-images").getPublicUrl(p.image_path).data.publicUrl
                 : null;
               const placement = placementByTeam.get(p.team_id);
+              const members = [...(membersByTeam.get(p.team_id) ?? [])].sort((a, b) => {
+                if (a.user_id === p.team_leader_id) return -1;
+                if (b.user_id === p.team_leader_id) return 1;
+                return 0;
+              });
               return (
                 <li key={p.id}>
                   <Link
@@ -145,6 +169,24 @@ export default async function ProjectsGalleryPage({
                           {p.team_leader_name ? ` · ${p.team_leader_name}` : ""}
                         </p>
                       </div>
+                      {members.length > 0 && (
+                        <div className="flex items-center">
+                          {members.slice(0, 4).map((m, i) => (
+                            <Avatar
+                              key={m.user_id}
+                              src={m.avatar_url}
+                              name={m.full_name}
+                              ring="ring-surface"
+                              className={i === 0 ? "" : "-ml-2"}
+                            />
+                          ))}
+                          {members.length > 4 && (
+                            <span className="-ml-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-raised font-mono text-xs font-bold tabular-nums text-muted ring-2 ring-surface">
+                              +{members.length - 4}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       {p.description && (
                         <p className="line-clamp-3 text-sm leading-relaxed text-muted">
                           {p.description}
