@@ -37,14 +37,28 @@ export function RatingForm({
   // values the timer will flush, so a slider move right before the timer
   // fires is captured too. Manual save cancels the timer so the two never
   // race.
+  //
+  // Every write runs through runExclusive, which serializes the in-flight
+  // request: an autosave that is still pending can't resurrect a rating after
+  // "Limpar", nor overwrite a newer manual save, because the manual action is
+  // chained after it and lands last.
   const latestRef = useRef({ grade: initialGrade, comment: initialComment });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inFlightRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  // Serialize writes. Each task runs only after the previous one settles, so
+  // an autosave started before a manual save can never resolve afterwards.
+  function runExclusive(task: () => Promise<void>): Promise<void> {
+    const next = inFlightRef.current.then(task);
+    inFlightRef.current = next.catch(() => undefined);
+    return next;
+  }
 
   function scheduleAutosave() {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -55,7 +69,7 @@ export function RatingForm({
       if (g === null && c === "") return;
       setError(null);
       setSaved(false);
-      start(async () => {
+      runExclusive(async () => {
         const res = await upsertRating({ hackathonId, submissionId, slug, round, grade: g, comment: c });
         if (!res.ok) return setError(res.error);
         setSaved(true);
@@ -72,10 +86,12 @@ export function RatingForm({
     setError(null);
     setSaved(false);
     start(async () => {
-      const res = await upsertRating({ hackathonId, submissionId, slug, round, grade, comment });
-      if (!res.ok) return setError(res.error);
-      setSaved(true);
-      router.refresh();
+      await runExclusive(async () => {
+        const res = await upsertRating({ hackathonId, submissionId, slug, round, grade, comment });
+        if (!res.ok) return setError(res.error);
+        setSaved(true);
+        router.refresh();
+      });
     });
   }
 
@@ -88,12 +104,14 @@ export function RatingForm({
     setError(null);
     setSaved(false);
     start(async () => {
-      const res = await deleteRating({ hackathonId, submissionId, slug, round });
-      if (!res.ok) return setError(res.error);
-      setGrade(null);
-      setComment("");
-      setSaved(true);
-      router.refresh();
+      await runExclusive(async () => {
+        const res = await deleteRating({ hackathonId, submissionId, slug, round });
+        if (!res.ok) return setError(res.error);
+        setGrade(null);
+        setComment("");
+        setSaved(true);
+        router.refresh();
+      });
     });
   }
 
