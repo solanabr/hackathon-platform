@@ -1,12 +1,23 @@
 export function Card({
   className = "",
   accent = false,
+  sticker = false,
   children,
 }: {
   className?: string;
   accent?: boolean;
+  sticker?: boolean;
   children: React.ReactNode;
 }) {
+  if (sticker) {
+    return (
+      <div
+        className={`relative rounded-2xl border-2 border-green-dark bg-surface-raised shadow-[6px_6px_0_rgba(27,35,29,0.18)] ${className}`}
+      >
+        {children}
+      </div>
+    );
+  }
   return (
     <div
       className={`relative rounded-2xl border bg-surface-raised ${

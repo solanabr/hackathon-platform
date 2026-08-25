@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { BackLink } from "@/components/ui/back-link";
+import { PainelNav } from "@/components/edition/painel-nav";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -62,7 +63,10 @@ export default async function ContentsPage({ params }: { params: Promise<{ slug:
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/h//dashboard`} label="Painel" />
+          <PainelNav slug={slug} />
+        </div>
 
         <p className="mt-8 text-[12px] font-bold uppercase tracking-wider text-emerald">TRILHA</p>
         <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Conteúdos</h1>

@@ -10,7 +10,13 @@ import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card"
 import { EditionInfoCard } from "@/components/edition/info-card";
 import { Avatar } from "@/components/ui/avatar";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
-import { getHackathonBySlug, isSubmissionWindowOpen, phaseBoundaries } from "@/lib/hackathon";
+import { PainelNav } from "@/components/edition/painel-nav";
+import {
+  getHackathonBySlug,
+  isSubmissionWindowOpen,
+  phaseBoundaries,
+  prizePoolLabel,
+} from "@/lib/hackathon";
 import {
   confirmedMemberIds,
   getRegistration,
@@ -183,10 +189,13 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-10">
-        <BackLink href={`/h/${slug}`} label={hackathon.name} />
+      <div className="mx-auto max-w-6xl space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/h/${slug}`} label={hackathon.name} />
+          <PainelNav slug={slug} />
+        </div>
 
-        <header className="relative overflow-hidden rounded-3xl border border-green-dark/15 bg-surface-raised p-6 sm:p-8">
+        <header className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-[8px_8px_0_rgba(27,35,29,0.18)] sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
             <Image
               src="/brand/stbr/elements/morth-05.svg"
@@ -198,14 +207,16 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </div>
 
           <div className="relative">
-            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">PAINEL</p>
-            <h1 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Painel
+            </p>
+            <h1 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-4xl">
               Olá, {state.profile?.full_name?.split(" ")[0]}.
             </h1>
-            <p className="mt-1 text-muted">{hackathon.name}</p>
+            <p className="mt-1.5 font-semibold text-muted">{hackathon.name}</p>
           </div>
 
-          <div className="relative mt-6 overflow-hidden rounded-2xl border border-green-dark/15 bg-surface-deep px-6 py-6 sm:px-8">
+          <div className="relative mt-6 overflow-hidden rounded-2xl border-2 border-green-dark bg-yellow/20 px-6 py-6 sm:px-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
                 {hero.label}
@@ -240,10 +251,10 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           <PhaseTimeline phases={phases} now={now} />
         </section>
 
-        <EditionInfoCard hackathon={hackathon} />
-
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div className="space-y-6">
           <SectionCard
+            sticker
             title={snapshot ? snapshot.team.name : "Você ainda não tem time"}
             action={snapshot ? { href: `/h/${slug}/team`, label: "Gerenciar" } : undefined}
           >
@@ -305,6 +316,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </SectionCard>
 
           <SectionCard
+            sticker
             title="Submissão"
             action={
               snapshot
@@ -390,33 +402,80 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </>
             )}
           </SectionCard>
-        </div>
+          <Card sticker className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
+            <div>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                Trilha
+              </p>
+              <h2 className="mt-1 font-heading text-xl font-bold">Conteúdos</h2>
+              <p className="mt-1 font-mono text-sm tabular-nums text-muted">
+                {publishedCount ?? 0}/{totalCount ?? 0} disponíveis. As gravações entram depois de
+                cada encontro.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href={`/h/${slug}/content`} className="btn-primary px-5 py-2 text-sm">
+                Ver conteúdos
+              </Link>
+              {hackathon.community_url && (
+                <a
+                  href={hackathon.community_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-secondary px-5 py-2 text-sm"
+                >
+                  Comunidade
+                </a>
+              )}
+            </div>
+          </Card>
+          </div>
 
-        <Card className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
-          <div>
-            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">TRILHA</p>
-            <h2 className="mt-1 font-heading text-xl font-bold">Conteúdos</h2>
-            <p className="mt-1 font-mono text-sm tabular-nums text-muted">
-              {publishedCount ?? 0}/{totalCount ?? 0} disponíveis. As gravações entram depois de cada
-              encontro.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/h/${slug}/content`} className="btn-primary px-5 py-2 text-sm">
-              Ver conteúdos
-            </Link>
-            {hackathon.community_url && (
-              <a
-                href={hackathon.community_url}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-secondary px-5 py-2 text-sm"
-              >
-                Comunidade
-              </a>
+          <aside className="space-y-6">
+            {hackathon.prize_summary && (
+              <div className="relative overflow-hidden rounded-2xl border-2 border-green-dark bg-green-dark p-6 shadow-[6px_6px_0_rgba(27,35,29,0.25)]">
+                <div
+                  aria-hidden
+                  className="morth pointer-events-none absolute -right-14 -top-16 h-44 w-44 bg-emerald/30"
+                  style={{
+                    maskImage: "url(/brand/stbr/elements/morth-12.svg)",
+                    WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)",
+                    transform: "rotate(-12deg)",
+                  }}
+                />
+                <div className="relative">
+                  <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-surface/70">
+                    Prêmios
+                  </p>
+                  {prizePoolLabel(hackathon.prize_summary) && (
+                    <p className="mt-2 font-heading text-3xl font-black uppercase tracking-tight text-yellow [font-stretch:118%]">
+                      {prizePoolLabel(hackathon.prize_summary)?.replace(" em prêmios", "")}
+                    </p>
+                  )}
+                  <ul className="mt-4 space-y-2.5">
+                    {hackathon.prize_summary
+                      .split("·")
+                      .map((p) => p.trim())
+                      .filter(Boolean)
+                      .map((prize) => {
+                        const [place, ...rest] = prize.split(" - ");
+                        return (
+                          <li key={prize} className="text-sm leading-snug">
+                            <span className="font-bold text-surface">{place}</span>
+                            {rest.length > 0 && (
+                              <span className="block text-surface/70">{rest.join(" - ")}</span>
+                            )}
+                          </li>
+                        );
+                      })}
+                  </ul>
+                </div>
+              </div>
             )}
-          </div>
-        </Card>
+
+            <EditionInfoCard hackathon={hackathon} />
+          </aside>
+        </div>
       </div>
     </div>
   );

@@ -43,7 +43,7 @@ export function EditionInfoCard({ hackathon }: { hackathon: Hackathon }) {
   const nextIdx = rows.findIndex((r) => new Date(r.when).getTime() > now);
 
   return (
-    <SectionCard title="Datas e dúvidas">
+    <SectionCard sticker title="Datas e dúvidas">
       <ol className="space-y-2.5">
         {rows.map((row, i) => {
           const done = new Date(row.when).getTime() <= now;

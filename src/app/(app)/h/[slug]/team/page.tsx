@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
+import { PainelNav } from "@/components/edition/painel-nav";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm } from "@/components/team/add-member-form";
 import { TeamDangerZone } from "@/components/team/team-danger-zone";
@@ -93,7 +94,10 @@ export default async function TeamPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
-        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/h//dashboard`} label="Painel" />
+          <PainelNav slug={slug} />
+        </div>
 
         <header className="rounded-3xl border border-green-dark/15 bg-surface-raised p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">

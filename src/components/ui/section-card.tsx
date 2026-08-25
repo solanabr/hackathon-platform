@@ -7,14 +7,16 @@ export function SectionCard({
   action,
   children,
   className = "",
+  sticker = false,
 }: {
   title: string;
   action?: { href: string; label: string };
   children: ReactNode;
   className?: string;
+  sticker?: boolean;
 }) {
   return (
-    <Card className={`flex flex-col p-6 sm:p-7 ${className}`}>
+    <Card sticker={sticker} className={`flex flex-col p-6 sm:p-7 ${className}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="truncate font-heading text-xl font-bold">{title}</h2>

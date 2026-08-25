@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
+import { PainelNav } from "@/components/edition/painel-nav";
 import { Badge } from "@/components/ui/badge";
 import { CopyLink } from "@/components/ui/copy-link";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
@@ -77,7 +78,10 @@ export default async function SubmissionPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/h//dashboard`} label="Painel" />
+          <PainelNav slug={slug} />
+        </div>
 
         {submission.status === "submitted" ? (
           <div className="mt-4 rounded-2xl border border-emerald/40 bg-emerald/10 p-6 sm:p-8">
