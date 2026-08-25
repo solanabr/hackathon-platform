@@ -114,6 +114,12 @@ export function ratingRound(h: Hackathon, now: Date = new Date()): RatingRound {
  * When the public landing may show the finalist list. A closed edition always
  * shows results; while judging, the announced date is the reveal signal so the
  * cut is never leaked before it is public.
+ *
+ * Operational trap: the gate deliberately holds finalists until the edition
+ * status is flipped to `judging` (the live edition stays `published`). An
+ * operator must flip the status on announcement day — 09/10 in the live
+ * edition — or the public finalists section stays hidden until then. This is
+ * intentional, not a bug.
  */
 export function isFinalistsVisible(h: Hackathon, now: Date = new Date()): boolean {
   if (h.status !== "judging" && h.status !== "closed") return false;
