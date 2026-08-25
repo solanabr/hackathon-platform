@@ -131,7 +131,10 @@ export default async function HomePage({
               </p>
             )}
             <h1 className="mt-6 text-balance font-heading text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl">
-              Entre na <span className="text-yellow">arena</span>
+              Entre na{" "}
+              <span className="bg-gradient-to-r from-emerald to-yellow bg-clip-text text-transparent">
+                arena
+              </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
               Inscrição, formação de time e submissão de projeto em um só lugar.
