@@ -335,16 +335,20 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       {sections.map((section) => (
         <div key={section.id} className="relative">
           {canEdit && (
-            <Link
-              href={
-                section.kind === "schedule"
-                  ? `/admin/h/${hackathon.slug}/content`
-                  : `/admin/h/${hackathon.slug}/sections#s-${section.id}`
-              }
-              className="absolute right-4 top-2 z-20 rounded-full border-2 border-green-dark bg-surface-raised px-3.5 py-1 text-xs font-bold text-ink transition-colors hover:bg-green-dark hover:text-surface sm:right-8"
-            >
-              Editar ✎
-            </Link>
+            <div className="pointer-events-none absolute inset-x-4 top-6 z-20 sm:inset-x-6 lg:inset-x-8">
+              <div className="mx-auto flex max-w-6xl justify-end">
+                <Link
+                  href={
+                    section.kind === "schedule"
+                      ? `/admin/h/${hackathon.slug}/content`
+                      : `/admin/h/${hackathon.slug}/sections#s-${section.id}`
+                  }
+                  className="pointer-events-auto rounded-full border-2 border-green-dark bg-surface-raised px-3.5 py-1 text-xs font-bold text-ink transition-colors hover:bg-green-dark hover:text-surface"
+                >
+                  Editar ✎
+                </Link>
+              </div>
+            </div>
           )}
           <SectionRenderer
             section={section}
