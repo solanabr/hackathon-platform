@@ -1,6 +1,8 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createServerSupabaseClient } from "./supabase/server";
+import { sanitizeRedirect } from "./security";
 import { editionStage } from "./hackathon";
 import type { Hackathon, User } from "@/types/db";
 
@@ -70,8 +72,19 @@ export async function resolveAuthenticatedUserState(): Promise<AuthenticatedStat
   };
 }
 
+/**
+ * Gate for gated pages and server actions. Logged-out callers go to `/auth`
+ * carrying the page they were on, so the OAuth/OTP round trip lands them back
+ * on the same deep link instead of the home gallery. The path comes from
+ * headers that middleware attaches, so callers do not have to know their URL.
+ */
 export async function requireUser() {
   const state = await resolveAuthenticatedUserState();
-  if (!state) redirect("/auth");
+  if (!state) {
+    const h = await headers();
+    const path = `${h.get("x-pathname") ?? ""}${h.get("x-search") ?? ""}`;
+    const next = path && path !== "/" ? sanitizeRedirect(path) : null;
+    redirect(next ? `/auth?next=${encodeURIComponent(next)}` : "/auth");
+  }
   return state;
 }

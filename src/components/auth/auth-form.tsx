@@ -23,13 +23,16 @@ export function AuthForm() {
   const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const inviteRedirect = sanitizeRedirect(searchParams.get("redirect"));
+  // `next` carries the page the user came from (requireUser/middleware);
+  // `redirect` is kept as a legacy alias for invite links that still use it.
+  const postLoginPath =
+    sanitizeRedirect(searchParams.get("next")) ?? sanitizeRedirect(searchParams.get("redirect"));
 
   async function signIn(provider: Provider) {
     setLoading(provider);
     setError(null);
     const redirectTo = `${window.location.origin}/auth/callback${
-      inviteRedirect ? `?redirect=${encodeURIComponent(inviteRedirect)}` : ""
+      postLoginPath ? `?next=${encodeURIComponent(postLoginPath)}` : ""
     }`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -43,7 +46,7 @@ export function AuthForm() {
 
   function redirectTarget() {
     return `${window.location.origin}/auth/callback${
-      inviteRedirect ? `?redirect=${encodeURIComponent(inviteRedirect)}` : ""
+      postLoginPath ? `?next=${encodeURIComponent(postLoginPath)}` : ""
     }`;
   }
 
@@ -77,7 +80,9 @@ export function AuthForm() {
       setStage("sent");
       return;
     }
-    window.location.assign(inviteRedirect ?? "/");
+    // Route back through /auth/callback when no deep link was requested, so a
+    // signed-in participant lands on their painel instead of the home gallery.
+    window.location.assign(postLoginPath ?? "/auth/callback");
   }
 
   return (
