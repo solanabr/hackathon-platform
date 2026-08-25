@@ -1,0 +1,142 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { StatusChip } from "@/components/ui/section-card";
+import {
+  setFinalist,
+  notifyFinalists as runNotifyFinalists,
+} from "@/app/(app)/admin/h/[slug]/finalistas/actions";
+import type { FinalistCandidate } from "@/lib/finalists";
+
+export function FinalistPicker({
+  candidates,
+  slug,
+  hackathonId,
+}: {
+  candidates: FinalistCandidate[];
+  slug: string;
+  hackathonId: string;
+}) {
+  const [checked, setChecked] = useState(() =>
+    Object.fromEntries(candidates.map((c) => [c.submissionId, c.isFinalist])),
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  function currentFor(c: FinalistCandidate): boolean {
+    return checked[c.submissionId] ?? c.isFinalist;
+  }
+
+  function toggle(c: FinalistCandidate) {
+    const on = !currentFor(c);
+    setChecked((prev) => ({ ...prev, [c.submissionId]: on }));
+    setError(null);
+    setNotice(null);
+
+    start(async () => {
+      const result = await setFinalist({ slug, teamId: c.teamId, isFinalist: on });
+      if (!result.ok) {
+        setError(result.error);
+        setChecked((prev) => ({ ...prev, [c.submissionId]: !on }));
+      }
+    });
+  }
+
+  function notify() {
+    setError(null);
+    setNotice(null);
+
+    start(async () => {
+      const result = await runNotifyFinalists({ slug, hackathonId });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setNotice(
+        result.failed > 0
+          ? `Finalistas notificados: ${result.sent}. Falhas: ${result.failed}.`
+          : `Finalistas notificados: ${result.sent}.`,
+      );
+    });
+  }
+
+  const marked = candidates.filter((c) => currentFor(c));
+  const pendingNotify = marked.filter((c) => !c.notified).length;
+
+  return (
+    <div className="space-y-5">
+      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+      {notice && <p className="text-sm font-semibold text-emerald">{notice}</p>}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-green/15 bg-surface-raised p-5">
+        <p className="text-sm text-muted">
+          {marked.length} de {candidates.length} marcado(s) · {pendingNotify} por notificar.
+        </p>
+        <button
+          type="button"
+          disabled={pending || pendingNotify === 0}
+          onClick={notify}
+          className="btn-primary px-5 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {pending ? "Notificando..." : "Notificar finalistas"}
+        </button>
+      </div>
+
+      <ul className="space-y-3">
+        {candidates.map((c, i) => {
+          const on = currentFor(c);
+          return (
+            <li
+              key={c.submissionId}
+              className="rounded-2xl border border-green/15 bg-surface-raised p-5"
+            >
+              <label className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    disabled={pending}
+                    onChange={() => toggle(c)}
+                    className="h-5 w-5 shrink-0 accent-emerald"
+                  />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-heading text-lg font-bold">
+                        {i + 1}. {c.projectName}
+                      </span>
+                      {on && c.notified && <StatusChip tone="ok">notificado</StatusChip>}
+                      {on && !c.notified && (
+                        <StatusChip tone="pending">por notificar</StatusChip>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted">Time {c.teamName}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-5">
+                  <div className="text-right">
+                    <p className="font-heading text-xl font-bold">
+                      {c.avgGrade === null
+                        ? "—"
+                        : c.avgGrade.toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                    </p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                      média
+                    </p>
+                  </div>
+                  <p className="w-16 text-right text-sm text-muted">
+                    {c.ratings} nota{c.ratings === 1 ? "" : "s"}
+                  </p>
+                </div>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
