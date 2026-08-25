@@ -132,14 +132,11 @@ export default async function HomePage({
           </div>
 
           <ol className="space-y-4">
-            {STEPS.map((step, i) => (
+            {STEPS.map((step) => (
               <li
                 key={step.title}
-                className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised p-6"
+                className="rounded-2xl border border-green/15 bg-surface-raised p-6"
               >
-                <span className="font-heading text-3xl font-bold leading-none text-emerald/40">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
                 <div>
                   <h3 className="font-heading text-lg font-bold">{step.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted">{step.body}</p>
