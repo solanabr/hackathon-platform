@@ -92,7 +92,7 @@ export function AvatarUpload({
         <Avatar src={url} name={name} size="lg" />
         <span
           aria-hidden
-          className="absolute inset-0 flex items-center justify-center rounded-2xl bg-green-dark/75 text-xs font-bold uppercase tracking-wide text-surface opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
+          className="absolute inset-0 flex items-center justify-center rounded-2xl bg-green-dark/75 text-xs font-bold uppercase tracking-wide text-ink opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
         >
           {busy ? "..." : "Trocar"}
         </span>
