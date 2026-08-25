@@ -87,7 +87,25 @@ export default async function HomePage({
     <div className="px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <header className="max-w-3xl">
-          {liveCount > 0 && (
+          <h1 className="text-balance font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+            Hackathons da
+            <span className="block text-emerald">Superteam Brasil</span>
+          </h1>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            Inscrição, formação de time e submissão de projeto em um só lugar.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href={live[0] ? `/h/${live[0].slug}` : "/auth"}
+              className="btn-primary px-8 text-base"
+            >
+              {live[0] ? "Ver edição" : "Participar"}
+            </Link>
+          </div>
+        </header>
+
+        {liveCount > 0 && (
+          <section className="mt-10" aria-label="Inscrições abertas">
             <p className="inline-flex items-center gap-2 rounded-full border border-emerald/30 bg-emerald/10 px-4 py-1.5 text-sm font-semibold text-emerald">
               <span className="relative flex h-2 w-2">
                 <span className="absolute h-full w-full animate-ping rounded-full bg-emerald/60" />
@@ -95,15 +113,8 @@ export default async function HomePage({
               </span>
               {liveCount === 1 ? "1 hackathon com inscrições abertas" : `${liveCount} hackathons com inscrições abertas`}
             </p>
-          )}
-          <h1 className="mt-5 text-balance font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-            Hackathons da
-            <span className="block text-emerald">Superteam Brasil</span>
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Inscrição, formação de time e submissão de projeto em um só lugar.
-          </p>
-        </header>
+          </section>
+        )}
 
         <section className="mt-12" aria-label="Hackathons">
           <h2 className="sr-only">Hackathons</h2>
