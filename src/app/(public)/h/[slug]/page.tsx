@@ -13,7 +13,6 @@ import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supab
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import { Countdown } from "@/components/ui/countdown";
 import type { HackathonContent } from "@/types/db";
-import { TickerStrip } from "@/components/layout/ticker-strip";
 
 export const dynamic = "force-dynamic";
 
@@ -172,20 +171,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   const online = schedule.filter((s) => s.kind !== "evento");
 
-  const T_DAY = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
-  const T_TIME = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
-  const up = (v: string) => v.replace(/\./g, "").toUpperCase();
-  const tickerItems = [
-    hackathon.registration_closes_at
-      ? `Inscrições até ${up(T_DAY.format(new Date(hackathon.registration_closes_at)))}`
-      : null,
-    `Submissão até ${up(T_DAY.format(new Date(hackathon.submission_deadline_at)))}, ${T_TIME.format(new Date(hackathon.submission_deadline_at))}`,
-    hackathon.presential_at
-      ? `Pitch Day ${up(T_DAY.format(new Date(hackathon.presential_at)))}${hackathon.location_city ? ` em ${hackathon.location_city}` : ""}`
-      : null,
-    "US$ 3.000 em prêmios",
-  ].filter((v): v is string => Boolean(v));
-
   return (
     <div>
       <section className="relative overflow-hidden px-4 pt-10 sm:px-6 lg:px-8" aria-label={hackathon.name}>
@@ -203,16 +188,14 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
           <div>
             <p
-              className={`mt-5 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${
-                open
-                  ? "border border-emerald/30 bg-emerald/10 text-emerald"
-                  : "border-2 border-green-dark/20 bg-surface-raised text-muted"
+              className={`mt-5 inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold ${
+                open ? "bg-green-dark text-surface" : "border-2 border-green-dark/20 bg-surface-raised text-muted"
               }`}
             >
               {open && (
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute h-full w-full animate-ping rounded-full bg-emerald/60" />
-                  <span className="relative h-2 w-2 rounded-full bg-emerald" />
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-yellow/70" />
+                  <span className="relative h-2 w-2 rounded-full bg-yellow" />
                 </span>
               )}
               {open ? "Inscrições abertas" : "Inscrições encerradas"}
@@ -274,8 +257,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           )}
         </div>
       </section>
-
-      <TickerStrip items={tickerItems} />
 
       <section className="px-4 pb-8 sm:px-6 lg:px-8" aria-label="Informações da edição">
         <div className="mx-auto max-w-6xl">
@@ -418,34 +399,36 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       {hackathon.prize_summary && (
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Premiação">
           <div className="mx-auto max-w-6xl">
-            <div className="relative overflow-hidden rounded-3xl bg-green-dark px-8 py-12 sm:px-12">
+            <div className="relative overflow-hidden rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
               <div
                 aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(ellipse 80% 120% at 10% 10%, rgba(255,210,63,0.16) 0%, rgba(0,140,76,0.10) 45%, transparent 75%)",
-                }}
+                className="morth absolute -right-20 -top-24 h-72 w-72 bg-emerald/30"
+                style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-12deg)" }}
               />
               <div className="relative">
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-yellow">
-                  Prêmios
-                </p>
-                <h2 className="mt-3 font-heading text-3xl font-black uppercase tracking-tight text-ink [font-stretch:118%] sm:text-4xl">
+                <h2 className="font-heading text-3xl font-black uppercase tracking-tight text-surface [font-stretch:118%] sm:text-4xl">
                   Premiação
                 </h2>
-                <ul className="mt-6 grid gap-x-10 gap-y-3 text-muted sm:grid-cols-2">
-                  {hackathon.prize_summary.split("·").map((prize, i) => (
-                    <li key={prize} className="flex gap-3 leading-relaxed">
-                      <span
-                        aria-hidden
-                        className="mt-0.5 shrink-0 font-mono text-sm font-bold tabular-nums text-yellow"
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span>{prize.trim()}</span>
-                    </li>
-                  ))}
+                <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {hackathon.prize_summary
+                    .split("·")
+                    .map((p) => p.trim())
+                    .filter(Boolean)
+                    .map((prize) => {
+                      const [place, ...rest] = prize.split(" - ");
+                      const detail = rest.join(" - ");
+                      return (
+                        <li
+                          key={prize}
+                          className="rounded-2xl border-2 border-surface/15 bg-surface/[0.04] p-5 transition-colors duration-200 hover:border-yellow/50"
+                        >
+                          <p className="font-heading text-xl font-black uppercase tracking-tight text-yellow [font-stretch:112%]">
+                            {detail ? place : "Prêmio"}
+                          </p>
+                          <p className="mt-2 text-sm leading-relaxed text-surface/80">{detail || place}</p>
+                        </li>
+                      );
+                    })}
                 </ul>
               </div>
             </div>
