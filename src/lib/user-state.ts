@@ -17,11 +17,14 @@ export type AuthenticatedState = {
  */
 const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const supabase = await createServerSupabaseClient();
+  // Only confirmed memberships route to the dashboard. A pending member has
+  // never confirmed registration, so they'd land on the dashboard, get bounced
+  // to /register, and hit the landing's disabled CTA once registration closes.
   const { data: memberships } = await supabase
     .from("team_members")
     .select("hackathon_id")
     .eq("user_id", userId)
-    .in("status", ["pending", "accepted"]);
+    .eq("status", "accepted");
 
   const hackathonIds = Array.from(
     new Set(((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id)),
