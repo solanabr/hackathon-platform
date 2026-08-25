@@ -20,6 +20,10 @@ export const CONTENT_KINDS = [
   { value: "evento", label: "Evento" },
 ];
 
+export const KIND_LABELS: Record<string, string> = Object.fromEntries(
+  CONTENT_KINDS.map((k) => [k.value, k.label]),
+);
+
 export const CONTENT_FIELDS: ContentField[] = [
   { key: "kind", label: "Tipo", kind: "select", options: CONTENT_KINDS },
   { key: "title", label: "Título", kind: "text", placeholder: "Ex.: Abertura do hackathon" },

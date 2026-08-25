@@ -39,7 +39,8 @@ export async function uploadContentFile(input: {
   const { error } = await supabase
     .from("hackathon_contents")
     .update({ external_url: data.publicUrl })
-    .eq("id", input.contentId);
+    .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id);
 
   if (error) return { ok: false, error: "Arquivo enviado, mas não foi possível salvar." };
 
@@ -69,6 +70,7 @@ export async function updateContent(input: {
     .from("hackathon_contents")
     .select("external_url")
     .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id)
     .maybeSingle();
 
   const hasFile = Boolean((existing as { external_url: string | null } | null)?.external_url);
@@ -81,7 +83,8 @@ export async function updateContent(input: {
   const { error } = await supabase
     .from("hackathon_contents")
     .update({ youtube_id: youtubeId, published: input.published })
-    .eq("id", input.contentId);
+    .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id);
 
   if (error) return { ok: false, error: "Não foi possível salvar." };
 
@@ -156,7 +159,7 @@ export async function createContent(input: {
   const { data: last } = await supabase
     .from("hackathon_contents")
     .select("position")
-    .eq("hackathon_id", input.hackathonId)
+    .eq("hackathon_id", gate.hackathon.id)
     .is("deleted_at", null)
     .order("position", { ascending: false })
     .limit(1)
@@ -166,7 +169,7 @@ export async function createContent(input: {
 
   const { error } = await supabase
     .from("hackathon_contents")
-    .insert({ ...parsed.row, hackathon_id: input.hackathonId, position: nextPosition });
+    .insert({ ...parsed.row, hackathon_id: gate.hackathon.id, position: nextPosition });
 
   if (error) return { ok: false, error: "Não foi possível criar." };
 
@@ -190,7 +193,8 @@ export async function updateContentDetails(input: {
   const { error } = await supabase
     .from("hackathon_contents")
     .update(parsed.row)
-    .eq("id", input.contentId);
+    .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id);
 
   if (error) return { ok: false, error: "Não foi possível salvar." };
 
@@ -215,7 +219,8 @@ export async function deleteContent(input: {
   const { error } = await supabase
     .from("hackathon_contents")
     .update({ deleted_at: new Date().toISOString(), published: false })
-    .eq("id", input.contentId);
+    .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id);
 
   if (error) return { ok: false, error: "Não foi possível remover." };
 
@@ -238,7 +243,7 @@ export async function moveContent(input: {
   const { data } = await supabase
     .from("hackathon_contents")
     .select("id, position")
-    .eq("hackathon_id", input.hackathonId)
+    .eq("hackathon_id", gate.hackathon.id)
     .is("deleted_at", null)
     .order("position", { ascending: true });
 
@@ -252,11 +257,13 @@ export async function moveContent(input: {
   await supabase
     .from("hackathon_contents")
     .update({ position: rows[target].position })
-    .eq("id", rows[index].id);
+    .eq("id", rows[index].id)
+    .eq("hackathon_id", gate.hackathon.id);
   await supabase
     .from("hackathon_contents")
     .update({ position: rows[index].position })
-    .eq("id", rows[target].id);
+    .eq("id", rows[target].id)
+    .eq("hackathon_id", gate.hackathon.id);
 
   revalidatePath(`/admin/h/${input.slug}/content`);
   revalidatePath(`/h/${input.slug}/content`);
@@ -274,7 +281,8 @@ export async function restoreContent(input: {
   const { error } = await supabase
     .from("hackathon_contents")
     .update({ deleted_at: null })
-    .eq("id", input.contentId);
+    .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id);
 
   if (error) return { ok: false, error: "Não foi possível restaurar." };
 

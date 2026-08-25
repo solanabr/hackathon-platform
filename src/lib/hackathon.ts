@@ -1,7 +1,9 @@
+import { cache } from "react";
 import { createServerSupabaseClient } from "./supabase/server";
 import type { Hackathon } from "@/types/db";
 
-export async function getHackathonBySlug(slug: string): Promise<Hackathon | null> {
+// Gate and page resolve the same slug in one request; dedupe the read.
+export const getHackathonBySlug = cache(async (slug: string): Promise<Hackathon | null> => {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("hackathons")
@@ -9,7 +11,7 @@ export async function getHackathonBySlug(slug: string): Promise<Hackathon | null
     .eq("slug", slug)
     .maybeSingle();
   return data as Hackathon | null;
-}
+});
 
 export async function listHackathons(): Promise<Hackathon[]> {
   const supabase = await createServerSupabaseClient();

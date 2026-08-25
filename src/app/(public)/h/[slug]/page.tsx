@@ -5,15 +5,14 @@ import {
   getHackathonBySlug,
   isRegistrationOpen,
   isFinalistsVisible,
-  phaseBoundaries,
   prizePoolLabel,
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
+import { buildPhases } from "@/lib/phase-copy";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
-import { listSections } from "@/lib/sections";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { type Phase } from "@/components/edition/phase-timeline";
+
 import { SectionRenderer, type ScheduleRow } from "@/components/edition/sections";
 import { Countdown } from "@/components/ui/countdown";
 import type { HackathonSection } from "@/types/db";
@@ -75,6 +74,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   const open = isRegistrationOpen(hackathon);
   const now = Date.now();
+  const prizePool = prizePoolLabel(hackathon.prize_summary);
 
   const viewer = await resolveAuthenticatedUserState();
   const registered =
@@ -108,56 +108,26 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       []).map((r) => ({ teamId: r.id, teamName: r.name, placement: r.placement }));
   }
 
-  const bounds = phaseBoundaries(hackathon);
-  const phases: Phase[] = [
-    {
-      ...bounds.fase1,
-      key: "fase1",
-      label: "Fase 1, capacitação",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt - 1)))}`,
-      detail: "Minicursos e conteúdos preparatórios para nivelar todo mundo. Monte seu time nesse período.",
-    },
-    {
-      ...bounds.submissao,
-      key: "submissao",
-      label: "Desenvolvimento e submissão",
-      when: `${clean(DAY.format(new Date(bounds.submissao.startsAt)))} a ${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
-      detail: "Mentoria no dia 5. O líder envia deck, vídeo e repositório até o prazo.",
-    },
-    ...(bounds.selecao && hackathon.finalists_announced_at
-      ? [
-          {
-            ...bounds.selecao,
-            key: "selecao",
-            label: "Seleção",
-            when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
-            detail: hackathon.finalists_count
-              ? `Os ${hackathon.finalists_count} finalistas são anunciados por e-mail.`
-              : "As equipes classificadas são anunciadas por e-mail.",
-          },
-        ]
-      : []),
-    ...(bounds.fase2 && hackathon.presential_at
-      ? [
-          {
-            ...bounds.fase2,
-            key: "fase2",
-            label: "Fase 2, presencial",
-            when: clean(DAY.format(new Date(hackathon.presential_at))),
-            detail: "Pitch Day, apresentação para a banca e premiação.",
-          },
-        ]
-      : []),
-  ];
+  const phases = buildPhases(hackathon);
 
-  // Sections drive the page body. Before migration 00036 lands (or for an
-  // edition nobody customized) the table is empty, so fall back to the same
-  // four blocks the page always rendered.
-  const stored = await listSections(hackathon.id);
+  // Sections drive the page body. The defaults only apply while the edition
+  // has no section rows at all (pre-seed) — hidden rows count as "composed",
+  // so an admin hiding everything gets a blank body, not a resurrection of
+  // the hardcoded blocks. Service role because hidden rows are RLS-invisible.
+  const sectionsClient = await createServiceRoleClient();
+  const { data: sectionRows } = await sectionsClient
+    .from("hackathon_sections")
+    .select("*")
+    .eq("hackathon_id", hackathon.id)
+    .is("deleted_at", null)
+    .order("position", { ascending: true });
+  const allSections = (sectionRows as HackathonSection[] | null) ?? [];
+  const usingDefaults = allSections.length === 0;
+  const stored = allSections.filter((s) => s.visible);
   const sections: Array<
     Pick<HackathonSection, "id" | "kind" | "title" | "subtitle" | "body_md" | "config">
   > =
-    stored.length > 0
+    !usingDefaults
       ? stored
       : [
           {
@@ -320,18 +290,17 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 {hackathon.location_city ?? "Online"}
               </dd>
             </div>
-            {prizePoolLabel(hackathon.prize_summary) && (
+            {prizePool && (
               <div>
                 <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Prêmios</dt>
-                <dd className="mt-1 font-heading text-lg font-bold text-emerald">
-                  {prizePoolLabel(hackathon.prize_summary)}
-                </dd>
+                <dd className="mt-1 font-heading text-lg font-bold text-emerald">{prizePool}</dd>
               </div>
             )}
           </dl>
         </div>
       </section>
 
+      <div className="pt-20">
       {sections.map((section) => (
         <div key={section.id} className="relative">
           {canEdit && (
@@ -341,7 +310,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                   href={
                     section.kind === "schedule"
                       ? `/admin/h/${hackathon.slug}/content`
-                      : `/admin/h/${hackathon.slug}/sections#s-${section.id}`
+                      : usingDefaults
+                        ? `/admin/h/${hackathon.slug}/sections`
+                        : `/admin/h/${hackathon.slug}/sections#s-${section.id}`
                   }
                   className="pointer-events-auto rounded-full border-2 border-green-dark bg-surface-raised px-3.5 py-1 text-xs font-bold text-ink transition-colors hover:bg-green-dark hover:text-surface"
                 >
@@ -356,6 +327,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           />
         </div>
       ))}
+      </div>
 
 {finalists.length > 0 && (
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">

@@ -124,7 +124,7 @@ function PhasesSection({
   section: Pick<HackathonSection, "title" | "subtitle" | "config">;
   ctx: SectionContext;
 }) {
-  // config.items may override the copy of a phase by key: [{key, label, detail}]
+  // Dates always come from the hackathon row; only the copy is overridable.
   const overrides = Array.isArray(section.config.items)
     ? (section.config.items as Array<{ key: string; label?: string; detail?: string }>)
     : [];
@@ -134,7 +134,7 @@ function PhasesSection({
   });
 
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label={section.title ?? "Etapas"}>
+    <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label={section.title ?? "Etapas"}>
       <div className="mx-auto max-w-6xl">
         <h2 className={H2}>{section.title ?? "Como o hackathon acontece"}</h2>
         {section.subtitle && (

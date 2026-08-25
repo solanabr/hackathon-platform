@@ -1,9 +1,15 @@
+import { cache } from "react";
 import { resolveAuthenticatedUserState, type AuthenticatedState } from "./user-state";
+import { getHackathonBySlug } from "./hackathon";
 import { createServiceRoleClient } from "./supabase/server";
-import type { PlatformRole } from "@/types/db";
+import type { Hackathon, PlatformRole } from "@/types/db";
 
 type RoleCheck =
   | { ok: true; state: AuthenticatedState }
+  | { ok: false; reason: "unauthenticated" | "forbidden" };
+
+type EditionCheck =
+  | { ok: true; state: AuthenticatedState; hackathon: Hackathon }
   | { ok: false; reason: "unauthenticated" | "forbidden" };
 
 export function resolveRoles(
@@ -23,14 +29,16 @@ export function resolveRoles(
   return { isAdmin, adminFor, judgeFor };
 }
 
-async function loadRoles(userId: string): Promise<PlatformRole[]> {
+// Header, page, and gates all resolve roles in the same request; cache()
+// collapses them into one platform_roles read.
+const loadRoles = cache(async (userId: string): Promise<PlatformRole[]> => {
   const supabase = await createServiceRoleClient();
   const { data } = await supabase
     .from("platform_roles")
     .select("*")
     .eq("user_id", userId);
   return (data as PlatformRole[] | null) ?? [];
-}
+});
 
 export async function isAdminFor(state: AuthenticatedState): Promise<boolean> {
   const { isAdmin } = resolveRoles(await loadRoles(state.userId), state.email);
@@ -47,12 +55,17 @@ export async function requireAdmin(): Promise<RoleCheck> {
   return isAdmin ? { ok: true, state } : { ok: false, reason: "forbidden" };
 }
 
-/** Slug-first variant for server actions that only carry the edition slug. */
-export async function requireEditionAdminBySlug(slug: string): Promise<RoleCheck> {
-  const { getHackathonBySlug } = await import("./hackathon");
+/**
+ * Slug-first variant for server actions that only carry the edition slug.
+ * Returns the resolved hackathon so every mutation can scope its writes to
+ * it — a slug-gated action writing by a bare row id would let a scoped
+ * admin of edition A touch edition B's rows.
+ */
+export async function requireEditionAdminBySlug(slug: string): Promise<EditionCheck> {
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon) return { ok: false, reason: "forbidden" };
-  return requireEditionAdmin(hackathon.id);
+  const gate = await requireEditionAdmin(hackathon.id);
+  return gate.ok ? { ok: true, state: gate.state, hackathon } : gate;
 }
 
 /** Global admins pass everywhere; a scoped admin only for their edition. */

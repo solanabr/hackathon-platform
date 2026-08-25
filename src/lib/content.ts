@@ -55,3 +55,20 @@ export async function getContent(
     .maybeSingle();
   return data as HackathonContent | null;
 }
+export function youtubeThumbnail(id: string): string {
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+}
+
+const THUMB_HOSTS = ["i.ytimg.com"];
+
+/** next/image throws at render on a host outside remotePatterns, so an
+ *  unexpected thumbnail host must degrade to the kind tile, not 500 the page. */
+export function renderableThumbnail(src: string | null | undefined): src is string {
+  if (!src) return false;
+  try {
+    const { hostname } = new URL(src);
+    return hostname.endsWith(".supabase.co") || THUMB_HOSTS.includes(hostname);
+  } catch {
+    return false;
+  }
+}

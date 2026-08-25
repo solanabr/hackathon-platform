@@ -9,12 +9,12 @@ import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { EditionInfoCard } from "@/components/edition/info-card";
 import { Avatar } from "@/components/ui/avatar";
-import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
+import { PhaseTimeline } from "@/components/edition/phase-timeline";
 import { PainelNav } from "@/components/edition/painel-nav";
+import { buildPhases } from "@/lib/phase-copy";
 import {
   getHackathonBySlug,
   isSubmissionWindowOpen,
-  phaseBoundaries,
   prizePoolLabel,
 } from "@/lib/hackathon";
 import {
@@ -145,47 +145,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     };
   })();
 
-  const bounds = phaseBoundaries(hackathon);
-  const phases: Phase[] = [
-    {
-      ...bounds.fase1,
-      key: "fase1",
-      label: "Fase 1, capacitação",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt - 1)))}`,
-      detail: "Minicursos e conteúdos preparatórios. Monte seu time nesse período.",
-    },
-    {
-      ...bounds.submissao,
-      key: "submissao",
-      label: "Desenvolvimento e submissão",
-      when: `${clean(DAY.format(new Date(bounds.submissao.startsAt)))} a ${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
-      detail: "Mentoria no dia 5. O líder envia deck, vídeo e repositório.",
-    },
-    ...(bounds.selecao && hackathon.finalists_announced_at
-      ? [
-          {
-            ...bounds.selecao,
-            key: "selecao",
-            label: "Seleção",
-            when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
-            detail: hackathon.finalists_count
-              ? `Os ${hackathon.finalists_count} finalistas são anunciados.`
-              : "As equipes classificadas são anunciadas.",
-          },
-        ]
-      : []),
-    ...(bounds.fase2 && hackathon.presential_at
-      ? [
-          {
-            ...bounds.fase2,
-            key: "fase2",
-            label: "Fase 2, presencial",
-            when: clean(DAY.format(new Date(hackathon.presential_at))),
-            detail: "Pitch Day e premiação.",
-          },
-        ]
-      : []),
-  ];
+  const phases = buildPhases(hackathon);
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">

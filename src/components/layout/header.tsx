@@ -11,7 +11,9 @@ export async function Header() {
   const roles = await resolveRoleState();
   const state = roles?.state ?? null;
   const admin = (roles?.isAdmin ?? false) || (roles?.adminFor.length ?? 0) > 0;
-  const judge = admin || (roles?.judgeFor.length ?? 0) > 0;
+  // /judge only admits global admins and real judges; a scoped edition admin
+  // would 404 there, so their menu must not offer it.
+  const judge = (roles?.isAdmin ?? false) || (roles?.judgeFor.length ?? 0) > 0;
 
   const menuLinks = state
     ? [

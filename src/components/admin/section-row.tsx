@@ -22,13 +22,35 @@ const KIND_LABEL: Record<string, string> = {
   prizes: "Premiação",
 };
 
+type DeliverableItem = { value: string; unit: string; label: string; note: string };
+type PhaseOverride = { key: string; label: string; detail: string };
+
+const PHASE_KEYS = [
+  { key: "fase1", name: "Fase 1" },
+  { key: "submissao", name: "Desenvolvimento e submissão" },
+  { key: "selecao", name: "Seleção" },
+  { key: "fase2", name: "Fase 2" },
+] as const;
+
+function readItems<T>(config: Record<string, unknown>): T[] {
+  return Array.isArray(config.items) ? (config.items as T[]) : [];
+}
+
 export function SectionRow({ slug, section }: { slug: string; section: HackathonSection }) {
   const router = useRouter();
   const [title, setTitle] = useState(section.title ?? "");
   const [subtitle, setSubtitle] = useState(section.subtitle ?? "");
   const [bodyMd, setBodyMd] = useState(section.body_md ?? "");
-  const [configJson, setConfigJson] = useState(
-    Object.keys(section.config).length > 0 ? JSON.stringify(section.config, null, 2) : "",
+  const [deliverables, setDeliverables] = useState<DeliverableItem[]>(
+    section.kind === "deliverables" ? readItems<DeliverableItem>(section.config) : [],
+  );
+  const [phaseOverrides, setPhaseOverrides] = useState<PhaseOverride[]>(
+    section.kind === "phases"
+      ? PHASE_KEYS.map((p) => {
+          const existing = readItems<PhaseOverride>(section.config).find((o) => o.key === p.key);
+          return { key: p.key, label: existing?.label ?? "", detail: existing?.detail ?? "" };
+        })
+      : [],
   );
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -47,11 +69,48 @@ export function SectionRow({ slug, section }: { slug: string; section: Hackathon
     });
   }
 
+  // The editor owns the config shape; the action only ever sees valid JSON.
+  function buildConfigJson(): string | null {
+    if (section.kind === "deliverables") {
+      const items = deliverables
+        .map((d) => ({
+          value: d.value.trim(),
+          unit: d.unit.trim(),
+          label: d.label.trim(),
+          note: d.note.trim(),
+        }))
+        .filter((d) => d.label);
+      return JSON.stringify({ items });
+    }
+    if (section.kind === "phases") {
+      const items = phaseOverrides
+        .map((o) => ({ key: o.key, label: o.label.trim(), detail: o.detail.trim() }))
+        .filter((o) => o.label || o.detail)
+        .map((o) => ({
+          key: o.key,
+          ...(o.label ? { label: o.label } : {}),
+          ...(o.detail ? { detail: o.detail } : {}),
+        }));
+      return JSON.stringify(items.length > 0 ? { items } : {});
+    }
+    return null;
+  }
+
+  function setDeliverable(i: number, patch: Partial<DeliverableItem>) {
+    setDeliverables((prev) => prev.map((d, idx) => (idx === i ? { ...d, ...patch } : d)));
+  }
+
+  function setPhase(i: number, patch: Partial<PhaseOverride>) {
+    setPhaseOverrides((prev) => prev.map((o, idx) => (idx === i ? { ...o, ...patch } : o)));
+  }
+
   return (
     <div
       id={`s-${section.id}`}
       className={`rounded-2xl border-2 p-5 sm:p-6 ${
-        section.visible ? "border-green-dark bg-surface-raised" : "border-green-dark/25 bg-surface-raised/60"
+        section.visible
+          ? "border-green-dark bg-surface-raised"
+          : "border-green-dark/25 bg-surface-raised/60"
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -144,21 +203,99 @@ export function SectionRow({ slug, section }: { slug: string; section: Hackathon
         </div>
       )}
 
-      {(section.kind === "phases" || section.kind === "deliverables") && (
-        <div className="mt-4">
-          <Label htmlFor={`config-${section.id}`}>
-            {section.kind === "phases"
-              ? "Config (JSON) — items: [{key, label, detail}] sobrescreve o texto das etapas"
-              : "Config (JSON) — items: [{value, unit, label, note}]"}
-          </Label>
-          <Textarea
-            id={`config-${section.id}`}
-            rows={6}
-            value={configJson}
-            onChange={(e) => setConfigJson(e.target.value)}
-            className="font-mono text-sm"
-          />
+      {section.kind === "deliverables" && (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm font-semibold text-muted">Itens</p>
+          {deliverables.map((d, i) => (
+            <div
+              key={i}
+              className="grid gap-2 rounded-xl border border-green-dark/15 p-3 sm:grid-cols-[5rem_7rem_1fr_auto]"
+            >
+              <Input
+                aria-label="Valor"
+                placeholder="10"
+                value={d.value}
+                onChange={(e) => setDeliverable(i, { value: e.target.value })}
+              />
+              <Input
+                aria-label="Unidade"
+                placeholder="slides"
+                value={d.unit}
+                onChange={(e) => setDeliverable(i, { unit: e.target.value })}
+              />
+              <div className="space-y-2">
+                <Input
+                  aria-label="Nome do item"
+                  placeholder="Pitch deck"
+                  value={d.label}
+                  onChange={(e) => setDeliverable(i, { label: e.target.value })}
+                />
+                <Input
+                  aria-label="Observação"
+                  placeholder="Quem passar do limite é desclassificado."
+                  value={d.note}
+                  onChange={(e) => setDeliverable(i, { note: e.target.value })}
+                />
+              </div>
+              <button
+                type="button"
+                aria-label="Remover item"
+                onClick={() => setDeliverables((prev) => prev.filter((_, idx) => idx !== i))}
+                className="self-start rounded-lg border border-red-700/30 px-2.5 py-1 text-sm font-bold text-red-800 hover:bg-red-600/10"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setDeliverables((prev) => [...prev, { value: "", unit: "", label: "", note: "" }])
+            }
+            className="rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold hover:bg-green-dark/10"
+          >
+            + Item
+          </button>
         </div>
+      )}
+
+      {section.kind === "phases" && (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm font-semibold text-muted">
+            Texto das etapas (vazio = usa o texto padrão; as datas vêm da edição)
+          </p>
+          {phaseOverrides.map((o, i) => (
+            <div key={o.key} className="rounded-xl border border-green-dark/15 p-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald">
+                {PHASE_KEYS[i].name}
+              </p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <Input
+                  aria-label={`Título da ${PHASE_KEYS[i].name}`}
+                  placeholder="Título"
+                  value={o.label}
+                  onChange={(e) => setPhase(i, { label: e.target.value })}
+                />
+                <Input
+                  aria-label={`Descrição da ${PHASE_KEYS[i].name}`}
+                  placeholder="Descrição"
+                  value={o.detail}
+                  onChange={(e) => setPhase(i, { detail: e.target.value })}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section.kind === "prizes" && (
+        <p className="mt-4 rounded-xl border border-yellow/40 bg-yellow/10 px-4 py-3 text-sm leading-relaxed">
+          Os prêmios vêm do campo <strong>Premiação</strong> da edição — edite em{" "}
+          <a href={`/admin/h/${slug}`} className="font-semibold text-emerald underline">
+            dados da edição
+          </a>
+          .
+        </p>
       )}
 
       <div className="mt-4 flex items-center gap-3">
@@ -167,7 +304,14 @@ export function SectionRow({ slug, section }: { slug: string; section: Hackathon
           disabled={pending}
           onClick={() =>
             run(() =>
-              updateSection({ slug, sectionId: section.id, title, subtitle, bodyMd, configJson }),
+              updateSection({
+                slug,
+                sectionId: section.id,
+                title,
+                subtitle,
+                bodyMd,
+                configJson: buildConfigJson(),
+              }),
             )
           }
         >
@@ -180,7 +324,7 @@ export function SectionRow({ slug, section }: { slug: string; section: Hackathon
   );
 }
 
-export function AddSectionButton({ slug, hackathonId }: { slug: string; hackathonId: string }) {
+export function AddSectionButton({ slug }: { slug: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -194,7 +338,7 @@ export function AddSectionButton({ slug, hackathonId }: { slug: string; hackatho
         onClick={() => {
           setError(null);
           startTransition(async () => {
-            const result = await createMarkdownSection({ slug, hackathonId });
+            const result = await createMarkdownSection({ slug });
             if (!result.ok) setError(result.error);
             else router.refresh();
           });

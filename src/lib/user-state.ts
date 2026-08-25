@@ -94,7 +94,8 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   return "/";
 });
 
-export async function resolveAuthenticatedUserState(): Promise<AuthenticatedState | null> {
+// Header, gates, and pages all call this per request; one auth+profile read.
+export const resolveAuthenticatedUserState = cache(async (): Promise<AuthenticatedState | null> => {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -116,7 +117,7 @@ export async function resolveAuthenticatedUserState(): Promise<AuthenticatedStat
     profile: typed,
     redirectPath: needsProfile ? "/account" : await liveDashboardPath(user.id),
   };
-}
+});
 
 /**
  * Gate for gated pages and server actions. Logged-out callers go to `/auth`

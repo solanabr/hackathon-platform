@@ -48,7 +48,7 @@ export default async function AdminSectionsPage({
               </Link>
             </p>
           </div>
-          <AddSectionButton slug={slug} hackathonId={hackathon.id} />
+          <AddSectionButton slug={slug} />
         </div>
 
         {sections.length === 0 ? (

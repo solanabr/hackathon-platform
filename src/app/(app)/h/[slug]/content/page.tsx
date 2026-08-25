@@ -6,6 +6,8 @@ import { PainelNav } from "@/components/edition/painel-nav";
 import { StatusChip } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHackathonBySlug } from "@/lib/hackathon";
+import { renderableThumbnail, youtubeThumbnail } from "@/lib/content";
+import { KIND_LABELS } from "@/lib/content-fields";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -21,15 +23,6 @@ const WHEN = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
 });
 
-const KIND_LABEL: Record<string, string> = {
-  aula: "Aula",
-  workshop: "Workshop",
-  mentoria: "Mentoria",
-  material: "Material",
-  link: "Link",
-  evento: "Evento",
-};
-
 const FILTERS: Array<{ key: string; label: string; kinds: string[] }> = [
   { key: "todos", label: "Tudo", kinds: [] },
   { key: "aulas", label: "Aulas e workshops", kinds: ["aula", "workshop", "mentoria"] },
@@ -42,9 +35,10 @@ type ScheduleRow = Pick<
   "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "position"
 >;
 
-type AvailableRow = Pick<HackathonContent, "id" | "youtube_id" | "external_url"> & {
-  thumbnail_url?: string | null;
-};
+type AvailableRow = Pick<
+  HackathonContent,
+  "id" | "kind" | "youtube_id" | "external_url" | "thumbnail_url"
+>;
 
 function domainOf(url: string): string | null {
   try {
@@ -80,17 +74,18 @@ export default async function ContentsPage({
       .select("id, kind, title, speaker, description, scheduled_at, position")
       .eq("hackathon_id", hackathon.id)
       .order("position", { ascending: true }),
-    supabase.from("hackathon_contents").select("*").eq("hackathon_id", hackathon.id),
+    supabase
+      .from("hackathon_contents")
+      .select("id, kind, youtube_id, external_url, thumbnail_url")
+      .eq("hackathon_id", hackathon.id),
   ]);
 
   const schedule = ((scheduleData as ScheduleRow[] | null) ?? []).filter(
     (s) => s.kind !== "evento",
   );
-  const available = new Map(
-    (((availableData as AvailableRow[] | null) ?? []).map((c) => [c.id, c])) as Array<
-      [string, AvailableRow]
-    >,
-  );
+  const availableRows = (availableData as AvailableRow[] | null) ?? [];
+  const available = new Map(availableRows.map((c) => [c.id, c] as const));
+  const availableCount = availableRows.filter((c) => c.kind !== "evento").length;
 
   const filter = FILTERS.find((x) => x.key === f) ?? FILTERS[0];
   const filtered =
@@ -113,7 +108,7 @@ export default async function ContentsPage({
               Conteúdos
             </h1>
             <p className="mt-2 font-mono text-sm tabular-nums text-muted">
-              {available.size}/{schedule.length} disponíveis. As gravações entram depois de cada
+              {availableCount}/{schedule.length} disponíveis. As gravações entram depois de cada
               encontro.
             </p>
           </div>
@@ -127,7 +122,7 @@ export default async function ContentsPage({
                 key={opt.key}
                 href={opt.key === "todos" ? `/h/${slug}/content` : `/h/${slug}/content?f=${opt.key}`}
                 aria-current={filter.key === opt.key ? "page" : undefined}
-                className={`whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold transition-colors duration-150 ${
+                className={`whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
                   filter.key === opt.key
                     ? "bg-green-dark text-surface"
                     : "text-ink hover:bg-green-dark/10"
@@ -153,10 +148,10 @@ export default async function ContentsPage({
               const when = item.scheduled_at
                 ? WHEN.format(new Date(item.scheduled_at)).replace(/\./g, "")
                 : null;
-              const thumb = row?.thumbnail_url
-                ? row.thumbnail_url
+              const thumb = renderableThumbnail(row?.thumbnail_url)
+                ? (row?.thumbnail_url as string)
                 : row?.youtube_id
-                  ? `https://i.ytimg.com/vi/${row.youtube_id}/hqdefault.jpg`
+                  ? youtubeThumbnail(row.youtube_id)
                   : null;
               const external =
                 ready && !row?.youtube_id && row?.external_url ? row.external_url : null;
@@ -182,7 +177,7 @@ export default async function ContentsPage({
                     ) : (
                       <div className="flex h-full flex-col items-center justify-center gap-2">
                         <span className="font-heading text-3xl font-black uppercase text-surface/25 [font-stretch:118%]">
-                          {KIND_LABEL[item.kind] ?? item.kind}
+                          {KIND_LABELS[item.kind] ?? item.kind}
                         </span>
                         {domain && (
                           <span className="font-mono text-xs text-surface/50">{domain}</span>
@@ -198,7 +193,7 @@ export default async function ContentsPage({
                       </span>
                     )}
                     <span className="absolute left-3 top-3 rounded-full bg-yellow px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-dark">
-                      {KIND_LABEL[item.kind] ?? item.kind}
+                      {KIND_LABELS[item.kind] ?? item.kind}
                     </span>
                   </div>
 
