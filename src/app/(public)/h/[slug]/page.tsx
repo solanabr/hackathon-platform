@@ -185,7 +185,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div>
-      <section className="relative overflow-hidden px-4 pt-14 sm:px-6 lg:px-8 lg:pt-24" aria-label={hackathon.name}>
+      <section className="relative px-4 pb-6 pt-14 sm:px-6 lg:px-8 lg:pt-24" aria-label={hackathon.name}>
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16">
           <div>
             <p
