@@ -142,7 +142,7 @@ export default async function HomePage({
         <div className="relative mx-auto grid w-full max-w-6xl flex-1 content-center gap-14 px-4 pb-10 pt-24 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-8">
           <div className="min-w-0 lg:col-span-7">
             {live && (
-              <p className="inline-flex items-center gap-2.5 rounded-full bg-green-dark px-4 py-2 text-sm font-semibold text-surface">
+              <p className="hidden items-center gap-2.5 rounded-full bg-green-dark px-4 py-2 text-sm font-semibold text-surface sm:inline-flex">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute h-full w-full animate-ping rounded-full bg-yellow/70" />
                   <span className="relative h-2 w-2 rounded-full bg-yellow" />
@@ -151,7 +151,7 @@ export default async function HomePage({
               </p>
             )}
 
-            <h1 className="mt-6 text-balance font-heading font-black uppercase leading-[0.92] tracking-tight">
+            <h1 className="text-balance font-heading font-black uppercase leading-[0.92] tracking-tight sm:mt-6">
               <span className="block text-[clamp(2rem,10vw,3rem)] [font-stretch:122%] sm:text-6xl lg:text-7xl">Hackathons</span>
               <span className="mt-3 inline-block -rotate-1 bg-green-dark px-3 py-1.5 text-[clamp(1.25rem,6vw,1.875rem)] text-yellow [font-stretch:110%] sm:px-4 sm:text-4xl lg:text-5xl">
                 Superteam Brasil
@@ -163,23 +163,23 @@ export default async function HomePage({
               primeiro commit ao Pitch Day.
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-4">
+            <div className="mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
               <a
                 href="#edicoes"
-                className="rounded-full bg-yellow px-8 py-3.5 text-base font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                className="whitespace-nowrap rounded-full bg-yellow px-6 py-3.5 text-sm font-bold sm:text-base text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-8"
               >
                 Explorar edições
               </a>
               <a
                 href="#como-funciona"
-                className="rounded-full border-2 border-green-dark bg-surface-raised px-7 py-3 text-base font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                className="whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-5 py-3 text-sm font-bold sm:text-base text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-7"
               >
                 Como funciona
               </a>
             </div>
           </div>
 
-          <div className="relative min-w-0 lg:col-span-5">
+          <div className="relative order-first min-w-0 lg:order-none lg:col-span-5">
             <HeroDeck cards={deck} />
           </div>
         </div>
@@ -195,7 +195,10 @@ export default async function HomePage({
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
               Edições
             </h2>
-            <nav aria-label="Filtrar edições" className="flex flex-wrap gap-2">
+            <nav
+              aria-label="Filtrar edições"
+              className="flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible sm:pb-0"
+            >
               {FILTERS.map((opt) => {
                 const active = filter === opt.key;
                 const count = counts[opt.key] ?? 0;
@@ -204,7 +207,7 @@ export default async function HomePage({
                     key={opt.key}
                     href={opt.key === "todos" ? "/" : `/?f=${opt.key}`}
                     aria-current={active ? "page" : undefined}
-                    className={`rounded-full border-2 border-[#1b231d] px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb] ${
+                    className={`whitespace-nowrap rounded-full border-2 border-[#1b231d] px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb] ${
                       active ? "bg-[#1b231d] text-[#f7eacb]" : "text-[#1b231d] hover:bg-[#1b231d]/10"
                     }`}
                   >
@@ -221,9 +224,9 @@ export default async function HomePage({
               Nenhuma edição aqui ainda.
             </p>
           ) : (
-            <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="-mx-4 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
               {filtered.map((e) => (
-                <li key={e.slug} className="min-w-0">
+                <li key={e.slug} className="w-[85%] min-w-0 shrink-0 snap-center sm:w-auto sm:shrink">
                   <Link
                     href={`/h/${e.slug}`}
                     className="group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-[6px_6px_0_#1b231d] transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[9px_9px_0_#1b231d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
