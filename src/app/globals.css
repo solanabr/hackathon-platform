@@ -33,6 +33,12 @@
 @layer base {
   html {
     color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  /* Anchor targets stop clear of the floating dock. */
+  [id] {
+    scroll-margin-top: 5.5rem;
   }
 
   body {
@@ -175,6 +181,10 @@
 .animate-marquee { animation: marqueeX 30s linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .animate-marquee,
   .animate-float-a,
   .animate-float-b,
