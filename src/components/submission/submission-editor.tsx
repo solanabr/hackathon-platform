@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { ImageUpload } from "./image-upload";
 import { sanitizeText, sanitizeUrl } from "@/lib/security";
@@ -134,7 +135,6 @@ export function SubmissionEditor({
 
   async function submit() {
     if (!editable || !isLeader) return;
-    if (!confirm("Após submeter, ninguém do time pode editar. Confirma?")) return;
 
     const saved = await save();
     if (!saved) return;
@@ -356,15 +356,15 @@ export function SubmissionEditor({
           </Button>
           )}
           {isLeader && (
-            <Button
-              type="button"
+            <ConfirmButton
+              label={pendingSubmit ? "Submetendo..." : "Submeter projeto"}
               variant="primary"
-              onClick={submit}
               disabled={!editable || pendingSubmit || !canSubmit}
               title={blockedReason}
-            >
-              {pendingSubmit ? "Submetendo..." : "Submeter projeto"}
-            </Button>
+              prompt="Após submeter, ninguém do time pode editar."
+              confirmLabel="Submeter"
+              onConfirm={submit}
+            />
           )}
         </div>
       </div>

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Countdown } from "@/components/ui/countdown";
 import { Card } from "@/components/ui/card";
+import { CopyLink } from "@/components/ui/copy-link";
 import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { Avatar } from "@/components/ui/avatar";
@@ -66,6 +67,26 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const open = isSubmissionWindowOpen(hackathon);
   const now = Date.now();
   const submitted = snapshot?.submission.status === "submitted";
+
+  // Once the team has submitted, the countdown stops counting to the (passed)
+  // deadline and flips to the reveal signal: finalists first, then Pitch Day.
+  const countdown: { label: string; iso: string | null; date: string } = (() => {
+    const announced = hackathon.finalists_announced_at;
+    const presential = hackathon.presential_at;
+    if (submitted && announced && new Date(announced).getTime() > now)
+      return { label: "Finalistas saem em", iso: announced, date: announced };
+    if (submitted && presential && new Date(presential).getTime() > now)
+      return { label: "Pitch Day em", iso: presential, date: presential };
+    if (submitted && presential)
+      return { label: "Pitch Day em", iso: null, date: presential };
+    return open
+      ? {
+          label: "Submissão fecha em",
+          iso: hackathon.submission_deadline_at,
+          date: hackathon.submission_deadline_at,
+        }
+      : { label: "Submissão encerrada", iso: null, date: hackathon.submission_deadline_at };
+  })();
 
   const supabase = await createServerSupabaseClient();
 
@@ -149,20 +170,20 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
           <Card className="px-5 py-3">
             <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              {open ? "Submissão fecha em" : "Submissão encerrada"}
+              {countdown.label}
             </p>
-            {open ? (
+            {countdown.iso ? (
               <>
                 <p className="font-heading text-xl font-bold">
-                  <Countdown deadlineIso={hackathon.submission_deadline_at} />
+                  <Countdown deadlineIso={countdown.iso} />
                 </p>
                 <p className="mt-0.5 text-xs text-muted">
-                  {FULL.format(new Date(hackathon.submission_deadline_at))}
+                  {FULL.format(new Date(countdown.date))}
                 </p>
               </>
             ) : (
               <p className="font-heading text-xl font-bold">
-                {FULL.format(new Date(hackathon.submission_deadline_at))}
+                {FULL.format(new Date(countdown.date))}
               </p>
             )}
           </Card>
@@ -276,6 +297,12 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                     </>
                   )}
                 </p>
+                <div className="mt-5 space-y-1.5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted">
+                    Compartilhe seu projeto
+                  </p>
+                  <CopyLink href={`/h/${slug}/projetos/${snapshot.submission.id}`} />
+                </div>
               </div>
             ) : (
               <>

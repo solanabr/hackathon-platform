@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 type Props = {
   memberId: string;
@@ -30,7 +31,6 @@ export function MemberRow({
   const [removing, setRemoving] = useState(false);
 
   async function handleRemove() {
-    if (!confirm(`Remover ${fullName ?? email} do time?`)) return;
     setRemoving(true);
     const res = await fetch("/api/team/member", {
       method: "DELETE",
@@ -66,14 +66,15 @@ export function MemberRow({
           </Badge>
         )}
         {canRemove && (
-          <button
-            type="button"
-            onClick={handleRemove}
+          <ConfirmButton
+            label={removing ? "Removendo..." : "Remover"}
+            variant="ghost"
             disabled={removing}
-            className="text-xs text-red-300 underline-offset-2 hover:underline disabled:opacity-50"
-          >
-            {removing ? "Removendo..." : "Remover"}
-          </button>
+            className="px-3 py-1 text-xs text-red-300 underline-offset-2 hover:underline disabled:opacity-50"
+            prompt={`Remover ${fullName ?? email} do time?`}
+            confirmLabel="Remover"
+            onConfirm={handleRemove}
+          />
         )}
       </div>
     </li>
