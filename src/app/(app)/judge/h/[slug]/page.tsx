@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { StatusChip } from "@/components/ui/section-card";
-import { JudgeProjectCard, type JudgeProject } from "@/components/judge/project-card";
+import { JudgeProjectList } from "@/components/judge/project-list";
+import type { JudgeProject } from "@/components/judge/project-card";
 import { requireJudge, resolveRoleState } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -156,6 +157,11 @@ export default async function JudgeEditionPage({
       ? hackathon.finalists_announced_at
       : (hackathon.voting_closes_at ?? hackathon.presential_at);
 
+  const projectsWithRatings = projects.map((project) => ({
+    ...project,
+    rating: mine.get(project.submissionId) ?? { grade: null, comment: "" },
+  }));
+
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
@@ -179,19 +185,12 @@ export default async function JudgeEditionPage({
         </header>
 
         {projects.length > 0 && (
-          <ul className="space-y-6">
-            {projects.map((project) => (
-              <li key={project.submissionId}>
-                <JudgeProjectCard
-                  project={project}
-                  hackathonId={hackathon.id}
-                  slug={slug}
-                  round={round}
-                  rating={mine.get(project.submissionId) ?? { grade: null, comment: "" }}
-                />
-              </li>
-            ))}
-          </ul>
+          <JudgeProjectList
+            projects={projectsWithRatings}
+            hackathonId={hackathon.id}
+            slug={slug}
+            round={round}
+          />
         )}
       </div>
     </div>
