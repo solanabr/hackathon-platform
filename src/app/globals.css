@@ -151,3 +151,31 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* LP hub homepage: morth shapes as paint, not watermark ------------------- */
+.morth {
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.text-outline-green {
+  -webkit-text-stroke: 2px #1b231d;
+  color: transparent;
+}
+
+@keyframes marqueeX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marqueeX 30s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-float-a,
+  .animate-float-b,
+  .animate-float-c { animation: none; }
+}
