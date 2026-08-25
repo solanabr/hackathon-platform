@@ -85,18 +85,18 @@ export function FinalistPicker({
 
   return (
     <div className="space-y-5">
-      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
       {notice && <p className="text-sm font-semibold text-emerald">{notice}</p>}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-green/15 bg-surface-raised p-5">
-        <p className="text-sm text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white-10 bg-surface-raised p-5">
+        <p className="font-mono text-sm tabular-nums text-muted">
           {marked.length} de {candidates.length} marcado(s) · {pendingNotify} por notificar.
         </p>
         <button
           type="button"
           disabled={pending || pendingNotify === 0}
           onClick={notify}
-          className="btn-primary px-5 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-primary min-h-11 px-5 py-2 text-sm text-[#1b231d] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "Notificando..." : "Notificar finalistas"}
         </button>
@@ -108,7 +108,9 @@ export function FinalistPicker({
           return (
             <li
               key={c.submissionId}
-              className="rounded-2xl border border-green/15 bg-surface-raised p-5"
+              className={`rounded-xl border bg-surface-raised p-5 transition-colors ${
+                on ? "border-yellow/40 bg-yellow/5" : "border-white-10"
+              }`}
             >
               <label className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -122,7 +124,14 @@ export function FinalistPicker({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-heading text-lg font-bold">
-                        {i + 1}. {c.projectName}
+                        <span
+                          className={`mr-1 font-mono tabular-nums ${
+                            on ? "text-yellow" : "text-muted"
+                          }`}
+                        >
+                          {i + 1}.
+                        </span>
+                        {c.projectName}
                       </span>
                       {on && c.notified && <StatusChip tone="ok">notificado</StatusChip>}
                       {on && !c.notified && (
@@ -143,14 +152,14 @@ export function FinalistPicker({
                       disabled={pending}
                       placeholder="—"
                       onChange={(e) => updatePlacement(c, e.target.value)}
-                      className="h-9 w-14 rounded-lg border border-green/20 bg-surface px-2 text-center font-heading text-base font-bold text-ink outline-none focus:border-emerald"
+                      className="h-9 w-14 rounded-lg border border-white-10 bg-surface-deep px-2 text-center font-mono text-base font-semibold tabular-nums text-ink outline-none transition-colors focus:border-emerald"
                     />
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                    <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted">
                       colocação
                     </span>
                   </label>
                   <div className="text-right">
-                    <p className="font-heading text-xl font-bold">
+                    <p className="font-mono text-xl font-semibold tabular-nums text-yellow">
                       {c.avgGrade === null
                         ? "—"
                         : c.avgGrade.toLocaleString("pt-BR", {
@@ -158,11 +167,11 @@ export function FinalistPicker({
                             maximumFractionDigits: 2,
                           })}
                     </p>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                    <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted">
                       média
                     </p>
                   </div>
-                  <p className="w-16 text-right text-sm text-muted">
+                  <p className="w-16 text-right font-mono text-sm tabular-nums text-muted">
                     {c.ratings} nota{c.ratings === 1 ? "" : "s"}
                   </p>
                 </div>

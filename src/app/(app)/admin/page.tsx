@@ -56,8 +56,13 @@ export default async function AdminPage() {
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="font-heading text-3xl font-bold">Administração</h1>
-          <Link href="/admin/people" className="btn-secondary px-5 py-2 text-sm">
+          <div>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+              Operação
+            </p>
+            <h1 className="mt-1 font-heading text-3xl font-bold">Administração</h1>
+          </div>
+          <Link href="/admin/people" className="btn-secondary min-h-11 px-5 py-2 text-sm">
             Pessoas
           </Link>
         </div>
@@ -71,15 +76,15 @@ export default async function AdminPage() {
                   <div>
                     <Badge tone={h.status === "closed" ? "neutral" : "emerald"}>{h.status}</Badge>
                     <h2 className="mt-2 font-heading text-xl font-bold">{h.name}</h2>
-                    <p className="text-sm text-muted">/{h.slug}</p>
+                    <p className="font-mono text-sm tabular-nums text-muted">/{h.slug}</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <p className="text-sm text-muted">
+                    <p className="font-mono text-sm tabular-nums text-muted">
                       {c?.registrations ?? 0} inscritos · {c?.teams ?? 0} times
                     </p>
                     <Link
                       href={`/admin/h/${h.slug}`}
-                      className="shrink-0 rounded-full border border-green/20 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-green/50 hover:bg-green/5"
+                      className="min-h-11 shrink-0 rounded-full border border-white-10 px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/50 hover:bg-white/5"
                     >
                       Editar
                     </Link>

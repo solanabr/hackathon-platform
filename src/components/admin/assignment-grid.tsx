@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { StatusChip } from "@/components/ui/section-card";
 import { setAssignment } from "@/app/(app)/admin/h/[slug]/judges/actions";
 import type { RatingRound } from "@/lib/hackathon";
 
@@ -66,7 +65,7 @@ export function AssignmentGrid({
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
 
       <ul className="space-y-3">
         {projects.map((project) => {
@@ -76,16 +75,22 @@ export function AssignmentGrid({
           return (
             <li
               key={project.submissionId}
-              className="rounded-2xl border border-green/15 bg-surface-raised p-5"
+              className="rounded-xl border border-white-10 bg-surface-raised p-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="font-heading text-lg font-bold">{project.projectName}</h3>
                   <p className="text-sm text-muted">Time {project.teamName}</p>
                 </div>
-                <StatusChip tone={short ? "pending" : "ok"}>
+                <span
+                  className={`inline-flex shrink-0 items-center rounded border px-2 py-1 font-mono text-[11px] font-semibold tabular-nums ${
+                    short
+                      ? "border-yellow/40 bg-yellow/10 text-yellow"
+                      : "border-emerald/30 bg-emerald/10 text-emerald"
+                  }`}
+                >
                   {assigned.size} de 2 jurados
-                </StatusChip>
+                </span>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -98,10 +103,10 @@ export function AssignmentGrid({
                       disabled={pending}
                       aria-pressed={on}
                       onClick={() => toggle(project.submissionId, judge.id, assigned)}
-                      className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                      className={`min-h-11 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
                         on
-                          ? "border-emerald bg-emerald text-surface"
-                          : "border-green/20 text-muted hover:border-green/50 hover:text-ink"
+                          ? "border-emerald bg-emerald text-white"
+                          : "border-white-10 text-muted hover:border-emerald/50 hover:text-ink"
                       }`}
                     >
                       {judge.name}

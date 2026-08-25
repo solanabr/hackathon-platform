@@ -41,7 +41,10 @@ export default async function AdminFinalistsPage({
         <BackLink href="/admin" label="Administração" />
 
         <header>
-          <h1 className="font-heading text-3xl font-bold">Finalistas</h1>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            Banca
+          </p>
+          <h1 className="mt-1 font-heading text-3xl font-bold">Finalistas</h1>
           <p className="mt-2 text-muted">{hackathon.name} · média da triagem.</p>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
             A média da triagem decide a classificação (regulamento 7.1). Marque as equipes que
@@ -50,7 +53,7 @@ export default async function AdminFinalistsPage({
         </header>
 
         {candidates.length === 0 ? (
-          <p className="text-muted">Nenhum projeto submetido ainda.</p>
+          <p className="font-mono text-sm text-muted">Nenhum projeto submetido ainda.</p>
         ) : (
           <FinalistPicker candidates={candidates} slug={slug} hackathonId={hackathon.id} />
         )}
