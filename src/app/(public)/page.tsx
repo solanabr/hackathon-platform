@@ -106,16 +106,23 @@ export default async function HomePage({
     key: e.slug,
     href: `/h/${e.slug}`,
     label: e.name,
+    meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
     coverUrl: e.coverUrl,
   }));
   while (deck.length < 3) {
-    deck.push({ key: `brand-${deck.length}`, href: null, label: "Superteam Brasil", coverUrl: null });
+    deck.push({
+      key: `brand-${deck.length}`,
+      href: null,
+      label: "Superteam Brasil",
+      meta: "Novas edições em breve",
+      coverUrl: null,
+    });
   }
 
   return (
     <div className="bg-surface text-ink">
       {/* Hero: the morth shapes are the canvas, DoraHacks-style, in LP paint */}
-      <section className="relative overflow-hidden">
+      <section className="relative flex min-h-[100dvh] flex-col overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div
             className="morth animate-float-a absolute -left-28 -top-24 h-[30rem] w-[30rem] bg-[#ffd23f] sm:h-[38rem] sm:w-[38rem]"
@@ -135,7 +142,7 @@ export default async function HomePage({
           />
         </div>
 
-        <div className="relative mx-auto grid max-w-6xl gap-14 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-8 lg:pb-24 lg:pt-20">
+        <div className="relative mx-auto grid w-full max-w-6xl flex-1 content-center gap-14 px-4 pb-10 pt-24 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-8">
           <div className="min-w-0 lg:col-span-7">
             {live && (
               <p className="inline-flex items-center gap-2.5 rounded-full bg-green-dark px-4 py-2 text-sm font-semibold text-surface">
@@ -217,7 +224,7 @@ export default async function HomePage({
               Nenhuma edição aqui ainda.
             </p>
           ) : (
-            <ul className="mt-10 grid gap-8 lg:grid-cols-2">
+            <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((e) => (
                 <li key={e.slug} className="min-w-0">
                   <Link
@@ -248,23 +255,20 @@ export default async function HomePage({
                       )}
                     </div>
 
-                    <div className="flex items-start gap-5 p-6">
+                    <div className="flex items-start gap-4 p-4">
                       <div className="shrink-0 text-center">
-                        <p className="font-heading text-4xl font-black leading-none tabular-nums [font-stretch:118%]">
+                        <p className="font-heading text-2xl font-black leading-none tabular-nums [font-stretch:118%]">
                           {e.startDay}
                         </p>
-                        <p className="mt-1 text-xs font-bold uppercase tracking-widest text-[#008c4c]">{e.startMonth}</p>
+                        <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-[#008c4c]">{e.startMonth}</p>
                       </div>
-                      <div className="min-w-0 flex-1 border-l-2 border-[#1b231d]/10 pl-5">
-                        <h3 className="truncate font-heading text-xl font-bold">{e.name}</h3>
-                        <p className="mt-1 text-sm font-semibold text-[#1b231d]/60">
+                      <div className="min-w-0 flex-1 border-l-2 border-[#1b231d]/10 pl-4">
+                        <h3 className="truncate font-heading text-base font-bold">{e.name}</h3>
+                        <p className="mt-0.5 truncate text-xs font-semibold text-[#1b231d]/60">
                           {e.dateRange}
                           {e.locationCity ? ` · ${e.locationCity}` : ""}
                         </p>
-                        {e.prizeSummary && (
-                          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-[#1b231d]/75">{e.prizeSummary}</p>
-                        )}
-                        <p className="mt-4 text-sm font-bold text-[#008c4c]">
+                        <p className="mt-2.5 text-xs font-bold text-[#008c4c]">
                           {e.registrationOpen && e.registrationClosesLabel
                             ? `Inscrições até ${e.registrationClosesLabel}`
                             : e.stage === "finished"
