@@ -48,7 +48,7 @@ export function ImageUpload({ teamId, currentPath, currentUrl, disabled, onUploa
       return;
     }
 
-    // Don't delete the previous image here — if the user closes the tab before
+    // Don't delete the previous image here - if the user closes the tab before
     // saving, the DB would point at a deleted file. Orphans can be GC'd later.
 
     const { data } = supabase.storage.from("project-images").getPublicUrl(path);

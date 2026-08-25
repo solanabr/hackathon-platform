@@ -65,7 +65,7 @@ export function RatingForm({
           Sua nota
         </label>
         <span className="font-heading text-2xl font-bold text-ink">
-          {grade ?? "—"}
+          {grade ?? "-"}
           <span className="ml-1 text-xs font-normal text-muted">/ 10</span>
         </span>
       </div>

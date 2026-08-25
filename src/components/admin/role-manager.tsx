@@ -45,7 +45,7 @@ export function RoleManager({
           <option value="judge">Jurado</option>
         </select>
         <select name="hackathon_id" className="rounded-full border border-green/30 bg-surface-raised px-4 py-2">
-          <option value="">— hackathon (jurado) —</option>
+          <option value="">Selecionar hackathon (jurado)</option>
           {hackathons.map((h) => (
             <option key={h.id} value={h.id}>
               {h.name}

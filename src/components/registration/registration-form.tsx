@@ -35,10 +35,11 @@ export function RegistrationForm({
           Confirmo que me inscrevi no evento pelo Luma
           {lumaUrl && (
             <>
-              {" — "}
+              {" ("}
               <a href={lumaUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
                 abrir o Luma
               </a>
+              {")"}
             </>
           )}
           .
