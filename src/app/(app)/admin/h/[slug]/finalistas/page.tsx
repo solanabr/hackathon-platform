@@ -21,10 +21,13 @@ export default async function AdminFinalistsPage({
   if (!hackathon) notFound();
 
   const supabase = await createServiceRoleClient();
+  // `!left` keeps submitted-but-unrated projects in the picker: filtering an
+  // embedded resource would otherwise turn the join into an INNER one and drop
+  // rows with no triagem ratings yet.
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, project_name, teams!inner(id, name, is_finalist, finalist_notified_at), submission_ratings(grade)",
+      "id, project_name, teams!inner(id, name, is_finalist, finalist_notified_at, placement), submission_ratings!left(grade)",
     )
     .eq("teams.hackathon_id", hackathon.id)
     .eq("status", "submitted")

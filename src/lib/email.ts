@@ -133,38 +133,42 @@ export type FinalistNotifyResult =
   | { ok: false; error: string };
 
 /**
- * Sends the finalist email to every yet-unnotified finalist team's leader and
- * stamps finalist_notified_at on success, so a retry only reaches the teams
- * that never got the email. Admin-gated callers only; never import this into a
- * client component.
+ * Sends the finalist email to every yet-unnotified finalist team's leader.
+ *
+ * Each team is claimed atomically (`finalist_notified_at` set by a single-row
+ * UPDATE ... AND finalist_notified_at IS NULL) before its email goes out, so a
+ * concurrent or retried run never sends the same leader twice. If the send
+ * fails the claim is rolled back and the team is counted as failed, so a retry
+ * reaches it. Admin-gated callers only; never import this into a client
+ * component.
  */
 export async function notifyFinalists(hackathonId: string): Promise<FinalistNotifyResult> {
   const supabase = await createServiceRoleClient();
 
-  const { data: hack } = await supabase
+  const { data: hack, error: hackError } = await supabase
     .from("hackathons")
     .select("name, slug")
     .eq("id", hackathonId)
     .maybeSingle();
 
   const edition = hack as { name: string; slug: string } | null;
-  if (!edition) return { ok: false, error: "Edição não encontrada." };
+  if (hackError || !edition) return { ok: false, error: "Edição não encontrada." };
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("teams")
     .select("id, name, users(email)")
     .eq("hackathon_id", hackathonId)
     .eq("is_finalist", true)
     .is("finalist_notified_at", null);
 
+  if (error) return { ok: false, error: error.message };
+
   type TeamRow = {
     id: string;
     name: string;
     users: { email: string } | { email: string }[] | null;
   };
-  const teams = ((data as TeamRow[] | null) ?? []).filter(
-    (t) => t.users !== null && t.users !== undefined,
-  );
+  const teams = (data as TeamRow[] | null) ?? [];
 
   let sent = 0;
   let failed = 0;
@@ -176,6 +180,22 @@ export async function notifyFinalists(hackathonId: string): Promise<FinalistNoti
       continue;
     }
 
+    // Atomic claim: only the run whose UPDATE returns a row may send, which
+    // closes the select-then-stamp race between concurrent notifications.
+    const { data: claimed, error: claimError } = await supabase
+      .from("teams")
+      .update({ finalist_notified_at: new Date().toISOString() })
+      .eq("id", team.id)
+      .is("finalist_notified_at", null)
+      .select("id, finalist_notified_at")
+      .maybeSingle();
+
+    if (claimError) {
+      failed++;
+      continue;
+    }
+    if (!claimed) continue; // another run claimed this team first
+
     const result = await sendFinalistEmail({
       to: leader.email,
       projectName: team.name,
@@ -185,11 +205,13 @@ export async function notifyFinalists(hackathonId: string): Promise<FinalistNoti
 
     if (result.ok) {
       sent++;
+    } else {
+      // Roll the claim back so a retry re-sends to this team.
       await supabase
         .from("teams")
-        .update({ finalist_notified_at: new Date().toISOString() })
-        .eq("id", team.id);
-    } else {
+        .update({ finalist_notified_at: null })
+        .eq("id", team.id)
+        .eq("finalist_notified_at", claimed.finalist_notified_at);
       failed++;
     }
   }

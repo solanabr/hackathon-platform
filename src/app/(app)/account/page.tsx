@@ -5,7 +5,7 @@ import { StatusChip } from "@/components/ui/section-card";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/user-state";
-import { editionStage } from "@/lib/hackathon";
+import { editionStage, isFinalistsVisible } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
 
@@ -174,7 +174,7 @@ export default async function AccountPage({
                           {p.hackathon.location_city ? ` · ${p.hackathon.location_city}` : ""}
                         </p>
                       </div>
-                      {p.isFinalist ? (
+                      {p.isFinalist && isFinalistsVisible(p.hackathon) ? (
                         <StatusChip tone="ok">finalista</StatusChip>
                       ) : finished ? (
                         <StatusChip tone="muted">encerrado</StatusChip>
