@@ -66,9 +66,15 @@ export default async function AdminContentPage({
         <BackLink href="/admin" label="Administração" />
 
         <header>
-          <h1 className="font-heading text-3xl font-bold">Conteúdos</h1>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            Conteúdo da edição
+          </p>
+          <h1 className="mt-1 font-heading text-3xl font-bold">Conteúdos</h1>
           <p className="mt-2 text-muted">
-            {hackathon.name} · {publishedCount} de {contents.length} publicados.
+            {hackathon.name} ·{" "}
+            <span className="font-mono tabular-nums">
+              {publishedCount} de {contents.length} publicados.
+            </span>
           </p>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
             A data e o título aparecem na página pública desde já. O vídeo só fica visível para
@@ -79,7 +85,7 @@ export default async function AdminContentPage({
         <NewContentForm hackathonId={hackathon.id} slug={slug} />
 
         {items.length === 0 ? (
-          <p className="text-muted">Nenhum conteúdo cadastrado para esta edição.</p>
+          <p className="font-mono text-sm text-muted">Nenhum conteúdo cadastrado para esta edição.</p>
         ) : (
           <ul className="space-y-4">
             {items.map((item, i) => (
