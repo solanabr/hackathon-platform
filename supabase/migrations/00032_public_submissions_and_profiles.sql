@@ -36,7 +36,9 @@ grant select on public.public_submissions to anon, authenticated;
 grant all on public.public_submissions to service_role;
 
 -- Participation-gated: only builders on a team whose submission is published
--- get a public profile. A non-participant's /u/[id] page then 404s.
+-- get a public profile. A non-participant's /u/[id] page then 404s. Same
+-- posture as the other two views: the hackathon must not be a draft, so
+-- profiles vanish with the edition, not just the project cards.
 create or replace view public.public_profiles
 with (security_barrier = true) as
 select
@@ -47,8 +49,10 @@ where id in (
   select tm.user_id
   from public.team_members tm
   join public.submissions s on s.team_id = tm.team_id
+  join public.hackathons h on h.id = tm.hackathon_id
   where tm.status = 'accepted'
     and s.status = 'submitted'
+    and h.status <> 'draft'
 );
 
 grant select on public.public_profiles to anon, authenticated;
