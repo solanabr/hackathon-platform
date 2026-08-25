@@ -16,9 +16,6 @@ export async function Header() {
   const menuLinks = state
     ? [
         { href: "/account", label: "Minha conta" },
-        ...(state.redirectPath.startsWith("/h/")
-          ? [{ href: state.redirectPath, label: "Meu painel" }]
-          : []),
         ...(judge ? [{ href: "/judge", label: "Avaliação" }] : []),
         ...(admin ? [{ href: "/admin", label: "Admin" }] : []),
       ]
