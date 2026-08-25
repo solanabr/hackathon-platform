@@ -52,7 +52,7 @@ export function TeamDangerZone({
               value={newLeader}
               onChange={(e) => setNewLeader(e.target.value)}
               aria-label="Novo líder"
-              className="rounded-full border border-white/10 bg-surface-raised px-4 py-2 text-sm"
+              className="rounded-full border border-green-dark/15 bg-surface-raised px-4 py-2 text-sm"
             >
               <option value="">Escolher integrante</option>
               {candidates.map((c) => (

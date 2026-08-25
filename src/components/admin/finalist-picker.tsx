@@ -126,7 +126,7 @@ export function FinalistPicker({
                       <span className="font-heading text-lg font-bold">
                         <span
                           className={`mr-1 font-mono tabular-nums ${
-                            on ? "text-yellow" : "text-muted"
+                            on ? "text-emerald" : "text-muted"
                           }`}
                         >
                           {i + 1}.
@@ -159,7 +159,7 @@ export function FinalistPicker({
                     </span>
                   </label>
                   <div className="text-right">
-                    <p className="font-mono text-xl font-semibold tabular-nums text-yellow">
+                    <p className="font-mono text-xl font-semibold tabular-nums text-emerald">
                       {c.avgGrade === null
                         ? "—"
                         : c.avgGrade.toLocaleString("pt-BR", {

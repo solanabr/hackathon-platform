@@ -70,7 +70,7 @@ export function RegistrationForm({
       }
       className="space-y-5"
     >
-      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-surface-raised p-4">
+      <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
         <input type="checkbox" name="luma_confirmed" className="mt-0.5 h-4 w-4 accent-emerald" />
         <span className="text-sm text-ink">
           Confirmo que me inscrevi no evento pelo Luma
@@ -92,7 +92,7 @@ export function RegistrationForm({
         </span>
       </label>
 
-      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-surface-raised p-4">
+      <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
         <input type="checkbox" name="terms_accepted" className="mt-0.5 h-4 w-4 accent-emerald" />
         <span className="text-sm text-ink">Li e aceito as regras do hackathon.</span>
       </label>

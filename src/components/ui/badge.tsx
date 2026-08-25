@@ -1,9 +1,9 @@
 type Tone = "yellow" | "emerald" | "neutral";
 
 const tones: Record<Tone, string> = {
-  yellow: "bg-yellow/15 text-yellow border-yellow/30",
+  yellow: "bg-yellow text-green-dark border-yellow-strong/50",
   emerald: "bg-emerald/15 text-emerald border-emerald/30",
-  neutral: "bg-white/5 text-muted border-white/10",
+  neutral: "bg-green-dark/5 text-muted border-green-dark/15",
 };
 
 export function Badge({

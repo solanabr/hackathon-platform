@@ -57,7 +57,7 @@ export default async function TeamPage({
     }
     return (
       <div className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="relative mx-auto max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-surface-raised p-10 text-center">
+        <div className="relative mx-auto max-w-xl overflow-hidden rounded-3xl border border-green-dark/15 bg-surface-raised p-10 text-center">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 opacity-[0.12]">
             <Image
               src="/brand/stbr/elements/morth-12.svg"
@@ -95,7 +95,7 @@ export default async function TeamPage({
       <div className="mx-auto max-w-3xl space-y-6">
         <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
 
-        <header className="rounded-3xl border border-white/10 bg-surface-raised p-7">
+        <header className="rounded-3xl border border-green-dark/15 bg-surface-raised p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">TIME</p>
@@ -121,7 +121,7 @@ export default async function TeamPage({
             <h2 className="font-heading text-lg font-semibold">Integrantes</h2>
             <p className="font-mono text-xs tabular-nums text-muted">{acceptedCount}/4</p>
           </div>
-          <ul className="mt-4 divide-y divide-white/10">
+          <ul className="mt-4 divide-y divide-green-dark/10">
             {acceptedMembers.map((m) => (
               <MemberRow
                 key={m.id}

@@ -10,7 +10,7 @@ export async function Header() {
   const judge = admin || (roles?.judgeFor.length ?? 0) > 0;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-surface/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-green-dark/15 bg-surface/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image

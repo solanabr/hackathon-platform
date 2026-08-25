@@ -185,7 +185,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       <div className="mx-auto max-w-5xl space-y-10">
         <BackLink href={`/h/${slug}`} label={hackathon.name} />
 
-        <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-surface-raised p-6 sm:p-8">
+        <header className="relative overflow-hidden rounded-3xl border border-green-dark/15 bg-surface-raised p-6 sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
             <Image
               src="/brand/stbr/elements/morth-05.svg"
@@ -204,7 +204,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             <p className="mt-1 text-muted">{hackathon.name}</p>
           </div>
 
-          <div className="relative mt-6 overflow-hidden rounded-2xl border border-white/10 bg-surface-deep px-6 py-6 sm:px-8">
+          <div className="relative mt-6 overflow-hidden rounded-2xl border border-green-dark/15 bg-surface-deep px-6 py-6 sm:px-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
                 {hero.label}

@@ -58,7 +58,7 @@ export function MemberRow({
           <p className="font-medium text-ink">
             {fullName ?? email}
             {isLeader && (
-              <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-yellow">
+              <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-green">
                 Líder
               </span>
             )}

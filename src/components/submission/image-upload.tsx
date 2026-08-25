@@ -63,7 +63,7 @@ export function ImageUpload({ teamId, currentPath, currentUrl, disabled, onUploa
         <img
           src={previewUrl}
           alt="Capa do projeto"
-          className="h-40 w-40 rounded-xl border border-white/10 object-cover"
+          className="h-40 w-40 rounded-xl border border-green-dark/15 object-cover"
         />
       )}
       <input
@@ -82,7 +82,7 @@ export function ImageUpload({ teamId, currentPath, currentUrl, disabled, onUploa
         type="button"
         disabled={disabled || uploading}
         onClick={() => inputRef.current?.click()}
-        className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/15 bg-surface-raised px-6 py-8 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-green-dark/20 bg-surface-raised px-6 py-8 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span aria-hidden className="text-2xl leading-none">
           ↑

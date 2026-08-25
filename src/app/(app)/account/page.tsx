@@ -136,7 +136,7 @@ export default async function AccountPage({
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-white/10 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-emerald/40 hover:text-ink"
+                      className="rounded-full border border-green-dark/15 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-emerald/40 hover:text-ink"
                     >
                       {s.label}
                     </a>

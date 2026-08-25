@@ -22,7 +22,7 @@ export function SectionCard({
         {action && (
           <Link
             href={action.href}
-            className="shrink-0 rounded-full border border-white/10 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/40 hover:bg-emerald/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            className="shrink-0 rounded-full border border-green-dark/15 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/40 hover:bg-emerald/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             {action.label}
           </Link>
@@ -61,7 +61,7 @@ export function CheckRow({ done, children }: { done: boolean; children: ReactNod
       <span
         aria-hidden
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-          done ? "bg-emerald text-surface" : "border border-white/10 bg-transparent text-transparent"
+          done ? "bg-emerald text-surface" : "border border-green-dark/15 bg-transparent text-transparent"
         }`}
       >
         ✓

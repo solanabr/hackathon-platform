@@ -121,7 +121,7 @@ export default async function HomePage({
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
           <div
-            className="morth animate-float-c absolute -bottom-24 left-[28%] h-72 w-72 bg-[#2f6b3f] sm:h-96 sm:w-96"
+            className="morth animate-float-c absolute -bottom-36 left-[52%] h-72 w-72 bg-[#2f6b3f] sm:h-96 sm:w-96"
             style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(24deg)" }}
           />
           <div
@@ -130,8 +130,8 @@ export default async function HomePage({
           />
         </div>
 
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-8 lg:pb-28 lg:pt-24">
-          <div className="min-w-0 lg:col-span-7">
+        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 lg:pb-20 lg:pt-20">
+          <div className="max-w-3xl">
             {live && (
               <p className="inline-flex items-center gap-2.5 rounded-full bg-[#1b231d] px-4 py-2 text-sm font-semibold text-[#f7eacb]">
                 <span className="relative flex h-2 w-2">
@@ -155,12 +155,12 @@ export default async function HomePage({
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-4">
-              <Link
-                href={live ? `/h/${live.slug}` : "/auth"}
+              <a
+                href="#edicoes"
                 className="rounded-full bg-[#ffd23f] px-8 py-3.5 text-base font-bold text-[#1b231d] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
               >
-                {live ? "Ver edição aberta" : "Entrar"}
-              </Link>
+                Explorar edições
+              </a>
               <a
                 href="#como-funciona"
                 className="rounded-full border-2 border-[#1b231d] px-7 py-3 text-base font-bold text-[#1b231d] transition-colors duration-200 hover:bg-[#1b231d] hover:text-[#f7eacb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
@@ -168,27 +168,6 @@ export default async function HomePage({
                 Como funciona
               </a>
             </div>
-          </div>
-
-          <div className="relative min-w-0 lg:col-span-5">
-            {editions[0]?.coverUrl && (
-              <Link
-                href={`/h/${editions[0].slug}`}
-                aria-label={editions[0].name}
-                className="group block focus-visible:outline-none"
-              >
-                <div className="rotate-2 overflow-hidden rounded-2xl border-4 border-[#1b231d] shadow-[10px_10px_0_#1b231d] transition-transform duration-300 group-hover:rotate-0 group-focus-visible:rotate-0">
-                  <Image
-                    src={editions[0].coverUrl}
-                    alt={`Arte da edição ${editions[0].name}`}
-                    width={640}
-                    height={640}
-                    priority
-                    className="h-auto w-full"
-                  />
-                </div>
-              </Link>
-            )}
           </div>
         </div>
 
@@ -213,8 +192,68 @@ export default async function HomePage({
         )}
       </section>
 
+
+      {/* The next hackathon, featured */}
+      {live && (
+        <section className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Em destaque">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid overflow-hidden rounded-3xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-[8px_8px_0_#1b231d] lg:grid-cols-12">
+              <div className="relative min-h-64 border-b-2 border-[#1b231d] bg-[#1b231d] lg:col-span-5 lg:border-b-0 lg:border-r-2">
+                {editions[0]?.coverUrl && (
+                  <Image
+                    src={editions[0].coverUrl}
+                    alt={`Arte da edição ${editions[0].name}`}
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 460px, 100vw"
+                    className="object-cover"
+                  />
+                )}
+              </div>
+              <div className="flex flex-col justify-center gap-5 p-8 sm:p-10 lg:col-span-7">
+                <p className="inline-flex w-fit items-center rounded-full bg-[#ffd23f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#1b231d]">
+                  Próximo hackathon
+                </p>
+                <h2 className="text-balance font-heading text-3xl font-black uppercase tracking-tight [font-stretch:115%] sm:text-4xl">
+                  {live.name}
+                </h2>
+                <p className="text-pretty leading-relaxed text-[#1b231d]/75">
+                  {live.tagline ?? "Duas fases: online e presencial. Times de 2 a 4 builders."}
+                </p>
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t-2 border-[#1b231d]/10 pt-5 sm:grid-cols-4">
+                  {[
+                    { dt: "Início", dd: editions[0]?.dateRange.split(" A ")[0] ?? "" },
+                    { dt: "Pitch Day", dd: live.presential_at ? clean(TICKER_DAY.format(new Date(live.presential_at))) : "A definir" },
+                    { dt: "Onde", dd: live.location_city ?? "Online" },
+                    { dt: "Prêmios", dd: "US$ 3.000" },
+                  ].map((i) => (
+                    <div key={i.dt} className="min-w-0">
+                      <dt className="text-xs font-bold uppercase tracking-widest text-[#008c4c]">{i.dt}</dt>
+                      <dd className="mt-1 truncate font-heading text-lg font-bold tabular-nums">{i.dd}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-2 flex flex-wrap items-center gap-4">
+                  <Link
+                    href={`/h/${live.slug}`}
+                    className="rounded-full bg-[#1b231d] px-7 py-3 text-base font-bold text-[#f7eacb] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf6]"
+                  >
+                    Ver edição
+                  </Link>
+                  {editions[0]?.registrationClosesLabel && (
+                    <p className="text-sm font-bold text-[#008c4c]">
+                      Inscrições até {editions[0].registrationClosesLabel}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* The hub: DoraHacks structure in LP skin */}
-      <section className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Edições">
+      <section id="edicoes" className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Edições">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
@@ -310,27 +349,6 @@ export default async function HomePage({
           )}
         </div>
       </section>
-
-      {/* Real facts about the open edition, one hairline band */}
-      {live && (
-        <section className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Datas e prêmios">
-          <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 border-y-2 border-[#1b231d] py-8 lg:grid-cols-4">
-            {[
-              { dt: "Prêmios", dd: "US$ 3.000" },
-              { dt: "Pitch Day", dd: live.presential_at ? clean(TICKER_DAY.format(new Date(live.presential_at))) : "A definir" },
-              { dt: "Onde", dd: live.location_city ?? "Online" },
-              { dt: "Times", dd: "2 a 4 builders" },
-            ].map((s) => (
-              <div key={s.dt} className="min-w-0 px-2 text-center lg:px-6">
-                <dt className="text-xs font-bold uppercase tracking-widest text-[#008c4c]">{s.dt}</dt>
-                <dd className="mt-2 truncate font-heading text-2xl font-black tabular-nums [font-stretch:112%] sm:text-3xl">
-                  {s.dd}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      )}
 
       {/* Como funciona: numbered, asymmetric, no card trio */}
       <section id="como-funciona" className="px-4 pt-20 sm:px-6 lg:px-8" aria-label="Como funciona">

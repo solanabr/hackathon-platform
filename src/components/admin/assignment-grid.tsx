@@ -85,7 +85,7 @@ export function AssignmentGrid({
                 <span
                   className={`inline-flex shrink-0 items-center rounded border px-2 py-1 font-mono text-[11px] font-semibold tabular-nums ${
                     short
-                      ? "border-yellow/40 bg-yellow/10 text-yellow"
+                      ? "border-yellow-strong/60 bg-yellow/40 text-green-dark"
                       : "border-emerald/30 bg-emerald/10 text-emerald"
                   }`}
                 >

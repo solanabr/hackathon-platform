@@ -18,7 +18,7 @@ export function Background() {
           alt=""
           width={400}
           height={400}
-          className={`absolute opacity-20 ${shape.className}`}
+          className={`absolute opacity-[0.07] ${shape.className}`}
         />
       ))}
     </div>

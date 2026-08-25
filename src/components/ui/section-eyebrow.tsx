@@ -10,7 +10,7 @@ export function SectionEyebrow({
   return (
     <p
       className={`text-[12px] font-mono uppercase tracking-wider ${
-        accent ? "text-yellow" : "text-emerald"
+        accent ? "text-green" : "text-emerald"
       } ${className}`}
     >
       {children}

@@ -29,7 +29,7 @@ export function PhaseTimeline({ phases, now }: { phases: Phase[]; now: number })
             <div className="flex items-center justify-between gap-2">
               <span
                 className={`text-[11px] font-bold uppercase tracking-wider ${
-                  current ? "text-yellow" : "text-emerald"
+                  current ? "text-green-dark" : "text-emerald"
                 }`}
               >
                 {phase.when}

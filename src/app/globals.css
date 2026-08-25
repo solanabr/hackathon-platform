@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-surface: #0d1410;
-  --color-surface-raised: #16211b;
-  --color-surface-deep: #090d0b;
-  --color-ink: #f7eacb;
-  --color-muted: #8fa896;
+  --color-surface: #f7eacb;
+  --color-surface-raised: #fffdf6;
+  --color-surface-deep: #efe0ba;
+  --color-ink: #1b231d;
+  --color-muted: #5f6f60;
 
   /* Keep Tailwind's built-in scales out of the brand greens/emeralds.
      The wildcard resets must precede the bare tokens, or they wipe the
@@ -13,17 +13,18 @@
   --color-green-*: initial;
   --color-emerald-*: initial;
 
-  --color-emerald: #00a678;
+  --color-emerald: #008c4c;
   --color-green: #2f6b3f;
   --color-green-dark: #1b231d;
   --color-yellow: #ffd23f;
   --color-yellow-strong: #ffc107;
 
-  /* Error text must stay legible on the dark surface: map the dark-red
-     shades in use to the #f87171 red-400 family. red-200/300 defaults are
-     already light enough on #0d1410, so they're left alone. */
-  --color-red-700: #f87171;
-  --color-red-800: #fca5a5;
+  /* Error text on the cream surface uses the dark red family; the light
+     red-200/300 shades some components use for text are remapped darker so
+     they stay legible on #f7eacb. */
+  --color-red-200: #b91c1c;
+  --color-red-300: #b91c1c;
+  --color-amber-300: #92600a;
 
   --font-heading: var(--font-archivo);
   --font-body: var(--font-inter);
@@ -31,7 +32,7 @@
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
@@ -48,14 +49,14 @@
   }
 
   ::selection {
-    background-color: var(--color-emerald);
+    background-color: var(--color-yellow);
     color: var(--color-green-dark);
   }
 
   /* Safety net for any interactive element without an explicit ring;
      components that opt into rings clear this with focus-visible:outline-none. */
   :focus-visible {
-    outline: 2px solid var(--color-yellow);
+    outline: 2px solid var(--color-green-dark);
     outline-offset: 2px;
   }
 }
@@ -63,16 +64,16 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-medium text-[#1b231d] transition-[background-color,transform] duration-200
-           hover:bg-[#ffe066] hover:shadow-[0_8px_24px_rgba(0,140,76,0.2)] focus-visible:outline-none focus-visible:ring-2
-           focus-visible:ring-yellow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+           font-semibold text-[#1b231d] transition-[background-color,transform] duration-200
+           hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10
-           bg-surface-raised px-6 py-3 font-semibold text-ink transition-colors duration-200
-           hover:bg-[#1d2a23] focus-visible:outline-none focus-visible:ring-2
-           focus-visible:ring-emerald/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-green-dark
+           bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-200
+           hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-green-dark/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .card-hover {

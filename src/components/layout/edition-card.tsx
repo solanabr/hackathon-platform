@@ -99,12 +99,12 @@ export function EditionCard({ edition, index }: { edition: EditionCardData; inde
         <div className="flex items-center justify-between border-t border-white-10 pt-3">
           {e.registrationOpen && e.registrationClosesLabel ? (
             <p className="text-xs text-muted">
-              Inscrições até <strong className="text-yellow">{e.registrationClosesLabel}</strong>
+              Inscrições até <strong className="text-emerald">{e.registrationClosesLabel}</strong>
             </p>
           ) : (
             <span />
           )}
-          <span className="text-sm font-semibold text-yellow transition-transform duration-300 group-hover:translate-x-1">
+          <span className="text-sm font-semibold text-emerald transition-transform duration-300 group-hover:translate-x-1">
             Ver detalhes →
           </span>
         </div>
