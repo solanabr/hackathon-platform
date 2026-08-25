@@ -13,17 +13,17 @@ type Props = { params: Promise<{ id: string }> };
 
 async function getProfile(id: string) {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("public_profiles")
     .select("id, full_name, avatar_url, headline, bio, github_url, twitter_url, linkedin_url")
     .eq("id", id)
     .maybeSingle();
-  return data as PublicProfile | null;
+  return { profile: data as PublicProfile | null, error };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const profile = await getProfile(id);
+  const { profile } = await getProfile(id);
   if (!profile) return {};
   const name = profile.full_name ?? "Perfil de builder";
   return {
@@ -34,16 +34,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BuilderProfilePage({ params }: Props) {
   const { id } = await params;
-  const profile = await getProfile(id);
+  const { profile, error: profileError } = await getProfile(id);
+  if (profileError) {
+    console.error(`[profile ${id}] public_profiles query failed:`, profileError);
+    return (
+      <div className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <Card className="p-8">
+            <p className="font-heading text-lg font-bold text-ink">
+              Não foi possível carregar o perfil.
+            </p>
+            <p className="mt-1 text-sm text-muted">Tente novamente em instantes.</p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
   if (!profile) notFound();
 
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("public_submissions")
     .select("id, project_name, description, image_path, team_name, hackathon_slug, hackathon_name")
     .eq("team_leader_id", id)
     .order("submitted_at", { ascending: false });
   const projects = (data as PublicSubmission[] | null) ?? [];
+
+  // A query error must not read as "no projects yet" — surface it instead.
+  if (error) {
+    console.error(`[profile ${id}] public_submissions query failed:`, error);
+  }
 
   const socials = [
     { href: profile.github_url, label: "GitHub" },
@@ -88,7 +108,14 @@ export default async function BuilderProfilePage({ params }: Props) {
 
         <section className="mt-10" aria-label="Projetos do builder">
           <h2 className="font-heading text-2xl font-bold">Projetos</h2>
-          {projects.length === 0 ? (
+          {error ? (
+            <Card className="mt-4 p-8">
+              <p className="font-heading text-lg font-bold text-ink">
+                Não foi possível carregar os projetos.
+              </p>
+              <p className="mt-1 text-sm text-muted">Tente novamente em instantes.</p>
+            </Card>
+          ) : projects.length === 0 ? (
             <Card className="mt-4 p-8">
               <p className="text-muted">Nenhum projeto publicado ainda.</p>
             </Card>

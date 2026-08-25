@@ -29,7 +29,7 @@ export default async function ProjectsGalleryPage({
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("public_submissions")
     .select(
       "id, project_name, description, image_path, team_name, team_leader_name, submitted_at, team_id",
@@ -37,6 +37,12 @@ export default async function ProjectsGalleryPage({
     .eq("hackathon_slug", slug)
     .order("submitted_at", { ascending: false });
   const projects = (data as PublicSubmission[] | null) ?? [];
+
+  // A query error (e.g. the view is missing because migrations are pending)
+  // must not read as "no projects yet" — surface it instead.
+  if (error) {
+    console.error(`[gallery ${slug}] public_submissions query failed:`, error);
+  }
 
   // Winners are placement on the team, not on the submission row, so the base
   // view can't carry them without leaking who made the cut pre-announcement.
@@ -75,7 +81,14 @@ export default async function ProjectsGalleryPage({
           </p>
         </header>
 
-        {projects.length === 0 ? (
+        {error ? (
+          <Card className="mt-8 p-8">
+            <p className="font-heading text-lg font-bold text-ink">
+              Não foi possível carregar os projetos.
+            </p>
+            <p className="mt-1 text-sm text-muted">Tente novamente em instantes.</p>
+          </Card>
+        ) : projects.length === 0 ? (
           <Card className="mt-8 p-8">
             <p className="text-muted">Nenhum projeto publicado ainda.</p>
           </Card>

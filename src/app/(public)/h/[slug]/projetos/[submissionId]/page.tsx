@@ -15,7 +15,7 @@ type Props = { params: Promise<{ slug: string; submissionId: string }> };
 
 async function getSubmission(slug: string, id: string) {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("public_submissions")
     .select(
       "id, project_name, description, image_path, github_url, twitter_url, website_url, demo_video_url, pitch_video_url, team_id, team_name, team_leader_name, hackathon_name",
@@ -23,12 +23,12 @@ async function getSubmission(slug: string, id: string) {
     .eq("id", id)
     .eq("hackathon_slug", slug)
     .maybeSingle();
-  return data as PublicSubmission | null;
+  return { submission: data as PublicSubmission | null, error };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, submissionId } = await params;
-  const submission = await getSubmission(slug, submissionId);
+  const { submission } = await getSubmission(slug, submissionId);
   if (!submission) return {};
 
   const title = submission.project_name ?? submission.team_name;
@@ -53,7 +53,23 @@ export default async function ProjectDetailPage({ params }: Props) {
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
 
-  const submission = await getSubmission(slug, submissionId);
+  const { submission, error: submissionError } = await getSubmission(slug, submissionId);
+  if (submissionError) {
+    console.error(`[submission ${submissionId}] public_submissions query failed:`, submissionError);
+    return (
+      <div className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <BackLink href={`/h/${slug}/projetos`} label="Projetos" />
+          <Card className="mt-8 p-8">
+            <p className="font-heading text-lg font-bold text-ink">
+              Não foi possível carregar o projeto.
+            </p>
+            <p className="mt-1 text-sm text-muted">Tente novamente em instantes.</p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
   if (!submission) notFound();
 
   const supabase = await createServerSupabaseClient();
@@ -61,12 +77,16 @@ export default async function ProjectDetailPage({ params }: Props) {
     ? supabase.storage.from("project-images").getPublicUrl(submission.image_path).data.publicUrl
     : null;
 
-  const { data: membersData } = await supabase
+  const { data: membersData, error: membersError } = await supabase
     .from("public_team_members")
     .select("user_id, full_name, avatar_url, headline")
     .eq("team_id", submission.team_id)
     .order("full_name");
   const members = (membersData as PublicTeamMember[] | null) ?? [];
+
+  if (membersError) {
+    console.error(`[submission ${submissionId}] public_team_members query failed:`, membersError);
+  }
 
   const links = [
     { href: submission.github_url, label: "GitHub" },
@@ -113,7 +133,14 @@ export default async function ProjectDetailPage({ params }: Props) {
           </section>
         )}
 
-        {members.length > 0 && (
+        {membersError && (
+          <section className="mt-10" aria-label="Equipe">
+            <h2 className="font-heading text-lg font-bold">Equipe</h2>
+            <p className="mt-3 text-sm text-muted">Não foi possível carregar a equipe.</p>
+          </section>
+        )}
+
+        {!membersError && members.length > 0 && (
           <section className="mt-10" aria-label="Equipe">
             <h2 className="font-heading text-lg font-bold">Equipe</h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
