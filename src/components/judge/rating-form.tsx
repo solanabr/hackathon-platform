@@ -33,10 +33,10 @@ export function RatingForm({
   const rated = initialGrade !== null || initialComment.length > 0;
   const dirty = grade !== initialGrade || comment !== initialComment;
 
-  // Debounced autosave for the comment, gated on a grade already existing.
-  // latestRef holds the values the timer will flush, so a slider move right
-  // before the timer fires is captured too. Manual save cancels the timer so
-  // the two never race.
+  // Debounced autosave for any edit, grade or comment. latestRef holds the
+  // values the timer will flush, so a slider move right before the timer
+  // fires is captured too. Manual save cancels the timer so the two never
+  // race.
   const latestRef = useRef({ grade: initialGrade, comment: initialComment });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -51,7 +51,8 @@ export function RatingForm({
     timerRef.current = setTimeout(() => {
       timerRef.current = null;
       const { grade: g, comment: c } = latestRef.current;
-      if (g === null) return;
+      // An empty grade with no comment has nothing to persist.
+      if (g === null && c === "") return;
       setError(null);
       setSaved(false);
       start(async () => {
@@ -127,6 +128,7 @@ export function RatingForm({
           setGrade(value);
           latestRef.current = { grade: value, comment };
           setSaved(false);
+          scheduleAutosave();
         }}
         className="mt-3 w-full accent-emerald"
       />
@@ -153,7 +155,7 @@ export function RatingForm({
           setComment(value);
           latestRef.current = { grade, comment: value };
           setSaved(false);
-          if (grade !== null) scheduleAutosave();
+          scheduleAutosave();
         }}
         className="mt-1.5 w-full rounded-xl border border-green/25 bg-surface px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
       />
