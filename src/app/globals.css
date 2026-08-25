@@ -1,60 +1,100 @@
 @import "tailwindcss";
 
 @theme {
-  --color-surface: #f7eacb;
-  --color-surface-raised: #fffdf6;
-  --color-ink: #1b231d;
-  --color-muted: #2f6b3f;
-  --color-emerald: #008c4c;
-  --color-yellow: #ffd23f;
-  --color-yellow-strong: #ffc107;
+  --color-surface: #0d1410;
+  --color-surface-raised: #16211b;
+  --color-surface-deep: #090d0b;
+  --color-ink: #f7eacb;
+  --color-muted: #8fa896;
+
+  /* Keep Tailwind's built-in scales out of the brand greens/emeralds.
+     The wildcard resets must precede the bare tokens, or they wipe the
+     whole namespace (order matters in v4). */
   --color-green-*: initial;
+  --color-emerald-*: initial;
+
+  --color-emerald: #00a678;
   --color-green: #2f6b3f;
   --color-green-dark: #1b231d;
+  --color-yellow: #ffd23f;
+  --color-yellow-strong: #ffc107;
+
+  /* Error text must stay legible on the dark surface: map the dark-red
+     shades in use to the #f87171 red-400 family. red-200/300 defaults are
+     already light enough on #0d1410, so they're left alone. */
+  --color-red-700: #f87171;
+  --color-red-800: #fca5a5;
 
   --font-heading: var(--font-archivo);
   --font-body: var(--font-inter);
 }
 
-body {
-  background-color: var(--color-surface);
-  color: var(--color-ink);
-  font-family: var(--font-body);
-}
+@layer base {
+  html {
+    color-scheme: dark;
+  }
 
-a, button, [role="button"], summary { cursor: pointer; }
+  body {
+    @apply bg-surface text-ink antialiased;
+    font-family: var(--font-body);
+  }
 
-::selection {
-  background-color: var(--color-yellow);
-  color: var(--color-ink);
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  a, button, [role="button"], summary {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background-color: var(--color-emerald);
+    color: var(--color-green-dark);
+  }
+
+  /* Safety net for any interactive element without an explicit ring;
+     components that opt into rings clear this with focus-visible:outline-none. */
+  :focus-visible {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-semibold text-ink transition-all duration-200 hover:bg-yellow-strong hover:shadow-lg;
+           font-medium text-[#1b231d] transition-[background-color,transform] duration-200
+           hover:bg-[#ffe066] focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-yellow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-ink
-           bg-transparent px-6 py-3 font-semibold text-ink transition-all duration-200
-           hover:bg-ink hover:text-surface;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10
+           bg-surface-raised px-6 py-3 font-semibold text-ink transition-colors duration-200
+           hover:bg-[#1d2a23] focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-emerald/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .card-hover {
-    @apply transition-transform duration-300 ease-out;
+    @apply transition-[transform,border-color] duration-300 ease-out;
   }
 
   .card-hover:hover {
-    @apply -translate-y-1;
+    @apply -translate-y-1 border-emerald/40;
   }
 
   .stats-card {
-    @apply rounded-2xl border border-green/15 bg-surface-raised p-6;
+    @apply rounded-2xl border border-emerald/15 bg-surface-raised p-6 tabular-nums;
   }
 
   .service-card {
     @apply rounded-2xl bg-emerald p-6 text-surface;
+  }
+
+  /* Same-element pairing fix: yellow badges carry text-ink (now off-white),
+     which is unreadable on #ffd23f — force the dark ink for that combo. */
+  .bg-yellow.text-ink {
+    color: var(--color-green-dark);
   }
 }
 
