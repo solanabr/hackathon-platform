@@ -268,7 +268,7 @@ export function SubmissionEditor({
             </p>
           </div>
           <div className="sm:col-span-2">
-            <label className="flex items-start gap-3 rounded-xl border border-green/15 bg-surface-raised p-4">
+            <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-surface-raised p-4">
               <input
                 type="checkbox"
                 checked={form.github_access_granted}
@@ -336,12 +336,12 @@ export function SubmissionEditor({
       </fieldset>
 
       {submitError && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">
           {submitError}
         </p>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-green/15 pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6">
         <p className="text-xs text-muted" suppressHydrationWarning>
           {initial.submitted_at
             ? `Submetido em ${formatSubmittedAt(new Date(initial.submitted_at))} (horário de Brasília).`
@@ -368,8 +368,8 @@ export function SubmissionEditor({
           )}
         </div>
       </div>
-      {isLeader && blockedReason && (
-        <p className="text-sm text-amber-300">{blockedReason}</p>
+      {editable && isLeader && !canSubmit && (
+        <p className="text-sm font-medium text-red-300">{blockedReason}.</p>
       )}
     </div>
   );

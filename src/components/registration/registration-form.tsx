@@ -70,14 +70,19 @@ export function RegistrationForm({
       }
       className="space-y-5"
     >
-      <label className="flex items-start gap-3">
-        <input type="checkbox" name="luma_confirmed" className="mt-1" />
-        <span className="text-sm">
+      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-surface-raised p-4">
+        <input type="checkbox" name="luma_confirmed" className="mt-0.5 h-4 w-4 accent-emerald" />
+        <span className="text-sm text-ink">
           Confirmo que me inscrevi no evento pelo Luma
           {lumaUrl && (
             <>
               {" — "}
-              <a href={lumaUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
+              <a
+                href={lumaUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-emerald underline-offset-2 hover:underline"
+              >
                 abrir o Luma
               </a>
             </>
@@ -86,12 +91,12 @@ export function RegistrationForm({
         </span>
       </label>
 
-      <label className="flex items-start gap-3">
-        <input type="checkbox" name="terms_accepted" className="mt-1" />
-        <span className="text-sm">Li e aceito as regras do hackathon.</span>
+      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-surface-raised p-4">
+        <input type="checkbox" name="terms_accepted" className="mt-0.5 h-4 w-4 accent-emerald" />
+        <span className="text-sm text-ink">Li e aceito as regras do hackathon.</span>
       </label>
 
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="text-sm font-medium text-red-300">{error}</p>}
 
       <Button type="submit" disabled={pending}>
         {pending ? "Confirmando..." : "Confirmar inscrição"}

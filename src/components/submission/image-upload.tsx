@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   teamId: string;
@@ -64,7 +63,7 @@ export function ImageUpload({ teamId, currentPath, currentUrl, disabled, onUploa
         <img
           src={previewUrl}
           alt="Capa do projeto"
-          className="h-40 w-40 rounded-xl border border-green/15 object-cover"
+          className="h-40 w-40 rounded-xl border border-white/10 object-cover"
         />
       )}
       <input
@@ -79,14 +78,18 @@ export function ImageUpload({ teamId, currentPath, currentUrl, disabled, onUploa
         }}
         className="hidden"
       />
-      <Button
+      <button
         type="button"
-        variant="secondary"
         disabled={disabled || uploading}
         onClick={() => inputRef.current?.click()}
+        className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/15 bg-surface-raised px-6 py-8 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {uploading ? "Enviando..." : previewUrl ? "Trocar imagem" : "Selecionar imagem"}
-      </Button>
+        <span aria-hidden className="text-2xl leading-none">
+          ↑
+        </span>
+        <span>{uploading ? "Enviando..." : previewUrl ? "Trocar imagem" : "Selecionar imagem"}</span>
+        <span className="font-normal text-xs text-muted">JPG / PNG · até 5 MB</span>
+      </button>
       {error && <p className="text-sm text-red-300">{error}</p>}
     </div>
   );

@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "yellow";
+type Variant = "primary" | "secondary" | "ghost" | "yellow" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
@@ -9,6 +9,8 @@ const variants: Record<Variant, string> = {
   secondary: "btn-secondary",
   ghost:
     "inline-flex items-center justify-center gap-2 rounded-full font-semibold text-muted transition-colors hover:text-ink",
+  danger:
+    "inline-flex items-center justify-center gap-2 rounded-full border border-red-400/30 bg-red-400/10 font-semibold text-red-300 transition-colors hover:bg-red-400/20",
 };
 
 const sizes: Record<Size, string> = {

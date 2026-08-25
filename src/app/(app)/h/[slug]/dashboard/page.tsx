@@ -1,8 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Countdown } from "@/components/ui/countdown";
 import { Card } from "@/components/ui/card";
 import { CopyLink } from "@/components/ui/copy-link";
+import { Badge } from "@/components/ui/badge";
 import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { Avatar } from "@/components/ui/avatar";
@@ -68,28 +70,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const now = Date.now();
   const submitted = snapshot?.submission.status === "submitted";
 
-  // Once the team has submitted, the countdown stops counting to the (passed)
-  // deadline and flips to the reveal signal: finalists first, then Pitch Day.
-  const countdown: { label: string; iso: string | null; date: string } = (() => {
-    const announced = hackathon.finalists_announced_at;
-    const presential = hackathon.presential_at;
-    if (submitted && announced && new Date(announced).getTime() > now)
-      return { label: "Finalistas saem em", iso: announced, date: announced };
-    if (submitted && presential && new Date(presential).getTime() > now)
-      return { label: "Pitch Day em", iso: presential, date: presential };
-    if (submitted && presential)
-      return { label: "Pitch Day em", iso: null, date: presential };
-    if (submitted && announced && new Date(announced).getTime() <= now)
-      return { label: "Finalistas anunciados", iso: null, date: announced };
-    return open
-      ? {
-          label: "Submissão fecha em",
-          iso: hackathon.submission_deadline_at,
-          date: hackathon.submission_deadline_at,
-        }
-      : { label: "Submissão encerrada", iso: null, date: hackathon.submission_deadline_at };
-  })();
-
   const supabase = await createServerSupabaseClient();
 
   const { count: publishedCount } = await supabase
@@ -114,6 +94,49 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
         return f.key === "github_access_granted" ? v !== true : !v || String(v).trim() === "";
       })
     : REQUIRED;
+
+  // The hero counts down to whichever milestone comes next: the submission
+  // deadline while the window is open, then the finalists, then Pitch Day.
+  const finalistsAt = hackathon.finalists_announced_at
+    ? new Date(hackathon.finalists_announced_at).getTime()
+    : null;
+  const pitchAt = hackathon.presential_at ? new Date(hackathon.presential_at).getTime() : null;
+
+  const hero = (() => {
+    if (open) {
+      return {
+        target: hackathon.submission_deadline_at,
+        label: "Submissão fecha em",
+        badge: "Inscrições abertas",
+        tone: "yellow" as const,
+      };
+    }
+    if (finalistsAt !== null && now < finalistsAt) {
+      return {
+        target: hackathon.finalists_announced_at as string,
+        label: "Finalistas saem em",
+        badge: "Submissão encerrada",
+        tone: "neutral" as const,
+      };
+    }
+    if (pitchAt !== null && now < pitchAt) {
+      return {
+        target: hackathon.presential_at as string,
+        label: "Pitch Day em",
+        badge: "Pitch Day em",
+        tone: "emerald" as const,
+      };
+    }
+    return {
+      target:
+        hackathon.presential_at ??
+        hackathon.finalists_announced_at ??
+        hackathon.submission_deadline_at,
+      label: "Edição encerrada",
+      badge: "Edição encerrada",
+      tone: "neutral" as const,
+    };
+  })();
 
   const bounds = phaseBoundaries(hackathon);
   const phases: Phase[] = [
@@ -162,33 +185,39 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       <div className="mx-auto max-w-5xl space-y-10">
         <BackLink href={`/h/${slug}`} label={hackathon.name} />
 
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+        <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-surface-raised p-6 sm:p-8">
+          <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
+            <Image
+              src="/brand/stbr/elements/morth-05.svg"
+              alt=""
+              width={320}
+              height={320}
+              className="animate-float-b"
+            />
+          </div>
+
+          <div className="relative">
+            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">PAINEL</p>
+            <h1 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">
               Olá, {state.profile?.full_name?.split(" ")[0]}.
             </h1>
             <p className="mt-1 text-muted">{hackathon.name}</p>
           </div>
 
-          <Card className="px-5 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              {countdown.label}
-            </p>
-            {countdown.iso ? (
-              <>
-                <p className="font-heading text-xl font-bold">
-                  <Countdown deadlineIso={countdown.iso} />
-                </p>
-                <p className="mt-0.5 text-xs text-muted">
-                  {FULL.format(new Date(countdown.date))}
-                </p>
-              </>
-            ) : (
-              <p className="font-heading text-xl font-bold">
-                {FULL.format(new Date(countdown.date))}
+          <div className="relative mt-6 overflow-hidden rounded-2xl border border-white/10 bg-surface-deep px-6 py-6 sm:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                {hero.label}
               </p>
-            )}
-          </Card>
+              <Badge tone={hero.tone}>{hero.badge}</Badge>
+            </div>
+            <p className="mt-3 font-mono text-5xl font-bold tabular-nums tracking-tight text-ink">
+              <Countdown deadlineIso={hero.target} placeholder="—" />
+            </p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">
+              {FULL.format(new Date(hero.target))}
+            </p>
+          </div>
         </header>
 
         {pendingTeam && (
@@ -225,11 +254,16 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                     return (
                       <li key={m.id} className="flex items-center justify-between gap-3 text-sm">
                         <span className="flex min-w-0 items-center gap-2.5">
-                          <Avatar src={m.user?.avatar_url} name={name} size="sm" />
+                          <Avatar
+                            src={m.user?.avatar_url}
+                            name={name}
+                            size="sm"
+                            className={m.is_leader ? "ring-2 ring-emerald/20" : ""}
+                          />
                           <span className="min-w-0 truncate">
                             {name}
                             {m.is_leader && (
-                              <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-muted">
+                              <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-yellow">
                                 líder
                               </span>
                             )}
@@ -243,21 +277,28 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                   })}
                 </ul>
                 {pendingMembers.length > 0 && (
-                  <p className="mt-4 text-sm leading-relaxed text-muted">
+                  <p className="mt-4 rounded-xl border border-yellow/25 bg-yellow/10 px-4 py-3 text-sm leading-relaxed text-ink">
                     Todos os integrantes precisam confirmar a inscrição antes de o líder submeter.
                   </p>
                 )}
               </>
             ) : (
-              <>
-                <p className="text-sm leading-relaxed text-muted">
+              <div className="relative flex flex-col items-center overflow-hidden rounded-xl px-4 py-6 text-center">
+                <Image
+                  src="/brand/stbr/elements/morth-12.svg"
+                  alt=""
+                  width={120}
+                  height={120}
+                  className="opacity-20"
+                />
+                <p className="mt-3 text-sm leading-relaxed text-muted">
                   Crie o seu como líder, ou peça para o líder do seu time te adicionar pelo e-mail{" "}
                   <strong className="text-ink">{state.email}</strong>.
                 </p>
                 <Link href={`/h/${slug}/team/new`} className="btn-primary mt-5 px-5 py-2 text-sm">
                   Criar time
                 </Link>
-              </>
+              </div>
             )}
           </SectionCard>
 
@@ -275,11 +316,11 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                 Disponível assim que você estiver em um time.
               </p>
             ) : submitted ? (
-              <div>
-                <p className="inline-flex items-center gap-2 rounded-full bg-emerald px-3 py-1 text-sm font-semibold text-surface">
+              <div className="rounded-2xl border border-emerald/40 bg-emerald/10 p-5">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                   Projeto enviado
                 </p>
-                <p className="mt-4 text-sm leading-relaxed text-muted">
+                <p className="mt-3 text-sm leading-relaxed text-muted">
                   {hackathon.finalists_announced_at && (
                     <>
                       Os finalistas saem em{" "}
@@ -292,7 +333,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                   {hackathon.presential_at && (
                     <>
                       O Pitch Day é em{" "}
-                      <strong className="text-ink">
+                      <strong className="text-emerald">
                         {clean(DAY.format(new Date(hackathon.presential_at)))}
                       </strong>
                       {hackathon.location_city ? `, em ${hackathon.location_city}` : ""}.
@@ -308,17 +349,30 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </div>
             ) : (
               <>
-                <p className="text-sm text-muted">
-                  {missing.length === 0 && pendingMembers.length === 0 && acceptedMembers >= 2
-                    ? "Tudo pronto. O líder pode enviar."
-                    : missing.length > 0
-                      ? `Faltam ${missing.length} de ${REQUIRED.length} itens.`
-                      : acceptedMembers < 2
-                        ? "O time precisa de pelo menos 2 integrantes."
-                        : `Falta a inscrição de ${pendingMembers.length} ${
-                            pendingMembers.length === 1 ? "integrante" : "integrantes"
-                          }.`}
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-muted">
+                    {missing.length === 0 && pendingMembers.length === 0 && acceptedMembers >= 2
+                      ? "Tudo pronto. O líder pode enviar."
+                      : missing.length > 0
+                        ? `Faltam ${missing.length} de ${REQUIRED.length} itens.`
+                        : acceptedMembers < 2
+                          ? "O time precisa de pelo menos 2 integrantes."
+                          : `Falta a inscrição de ${pendingMembers.length} ${
+                              pendingMembers.length === 1 ? "integrante" : "integrantes"
+                            }.`}
+                  </p>
+                  <p className="shrink-0 font-mono text-xs tabular-nums text-ink">
+                    {REQUIRED.length - missing.length}/{REQUIRED.length} itens
+                  </p>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-deep">
+                  <div
+                    className="h-1.5 rounded-full bg-emerald transition-[width]"
+                    style={{
+                      width: `${((REQUIRED.length - missing.length) / REQUIRED.length) * 100}%`,
+                    }}
+                  />
+                </div>
                 <ul className="mt-4 space-y-2.5">
                   {REQUIRED.map((f) => (
                     <CheckRow key={f.key} done={!missing.some((m) => m.key === f.key)}>
@@ -339,10 +393,11 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
         <Card className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
           <div>
-            <h2 className="font-heading text-xl font-bold">Conteúdos</h2>
-            <p className="mt-1 text-sm text-muted">
-              {publishedCount ?? 0} de {totalCount ?? 0} disponíveis. As gravações entram depois de
-              cada encontro.
+            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">TRILHA</p>
+            <h2 className="mt-1 font-heading text-xl font-bold">Conteúdos</h2>
+            <p className="mt-1 font-mono text-sm tabular-nums text-muted">
+              {publishedCount ?? 0}/{totalCount ?? 0} disponíveis. As gravações entram depois de cada
+              encontro.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
