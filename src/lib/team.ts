@@ -13,6 +13,13 @@ export type PendingTeamSnapshot = {
   teamName: string;
   leaderName: string | null;
   leaderEmail: string | null;
+  /**
+   * The pending row only auto-accepts at signup, and only while the team is
+   * unlocked with fewer than four accepted members. Locked or full teams leave
+   * the invitee in limbo, so the UI needs to know.
+   */
+  locked: boolean;
+  full: boolean;
 };
 
 /**

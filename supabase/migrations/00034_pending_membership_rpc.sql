@@ -7,10 +7,12 @@
 
 create or replace function public.pending_membership_for_edition(p_hackathon_id uuid)
 returns table (
-  team_id uuid,
-  team_name text,
-  leader_name text,
-  leader_email text
+  "teamId" uuid,
+  "teamName" text,
+  "leaderName" text,
+  "leaderEmail" text,
+  "locked" boolean,
+  "full" boolean
 )
 language sql
 stable
@@ -21,13 +23,19 @@ as $$
     t.id,
     t.name,
     l.full_name,
-    l.email
+    l.email,
+    t.locked,
+    (
+      select count(*) from public.team_members fm
+      where fm.team_id = t.id and fm.status = 'accepted'
+    ) >= 4
   from public.team_members tm
   join public.teams t on t.id = tm.team_id
   join public.users l on l.id = t.leader_id
   where tm.user_id = auth.uid()
     and tm.hackathon_id = p_hackathon_id
     and tm.status = 'pending'
+  order by tm.invited_at asc
   limit 1;
 $$;
 

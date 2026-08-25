@@ -17,10 +17,15 @@ export type AuthenticatedState = {
 /**
  * Painel of the newest live hackathon among `hackathonIds`, or null when none
  * of them is live. Live means the edition has left draft and has not finished.
+ * With `preferOpenWindow` (the registration fallback), an edition whose
+ * submission window is still open wins over one that already closed — a
+ * teamless registrant landing on a closed window would get a dead dashboard
+ * ("Submissão encerrada" and a "Criar time" CTA that can no longer be used).
  */
 async function latestLiveDashboard(
   supabase: SupabaseClient,
   hackathonIds: string[],
+  preferOpenWindow = false,
 ): Promise<string | null> {
   if (hackathonIds.length === 0) return null;
 
@@ -34,7 +39,15 @@ async function latestLiveDashboard(
   );
   if (live.length === 0) return null;
 
-  const target = live.sort(
+  let pool = live;
+  if (preferOpenWindow) {
+    const open = live.filter(
+      (h) => new Date(h.submission_deadline_at).getTime() > Date.now(),
+    );
+    if (open.length > 0) pool = open;
+  }
+
+  const target = pool.sort(
     (a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime(),
   )[0];
   return `/h/${target.slug}/dashboard`;
@@ -46,7 +59,9 @@ async function latestLiveDashboard(
  *
  * Precedence for the painel path: an accepted membership in a live edition
  * wins; otherwise the newest live edition the user registered for — even with
- * no team yet — so a registered participant is never stranded on `/`.
+ * no team yet — so a registered participant is never stranded on `/`. The
+ * registration fallback prefers editions with an open submission window over
+ * ones that already closed.
  */
 const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const supabase = await createServerSupabaseClient();
@@ -73,7 +88,7 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
     new Set(((registrations as { hackathon_id: string }[] | null) ?? []).map((r) => r.hackathon_id)),
   );
 
-  const fromRegistration = await latestLiveDashboard(supabase, registrationIds);
+  const fromRegistration = await latestLiveDashboard(supabase, registrationIds, true);
   if (fromRegistration) return fromRegistration;
 
   return "/";

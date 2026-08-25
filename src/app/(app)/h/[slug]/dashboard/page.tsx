@@ -79,6 +79,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       return { label: "Pitch Day em", iso: presential, date: presential };
     if (submitted && presential)
       return { label: "Pitch Day em", iso: null, date: presential };
+    if (submitted && announced && new Date(announced).getTime() <= now)
+      return { label: "Finalistas anunciados", iso: null, date: announced };
     return open
       ? {
           label: "Submissão fecha em",
