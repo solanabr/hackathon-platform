@@ -5,6 +5,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { Badge } from "@/components/ui/badge";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
+import { CopyLink } from "@/components/ui/copy-link";
 import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
 import {
   confirmedMemberIds,
@@ -160,6 +161,12 @@ export default async function SubmissionPage({
                 </>
               )}
             </p>
+            <div className="mt-6 space-y-1.5">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted">
+                Compartilhe seu projeto
+              </p>
+              <CopyLink href={`/h/${slug}/projetos/${submission.id}`} />
+            </div>
             <div className="mt-6">
               <Link href={`/h/${slug}/dashboard`} className="btn-secondary">
                 Voltar ao painel

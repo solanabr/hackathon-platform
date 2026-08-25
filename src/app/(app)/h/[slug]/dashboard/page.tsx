@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Countdown } from "@/components/ui/countdown";
 import { Card } from "@/components/ui/card";
+import { CopyLink } from "@/components/ui/copy-link";
 import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { Avatar } from "@/components/ui/avatar";
@@ -280,6 +281,12 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                     </>
                   )}
                 </p>
+                <div className="mt-5 space-y-1.5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted">
+                    Compartilhe seu projeto
+                  </p>
+                  <CopyLink href={`/h/${slug}/projetos/${snapshot.submission.id}`} />
+                </div>
               </div>
             ) : (
               <>
