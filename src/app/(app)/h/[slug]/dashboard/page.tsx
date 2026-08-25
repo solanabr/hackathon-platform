@@ -13,7 +13,7 @@ import {
   isRegistrationComplete,
   membersPendingRegistration,
 } from "@/lib/registration";
-import { getTeamForHackathon } from "@/lib/team";
+import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -62,6 +62,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
+  const pendingTeam = await getPendingTeamForHackathon(hackathon.id);
   const open = isSubmissionWindowOpen(hackathon);
   const now = Date.now();
   const submitted = snapshot?.submission.status === "submitted";
@@ -166,6 +167,21 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             )}
           </Card>
         </header>
+
+        {pendingTeam && (
+          <div className="rounded-2xl border border-emerald/30 bg-emerald/10 p-5 sm:p-6">
+            <p className="font-heading text-lg font-bold">
+              Você foi adicionado ao time {pendingTeam.teamName}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">
+              {pendingTeam.leaderName ?? "O líder do time"} te convidou para participar. Entre no
+              time para ver o projeto e a submissão.
+            </p>
+            <Link href={`/h/${slug}/team`} className="btn-primary mt-4 inline-block px-5 py-2 text-sm">
+              Entrar no time
+            </Link>
+          </div>
+        )}
 
         <section aria-label="Etapas">
           <PhaseTimeline phases={phases} now={now} />

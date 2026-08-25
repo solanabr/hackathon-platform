@@ -9,7 +9,7 @@ import { TeamDangerZone } from "@/components/team/team-danger-zone";
 import { MemberRow } from "@/components/team/member-row";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
-import { getTeamForHackathon } from "@/lib/team";
+import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +30,28 @@ export default async function TeamPage({
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
 
   const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
+  const pendingTeam = await getPendingTeamForHackathon(hackathon.id);
   if (!snapshot) {
+    if (pendingTeam) {
+      return (
+        <div className="px-4 py-16 sm:px-6 lg:px-8">
+          <Card className="mx-auto max-w-xl p-8 text-center">
+            <h1 className="font-heading text-2xl font-bold">
+              Você foi adicionado ao time {pendingTeam.teamName}
+            </h1>
+            <p className="mt-2 text-muted">
+              {pendingTeam.leaderName ?? "O líder do time"} te adicionou por e-mail. A entrada é
+              confirmada assim que você mantiver a inscrição completa.
+            </p>
+            <div className="mt-6">
+              <Link href={`/h/${slug}/dashboard`}>
+                <Button variant="primary">Voltar ao painel</Button>
+              </Link>
+            </div>
+          </Card>
+        </div>
+      );
+    }
     return (
       <div className="px-4 py-16 sm:px-6 lg:px-8">
         <Card className="mx-auto max-w-xl p-8 text-center">
