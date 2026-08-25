@@ -13,7 +13,11 @@ type Props = { params: Promise<{ id: string }> };
 
 async function getProfile(id: string) {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase.from("public_profiles").select("*").eq("id", id).maybeSingle();
+  const { data } = await supabase
+    .from("public_profiles")
+    .select("id, full_name, avatar_url, headline, bio, github_url, twitter_url, linkedin_url")
+    .eq("id", id)
+    .maybeSingle();
   return data as PublicProfile | null;
 }
 
@@ -36,7 +40,7 @@ export default async function BuilderProfilePage({ params }: Props) {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("public_submissions")
-    .select("*")
+    .select("id, project_name, description, image_path, team_name, hackathon_slug, hackathon_name")
     .eq("team_leader_id", id)
     .order("submitted_at", { ascending: false });
   const projects = (data as PublicSubmission[] | null) ?? [];
