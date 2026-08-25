@@ -139,7 +139,8 @@ export default async function JudgeEditionPage({
     ),
   );
 
-  const ratedCount = projects.filter((p) => mine.has(p.submissionId)).length;
+  // Only a row with a grade counts as rated — a comment-only save is a draft.
+  const ratedCount = projects.filter((p) => mine.get(p.submissionId)?.grade != null).length;
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">

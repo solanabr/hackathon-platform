@@ -68,6 +68,8 @@ export default async function JudgeIndexPage() {
       ids = ids.filter((id) => allowed.has(id));
     }
 
+    // A row only counts as rated once it carries a grade — a comment-only save
+    // is a draft and must not move the progress bar.
     const { count } = ids.length
       ? await supabase
           .from("submission_ratings")
@@ -75,6 +77,7 @@ export default async function JudgeIndexPage() {
           .in("submission_id", ids)
           .eq("judge_id", roles.state.userId)
           .eq("round", ratingRound(edition))
+          .not("grade", "is", null)
       : { count: 0 };
 
     counts.set(edition.id, { total: ids.length, rated: count ?? 0 });
