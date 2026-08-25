@@ -109,3 +109,17 @@ export function ratingRound(h: Hackathon, now: Date = new Date()): RatingRound {
   if (!h.finalists_announced_at) return "triagem";
   return now.getTime() >= new Date(h.finalists_announced_at).getTime() ? "final" : "triagem";
 }
+
+/**
+ * When the public landing may show the finalist list. A closed edition always
+ * shows results; while judging, the announced date is the reveal signal so the
+ * cut is never leaked before it is public.
+ */
+export function isFinalistsVisible(h: Hackathon, now: Date = new Date()): boolean {
+  if (h.status !== "judging" && h.status !== "closed") return false;
+  if (h.status === "closed") return true;
+  return (
+    h.finalists_announced_at !== null &&
+    new Date(h.finalists_announced_at).getTime() <= now.getTime()
+  );
+}
