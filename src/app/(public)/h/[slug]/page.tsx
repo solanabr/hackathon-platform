@@ -171,6 +171,18 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   const online = schedule.filter((s) => s.kind !== "evento");
 
+  // The hero counts down to whatever comes next in the edition's life:
+  // inscriptions, then submissions, then Pitch Day. Null once it is all over.
+  const nowMs = Date.now();
+  const countdownTarget =
+    hackathon.registration_closes_at && new Date(hackathon.registration_closes_at).getTime() > nowMs
+      ? { label: "Inscrições encerram em", iso: hackathon.registration_closes_at }
+      : new Date(hackathon.submission_deadline_at).getTime() > nowMs
+        ? { label: "Submissões encerram em", iso: hackathon.submission_deadline_at }
+        : hackathon.presential_at && new Date(hackathon.presential_at).getTime() > nowMs
+          ? { label: "Pitch Day em", iso: hackathon.presential_at }
+          : null;
+
   return (
     <div>
       <section className="relative overflow-hidden px-4 pt-14 sm:px-6 lg:px-8 lg:pt-24" aria-label={hackathon.name}>
@@ -204,7 +216,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">{hackathon.tagline}</p>
             )}
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
               {registered ? (
                 <Link
                   href={`/h/${hackathon.slug}/dashboard`}
@@ -228,20 +240,20 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                   Inscrições encerradas
                 </button>
               )}
-            </div>
 
-            {open && hackathon.registration_closes_at && (
-              <div className="mt-8 inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-6 py-4 shadow-[6px_6px_0_#1b231d]">
+            {countdownTarget && (
+              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-6 py-4 shadow-[6px_6px_0_#1b231d]">
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
-                  Inscrições encerram em
+                  {countdownTarget.label}
                 </p>
                 <Countdown
-                  deadlineIso={hackathon.registration_closes_at}
+                  deadlineIso={countdownTarget.iso}
                   variant="segments"
                   className="mt-2 !justify-start"
                 />
               </div>
             )}
+            </div>
           </div>
 
           {coverUrl && (
@@ -469,16 +481,13 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      <section
-        className={`px-4 sm:px-6 lg:px-8 ${supporters.length > 0 ? "pb-4" : "pb-24"}`}
-        aria-label="Realização"
-      >
+      <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização e apoiadores">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
-            <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
+          <div className="rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
+            <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
               Realização
             </h2>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
               {PARTNERS.map((p) => (
                 <Image
                   key={p.name}
@@ -491,34 +500,32 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 />
               ))}
             </div>
+
+            {supporters.length > 0 && (
+              <>
+                <div aria-hidden className="mx-auto mt-10 h-px max-w-xl bg-surface/15" />
+                <h2 className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+                  Apoiadores
+                </h2>
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16">
+                  {supporters.map((sp) => (
+                    <Image
+                      key={sp.name}
+                      src={sp.src}
+                      alt={sp.name}
+                      width={sp.w}
+                      height={sp.h}
+                      loading="lazy"
+                      className={`w-auto opacity-80 ${sp.cls}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      {supporters.length > 0 && (
-        <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Apoiadores">
-          <div className="mx-auto max-w-6xl">
-            <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
-              <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
-                Apoiadores
-              </h2>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
-                {supporters.map((s) => (
-                  <Image
-                    key={s.name}
-                    src={s.src}
-                    alt={s.name}
-                    width={s.w}
-                    height={s.h}
-                    loading="lazy"
-                    className={`w-auto opacity-90 ${s.cls}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
