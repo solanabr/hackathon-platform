@@ -7,6 +7,7 @@ import { CopyLink } from "@/components/ui/copy-link";
 import { Badge } from "@/components/ui/badge";
 import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
+import { EditionInfoCard } from "@/components/edition/info-card";
 import { Avatar } from "@/components/ui/avatar";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import { getHackathonBySlug, isSubmissionWindowOpen, phaseBoundaries } from "@/lib/hackathon";
@@ -238,6 +239,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
         <section aria-label="Etapas">
           <PhaseTimeline phases={phases} now={now} />
         </section>
+
+        <EditionInfoCard hackathon={hackathon} />
 
         <div className="grid gap-5 lg:grid-cols-2">
           <SectionCard
