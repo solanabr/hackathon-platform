@@ -71,7 +71,7 @@ export function JudgeProjectCard({
                 : "border-white-10 text-muted"
             }`}
           >
-            {graded ? `Nota ${rating.grade}` : "—"}
+            {graded ? `Nota ${rating.grade}` : "-"}
           </span>
         </div>
 

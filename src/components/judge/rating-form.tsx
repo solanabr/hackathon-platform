@@ -125,13 +125,13 @@ export function RatingForm({
           Sua nota
         </label>
         <span className="font-mono text-2xl font-semibold tabular-nums text-yellow">
-          {grade ?? "—"}
+          {grade ?? "-"}
           <span className="ml-1 text-xs font-normal text-muted">/ 10</span>
         </span>
       </div>
 
       <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
-        Critérios: execução técnica · inovação · impacto · apresentação
+        Critérios: execução técnica, inovação, impacto, apresentação
       </p>
 
       <input

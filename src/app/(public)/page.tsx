@@ -136,8 +136,20 @@ export default async function HomePage({
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
               Inscrição, formação de time e submissão de projeto em um só lugar.
             </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href={live[0] ? `/h/${live[0].slug}` : "/auth"}
+                className="btn-primary px-8 text-base"
+              >
+                {live[0] ? "Ver edição" : "Participar"}
+              </Link>
+            </div>
           </header>
+        </div>
+      </section>
 
+      <section className="px-4 sm:px-6 lg:px-8" aria-label="Estatísticas">
+        <div className="mx-auto max-w-6xl">
           <dl className="mt-14 flex flex-wrap gap-x-12 gap-y-6 border-t border-white-10 pt-8">
             {stats.map((s) => (
               <div key={s.label} className="flex flex-col-reverse gap-1">
@@ -164,18 +176,12 @@ export default async function HomePage({
         <div className="mx-auto max-w-6xl">
           <h2 className="text-xs font-bold uppercase tracking-wider text-emerald">Como funciona</h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-3">
-            {STEPS.map((step, i) => (
+            {STEPS.map((step) => (
               <div
                 key={step.title}
                 className="relative overflow-hidden rounded-2xl border border-white-10 bg-surface-raised p-7"
               >
-                <span
-                  aria-hidden
-                  className="font-heading text-5xl font-bold leading-none text-emerald/25"
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-5 font-heading text-2xl font-bold uppercase tracking-tight">
+                <h3 className="font-heading text-2xl font-bold uppercase tracking-tight">
                   {step.title}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>

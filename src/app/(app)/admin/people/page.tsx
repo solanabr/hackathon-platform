@@ -35,7 +35,7 @@ export default async function PeoplePage() {
     return {
       id: r.id,
       role: r.role,
-      email: user?.email ?? "—",
+      email: user?.email ?? "-",
       hackathonName: hackathon?.name ?? null,
     };
   });

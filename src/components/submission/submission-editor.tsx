@@ -312,7 +312,7 @@ export function SubmissionEditor({
         </div>
 
         <div>
-          <Label hint="JPG / PNG · 250 × 250 px · até 5 MB">Imagem de capa do projeto</Label>
+          <Label hint="JPG / PNG, 250 × 250 px, até 5 MB">Imagem de capa do projeto</Label>
           <ImageUpload
             teamId={teamId}
             currentPath={imagePath}

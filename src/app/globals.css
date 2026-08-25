@@ -64,7 +64,7 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
            font-medium text-[#1b231d] transition-[background-color,transform] duration-200
-           hover:bg-[#ffe066] focus-visible:outline-none focus-visible:ring-2
+           hover:bg-[#ffe066] hover:shadow-[0_8px_24px_rgba(0,140,76,0.2)] focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-yellow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 

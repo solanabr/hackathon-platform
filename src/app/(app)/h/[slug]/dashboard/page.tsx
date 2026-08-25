@@ -241,7 +241,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
         <div className="grid gap-5 lg:grid-cols-2">
           <SectionCard
-            eyebrow="Seu time"
             title={snapshot ? snapshot.team.name : "Você ainda não tem time"}
             action={snapshot ? { href: `/h/${slug}/team`, label: "Gerenciar" } : undefined}
           >
@@ -303,7 +302,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </SectionCard>
 
           <SectionCard
-            eyebrow="Projeto"
             title="Submissão"
             action={
               snapshot

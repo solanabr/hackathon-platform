@@ -4,13 +4,11 @@ import { Card } from "./card";
 
 export function SectionCard({
   title,
-  eyebrow,
   action,
   children,
   className = "",
 }: {
   title: string;
-  eyebrow?: string;
   action?: { href: string; label: string };
   children: ReactNode;
   className?: string;
@@ -19,9 +17,6 @@ export function SectionCard({
     <Card className={`flex flex-col p-6 sm:p-7 ${className}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          {eyebrow && (
-            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">{eyebrow}</p>
-          )}
           <h2 className="truncate font-heading text-xl font-bold">{title}</h2>
         </div>
         {action && (
