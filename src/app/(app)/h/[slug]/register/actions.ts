@@ -6,7 +6,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
 
 export async function registerForHackathon(
-  hackathonId: string,
   slug: string,
   formData: FormData,
 ): Promise<{ error?: string }> {
@@ -29,7 +28,7 @@ export async function registerForHackathon(
 
   const { error } = await supabase.from("hackathon_registrations").upsert(
     {
-      hackathon_id: hackathonId,
+      hackathon_id: hackathon.id,
       user_id: state.userId,
       luma_confirmed_at: now,
       terms_accepted_at: now,

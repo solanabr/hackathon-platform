@@ -6,11 +6,9 @@ import { Button } from "@/components/ui/button";
 import { registerForHackathon } from "@/app/(app)/h/[slug]/register/actions";
 
 export function RegistrationForm({
-  hackathonId,
   slug,
   lumaUrl,
 }: {
-  hackathonId: string;
   slug: string;
   lumaUrl: string | null;
 }) {
@@ -22,7 +20,7 @@ export function RegistrationForm({
     <form
       action={(formData) =>
         startTransition(async () => {
-          const result = await registerForHackathon(hackathonId, slug, formData);
+          const result = await registerForHackathon(slug, formData);
           if (result.error) setError(result.error);
           else router.push(`/h/${slug}/dashboard`);
         })

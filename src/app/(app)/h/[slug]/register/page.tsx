@@ -36,7 +36,6 @@ export default async function RegistrationPage({
 
         <Card className="mt-8 p-6 sm:p-8">
           <RegistrationForm
-            hackathonId={hackathon.id}
             slug={slug}
             lumaUrl={hackathon.luma_url}
           />
