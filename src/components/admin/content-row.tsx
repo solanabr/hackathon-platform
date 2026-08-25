@@ -116,7 +116,7 @@ export function ContentRow({
   }
 
   return (
-    <li className="rounded-xl border border-white-10 bg-surface-raised p-5">
+    <li className="rounded-xl border border-ink/10 bg-surface-raised p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
@@ -171,7 +171,7 @@ export function ContentRow({
       </div>
 
       {editing && (
-        <div className="mt-4 rounded-xl border border-white-10 bg-surface-deep p-5">
+        <div className="mt-4 rounded-xl border border-ink/10 bg-surface-deep p-5">
           <ContentFieldsForm draft={draft} onChange={setDraft} idPrefix={item.id} />
           <div className="mt-4 flex items-center gap-3">
             <Button
@@ -237,7 +237,7 @@ export function ContentRow({
         </Button>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white-10 pt-4">
+      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-ink/10 pt-4">
         <input
           ref={fileRef}
           type="file"

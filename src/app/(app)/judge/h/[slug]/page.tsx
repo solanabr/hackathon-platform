@@ -207,7 +207,7 @@ export default async function JudgeEditionPage({
           <>
             <section
               aria-label="Seu progresso na rodada"
-              className="rounded-xl border border-white-10 bg-surface-raised p-4 sm:p-5"
+              className="rounded-xl border border-ink/10 bg-surface-raised p-4 sm:p-5"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">

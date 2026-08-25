@@ -22,8 +22,8 @@ export function PhaseTimeline({ phases, now }: { phases: Phase[]; now: number })
               current
                 ? "border-emerald/40 bg-emerald/15 text-ink shadow-[0_12px_32px_rgba(0,140,76,0.15)]"
                 : done
-                  ? "border-white-10 bg-surface-raised/60 text-muted"
-                  : "border-white-10 bg-surface-raised text-ink"
+                  ? "border-ink/10 bg-surface-raised/60 text-muted"
+                  : "border-ink/10 bg-surface-raised text-ink"
             }`}
           >
             <div className="flex items-center justify-between gap-2">

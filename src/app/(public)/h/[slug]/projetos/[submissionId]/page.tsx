@@ -113,7 +113,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         </header>
 
         {imageUrl && (
-          <div className="relative mt-8 h-72 overflow-hidden rounded-2xl border border-white-10 bg-green-dark sm:h-96">
+          <div className="relative mt-8 h-72 overflow-hidden rounded-2xl border border-surface/15 bg-green-dark sm:h-96">
             <Image
               src={imageUrl}
               alt={`Imagem do projeto ${submission.project_name ?? ""}`}
@@ -149,7 +149,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 <li key={m.user_id}>
                   <Link
                     href={`/u/${m.user_id}`}
-                    className="flex items-center gap-3 rounded-2xl border border-white-10 bg-surface-raised p-4 transition-colors hover:border-emerald/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-surface-raised p-4 transition-colors hover:border-emerald/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   >
                     <Avatar src={m.avatar_url} name={m.full_name} size="md" />
                     <div className="min-w-0">
@@ -175,7 +175,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                   href={l.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full border border-white-10 px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
+                  className="rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
                 >
                   {l.label}
                 </a>

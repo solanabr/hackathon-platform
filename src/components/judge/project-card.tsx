@@ -68,7 +68,7 @@ export function JudgeProjectCard({
             className={`inline-flex shrink-0 items-center rounded-lg border px-3 py-1.5 font-mono text-lg font-semibold tabular-nums ${
               graded
                 ? "border-yellow-strong/60 bg-yellow/40 text-green-dark"
-                : "border-white-10 text-muted"
+                : "border-ink/10 text-muted"
             }`}
           >
             {graded ? `Nota ${rating.grade}` : "-"}
@@ -81,7 +81,7 @@ export function JudgeProjectCard({
             alt=""
             width={640}
             height={320}
-            className="mt-5 h-48 w-full rounded-2xl border border-white-10 object-cover"
+            className="mt-5 h-48 w-full rounded-2xl border border-ink/10 object-cover"
           />
         )}
 
@@ -123,10 +123,14 @@ export function JudgeProjectCard({
                           </MemberContactLink>
                         )}
                         {member.githubUrl && (
-                          <MemberContactLink href={`/u/${member.id}`}>GitHub</MemberContactLink>
+                          <MemberContactLink href={member.githubUrl} external>
+                            GitHub
+                          </MemberContactLink>
                         )}
                         {member.linkedinUrl && (
-                          <MemberContactLink href={`/u/${member.id}`}>LinkedIn</MemberContactLink>
+                          <MemberContactLink href={member.linkedinUrl} external>
+                            LinkedIn
+                          </MemberContactLink>
                         )}
                         {member.telegramHandle && (
                           <MemberContactLink
@@ -153,7 +157,7 @@ export function JudgeProjectCard({
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-white-10 px-3.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
+                className="rounded-full border border-ink/10 px-3.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
               >
                 {link.label}
               </a>
@@ -162,7 +166,7 @@ export function JudgeProjectCard({
         )}
       </div>
 
-      <div className="border-t border-white-10 p-6 sm:p-7">
+      <div className="border-t border-ink/10 p-6 sm:p-7">
         <RatingForm
           hackathonId={hackathonId}
           submissionId={project.submissionId}

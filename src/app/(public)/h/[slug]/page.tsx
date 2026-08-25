@@ -6,6 +6,7 @@ import {
   isRegistrationOpen,
   isFinalistsVisible,
   phaseBoundaries,
+  prizePoolLabel,
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
@@ -297,10 +298,14 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 {hackathon.location_city ?? "Online"}
               </dd>
             </div>
-            <div>
-              <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Prêmios</dt>
-              <dd className="mt-1 font-heading text-lg font-bold text-emerald">US$ 3.000 e mais</dd>
-            </div>
+            {prizePoolLabel(hackathon.prize_summary) && (
+              <div>
+                <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Prêmios</dt>
+                <dd className="mt-1 font-heading text-lg font-bold text-emerald">
+                  {prizePoolLabel(hackathon.prize_summary)}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       </section>

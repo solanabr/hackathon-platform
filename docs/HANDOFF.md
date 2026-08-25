@@ -26,10 +26,11 @@ Cursor + Apollo.
 
 ## Gates on #12
 
-1. **Signed-in walk** of painel / judge / admin in the light theme. Nobody
-   logged in has eyeballed them since the theme flip; that is where dark-era
-   residue hides (three invisible `border-white-10` classes and two
-   dark-on-dark labels were already found on public pages).
+1. **Signed-in walk** of painel / judge / admin in the light theme. The known
+   dark-era residue is fixed (all 36 `border-white-10` classes replaced with
+   theme tokens, the judge rating panel flipped to the cream inset, dead
+   dark-theme `edition-card`/`edition-gallery` deleted), but a human pass over
+   the signed-in pages is still the gate.
 2. **Delete the mock fixtures before 31/08**: the public gallery shows five
    fake projects. `delete from auth.users where email like '%@mock.test';`
    cascades everything.

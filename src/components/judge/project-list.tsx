@@ -62,7 +62,7 @@ export function JudgeProjectList({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div
-          className="inline-flex flex-wrap rounded-full border border-white-10 bg-surface-deep p-1"
+          className="inline-flex flex-wrap rounded-full border border-ink/10 bg-surface-deep p-1"
           role="group"
           aria-label="Filtrar projetos"
         >
@@ -85,7 +85,7 @@ export function JudgeProjectList({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="min-h-11 rounded-full border border-white-10 bg-surface-deep px-4 text-sm font-semibold text-muted outline-none transition-colors hover:border-emerald/50 focus:border-emerald"
+          className="min-h-11 rounded-full border border-ink/10 bg-surface-deep px-4 text-sm font-semibold text-muted outline-none transition-colors hover:border-emerald/50 focus:border-emerald"
         >
           {SORTS.map(({ key, label }) => (
             <option key={key} value={key}>

@@ -7,6 +7,7 @@ import {
   editionStage,
   phaseBoundaries,
   phaseState,
+  prizePoolLabel,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -168,5 +169,25 @@ describe("phase one split", () => {
       development_starts_at: null,
     } as Hackathon);
     expect(legacy.fase1.endsAt).toBe(new Date("2026-09-08T02:59:00Z").getTime());
+  });
+});
+
+describe("prizePoolLabel", () => {
+  it("sums the US$ amounts across the itemized summary", () => {
+    expect(
+      prizePoolLabel(
+        "1º Lugar - US$1500 + Kit · 2º Lugar - US$900 · 3º Lugar - US$450 · Menção Honrosa - US$150",
+      ),
+    ).toBe("US$ 3.000 em prêmios");
+  });
+
+  it("handles pt-BR thousand separators", () => {
+    expect(prizePoolLabel("1º Lugar - US$ 1.500")).toBe("US$ 1.500 em prêmios");
+  });
+
+  it("returns null when nothing is parseable", () => {
+    expect(prizePoolLabel(null)).toBeNull();
+    expect(prizePoolLabel("")).toBeNull();
+    expect(prizePoolLabel("Prêmios surpresa")).toBeNull();
   });
 });

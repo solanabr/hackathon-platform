@@ -13,7 +13,7 @@ export function EmptyState({
 }) {
   return (
     <div
-      className={`relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-white-10 bg-surface-raised px-8 py-16 text-center ${className}`}
+      className={`relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-ink/10 bg-surface-raised px-8 py-16 text-center ${className}`}
     >
       <Image
         src="/brand/stbr/elements/morth-24.svg"

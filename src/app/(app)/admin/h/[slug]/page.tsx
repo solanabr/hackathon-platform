@@ -25,7 +25,7 @@ function FlagChip({ on }: { on: boolean }) {
   return (
     <span
       className={`inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
-        on ? "border-emerald/30 bg-emerald/10 text-emerald" : "border-white-10 text-muted"
+        on ? "border-emerald/30 bg-emerald/10 text-emerald" : "border-ink/10 text-muted"
       }`}
     >
       {on ? "Sim" : "Não"}
@@ -41,7 +41,7 @@ function TeamStatusChip({ status }: { status: string | null }) {
       className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[11px] font-semibold ${
         submitted
           ? "border-emerald/30 bg-emerald/10 text-emerald"
-          : "border-white-10 text-muted"
+          : "border-ink/10 text-muted"
       }`}
     >
       {label}
@@ -135,7 +135,7 @@ export default async function AdminEditionPage({
                 alt=""
                 width={120}
                 height={120}
-                className="h-28 w-28 rounded-2xl border border-white-10 object-cover"
+                className="h-28 w-28 rounded-2xl border border-ink/10 object-cover"
               />
             )}
             <CoverUpload hackathonId={hackathon.id} slug={hackathon.slug} />

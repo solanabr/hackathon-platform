@@ -129,3 +129,18 @@ export function isFinalistsVisible(h: Hackathon, now: Date = new Date()): boolea
     new Date(h.finalists_announced_at).getTime() <= now.getTime()
   );
 }
+
+/**
+ * Total prize pool derived from the itemized `prize_summary` ("1º Lugar -
+ * US$1500 · ..."). Null when nothing parseable, so callers can hide the cell
+ * instead of showing a stale hardcoded amount.
+ */
+export function prizePoolLabel(summary: string | null): string | null {
+  if (!summary) return null;
+  const amounts = [...summary.matchAll(/US\$\s?([\d.,]+)/g)]
+    .map((m) => Number.parseInt(m[1].replace(/[.,]/g, ""), 10))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  if (amounts.length === 0) return null;
+  const total = amounts.reduce((a, b) => a + b, 0);
+  return `US$ ${new Intl.NumberFormat("pt-BR").format(total)} em prêmios`;
+}

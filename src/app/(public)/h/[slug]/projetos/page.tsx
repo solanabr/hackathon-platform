@@ -136,7 +136,7 @@ export default async function ProjectsGalleryPage({
                 <li key={p.id}>
                   <Link
                     href={`/h/${slug}/projetos/${p.id}`}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white-10 bg-surface-raised shadow-[0_8px_32px_rgba(0,140,76,0.08)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-emerald/50 hover:ring-2 hover:ring-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface-raised shadow-[0_8px_32px_rgba(0,140,76,0.08)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-emerald/50 hover:ring-2 hover:ring-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   >
                     <div className="relative h-44 overflow-hidden bg-green-dark">
                       {placement !== undefined && (
@@ -153,7 +153,7 @@ export default async function ProjectsGalleryPage({
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center px-6 font-heading text-xl font-bold text-ink">
+                        <div className="flex h-full items-center justify-center px-6 font-heading text-xl font-bold text-surface">
                           {p.project_name}
                         </div>
                       )}

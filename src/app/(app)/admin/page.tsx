@@ -84,7 +84,7 @@ export default async function AdminPage() {
                     </p>
                     <Link
                       href={`/admin/h/${h.slug}`}
-                      className="min-h-11 shrink-0 rounded-full border border-white-10 px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/50 hover:bg-green-dark/5"
+                      className="min-h-11 shrink-0 rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/50 hover:bg-green-dark/5"
                     >
                       Editar
                     </Link>
