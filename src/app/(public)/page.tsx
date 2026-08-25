@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { EditionGallery } from "@/components/home/edition-gallery";
@@ -27,20 +28,16 @@ function clean(s: string): string {
 
 const STEPS = [
   {
-    title: "Entre com GitHub",
-    body: "Uma conta para todos os hackathons. Seu perfil e seus times ficam com você.",
+    title: "Competir",
+    body: "Garanta sua vaga em uma edição com inscrições abertas. É grátis.",
   },
   {
-    title: "Confirme sua inscrição",
-    body: "Cada edição tem inscrição no Luma. Confirme por aqui e libere as aulas.",
+    title: "Construir",
+    body: "Monte seu time de 1 a 4 builders, assista às aulas e desenvolva o projeto.",
   },
   {
-    title: "Monte seu time",
-    body: "Crie o time como líder e adicione os integrantes pelo e-mail. De 1 a 4 pessoas.",
-  },
-  {
-    title: "Envie seu projeto",
-    body: "No prazo, o líder envia o deck, a demo e o repositório. Depois disso, trava.",
+    title: "Vencer",
+    body: "Envie deck, demo e código. Os finalistas disputam o Pitch Day.",
   },
 ];
 
@@ -53,6 +50,15 @@ export default async function HomePage({
   const initialFilter = f === "running" || f === "upcoming" || f === "finished" ? f : "todos";
   const hackathons = await listHackathons();
   const supabase = await createServerSupabaseClient();
+
+  // Public-view counts for the hero stats band. Anon-safe (the views are
+  // whitelisted in 00032); a missing view or a failing query just reads zero.
+  const { count: projectCount } = await supabase
+    .from("public_submissions")
+    .select("*", { count: "exact", head: true });
+  const { count: builderCount } = await supabase
+    .from("public_profiles")
+    .select("*", { count: "exact", head: true });
 
   const editions: EditionCardData[] = hackathons.map((h: Hackathon) => {
     const start = new Date(h.starts_at);
@@ -83,62 +89,104 @@ export default async function HomePage({
   const live = editions.filter((e) => e.registrationOpen);
   const liveCount = live.length;
 
+  const stats = [
+    { label: "Hackathons", value: editions.length },
+    { label: "Builders", value: builderCount ?? 0 },
+    { label: "Projetos", value: projectCount ?? 0 },
+  ];
+
   return (
-    <div className="px-4 py-14 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <header className="max-w-3xl">
-          {liveCount > 0 && (
-            <p className="inline-flex items-center gap-2 rounded-full border border-emerald/30 bg-emerald/10 px-4 py-1.5 text-sm font-semibold text-emerald">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute h-full w-full animate-ping rounded-full bg-emerald/60" />
-                <span className="relative h-2 w-2 rounded-full bg-emerald" />
-              </span>
-              {liveCount === 1 ? "1 hackathon com inscrições abertas" : `${liveCount} hackathons com inscrições abertas`}
-            </p>
-          )}
-          <h1 className="mt-5 text-balance font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-            Hackathons da
-            <span className="block text-emerald">Superteam Brasil</span>
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Inscrição, formação de time e submissão de projeto em um só lugar.
-          </p>
-        </header>
-
-        <section className="mt-12" aria-label="Hackathons">
-          <h2 className="sr-only">Hackathons</h2>
-          <EditionGallery editions={editions} initialFilter={initialFilter} />
-        </section>
-
-        <section className="mt-28 grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" aria-label="Como funciona">
-          <div className="lg:sticky lg:top-28 lg:self-start">
-            <h2 className="text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl">
-              Como funciona
-            </h2>
-            <p className="mt-4 max-w-md leading-relaxed text-muted">
-              Quatro passos, do cadastro até a entrega do projeto.
-            </p>
+    <div>
+      <section className="relative overflow-hidden px-4 pt-16 sm:px-6 sm:pt-24 lg:px-8">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 top-6 h-[24rem] w-40 opacity-[0.08] sm:h-[30rem] sm:w-52">
+            <Image
+              src="/brand/stbr/elements/morth-01.svg"
+              alt=""
+              fill
+              className="object-contain"
+              sizes="208px"
+            />
           </div>
+          <div className="absolute -right-20 top-16 h-64 w-72 opacity-[0.08] sm:h-80 sm:w-96">
+            <Image
+              src="/brand/stbr/elements/morth-05.svg"
+              alt=""
+              fill
+              className="object-contain"
+              sizes="384px"
+            />
+          </div>
+        </div>
 
-          <ol className="space-y-4">
+        <div className="relative mx-auto max-w-6xl">
+          <header className="max-w-3xl">
+            {liveCount > 0 && (
+              <p className="inline-flex items-center gap-2 rounded-full border border-emerald/30 bg-emerald/10 px-4 py-1.5 text-sm font-semibold text-emerald">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-emerald/60" />
+                  <span className="relative h-2 w-2 rounded-full bg-emerald" />
+                </span>
+                {liveCount === 1 ? "1 hackathon com inscrições abertas" : `${liveCount} hackathons com inscrições abertas`}
+              </p>
+            )}
+            <h1 className="mt-6 text-balance font-heading text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl">
+              Entre na <span className="text-yellow">arena</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+              Inscrição, formação de time e submissão de projeto em um só lugar.
+            </p>
+          </header>
+
+          <dl className="mt-14 flex flex-wrap gap-x-12 gap-y-6 border-t border-white-10 pt-8">
+            {stats.map((s) => (
+              <div key={s.label} className="flex flex-col-reverse gap-1">
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                  {s.label}
+                </dt>
+                <dd className="font-mono text-4xl font-bold tabular-nums text-ink sm:text-5xl">
+                  {s.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      <section className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Hackathons">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-emerald">Hackathons</h2>
+          <EditionGallery editions={editions} initialFilter={initialFilter} />
+        </div>
+      </section>
+
+      <section className="px-4 pt-20 sm:px-6 lg:px-8" aria-label="Como funciona">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-emerald">Como funciona</h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-3">
             {STEPS.map((step, i) => (
-              <li
+              <div
                 key={step.title}
-                className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised p-6"
+                className="relative overflow-hidden rounded-2xl border border-white-10 bg-surface-raised p-7"
               >
-                <span className="font-heading text-3xl font-bold leading-none text-emerald/40">
+                <span
+                  aria-hidden
+                  className="font-heading text-5xl font-bold leading-none text-emerald/25"
+                >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div>
-                  <h3 className="font-heading text-lg font-bold">{step.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted">{step.body}</p>
-                </div>
-              </li>
+                <h3 className="mt-5 font-heading text-2xl font-bold uppercase tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
+              </div>
             ))}
-          </ol>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section className="mt-28" aria-label="Participe">
+      <section className="px-4 pt-20 sm:px-6 lg:px-8" aria-label="Participe">
+        <div className="mx-auto max-w-6xl">
           <div className="relative overflow-hidden rounded-3xl bg-green-dark px-8 py-14 sm:px-14">
             <div
               aria-hidden
@@ -150,10 +198,10 @@ export default async function HomePage({
             />
             <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
               <div>
-                <h2 className="font-heading text-3xl font-bold text-surface sm:text-4xl">
+                <h2 className="font-heading text-3xl font-bold text-ink sm:text-4xl">
                   Participe do próximo
                 </h2>
-                <p className="mt-3 max-w-md leading-relaxed text-surface/70">
+                <p className="mt-3 max-w-md leading-relaxed text-muted">
                   Inscrições abertas. Entre, monte seu time e comece.
                 </p>
               </div>
@@ -165,8 +213,8 @@ export default async function HomePage({
               </Link>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }

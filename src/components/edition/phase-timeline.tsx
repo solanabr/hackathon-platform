@@ -20,22 +20,22 @@ export function PhaseTimeline({ phases, now }: { phases: Phase[]; now: number })
             key={phase.key}
             className={`relative flex flex-col gap-2 rounded-2xl border p-5 transition-colors ${
               current
-                ? "border-emerald bg-emerald text-surface shadow-[0_12px_32px_rgba(0,140,76,0.25)]"
+                ? "border-emerald/40 bg-emerald/15 text-ink shadow-[0_12px_32px_rgba(0,140,76,0.15)]"
                 : done
-                  ? "border-green/15 bg-surface-raised/60 text-muted"
-                  : "border-green/15 bg-surface-raised text-ink"
+                  ? "border-white-10 bg-surface-raised/60 text-muted"
+                  : "border-white-10 bg-surface-raised text-ink"
             }`}
           >
             <div className="flex items-center justify-between gap-2">
               <span
                 className={`text-[11px] font-bold uppercase tracking-wider ${
-                  current ? "text-surface/80" : "text-emerald"
+                  current ? "text-yellow" : "text-emerald"
                 }`}
               >
                 {phase.when}
               </span>
               {current && (
-                <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald">
+                <span className="rounded-full bg-yellow px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-dark">
                   Agora
                 </span>
               )}
@@ -47,9 +47,7 @@ export function PhaseTimeline({ phases, now }: { phases: Phase[]; now: number })
             </div>
 
             <p className="font-heading text-lg font-bold leading-tight">{phase.label}</p>
-            <p className={`text-sm leading-relaxed ${current ? "text-surface/85" : "text-muted"}`}>
-              {phase.detail}
-            </p>
+            <p className="text-sm leading-relaxed text-muted">{phase.detail}</p>
           </li>
         );
       })}
