@@ -77,6 +77,12 @@ export default async function AdminEditionPage({
             >
               Jurados
             </Link>
+            <Link
+              href={`/admin/h/${hackathon.slug}/finalistas`}
+              className="btn-secondary px-5 py-2 text-sm"
+            >
+              Finalistas
+            </Link>
             <Link href={`/h/${hackathon.slug}`} className="btn-secondary px-5 py-2 text-sm">
               Ver página
             </Link>

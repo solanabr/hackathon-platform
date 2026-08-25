@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getHackathonBySlug, isRegistrationOpen, phaseBoundaries } from "@/lib/hackathon";
+import {
+  getHackathonBySlug,
+  isRegistrationOpen,
+  isFinalistsVisible,
+  phaseBoundaries,
+} from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
 import type { HackathonContent } from "@/types/db";
 
@@ -89,6 +94,21 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       : supabase.storage.from("hackathon-covers").getPublicUrl(hackathon.cover_image_path).data
           .publicUrl
     : null;
+
+  // teams has no anon select policy, so the public results list goes through
+  // the service role — this stays server-side and never reaches the browser.
+  let finalists: Array<{ teamId: string; teamName: string; placement: number | null }> = [];
+  if (isFinalistsVisible(hackathon)) {
+    const sr = await createServiceRoleClient();
+    const { data: rows } = await sr
+      .from("teams")
+      .select("id, name, placement")
+      .eq("hackathon_id", hackathon.id)
+      .eq("is_finalist", true)
+      .order("placement", { ascending: true, nullsFirst: false });
+    finalists = ((rows as Array<{ id: string; name: string; placement: number | null }> | null) ??
+      []).map((r) => ({ teamId: r.id, teamName: r.name, placement: r.placement }));
+  }
 
   const bounds = phaseBoundaries(hackathon);
   const phases: Phase[] = [
@@ -360,6 +380,35 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 </ul>
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {finalists.length > 0 && (
+        <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
+              Finalistas
+            </h2>
+            <p className="mt-3 max-w-xl leading-relaxed text-muted">
+              As equipes classificadas para a fase final.
+            </p>
+
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {finalists.map((f) => (
+                <li
+                  key={f.teamId}
+                  className="rounded-2xl border border-green/15 bg-surface-raised p-6"
+                >
+                  {f.placement !== null && (
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald">
+                      {f.placement}º lugar
+                    </p>
+                  )}
+                  <h3 className="mt-1 font-heading text-lg font-bold">{f.teamName}</h3>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
       )}

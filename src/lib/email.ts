@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { createServiceRoleClient } from "./supabase/server";
 
 const FROM = process.env.RESEND_FROM ?? "Superteam Brasil <onboarding@resend.dev>";
 
@@ -100,4 +101,98 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+export async function sendFinalistEmail(input: {
+  to: string;
+  projectName: string;
+  editionName: string;
+  editionUrl: string;
+}): Promise<SendResult> {
+  return send(
+    input.to,
+    `Você é finalista do ${input.editionName}`,
+    layout(`
+      <h1 style="margin:0 0 16px;font-size:22px;color:#1b231d">Parabéns, você é finalista!</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#1b231d">
+        O projeto <strong>${escapeHtml(input.projectName)}</strong> foi selecionado entre os
+        finalistas do <strong>${escapeHtml(input.editionName)}</strong>.
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#1b231d">
+        Preparem o pitch final e nos vemos na próxima fase.
+      </p>
+      <a href="${input.editionUrl}" style="display:inline-block;background:#ffd23f;color:#1b231d;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:999px">
+        Ver detalhes da edição
+      </a>
+    `),
+  );
+}
+
+export type FinalistNotifyResult =
+  | { ok: true; sent: number; failed: number }
+  | { ok: false; error: string };
+
+/**
+ * Sends the finalist email to every yet-unnotified finalist team's leader and
+ * stamps finalist_notified_at on success, so a retry only reaches the teams
+ * that never got the email. Admin-gated callers only; never import this into a
+ * client component.
+ */
+export async function notifyFinalists(hackathonId: string): Promise<FinalistNotifyResult> {
+  const supabase = await createServiceRoleClient();
+
+  const { data: hack } = await supabase
+    .from("hackathons")
+    .select("name, slug")
+    .eq("id", hackathonId)
+    .maybeSingle();
+
+  const edition = hack as { name: string; slug: string } | null;
+  if (!edition) return { ok: false, error: "Edição não encontrada." };
+
+  const { data } = await supabase
+    .from("teams")
+    .select("id, name, users(email)")
+    .eq("hackathon_id", hackathonId)
+    .eq("is_finalist", true)
+    .is("finalist_notified_at", null);
+
+  type TeamRow = {
+    id: string;
+    name: string;
+    users: { email: string } | { email: string }[] | null;
+  };
+  const teams = ((data as TeamRow[] | null) ?? []).filter(
+    (t) => t.users !== null && t.users !== undefined,
+  );
+
+  let sent = 0;
+  let failed = 0;
+
+  for (const team of teams) {
+    const leader = Array.isArray(team.users) ? team.users[0] : team.users;
+    if (!leader?.email) {
+      failed++;
+      continue;
+    }
+
+    const result = await sendFinalistEmail({
+      to: leader.email,
+      projectName: team.name,
+      editionName: edition.name,
+      editionUrl: `${siteUrl()}/h/${edition.slug}`,
+    });
+
+    if (result.ok) {
+      sent++;
+      await supabase
+        .from("teams")
+        .update({ finalist_notified_at: new Date().toISOString() })
+        .eq("id", team.id);
+    } else {
+      failed++;
+    }
+  }
+
+  return { ok: true, sent, failed };
 }

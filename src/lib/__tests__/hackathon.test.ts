@@ -3,6 +3,7 @@ import {
   isRegistrationOpen,
   isSubmissionWindowOpen,
   isVotingOpen,
+  isFinalistsVisible,
   editionStage,
   phaseBoundaries,
   phaseState,
@@ -109,6 +110,33 @@ describe("phaseBoundaries", () => {
     } as Hackathon);
     expect(bare.selecao).toBeNull();
     expect(bare.fase2).toBeNull();
+  });
+});
+
+describe("isFinalistsVisible", () => {
+  it("hides the list before judging starts", () => {
+    const h = { ...base, status: "submissions_open" } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-11T00:00:00Z"))).toBe(false);
+  });
+
+  it("keeps the cut secret while judging until the announcement date", () => {
+    const h = { ...base, status: "judging" } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-09T18:00:00Z"))).toBe(false);
+  });
+
+  it("shows the list once the announcement date arrives", () => {
+    const h = { ...base, status: "judging" } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-10T15:00:00Z"))).toBe(true);
+  });
+
+  it("shows the list for a closed edition even without an announcement date", () => {
+    const h = { ...base, status: "closed", finalists_announced_at: null } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-13T00:00:00Z"))).toBe(true);
+  });
+
+  it("never leaks while judging with no announcement date set", () => {
+    const h = { ...base, status: "judging", finalists_announced_at: null } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-11T00:00:00Z"))).toBe(false);
   });
 });
 
