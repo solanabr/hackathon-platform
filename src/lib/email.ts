@@ -65,6 +65,35 @@ export async function sendTeamInvite(input: {
   );
 }
 
+export async function sendSubmissionReceived(input: {
+  to: string;
+  projectName: string;
+  editionName: string;
+  editionUrl: string;
+  dashboardUrl: string;
+}): Promise<SendResult> {
+  return send(
+    input.to,
+    `Submissão recebida · ${input.editionName}`,
+    layout(`
+      <h1 style="margin:0 0 16px;font-size:22px;color:#1b231d">Submissão recebida</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#1b231d">
+        O projeto <strong>${escapeHtml(input.projectName)}</strong> foi submetido com sucesso no
+        <strong>${escapeHtml(input.editionName)}</strong>.
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#1b231d">
+        Os finalistas são anunciados por e-mail. Acompanhe a edição pelo painel do time.
+      </p>
+      <a href="${input.editionUrl}" style="display:inline-block;background:#ffd23f;color:#1b231d;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:999px;margin-right:12px">
+        Ver edição
+      </a>
+      <a href="${input.dashboardUrl}" style="display:inline-block;border:2px solid #1b231d;color:#1b231d;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:999px">
+        Painel do time
+      </a>
+    `),
+  );
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")

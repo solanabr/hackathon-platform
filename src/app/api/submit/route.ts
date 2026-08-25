@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const RPC_ERRORS: Record<string, { status: number; message: string }> = {
@@ -40,6 +41,42 @@ export async function POST(request: NextRequest) {
       { error: mapped?.message ?? "Não foi possível submeter.", code: rpcError.message },
       { status: mapped?.status ?? 500 },
     );
+  }
+
+  // The RPC only lets the team leader through, so the session email is the
+  // leader's. A failed email must never fail an accepted submission.
+  try {
+    const { data: teamRow } = await supabase
+      .from("teams")
+      .select("hackathons(name, slug), submissions(project_name)")
+      .eq("id", body.teamId)
+      .maybeSingle();
+
+    type TeamRow = {
+      hackathons:
+        | { name: string; slug: string }
+        | { name: string; slug: string }[]
+        | null;
+      submissions: { project_name: string | null } | { project_name: string | null }[] | null;
+    };
+    const row = teamRow as TeamRow | null;
+    const edition = Array.isArray(row?.hackathons) ? row?.hackathons[0] : row?.hackathons;
+    const submission = Array.isArray(row?.submissions)
+      ? row?.submissions[0]
+      : row?.submissions;
+
+    if (user.email && edition?.slug) {
+      const result = await sendSubmissionReceived({
+        to: user.email,
+        projectName: submission?.project_name ?? "Seu projeto",
+        editionName: edition.name ?? "",
+        editionUrl: `${siteUrl()}/h/${edition.slug}`,
+        dashboardUrl: `${siteUrl()}/h/${edition.slug}/dashboard`,
+      });
+      if (!result.ok) console.error("sendSubmissionReceived failed:", result.error);
+    }
+  } catch (err) {
+    console.error("sendSubmissionReceived error:", err);
   }
 
   return NextResponse.json({ ok: true });
