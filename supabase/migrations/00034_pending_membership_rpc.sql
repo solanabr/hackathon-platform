@@ -35,6 +35,7 @@ as $$
   where tm.user_id = auth.uid()
     and tm.hackathon_id = p_hackathon_id
     and tm.status = 'pending'
+  order by tm.invited_at asc
   limit 1;
 $$;
 
