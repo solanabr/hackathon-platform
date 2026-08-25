@@ -154,7 +154,7 @@ export default async function HomePage({
             <h1 className="mt-6 text-balance font-heading font-black uppercase leading-[0.92] tracking-tight">
               <span className="block text-5xl [font-stretch:122%] sm:text-6xl lg:text-7xl">Hackathons</span>
               <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-3xl text-yellow [font-stretch:110%] sm:text-4xl lg:text-5xl">
-                da Superteam Brasil
+                Superteam Brasil
               </span>
             </h1>
 
