@@ -15,8 +15,8 @@ export type DeckCard = {
 /** Fanned 3D poses; the change animates with a springy overshoot. */
 const POSES = [
   { transform: "translateX(0) translateY(0) rotateY(-4deg) rotateZ(2deg) scale(1)", zIndex: 30, opacity: 1 },
-  { transform: "translateX(52px) translateY(14px) rotateY(-16deg) rotateZ(7deg) scale(0.93)", zIndex: 20, opacity: 0.92 },
-  { transform: "translateX(96px) translateY(30px) rotateY(-26deg) rotateZ(12deg) scale(0.86)", zIndex: 10, opacity: 0.8 },
+  { transform: "translateX(11.5%) translateY(3%) rotateY(-16deg) rotateZ(7deg) scale(0.93)", zIndex: 20, opacity: 0.92 },
+  { transform: "translateX(21.5%) translateY(6.5%) rotateY(-26deg) rotateZ(12deg) scale(0.86)", zIndex: 10, opacity: 0.8 },
 ];
 
 export function HeroDeck({ cards }: { cards: DeckCard[] }) {
@@ -45,7 +45,7 @@ export function HeroDeck({ cards }: { cards: DeckCard[] }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative aspect-square w-full max-w-md [perspective:1200px]">
+      <div className="relative aspect-square w-[82%] max-w-md [perspective:1200px] sm:w-full">
         {cards.map((card, idx) => {
           const slot = (idx - front + cards.length) % cards.length;
           const pose = POSES[slot] ?? POSES[2];

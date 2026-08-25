@@ -126,15 +126,15 @@ export default async function HomePage({
         <div aria-hidden className="pointer-events-none absolute inset-0">
           {/* Three shapes, corners only. No dark fills on cream, no confetti. */}
           <div
-            className="morth animate-float-a absolute -left-28 top-[14%] h-[26rem] w-[26rem] bg-yellow sm:h-[34rem] sm:w-[34rem]"
+            className="morth animate-float-a absolute hidden bg-yellow sm:-left-28 sm:top-[14%] sm:block sm:h-[34rem] sm:w-[34rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute -right-24 top-[6%] h-[22rem] w-[22rem] bg-[#008c4c] sm:h-[30rem] sm:w-[30rem]"
+            className="morth animate-float-b absolute -right-20 top-[4%] h-48 w-48 bg-[#008c4c] sm:-right-24 sm:top-[6%] sm:h-[30rem] sm:w-[30rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
           <div
-            className="morth animate-float-c absolute -bottom-32 -right-16 h-72 w-72 bg-[#2f6b3f] sm:h-96 sm:w-96"
+            className="morth animate-float-c absolute -bottom-20 -right-14 h-48 w-48 bg-[#2f6b3f] sm:-bottom-32 sm:-right-16 sm:h-96 sm:w-96"
             style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(24deg)" }}
           />
         </div>
@@ -152,8 +152,8 @@ export default async function HomePage({
             )}
 
             <h1 className="mt-6 text-balance font-heading font-black uppercase leading-[0.92] tracking-tight">
-              <span className="block text-5xl [font-stretch:122%] sm:text-6xl lg:text-7xl">Hackathons</span>
-              <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-3xl text-yellow [font-stretch:110%] sm:text-4xl lg:text-5xl">
+              <span className="block text-[clamp(2rem,10vw,3rem)] [font-stretch:122%] sm:text-6xl lg:text-7xl">Hackathons</span>
+              <span className="mt-3 inline-block -rotate-1 bg-green-dark px-3 py-1.5 text-[clamp(1.25rem,6vw,1.875rem)] text-yellow [font-stretch:110%] sm:px-4 sm:text-4xl lg:text-5xl">
                 Superteam Brasil
               </span>
             </h1>
@@ -172,7 +172,7 @@ export default async function HomePage({
               </a>
               <a
                 href="#como-funciona"
-                className="rounded-full border-2 border-green-dark px-7 py-3 text-base font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                className="rounded-full border-2 border-green-dark bg-surface-raised px-7 py-3 text-base font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               >
                 Como funciona
               </a>
