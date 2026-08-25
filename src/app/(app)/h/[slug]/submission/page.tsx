@@ -79,7 +79,7 @@ export default async function SubmissionPage({
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <BackLink href={`/h//dashboard`} label="Painel" />
+          <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
           <PainelNav slug={slug} />
         </div>
 
