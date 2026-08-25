@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/security";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 
 type Provider = "google" | "github";
@@ -86,22 +85,27 @@ export function AuthForm() {
   }
 
   return (
-    <Card className="w-full max-w-md p-8 sm:p-10">
+    <div className="w-full max-w-md rounded-3xl border-2 border-green-dark bg-surface-raised p-8 shadow-[10px_10px_0_rgba(27,35,29,0.9)] sm:p-10">
       <div className="text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/brand/stbr/logo/SYMBOL-EMERALD-GREEN.svg"
           alt="Superteam Brasil"
-          className="mx-auto h-16 w-16 object-contain"
+          className="mx-auto h-14 w-14 -rotate-3 object-contain"
         />
-        <h1 className="mt-5 font-heading text-2xl font-bold">Acessar a plataforma</h1>
-        <p className="mt-2 text-sm text-muted">
+        <h1 className="mt-5 font-heading font-black uppercase leading-tight tracking-tight">
+          <span className="block text-2xl [font-stretch:118%] sm:text-3xl">Acessar a</span>
+          <span className="mt-1.5 inline-block -rotate-1 bg-green-dark px-3 py-1 text-xl text-yellow [font-stretch:110%] sm:text-2xl">
+            Plataforma
+          </span>
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-muted">
           Entre para participar dos hackathons da Superteam Brasil.
         </p>
       </div>
 
       {error && (
-        <p className="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p className="mt-6 rounded-xl border-2 border-red-700/25 bg-red-600/10 px-4 py-3 text-sm font-semibold text-red-800">
           {error}
         </p>
       )}
@@ -205,6 +209,6 @@ export function AuthForm() {
       <p className="mt-7 text-center text-xs text-muted">
         Ao entrar você concorda com o regulamento dos hackathons da Superteam Brasil.
       </p>
-    </Card>
+    </div>
   );
 }
