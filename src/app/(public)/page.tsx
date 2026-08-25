@@ -359,9 +359,6 @@ export default async function HomePage({
                 </span>{" "}
                 ainda não se inscreveu
               </h2>
-              <p className="mt-5 max-w-md text-pretty leading-relaxed text-surface/70">
-                Time de 2 a 4, uma ideia e duas semanas. O resto acontece aqui.
-              </p>
             </div>
 
             <div className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
@@ -371,11 +368,6 @@ export default async function HomePage({
               >
                 {live ? "Garantir minha vaga" : "Entrar"}
               </Link>
-              {live?.registration_closes_at && (
-                <p className="font-heading text-sm font-bold uppercase tracking-[0.14em] text-yellow [font-stretch:110%]">
-                  Inscrições até {CLOSES.format(new Date(live.registration_closes_at))}
-                </p>
-              )}
             </div>
           </div>
         </div>
