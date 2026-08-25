@@ -91,8 +91,9 @@ export default async function HomePage({
 
   const stats = [
     { label: "Hackathons", value: editions.length },
-    { label: "Builders", value: builderCount ?? 0 },
     { label: "Projetos", value: projectCount ?? 0 },
+    { label: "Participantes", value: builderCount ?? 0 },
+    { label: "Prêmios", value: "US$ 3.000" },
   ];
 
   return (
@@ -153,13 +154,16 @@ export default async function HomePage({
 
       <section className="px-4 sm:px-6 lg:px-8" aria-label="Estatísticas">
         <div className="mx-auto max-w-6xl">
-          <dl className="mt-14 flex flex-wrap gap-x-12 gap-y-6 border-t border-white-10 pt-8">
+          <dl className="mt-14 grid gap-4 sm:grid-cols-2">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col-reverse gap-1">
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">
+              <div
+                key={s.label}
+                className="flex flex-col justify-between gap-4 rounded-3xl border border-emerald/30 bg-surface-raised p-6"
+              >
+                <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-muted">
                   {s.label}
                 </dt>
-                <dd className="font-mono text-4xl font-bold tabular-nums text-ink sm:text-5xl">
+                <dd className="font-heading text-4xl font-bold tabular-nums text-ink">
                   {s.value}
                 </dd>
               </div>
