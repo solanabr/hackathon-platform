@@ -155,7 +155,7 @@ export default async function JudgeEditionPage({
   const roundDeadline =
     round === "triagem"
       ? hackathon.finalists_announced_at
-      : (hackathon.voting_closes_at ?? hackathon.presential_at);
+      : (hackathon.presential_at ?? hackathon.voting_closes_at);
 
   const projectsWithRatings = projects.map((project) => ({
     ...project,
