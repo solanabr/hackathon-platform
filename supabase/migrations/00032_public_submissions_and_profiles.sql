@@ -35,12 +35,21 @@ where s.status = 'submitted'
 grant select on public.public_submissions to anon, authenticated;
 grant all on public.public_submissions to service_role;
 
+-- Participation-gated: only builders on a team whose submission is published
+-- get a public profile. A non-participant's /u/[id] page then 404s.
 create or replace view public.public_profiles
 with (security_barrier = true) as
 select
   id, full_name, avatar_url, headline, bio,
   github_url, twitter_url, linkedin_url
-from public.users;
+from public.users
+where id in (
+  select tm.user_id
+  from public.team_members tm
+  join public.submissions s on s.team_id = tm.team_id
+  where tm.status = 'accepted'
+    and s.status = 'submitted'
+);
 
 grant select on public.public_profiles to anon, authenticated;
 grant all on public.public_profiles to service_role;
