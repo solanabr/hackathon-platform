@@ -82,15 +82,26 @@ export function Footer() {
         </div>
       </div>
 
-      <div aria-hidden className="select-none px-4 pb-2 sm:px-6">
-        <Image
-          src="/brand/stbr/wordmark-offwhite.svg"
-          alt=""
-          width={1600}
-          height={220}
-          className="h-auto w-full opacity-[0.06]"
-        />
-      </div>
+      <svg
+        aria-hidden
+        viewBox="0 0 1000 128"
+        className="block w-full select-none text-surface/[0.07]"
+      >
+        <text
+          x="500"
+          y="122"
+          textAnchor="middle"
+          textLength="996"
+          lengthAdjust="spacingAndGlyphs"
+          fill="currentColor"
+          fontSize="150"
+          fontWeight="900"
+          className="font-heading"
+          style={{ fontStretch: "125%" }}
+        >
+          SUPERTEAM
+        </text>
+      </svg>
     </footer>
   );
 }
