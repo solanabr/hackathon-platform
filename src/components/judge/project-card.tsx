@@ -71,7 +71,7 @@ export function JudgeProjectCard({
           <p className="mt-5 text-sm text-muted">
             {project.members
               .map((m) => (m.isLeader ? `${m.name} (líder)` : m.name))
-              .join(" · ")}
+              .join(", ")}
           </p>
         )}
 

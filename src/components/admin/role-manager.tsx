@@ -64,7 +64,7 @@ export function RoleManager({
           <li key={row.id} className="flex items-center justify-between gap-4 py-3">
             <span>
               <strong>{row.email}</strong> · {row.role === "admin" ? "Admin" : "Jurado"}
-              {row.hackathonName && <span className="text-muted"> · {row.hackathonName}</span>}
+              {row.hackathonName && <span className="text-muted"> ({row.hackathonName})</span>}
             </span>
             <Button
               variant="ghost"
