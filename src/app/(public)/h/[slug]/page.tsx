@@ -201,14 +201,21 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               {open ? "Inscrições abertas" : "Inscrições encerradas"}
             </p>
 
-            <h1 className="mt-5 text-balance font-heading text-5xl font-black uppercase leading-[0.95] tracking-tight [font-stretch:118%] sm:text-6xl">
-              {hackathon.name}
+            <h1 className="mt-5 font-heading font-black uppercase leading-[0.95] tracking-tight">
+              <span className="block text-4xl [font-stretch:120%] sm:text-6xl">
+                {hackathon.name.split(" ")[0]}
+              </span>
+              {hackathon.name.split(" ").length > 1 && (
+                <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-2xl text-yellow [font-stretch:110%] sm:text-4xl">
+                  {hackathon.name.split(" ").slice(1).join(" ")}
+                </span>
+              )}
             </h1>
             {hackathon.tagline && (
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">{hackathon.tagline}</p>
             )}
 
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap items-center gap-4">
               {registered ? (
                 <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
                   Acessar painel
@@ -226,10 +233,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                   Inscrições encerradas
                 </button>
               )}
-            </div>
 
             {open && hackathon.registration_closes_at && (
-              <p className="mt-6 inline-flex items-center gap-2 rounded-full border-2 border-green-dark/20 bg-surface-raised px-4 py-1.5 text-sm text-muted">
+              <p className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark px-4 py-2 text-sm text-ink">
                 <span className="text-[11px] font-bold uppercase tracking-wider">
                   Inscrições encerram em
                 </span>
@@ -240,10 +246,16 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 />
               </p>
             )}
+            </div>
           </div>
 
           {coverUrl && (
-            <div className="relative rotate-2 overflow-hidden rounded-2xl border-4 border-green-dark bg-green-dark shadow-[10px_10px_0_#1b231d] transition-transform duration-300 hover:rotate-0">
+            <div className="relative rotate-2 rounded-2xl border-4 border-green-dark bg-green-dark shadow-[14px_14px_0_rgba(27,35,29,0.9)] transition-transform duration-300 hover:rotate-0">
+              <div
+                aria-hidden
+                className="absolute -top-4 left-1/2 z-10 h-8 w-28 -translate-x-1/2 -rotate-2 rounded-sm bg-yellow/90 shadow-sm"
+              />
+              <div className="overflow-hidden rounded-xl">
               <Image
                 src={coverUrl}
                 alt={`Arte do ${hackathon.name}`}
@@ -253,39 +265,36 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 className="h-full w-full object-cover"
                 sizes="(max-width: 1024px) 100vw, 45vw"
               />
+              </div>
             </div>
           )}
         </div>
       </section>
 
-      <section className="px-4 pb-8 sm:px-6 lg:px-8" aria-label="Informações da edição">
-        <div className="mx-auto max-w-6xl">
-          <dl className="flex flex-wrap gap-x-12 gap-y-4 border-t border-green/15 pt-8">
-            <div>
-              <dt className="text-sm font-semibold text-muted">Quando</dt>
-              <dd className="mt-1 font-heading text-lg font-bold">
-                {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
-                {clean(
-                  DAY.format(new Date(hackathon.presential_at ?? hackathon.submission_deadline_at)),
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-muted">Onde</dt>
-              <dd className="mt-1 font-heading text-lg font-bold">
-                {hackathon.location_city ?? "Online"}
-              </dd>
-            </div>
-            {hackathon.prize_summary && (
-              <div>
-                <dt className="text-sm font-semibold text-muted">Prêmios</dt>
-                <dd className="mt-1 font-heading text-lg font-bold text-emerald">
-                  US$ 3.000 e mais
-                </dd>
-              </div>
-            )}
-          </dl>
-        </div>
+      <section className="px-4 pb-8 pt-14 sm:px-6 lg:px-8" aria-label="Informações da edição">
+        <dl className="mx-auto grid max-w-6xl grid-cols-1 divide-y-2 divide-green-dark/10 border-y-2 border-green-dark sm:grid-cols-3 sm:divide-x-2 sm:divide-y-0">
+          <div className="px-2 py-6 text-center">
+            <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Quando</dt>
+            <dd className="mt-2 font-heading text-2xl font-black uppercase tabular-nums [font-stretch:112%] sm:text-3xl">
+              {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
+              {clean(
+                DAY.format(new Date(hackathon.presential_at ?? hackathon.submission_deadline_at)),
+              )}
+            </dd>
+          </div>
+          <div className="px-2 py-6 text-center">
+            <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Onde</dt>
+            <dd className="mt-2 font-heading text-2xl font-black uppercase [font-stretch:112%] sm:text-3xl">
+              {hackathon.location_city ?? "Online"}
+            </dd>
+          </div>
+          <div className="px-2 py-6 text-center">
+            <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Prêmios</dt>
+            <dd className="mt-2 font-heading text-2xl font-black uppercase tabular-nums text-emerald [font-stretch:112%] sm:text-3xl">
+              US$ 3.000<span className="ml-1.5 align-middle font-body text-sm font-semibold normal-case text-muted">e mais</span>
+            </dd>
+          </div>
+        </dl>
       </section>
 
       <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Etapas">
