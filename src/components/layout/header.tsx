@@ -30,7 +30,7 @@ export async function Header() {
           />
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm font-semibold text-surface/80 sm:gap-5">
+        <nav className="flex items-center gap-1 text-sm sm:gap-1.5">
           {state ? (
             <>
               {judge && <NavLink href="/judge">Avaliação</NavLink>}
@@ -39,7 +39,7 @@ export async function Header() {
               <form action="/api/auth/signout" method="post">
                 <button
                   type="submit"
-                  className="transition-colors duration-150 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+                  className="ml-1.5 rounded-full border border-surface/25 px-3.5 py-1.5 font-semibold text-surface/80 transition-colors duration-150 hover:border-surface/50 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
                 >
                   Sair
                 </button>

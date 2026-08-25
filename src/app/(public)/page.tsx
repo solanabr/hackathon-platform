@@ -124,21 +124,34 @@ export default async function HomePage({
       {/* Hero: the morth shapes are the canvas, DoraHacks-style, in LP paint */}
       <section className="relative flex min-h-[100dvh] flex-col overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0">
+          {/* edges only: the center stays clear for type, deck and caption */}
           <div
-            className="morth animate-float-a absolute -left-28 -top-24 h-[30rem] w-[30rem] bg-[#ffd23f] sm:h-[38rem] sm:w-[38rem]"
+            className="morth animate-float-a absolute -left-24 top-[16%] h-[24rem] w-[24rem] bg-yellow sm:h-[30rem] sm:w-[30rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute -right-24 top-8 h-[26rem] w-[26rem] bg-[#008c4c] sm:h-[34rem] sm:w-[34rem]"
+            className="morth absolute -left-8 bottom-[4%] h-36 w-36 bg-emerald"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-03.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-03.svg)", transform: "rotate(-22deg)" }}
+          />
+          <div
+            className="morth animate-float-b absolute -right-28 top-[8%] h-[20rem] w-[20rem] bg-[#008c4c] sm:h-[26rem] sm:w-[26rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
           <div
-            className="morth animate-float-c absolute -bottom-36 left-[52%] h-72 w-72 bg-[#2f6b3f] sm:h-96 sm:w-96"
+            className="morth absolute -right-10 bottom-[10%] h-44 w-44 bg-yellow-strong/90"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-21.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-21.svg)", transform: "rotate(26deg)" }}
+          />
+          <div
+            className="morth animate-float-c absolute left-[38%] -top-14 h-40 w-40 bg-green"
             style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(24deg)" }}
           />
           <div
-            className="morth absolute right-[30%] -top-10 h-40 w-40 bg-[#1b231d]"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-03.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-03.svg)", transform: "rotate(-18deg)" }}
+            className="morth absolute left-[20%] bottom-[6%] h-16 w-16 bg-green-dark"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-05.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-05.svg)", transform: "rotate(-30deg)" }}
+          />
+          <div
+            className="morth absolute right-[34%] top-[12%] h-12 w-12 bg-emerald/80"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-05.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-05.svg)", transform: "rotate(40deg)" }}
           />
         </div>
 
@@ -319,24 +332,51 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* Closing CTA: one dark contrast block, morth inside */}
+      {/* Closing CTA: the hero's language, inverted */}
       <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Participe">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-[#1b231d] px-8 py-16 sm:px-14">
-          <div
-            aria-hidden
-            className="morth absolute -right-16 -top-16 h-72 w-72 bg-[#008c4c]/40 sm:h-96 sm:w-96"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-21.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-21.svg)", transform: "rotate(12deg)" }}
-          />
-          <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
-            <h2 className="max-w-md text-balance font-heading text-3xl font-black uppercase leading-tight text-[#f7eacb] [font-stretch:115%] sm:text-4xl">
-              O próximo vencedor ainda não se inscreveu
-            </h2>
-            <Link
-              href={live ? `/h/${live.slug}` : "/auth"}
-              className="shrink-0 whitespace-nowrap rounded-full bg-[#ffd23f] px-8 py-3.5 text-base font-bold text-[#1b231d] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1b231d]"
-            >
-              {live ? "Garantir minha vaga" : "Entrar"}
-            </Link>
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-green-dark px-8 py-16 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-14 sm:py-20">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div
+              className="morth animate-float-b absolute -right-24 -top-28 h-[22rem] w-[22rem] bg-emerald sm:h-[28rem] sm:w-[28rem]"
+              style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-14deg)" }}
+            />
+            <div
+              className="morth animate-float-c absolute -bottom-24 right-[26%] h-52 w-52 bg-yellow/90 sm:h-64 sm:w-64"
+              style={{ maskImage: "url(/brand/stbr/elements/morth-03.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-03.svg)", transform: "rotate(18deg)" }}
+            />
+            <div
+              className="morth absolute -left-16 -bottom-20 h-56 w-56 bg-green/60"
+              style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(-24deg)" }}
+            />
+          </div>
+
+          <div className="relative grid gap-10 lg:grid-cols-12 lg:items-center">
+            <div className="min-w-0 lg:col-span-8">
+              <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.04] tracking-tight text-surface [font-stretch:118%] sm:text-5xl">
+                O próximo{" "}
+                <span className="inline-block -rotate-1 bg-yellow px-3 py-0.5 text-green-dark">
+                  vencedor
+                </span>{" "}
+                ainda não se inscreveu
+              </h2>
+              <p className="mt-5 max-w-md text-pretty leading-relaxed text-surface/70">
+                Time de 2 a 4, uma ideia e duas semanas. O resto acontece aqui.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
+              <Link
+                href={live ? `/h/${live.slug}` : "/auth"}
+                className="rounded-full bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-[6px_6px_0_rgba(0,0,0,0.35)] transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+              >
+                {live ? "Garantir minha vaga" : "Entrar"}
+              </Link>
+              {live?.registration_closes_at && (
+                <p className="font-heading text-sm font-bold uppercase tracking-[0.14em] text-yellow [font-stretch:110%]">
+                  Inscrições até {CLOSES.format(new Date(live.registration_closes_at))}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </section>

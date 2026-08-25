@@ -18,7 +18,10 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={`transition-colors ${active ? "text-yellow" : "text-surface/80 hover:text-surface"} ${className}`}
+      aria-current={active ? "page" : undefined}
+      className={`rounded-full px-3.5 py-1.5 font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow ${
+        active ? "bg-surface/10 text-yellow" : "text-surface/80 hover:bg-surface/10 hover:text-surface"
+      } ${className}`}
     >
       {children}
     </Link>
