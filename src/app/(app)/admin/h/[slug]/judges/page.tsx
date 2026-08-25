@@ -90,7 +90,10 @@ export default async function AdminJudgesPage({
         <BackLink href="/admin" label="Administração" />
 
         <header>
-          <h1 className="font-heading text-3xl font-bold">Jurados por projeto</h1>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            Atribuição
+          </p>
+          <h1 className="mt-1 font-heading text-3xl font-bold">Jurados por projeto</h1>
           <p className="mt-2 text-muted">
             {hackathon.name} · rodada de {round === "triagem" ? "triagem" : "banca final"}.
           </p>
@@ -107,7 +110,7 @@ export default async function AdminJudgesPage({
             ter entrado na plataforma pelo menos uma vez.
           </p>
         ) : projects.length === 0 ? (
-          <p className="text-muted">Nenhum projeto submetido ainda.</p>
+          <p className="font-mono text-sm text-muted">Nenhum projeto submetido ainda.</p>
         ) : (
           <>
             {short > 0 && (
