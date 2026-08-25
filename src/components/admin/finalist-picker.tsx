@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { StatusChip } from "@/components/ui/section-card";
 import {
   setFinalist,
+  setPlacement,
   notifyFinalists as runNotifyFinalists,
 } from "@/app/(app)/admin/h/[slug]/finalistas/actions";
 import type { FinalistCandidate } from "@/lib/finalists";
@@ -19,6 +20,9 @@ export function FinalistPicker({
 }) {
   const [checked, setChecked] = useState(() =>
     Object.fromEntries(candidates.map((c) => [c.submissionId, c.isFinalist])),
+  );
+  const [placement, setPlacementValue] = useState(() =>
+    Object.fromEntries(candidates.map((c) => [c.submissionId, c.placement])),
   );
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -39,6 +43,21 @@ export function FinalistPicker({
       if (!result.ok) {
         setError(result.error);
         setChecked((prev) => ({ ...prev, [c.submissionId]: !on }));
+      }
+    });
+  }
+
+  function updatePlacement(c: FinalistCandidate, raw: string) {
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < 1) return;
+    setError(null);
+    setNotice(null);
+    setPlacementValue((prev) => ({ ...prev, [c.submissionId]: n }));
+    start(async () => {
+      const result = await setPlacement({ slug, teamId: c.teamId, placement: n });
+      if (!result.ok) {
+        setError(result.error);
+        setPlacementValue((prev) => ({ ...prev, [c.submissionId]: c.placement }));
       }
     });
   }
@@ -115,6 +134,21 @@ export function FinalistPicker({
                 </div>
 
                 <div className="flex items-center gap-5">
+                  <label className="flex flex-col items-center gap-1">
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={placement[c.submissionId] ?? ""}
+                      disabled={pending}
+                      placeholder="—"
+                      onChange={(e) => updatePlacement(c, e.target.value)}
+                      className="h-9 w-14 rounded-lg border border-green/20 bg-surface px-2 text-center font-heading text-base font-bold text-ink outline-none focus:border-emerald"
+                    />
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                      colocação
+                    </span>
+                  </label>
                   <div className="text-right">
                     <p className="font-heading text-xl font-bold">
                       {c.avgGrade === null

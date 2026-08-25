@@ -64,6 +64,33 @@ export async function setFinalist(input: {
   return { ok: true };
 }
 
+export async function setPlacement(input: {
+  slug: string;
+  teamId: string;
+  placement: number;
+}): Promise<FinalistActionResult> {
+  const gate = await requireAdmin();
+  if (!gate.ok) return { ok: false, error: "Sem permissão." };
+
+  if (!Number.isInteger(input.placement) || input.placement < 1) {
+    return { ok: false, error: "Colocação inválida." };
+  }
+
+  const edition = await requireTeamInEdition(input.slug, input.teamId);
+  if (!edition.ok) return edition;
+
+  const { error } = await edition.supabase
+    .from("teams")
+    .update({ placement: input.placement })
+    .eq("id", input.teamId);
+
+  if (error) return { ok: false, error: "Não foi possível salvar." };
+
+  revalidatePath(`/admin/h/${input.slug}/finalistas`);
+  revalidatePath(`/h/${input.slug}`);
+  return { ok: true };
+}
+
 export async function notifyFinalists(input: {
   slug: string;
   hackathonId: string;
