@@ -190,3 +190,19 @@
   .animate-float-b,
   .animate-float-c { animation: none; }
 }
+
+/* Brand loader: the symbol colors itself in from the bottom, then resets. */
+@keyframes brandFill {
+  0% { clip-path: inset(100% 0 0 0); }
+  60% { clip-path: inset(0 0 0 0); }
+  82% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(100% 0 0 0); }
+}
+.animate-brand-fill { animation: brandFill 1.9s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-brand-fill {
+    animation: none;
+    clip-path: none;
+  }
+}
