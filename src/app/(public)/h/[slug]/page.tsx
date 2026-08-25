@@ -197,10 +197,18 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
                   Acessar painel
                 </Link>
-              ) : (
+              ) : open ? (
                 <Link href={`/h/${hackathon.slug}/register`} className="btn-primary">
-                  {open ? "Fazer inscrição" : "Ver detalhes"}
+                  Fazer inscrição
                 </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="btn-primary cursor-not-allowed opacity-60"
+                >
+                  Inscrições encerradas
+                </button>
               )}
             </div>
           </div>

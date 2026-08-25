@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getHackathonBySlug, isRegistrationOpen } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
 
@@ -16,6 +17,11 @@ export async function registerForHackathon(
 
   if (!lumaConfirmed || !termsAccepted) {
     return { error: "Confirme a inscrição no Luma e aceite as regras para continuar." };
+  }
+
+  const hackathon = await getHackathonBySlug(slug);
+  if (!hackathon || !isRegistrationOpen(hackathon)) {
+    return { error: "Inscrições encerradas." };
   }
 
   const supabase = await createServerSupabaseClient();

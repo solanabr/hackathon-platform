@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { RegistrationForm } from "@/components/registration/registration-form";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { getHackathonBySlug, isRegistrationOpen } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
 
@@ -18,6 +18,7 @@ export default async function RegistrationPage({
   const state = await requireUser();
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
+  if (!isRegistrationOpen(hackathon)) redirect(`/h/${slug}`);
 
   if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/register`);
 
