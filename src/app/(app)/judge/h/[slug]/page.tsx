@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
-import { StatusChip } from "@/components/ui/section-card";
 import { JudgeProjectList } from "@/components/judge/project-list";
 import type { JudgeProject } from "@/components/judge/project-card";
 import { requireJudge, resolveRoleState } from "@/lib/roles";
@@ -151,6 +150,10 @@ export default async function JudgeEditionPage({
   // Only a row with a grade counts as rated — a comment-only save is a draft.
   const ratedCount = projects.filter((p) => mine.get(p.submissionId)?.grade != null).length;
 
+  const progressPct = projects.length
+    ? Math.round((ratedCount / projects.length) * 100)
+    : 0;
+
   const roundLabel = round === "triagem" ? "Triagem" : "Final";
   const roundDeadline =
     round === "triagem"
@@ -168,29 +171,72 @@ export default async function JudgeEditionPage({
         <BackLink href="/judge" label="Avaliação" />
 
         <header>
-          <div className="flex flex-wrap items-center gap-3">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            Painel do jurado
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-3">
             <h1 className="font-heading text-3xl font-bold sm:text-4xl">{hackathon.name}</h1>
-            <StatusChip tone={round === "triagem" ? "pending" : "ok"}>{roundLabel}</StatusChip>
+            <span className="rounded-full border border-yellow/40 bg-yellow/10 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-widest text-yellow">
+              {roundLabel}
+            </span>
           </div>
           <p className="mt-2 text-muted">
-            {projects.length === 0
-              ? "Nenhum projeto atribuído a você nesta rodada."
-              : `${ratedCount} de ${projects.length} avaliados por você. A nota de cada jurado é privada.`}
+            {projects.length === 0 ? (
+              "Nenhum projeto atribuído a você nesta rodada."
+            ) : (
+              <>
+                <span className="font-mono tabular-nums">
+                  {ratedCount} de {projects.length}
+                </span>{" "}
+                avaliados por você. A nota de cada jurado é privada.
+              </>
+            )}
           </p>
           {roundDeadline && (
             <p className="mt-1 text-sm text-muted">
-              Avaliações até {DAY.format(new Date(roundDeadline)).replace(/\./g, "")}.
+              Avaliações até{" "}
+              <span className="font-mono tabular-nums">
+                {DAY.format(new Date(roundDeadline)).replace(/\./g, "")}
+              </span>
+              .
             </p>
           )}
         </header>
 
         {projects.length > 0 && (
-          <JudgeProjectList
-            projects={projectsWithRatings}
-            hackathonId={hackathon.id}
-            slug={slug}
-            round={round}
-          />
+          <>
+            <section
+              aria-label="Seu progresso na rodada"
+              className="rounded-xl border border-white-10 bg-surface-raised p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+                  Seu progresso
+                </p>
+                <p className="font-mono text-sm font-semibold tabular-nums text-yellow">
+                  {ratedCount}/{projects.length} avaliados
+                </p>
+              </div>
+              <div
+                role="progressbar"
+                aria-valuenow={ratedCount}
+                aria-valuemin={0}
+                aria-valuemax={projects.length}
+                className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-deep"
+              >
+                <div
+                  className="h-full rounded-full bg-yellow"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </section>
+            <JudgeProjectList
+              projects={projectsWithRatings}
+              hackathonId={hackathon.id}
+              slug={slug}
+              round={round}
+            />
+          </>
         )}
       </div>
     </div>

@@ -50,8 +50,10 @@ export function JudgeProjectCard({
   round: RatingRound;
   rating: { grade: number | null; comment: string };
 }) {
+  const graded = rating.grade !== null;
+
   return (
-    <Card className="overflow-hidden p-0">
+    <Card className="overflow-hidden p-0 transition-colors hover:border-emerald/40">
       <div className="p-6 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -62,9 +64,15 @@ export function JudgeProjectCard({
                 ` · enviado ${WHEN.format(new Date(project.submittedAt)).replace(/\./g, "")}`}
             </p>
           </div>
-          <Badge tone={rating.grade !== null ? "emerald" : "neutral"}>
-            {rating.grade !== null ? `Nota ${rating.grade}` : "Sem nota"}
-          </Badge>
+          <span
+            className={`inline-flex shrink-0 items-center rounded-lg border px-3 py-1.5 font-mono text-lg font-semibold tabular-nums ${
+              graded
+                ? "border-yellow/40 bg-yellow/10 text-yellow"
+                : "border-white-10 text-muted"
+            }`}
+          >
+            {graded ? `Nota ${rating.grade}` : "—"}
+          </span>
         </div>
 
         {project.imageUrl && (
@@ -73,7 +81,7 @@ export function JudgeProjectCard({
             alt=""
             width={640}
             height={320}
-            className="mt-5 h-48 w-full rounded-2xl border border-green/15 object-cover"
+            className="mt-5 h-48 w-full rounded-2xl border border-white-10 object-cover"
           />
         )}
 
@@ -83,7 +91,9 @@ export function JudgeProjectCard({
 
         {project.members.length > 0 && (
           <div className="mt-5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Time</p>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+              Time
+            </p>
             <ul className="mt-3 space-y-3">
               {project.members.map((member) => (
                 <li key={member.id ?? member.name} className="flex items-start gap-3">
@@ -143,7 +153,7 @@ export function JudgeProjectCard({
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-green/20 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+                className="rounded-full border border-white-10 px-3.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
               >
                 {link.label}
               </a>
@@ -152,7 +162,7 @@ export function JudgeProjectCard({
         )}
       </div>
 
-      <div className="border-t border-green/10 p-6 sm:p-7">
+      <div className="border-t border-white-10 p-6 sm:p-7">
         <RatingForm
           hackathonId={hackathonId}
           submissionId={project.submissionId}
@@ -179,7 +189,7 @@ function MemberContactLink({
     <Link
       href={href}
       {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-      className="max-w-full truncate rounded-full border border-green/20 px-2.5 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+      className="max-w-full truncate rounded-full border border-emerald/25 px-2.5 py-1 text-[11px] font-semibold text-emerald transition-colors hover:border-emerald/60"
     >
       {children}
     </Link>

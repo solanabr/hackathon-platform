@@ -61,17 +61,21 @@ export function JudgeProjectList({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar projetos">
+        <div
+          className="inline-flex flex-wrap rounded-full border border-white-10 bg-surface-deep p-1"
+          role="group"
+          aria-label="Filtrar projetos"
+        >
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
               type="button"
               onClick={() => setFilter(key)}
               aria-pressed={filter === key}
-              className={`rounded-full px-3 py-1 text-sm font-semibold transition-colors ${
+              className={`min-h-11 rounded-full px-4 text-sm font-semibold transition-colors ${
                 filter === key
-                  ? "bg-emerald text-surface"
-                  : "border border-green/20 text-muted hover:border-green/50 hover:text-ink"
+                  ? "bg-yellow text-[#1b231d]"
+                  : "text-muted hover:bg-white/10 hover:text-ink"
               }`}
             >
               {label}
@@ -81,7 +85,7 @@ export function JudgeProjectList({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="rounded-full border border-green/20 bg-surface px-3 py-1 text-sm font-semibold text-muted outline-none focus:border-emerald"
+          className="min-h-11 rounded-full border border-white-10 bg-surface-deep px-4 text-sm font-semibold text-muted outline-none transition-colors hover:border-emerald/50 focus:border-emerald"
         >
           {SORTS.map(({ key, label }) => (
             <option key={key} value={key}>
@@ -93,7 +97,7 @@ export function JudgeProjectList({
 
       {shown.length === 0 ? (
         <Card className="p-7">
-          <p className="text-muted">Nenhum projeto neste filtro.</p>
+          <p className="font-mono text-sm text-muted">Nenhum projeto neste filtro.</p>
         </Card>
       ) : (
         <ul className="space-y-6">
