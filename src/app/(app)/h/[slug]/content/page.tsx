@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
@@ -63,16 +64,19 @@ export default async function ContentsPage({ params }: { params: Promise<{ slug:
       <div className="mx-auto max-w-4xl">
         <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
 
-        <h1 className="mt-8 font-heading text-3xl font-bold sm:text-4xl">Conteúdos</h1>
-        <p className="mt-2 text-muted">
-          {available.size} de {schedule.length} disponíveis. As gravações entram depois de cada
+        <p className="mt-8 text-[12px] font-bold uppercase tracking-wider text-emerald">TRILHA</p>
+        <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Conteúdos</h1>
+        <p className="mt-2 font-mono text-sm tabular-nums text-muted">
+          {available.size}/{schedule.length} disponíveis. As gravações entram depois de cada
           encontro.
         </p>
 
         {schedule.length === 0 ? (
-          <Card className="mt-8 p-8 text-muted">
-            Nenhum conteúdo cadastrado ainda para esta edição.
-          </Card>
+          <EmptyState
+            className="mt-8"
+            title="Nada por aqui ainda"
+            message="Os conteúdos desta edição ainda não foram publicados. Volte em breve."
+          />
         ) : (
           <ul className="mt-8 grid gap-4">
             {schedule.map((item) => {

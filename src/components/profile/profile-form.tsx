@@ -35,7 +35,7 @@ export function ProfileForm({ profile, next }: { profile: User | null; next?: st
           maxLength={400}
           placeholder="Em uma ou duas frases: o que você faz e o que quer construir."
           defaultValue={profile?.bio ?? ""}
-          className="mt-1.5 w-full rounded-xl border border-green/25 bg-surface-raised px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
+          className="mt-1.5 w-full rounded-xl border border-white/10 bg-surface-raised px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
         />
       </div>
       <div>

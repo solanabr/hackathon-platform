@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/user-state";
@@ -108,7 +109,8 @@ export default async function AccountPage({
         <BackLink href="/" label="Hackathons" />
 
         <Card className="p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">PERFIL</p>
+          <div className="mt-3 flex flex-col gap-6 sm:flex-row sm:items-start">
             <AvatarUpload
               userId={state.userId}
               currentUrl={profile?.avatar_url ?? null}
@@ -120,7 +122,7 @@ export default async function AccountPage({
                 {profile?.full_name ?? "Sua conta"}
               </h1>
               {profile?.headline && <p className="mt-1 text-muted">{profile.headline}</p>}
-              <p className="mt-2 text-sm text-muted">{state.email}</p>
+              <p className="mt-2 font-mono text-sm text-muted">{state.email}</p>
 
               {profile?.bio && (
                 <p className="mt-4 max-w-xl leading-relaxed text-ink">{profile.bio}</p>
@@ -134,7 +136,7 @@ export default async function AccountPage({
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-green/20 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-green/50 hover:text-ink"
+                      className="rounded-full border border-white/10 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-emerald/40 hover:text-ink"
                     >
                       {s.label}
                     </a>
@@ -146,24 +148,40 @@ export default async function AccountPage({
         </Card>
 
         <section aria-label="Meus hackathons" className="space-y-4">
-          <h2 className="font-heading text-2xl font-bold">Meus hackathons</h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <div>
+              <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">PARTICIPAÇÕES</p>
+              <h2 className="mt-1 font-heading text-2xl font-bold">Meus hackathons</h2>
+            </div>
+            {participations.length > 0 && (
+              <p className="font-mono text-xs tabular-nums text-muted">
+                {participations.length} {participations.length === 1 ? "inscrição" : "inscrições"}
+              </p>
+            )}
+          </div>
 
           {participations.length === 0 ? (
-            <Card className="p-8">
-              <p className="text-muted">
-                Você ainda não se inscreveu em nenhum hackathon.{" "}
-                <Link href="/" className="font-semibold text-emerald underline-offset-4 hover:underline">
-                  Ver os abertos
-                </Link>
-                .
-              </p>
-            </Card>
+            <EmptyState
+              title="Você ainda não se inscreveu em nenhum hackathon"
+              message={
+                <>
+                  Quando participar, seus hackathons e times aparecem aqui.{" "}
+                  <Link href="/" className="font-semibold text-emerald underline-offset-4 hover:underline">
+                    Ver os abertos
+                  </Link>
+                  .
+                </>
+              }
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {[...active, ...past].map((p) => {
                 const finished = editionStage(p.hackathon) === "finished";
                 return (
-                  <Card key={p.hackathon.id} className="p-6">
+                  <Card
+                    key={p.hackathon.id}
+                    className="p-6 transition-shadow hover:ring-2 hover:ring-yellow/50"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <h3 className="truncate font-heading text-lg font-bold">
@@ -183,6 +201,12 @@ export default async function AccountPage({
                       )}
                     </div>
 
+                    {!finished && (
+                      <p className="mt-4 rounded-xl border border-emerald/30 bg-emerald/10 px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                        Você está inscrito
+                      </p>
+                    )}
+
                     <dl className="mt-4 space-y-1.5 text-sm">
                       <div className="flex gap-2">
                         <dt className="w-16 shrink-0 text-muted">Time</dt>
@@ -201,7 +225,7 @@ export default async function AccountPage({
                     {!finished && (
                       <Link
                         href={`/h/${p.hackathon.slug}/dashboard`}
-                        className="btn-secondary mt-5 px-5 py-2 text-sm"
+                        className="btn-primary mt-5 px-5 py-2 text-sm"
                       >
                         Abrir painel
                       </Link>
@@ -215,7 +239,8 @@ export default async function AccountPage({
 
         <section aria-label="Editar perfil">
           <Card className="p-6 sm:p-8">
-            <h2 className="font-heading text-xl font-bold">Editar perfil</h2>
+            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">CONTA</p>
+            <h2 className="mt-1 font-heading text-xl font-bold">Editar perfil</h2>
             <p className="mt-1 text-sm text-muted">
               Essas informações aparecem para o seu time e para a organização.
             </p>
