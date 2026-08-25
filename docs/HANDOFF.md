@@ -1,95 +1,92 @@
 # Handoff — Superteam Brasil hackathon platform
 
-State as of 2026-08-21. Branch `feat/lp-redesign`, [PR #6](https://github.com/solanabr/hackathon-platform/pull/6), 17 commits, everything pushed.
+State as of 2026-08-26. Branch `feat/home-lp-hub`, [PR #12](https://github.com/solanabr/hackathon-platform/pull/12) open as the umbrella. Everything committed and pushed, 75 tests, clean build.
 
-## What this is
+## Event
 
-Multi-edition hackathon platform for Superteam Brasil. First edition is the
-**Hackathon Solana & Cursor**, Passo Fundo/RS.
+**Hackathon Solana & Cursor**, Passo Fundo/RS. Fase 1 online opens **31/08**.
+Inscrições até 07/09 23:59 · submissão 09/09 12:00 · finalistas 10/09 ·
+Pitch Day 12/09 no UPF Parque. Prêmios US$ 3.000 (1500/900/450/150) + tokens
+Cursor + Apollo.
 
-| | |
-|---|---|
-| Fase 1 online | 31/08 to 07/09, six content items |
-| Inscrições close | 07/09 23:59 |
-| Submission deadline | **09/09 12:00** |
-| Finalists announced | 10/09 |
-| Pitch Day, in person | 12/09, UPF Parque, judging 14:00 to 17:30 |
-| Prizes | US$ 3.000 plus Cursor credits, merch, Apollo pre-incubation |
+## PR state
 
-Spec: `docs/superpowers/specs/2026-08-20-stbr-hackathon-platform-design.md`
-Phase 1 plan: `docs/superpowers/plans/2026-08-20-stbr-hackathon-platform-phase-1.md`
-Flow audit: `docs/research/2026-08-21-participant-flow-audit.md`
+- **#12 is the umbrella** and the only open PR. It contains every commit from
+  the closed #8 (`p2-platform`), #9 (`p2-ux`) and #10 (`p3-design`), plus: the
+  LP light theme rollout, the homepage hub, the edition-page redesign, the
+  judge/assignment enforcement fixes, and the audit fixes (`after()` email,
+  `notifyFinalists` slug check, 00035).
+- #8/#9/#10 were closed as superseded (commits verified contained via
+  `merge-base --is-ancestor`). #11 (Apoiadores) merged to main. #6, #7 merged
+  earlier.
+- **The other agent may still be on `feat/p3-design`** in this same checkout.
+  Its base is dead; anything new there must rebase onto `feat/home-lp-hub` or
+  `main` after #12 lands. The shared checkout has twice been left mid-merge
+  with conflict markers — check `git status` before trusting the working tree.
 
-## Environment
+## Gates on #12
 
-Supabase project `dqxeukfkjnoqljovkage` (name: hackathon-platform). Database is at
-migration **00024**; repo files and database are in step. 00013 is deliberately
-absent — it only redefined `submit_team` and 00014/00015 supersede it.
+1. **Signed-in walk** of painel / judge / admin in the light theme. Nobody
+   logged in has eyeballed them since the theme flip; that is where dark-era
+   residue hides (three invisible `border-white-10` classes and two
+   dark-on-dark labels were already found on public pages).
+2. **Delete the mock fixtures before 31/08**: the public gallery shows five
+   fake projects. `delete from auth.users where email like '%@mock.test';`
+   cascades everything.
 
-Six env vars, nothing else is read by the code:
+## Database
 
-```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY     server only, bypasses RLS
-RESEND_API_KEY
-RESEND_FROM
-NEXT_PUBLIC_SITE_URL
-```
+Head **00035**; repo and DB in step; every migration live-verified.
+Since the last handoff: 00025 (status-guard trigger + handle_new_user guards),
+00026 (search_path pin), 00027 (avatars bucket), 00028 (regulamento prizes,
+nullable finalists_count), 00029 (two-member minimum in submit_team),
+00030 (development_starts_at splits Fase 1), 00031 (content soft delete +
+`submission_assignments`), 00032 (public_submissions/profiles/team_members
+views), 00033 (teams.placement), 00034 (pending_membership RPC),
+00035 (draft filter on public_profiles).
 
-Admin and judge are rows in `platform_roles`, not env. Both of Gabriel's accounts
-(`gabriel.thom02@gmail.com`, `gabriel.thom04@gmail.com`) hold global admin rows.
+## Design system (the LP language)
 
-Auto-lock runs as a `pg_cron` job (`lock-overdue-submissions`, every minute), not an
-HTTP endpoint. The deadline itself is enforced by `submit_team` and the submissions
-update policy; the job only materialises the locked state.
+Cream `#f7eacb` ground, ink `#1b231d`, emerald `#008c4c`, yellow `#ffd23f`.
+House moves: Archivo `[font-stretch:118-125%]` black caps display; the rotated
+dark **stamp** for name second-lines; **sticker cards** with hard offset
+shadows (`shadow-[NpxNpx_0_#1b231d]`); morth shapes via CSS mask
+(`.morth` + `maskImage`) — few, large, corners only, never dark fills on
+cream, never confetti; `TickerStrip` (platform copy on home only — removed
+from edition page by request); yellow = fills only, never text on cream
+(~1.2:1). Loader = symbol painting in via animated clip. Header is the
+floating dark dock; footer is the mega band with the SVG-`textLength`
+"SUPERTEAM" ghost (cannot clip).
 
-## Blocking before 31/08
+## Judging model
 
-1. **Resend domain is not verified.** On `onboarding@resend.dev` the API refuses any
-   recipient except `devs@superteam.com.br` (verified: 403 validation_error). Every
-   real team invite will fail until a domain is verified at resend.com/domains and
-   `RESEND_FROM` points at it. DNS propagation is the long pole.
-2. **Content is unpublished.** All six items are `published = false`. Fase 1 is
-   entirely content, so participants see "em breve" for everything until an admin
-   publishes each one at `/admin/h/[slug]/content` with its YouTube link or file.
-3. **Rotate three secrets.** The GitHub OAuth client secret, the Supabase
-   `sb_secret_...` service key and the Resend API key were all pasted into a chat
-   transcript.
-4. **Nobody has used this on a phone.** Every check so far was a build, a unit test,
-   direct SQL, or a desktop browser.
+Regulamento drives it: single 0-10 grade per judge per round
+(`triagem`/`final`), average decides, ties flagged not auto-broken. Two judges
+per project assigned **by hand** at `/admin/h/[slug]/judges`; a judge sees and
+can rate only assigned projects (enforced in the action, not just the view);
+admins bypass. **No real judge rows exist yet** — judges must sign in once
+before `grantRole` can find them. Names: Cokinha, Marcelo, Apollo, Ronaldo
+(emails still missing).
 
-## Open questions nobody has answered
+## Still open before the event
 
-From the list sent to Bernardo: judge emails (the four are Cokinha, Marcelo, Apollo,
-Ronaldo), the evaluation criteria and their weights, and whether non-finalists get a
-notification. These block Phases 3 and 4, not Phase 1.
+- Resend domain unverified (invites only reach devs@superteam.com.br).
+- Content items unpublished; admin CRUD ready at `/admin/h/[slug]/content`.
+- Three leaked secrets still need rotation (GitHub OAuth, Supabase service
+  key, Resend key).
+- Mobile only spot-checked (no horizontal scroll at 375px on home/edition).
+- Regulamento gaps: wallet field for §8 payouts; §4.4 presence rule
+  unrepresented.
 
-## Not built
+## Hard-won gotchas (new since last handoff)
 
-- Judge voting screen. `requireJudge()` exists and has zero callers.
-- Finalist selection and the finalist email. `teams.is_finalist` and
-  `finalist_notified_at` exist and are read by nothing.
-- Project directory and hall of fame (the Colosseum-shaped surfaces). Both need data
-  that does not exist until after 09/09.
-- Submission-received and finalist emails. Only the team invite is wired.
-
-## Conventions that bit us
-
-- **Routes are English, UI copy is pt-BR.** The plan originally used pt-BR routes,
-  contradicting `CLAUDE.md`; renamed in `b03042b`.
-- **Everything in git and GitHub is English** — commits, PR text, review comments.
-- One surface treatment: `Card` from `components/ui/card`, plus `SectionCard`,
-  `StatusChip`, `CheckRow`. Do not reintroduce ad-hoc `bg-surface-raised/70`.
-- Verify RLS by impersonating a real user, never by reading the policy:
-  `set local role authenticated; set local request.jwt.claims = '{"sub":"<uuid>"}'`.
-- The dev server serves stale modules after edits written outside the editor. If a
-  change does not appear, restart it before debugging anything else.
-
-## Recent bug pattern worth remembering
-
-Four bugs in this branch were invisible to builds and tests and only surfaced when a
-human clicked through: the admin link that did not exist, the crash on a missing
-service key, teammate registration state reading false for everyone, and any member
-being able to edit the submission. Two of them were features reporting the *opposite*
-of the truth. Type checks and unit tests do not reach the database boundary.
+- Dev server serves stale modules constantly; `lsof -ti:3000 | xargs kill -9
+  && rm -rf .next` before believing any "my change did nothing".
+- The embedded browser pane lies below the fold when hidden (dvh collapses to
+  0, stale tiles); verify via served HTML or DOM probes, not screenshots.
+- `overflow-hidden` on sections clips sticker shadows — only keep it where
+  shapes actually overflow.
+- Tailwind `text-muted`/`text-ink` on dark fills are theme-relative: after a
+  flip, audit every dark card for dark-on-dark.
+- `prize_summary` splits on `·` — double separators create empty entries;
+  always `.filter(Boolean)`.
