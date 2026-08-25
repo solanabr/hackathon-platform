@@ -46,8 +46,9 @@ grant select on public.public_profiles to anon, authenticated;
 grant all on public.public_profiles to service_role;
 
 -- Submission detail lists the whole team. team_members is member-scoped under
--- RLS, so anon needs the same whitelist treatment: accepted members only, and
--- only the public profile fields.
+-- RLS, so anon needs the same whitelist treatment: accepted members only, only
+-- the public profile fields, and only for teams whose submission is published
+-- (same gate as public_submissions: status='submitted', hackathon not draft).
 create or replace view public.public_team_members
 with (security_barrier = true) as
 select
@@ -62,7 +63,11 @@ select
   u.linkedin_url
 from public.team_members tm
 join public.users u on u.id = tm.user_id
-where tm.status = 'accepted';
+join public.submissions s on s.team_id = tm.team_id
+join public.hackathons h on h.id = tm.hackathon_id
+where tm.status = 'accepted'
+  and s.status = 'submitted'
+  and h.status <> 'draft';
 
 grant select on public.public_team_members to anon, authenticated;
 grant all on public.public_team_members to service_role;
