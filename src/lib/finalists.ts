@@ -7,6 +7,7 @@ export type FinalistCandidate = {
   ratings: number;
   isFinalist: boolean;
   notified: boolean;
+  placement: number | null;
 };
 
 type RawTeam = {
@@ -14,6 +15,7 @@ type RawTeam = {
   name: string;
   is_finalist: boolean;
   finalist_notified_at: string | null;
+  placement: number | null;
 };
 
 type RawRating = { grade: number | null };
@@ -52,6 +54,7 @@ export function finalistCandidates(rows: FinalistRow[] | null): FinalistCandidat
         ratings: grades.length,
         isFinalist: team?.is_finalist ?? false,
         notified: team?.finalist_notified_at !== null,
+        placement: team?.placement ?? null,
       };
     })
     .sort((a, b) => {
