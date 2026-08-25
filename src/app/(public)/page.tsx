@@ -124,34 +124,18 @@ export default async function HomePage({
       {/* Hero: the morth shapes are the canvas, DoraHacks-style, in LP paint */}
       <section className="relative flex min-h-[100dvh] flex-col overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          {/* edges only: the center stays clear for type, deck and caption */}
+          {/* Three shapes, corners only. No dark fills on cream, no confetti. */}
           <div
-            className="morth animate-float-a absolute -left-24 top-[16%] h-[24rem] w-[24rem] bg-yellow sm:h-[30rem] sm:w-[30rem]"
+            className="morth animate-float-a absolute -left-28 top-[14%] h-[26rem] w-[26rem] bg-yellow sm:h-[34rem] sm:w-[34rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth absolute -left-8 bottom-[4%] h-36 w-36 bg-emerald"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-03.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-03.svg)", transform: "rotate(-22deg)" }}
-          />
-          <div
-            className="morth animate-float-b absolute -right-28 top-[8%] h-[20rem] w-[20rem] bg-[#008c4c] sm:h-[26rem] sm:w-[26rem]"
+            className="morth animate-float-b absolute -right-24 top-[6%] h-[22rem] w-[22rem] bg-[#008c4c] sm:h-[30rem] sm:w-[30rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
           <div
-            className="morth absolute -right-10 bottom-[10%] h-44 w-44 bg-yellow-strong/90"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-21.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-21.svg)", transform: "rotate(26deg)" }}
-          />
-          <div
-            className="morth animate-float-c absolute left-[38%] -top-14 h-40 w-40 bg-green"
+            className="morth animate-float-c absolute -bottom-32 -right-16 h-72 w-72 bg-[#2f6b3f] sm:h-96 sm:w-96"
             style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(24deg)" }}
-          />
-          <div
-            className="morth absolute left-[20%] bottom-[6%] h-16 w-16 bg-green-dark"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-05.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-05.svg)", transform: "rotate(-30deg)" }}
-          />
-          <div
-            className="morth absolute right-[34%] top-[12%] h-12 w-12 bg-emerald/80"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-05.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-05.svg)", transform: "rotate(40deg)" }}
           />
         </div>
 

@@ -82,12 +82,15 @@ export function Footer() {
         </div>
       </div>
 
-      <p
-        aria-hidden
-        className="select-none whitespace-nowrap pb-2 text-center font-heading text-[13vw] font-black uppercase leading-[0.75] tracking-tight text-surface/[0.07] [font-stretch:125%]"
-      >
-        Superteam Brasil
-      </p>
+      <div aria-hidden className="select-none px-4 pb-2 sm:px-6">
+        <Image
+          src="/brand/stbr/wordmark-offwhite.svg"
+          alt=""
+          width={1600}
+          height={220}
+          className="h-auto w-full opacity-[0.06]"
+        />
+      </div>
     </footer>
   );
 }
