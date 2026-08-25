@@ -41,7 +41,7 @@ export function Avatar({
   className?: string;
 }) {
   const { px, box, text } = SIZES[size];
-  const shared = `${box} shrink-0 object-cover ${className}`;
+  const shared = `${box} shrink-0 object-cover ring-2 ring-emerald/20 ${className}`;
 
   if (renderable(src)) {
     return (
