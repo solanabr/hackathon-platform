@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { AssignmentGrid, type AssignmentProject } from "@/components/admin/assignment-grid";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -13,7 +13,7 @@ export default async function AdminJudgesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(slug);
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
   const hackathon = await getHackathonBySlug(slug);

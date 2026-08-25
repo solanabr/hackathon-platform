@@ -115,8 +115,26 @@ export type HackathonContent = {
   location: string | null;
   scheduled_at: string | null;
   duration_minutes: number | null;
+  thumbnail_url: string | null;
   position: number;
   published: boolean;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SectionKind = "markdown" | "phases" | "schedule" | "deliverables" | "prizes";
+
+export type HackathonSection = {
+  id: string;
+  hackathon_id: string;
+  position: number;
+  kind: SectionKind;
+  title: string | null;
+  subtitle: string | null;
+  body_md: string | null;
+  config: Record<string, unknown>;
+  visible: boolean;
   deleted_at: string | null;
   created_at: string;
   updated_at: string;

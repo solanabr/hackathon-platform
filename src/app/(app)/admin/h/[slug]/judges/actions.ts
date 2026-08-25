@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import type { RatingRound } from "@/lib/hackathon";
 
 export type AssignResult = { ok: true } | { ok: false; error: string };
@@ -14,7 +14,7 @@ export async function setAssignment(input: {
   round: RatingRound;
   assigned: boolean;
 }): Promise<AssignResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();

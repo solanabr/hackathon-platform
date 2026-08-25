@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
 import { PainelNav } from "@/components/edition/painel-nav";
-import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -30,13 +30,39 @@ const KIND_LABEL: Record<string, string> = {
   evento: "Evento",
 };
 
+const FILTERS: Array<{ key: string; label: string; kinds: string[] }> = [
+  { key: "todos", label: "Tudo", kinds: [] },
+  { key: "aulas", label: "Aulas e workshops", kinds: ["aula", "workshop", "mentoria"] },
+  { key: "materiais", label: "Materiais", kinds: ["material"] },
+  { key: "links", label: "Links", kinds: ["link"] },
+];
+
 type ScheduleRow = Pick<
   HackathonContent,
   "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "position"
 >;
 
-export default async function ContentsPage({ params }: { params: Promise<{ slug: string }> }) {
+type AvailableRow = Pick<HackathonContent, "id" | "youtube_id" | "external_url"> & {
+  thumbnail_url?: string | null;
+};
+
+function domainOf(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+export default async function ContentsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ f?: string }>;
+}) {
   const { slug } = await params;
+  const { f } = await searchParams;
   const state = await requireUser();
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
@@ -47,78 +73,171 @@ export default async function ContentsPage({ params }: { params: Promise<{ slug:
   const supabase = await createServerSupabaseClient();
 
   // Every scheduled item is listed; RLS keeps the unpublished ones out of the
-  // second query, which is what marks an item as watchable.
+  // second query, which is what marks an item as available.
   const [{ data: scheduleData }, { data: availableData }] = await Promise.all([
     supabase
       .from("public_schedule")
       .select("id, kind, title, speaker, description, scheduled_at, position")
       .eq("hackathon_id", hackathon.id)
       .order("position", { ascending: true }),
-    supabase.from("hackathon_contents").select("id").eq("hackathon_id", hackathon.id),
+    supabase.from("hackathon_contents").select("*").eq("hackathon_id", hackathon.id),
   ]);
 
-  const schedule = (scheduleData as ScheduleRow[] | null) ?? [];
-  const available = new Set(((availableData as { id: string }[] | null) ?? []).map((c) => c.id));
+  const schedule = ((scheduleData as ScheduleRow[] | null) ?? []).filter(
+    (s) => s.kind !== "evento",
+  );
+  const available = new Map(
+    (((availableData as AvailableRow[] | null) ?? []).map((c) => [c.id, c])) as Array<
+      [string, AvailableRow]
+    >,
+  );
+
+  const filter = FILTERS.find((x) => x.key === f) ?? FILTERS[0];
+  const filtered =
+    filter.kinds.length === 0 ? schedule : schedule.filter((s) => filter.kinds.includes(s.kind));
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
           <PainelNav slug={slug} />
         </div>
 
-        <p className="mt-8 text-[12px] font-bold uppercase tracking-wider text-emerald">TRILHA</p>
-        <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Conteúdos</h1>
-        <p className="mt-2 font-mono text-sm tabular-nums text-muted">
-          {available.size}/{schedule.length} disponíveis. As gravações entram depois de cada
-          encontro.
-        </p>
+        <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Trilha
+            </p>
+            <h1 className="mt-1 font-heading text-3xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-4xl">
+              Conteúdos
+            </h1>
+            <p className="mt-2 font-mono text-sm tabular-nums text-muted">
+              {available.size}/{schedule.length} disponíveis. As gravações entram depois de cada
+              encontro.
+            </p>
+          </div>
 
-        {schedule.length === 0 ? (
+          <nav
+            aria-label="Filtrar conteúdos"
+            className="flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {FILTERS.map((opt) => (
+              <Link
+                key={opt.key}
+                href={opt.key === "todos" ? `/h/${slug}/content` : `/h/${slug}/content?f=${opt.key}`}
+                aria-current={filter.key === opt.key ? "page" : undefined}
+                className={`whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold transition-colors duration-150 ${
+                  filter.key === opt.key
+                    ? "bg-green-dark text-surface"
+                    : "text-ink hover:bg-green-dark/10"
+                }`}
+              >
+                {opt.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {filtered.length === 0 ? (
           <EmptyState
             className="mt-8"
             title="Nada por aqui ainda"
             description="Os conteúdos desta edição ainda não foram publicados. Volte em breve."
           />
         ) : (
-          <ul className="mt-8 grid gap-4">
-            {schedule.map((item) => {
-              const ready = available.has(item.id);
+          <ul className="mt-8 grid gap-5 sm:grid-cols-2">
+            {filtered.map((item) => {
+              const row = available.get(item.id);
+              const ready = row !== undefined;
               const when = item.scheduled_at
                 ? WHEN.format(new Date(item.scheduled_at)).replace(/\./g, "")
                 : null;
+              const thumb = row?.thumbnail_url
+                ? row.thumbnail_url
+                : row?.youtube_id
+                  ? `https://i.ytimg.com/vi/${row.youtube_id}/hqdefault.jpg`
+                  : null;
+              const external =
+                ready && !row?.youtube_id && row?.external_url ? row.external_url : null;
+              const domain = external ? domainOf(external) : null;
 
-              const body = (
-                <Card className={`p-6 ${ready ? "card-hover" : "opacity-75"}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                      {when ? `${when} · ` : ""}
+              const card = (
+                <article
+                  className={`group flex h-full flex-col overflow-hidden rounded-2xl border-2 bg-surface-raised transition-transform duration-200 ${
+                    ready
+                      ? "border-green-dark shadow-[6px_6px_0_rgba(27,35,29,0.18)] hover:-translate-y-0.5"
+                      : "border-green-dark/20 opacity-75"
+                  }`}
+                >
+                  <div className="relative aspect-video overflow-hidden border-b-2 border-green-dark/15 bg-green-dark">
+                    {thumb ? (
+                      <Image
+                        src={thumb}
+                        alt=""
+                        fill
+                        sizes="(max-width: 640px) 100vw, 50vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex h-full flex-col items-center justify-center gap-2">
+                        <span className="font-heading text-3xl font-black uppercase text-surface/25 [font-stretch:118%]">
+                          {KIND_LABEL[item.kind] ?? item.kind}
+                        </span>
+                        {domain && (
+                          <span className="font-mono text-xs text-surface/50">{domain}</span>
+                        )}
+                      </div>
+                    )}
+                    {row?.youtube_id && (
+                      <span
+                        aria-hidden
+                        className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-green-dark/85 pl-1 text-xl text-surface transition-transform duration-200 group-hover:scale-110"
+                      >
+                        ▶
+                      </span>
+                    )}
+                    <span className="absolute left-3 top-3 rounded-full bg-yellow px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-dark">
                       {KIND_LABEL[item.kind] ?? item.kind}
-                    </p>
-                    <StatusChip tone={ready ? "ok" : "muted"}>
-                      {ready ? "disponível" : "em breve"}
-                    </StatusChip>
+                    </span>
                   </div>
 
-                  <h2 className="mt-3 font-heading text-xl font-bold leading-tight">
-                    {item.title}
-                  </h2>
-                  {item.speaker && (
-                    <p className="mt-0.5 text-sm font-semibold text-emerald">{item.speaker}</p>
-                  )}
-                  {item.description && (
-                    <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
-                  )}
-                </Card>
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                        {when ?? "sem data"}
+                      </p>
+                      <StatusChip tone={ready ? "ok" : "muted"}>
+                        {ready ? "disponível" : "em breve"}
+                      </StatusChip>
+                    </div>
+                    <h2 className="mt-2 font-heading text-lg font-bold leading-tight">
+                      {item.title}
+                    </h2>
+                    {item.speaker && (
+                      <p className="mt-0.5 text-sm font-semibold text-emerald">{item.speaker}</p>
+                    )}
+                    {item.description && (
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                </article>
               );
 
               return (
-                <li key={item.id}>
-                  {ready ? (
-                    <Link href={`/h/${slug}/content/${item.id}`}>{body}</Link>
+                <li key={item.id} className="min-w-0">
+                  {external ? (
+                    <a href={external} target="_blank" rel="noreferrer" className="block h-full">
+                      {card}
+                    </a>
+                  ) : ready ? (
+                    <Link href={`/h/${slug}/content/${item.id}`} className="block h-full">
+                      {card}
+                    </Link>
                   ) : (
-                    body
+                    card
                   )}
                 </li>
               );

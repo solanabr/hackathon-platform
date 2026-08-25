@@ -10,10 +10,13 @@ import {
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { resolveRoleState } from "@/lib/roles";
+import { listSections } from "@/lib/sections";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
+import { type Phase } from "@/components/edition/phase-timeline";
+import { SectionRenderer, type ScheduleRow } from "@/components/edition/sections";
 import { Countdown } from "@/components/ui/countdown";
-import type { HackathonContent } from "@/types/db";
+import type { HackathonSection } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -23,31 +26,11 @@ const DAY = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
 });
 
-const DAY_LONG = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  timeZone: "America/Sao_Paulo",
-});
-
-const WEEKDAY = new Intl.DateTimeFormat("pt-BR", {
-  weekday: "short",
-  timeZone: "America/Sao_Paulo",
-});
-
 const TIME = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
   minute: "2-digit",
   timeZone: "America/Sao_Paulo",
 });
-
-const KIND_LABEL: Record<string, string> = {
-  aula: "Aula",
-  workshop: "Workshop",
-  mentoria: "Mentoria",
-  material: "Material",
-  link: "Link",
-  evento: "Evento",
-};
 
 const DELIVERABLES = [
   { value: "10", unit: "slides", label: "Pitch deck", note: "Quem passar do limite é desclassificado." },
@@ -61,8 +44,6 @@ const PARTNERS = [
   { src: "/brand/stbr/logo/horizontal-offwhite.svg", name: "Superteam Brasil", w: 600, h: 112 },
 ];
 
-const EYEBROW = "text-xs font-bold uppercase tracking-wider text-emerald";
-
 type SupporterLogo = { src: string; name: string; w: number; h: number; cls: string };
 
 const SUPPORTERS: Record<string, SupporterLogo[] | undefined> = {
@@ -74,11 +55,6 @@ const SUPPORTERS: Record<string, SupporterLogo[] | undefined> = {
     { src: "/brand/events/vertice-light.png", name: "Vértice", w: 998, h: 240, cls: "h-7 sm:h-8" },
   ],
 };
-
-type ScheduleRow = Pick<
-  HackathonContent,
-  "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "location" | "position"
->;
 
 function clean(s: string): string {
   return s.replace(/\./g, "");
@@ -103,6 +79,10 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const viewer = await resolveAuthenticatedUserState();
   const registered =
     viewer !== null && isRegistrationComplete(await getRegistration(viewer.userId, hackathon.id));
+
+  const roles = viewer ? await resolveRoleState() : null;
+  const canEdit =
+    (roles?.isAdmin ?? false) || (roles?.adminFor.includes(hackathon.id) ?? false);
 
   const supporters = SUPPORTERS[hackathon.slug] ?? [];
 
@@ -170,7 +150,49 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       : []),
   ];
 
-  const online = schedule.filter((s) => s.kind !== "evento");
+  // Sections drive the page body. Before migration 00036 lands (or for an
+  // edition nobody customized) the table is empty, so fall back to the same
+  // four blocks the page always rendered.
+  const stored = await listSections(hackathon.id);
+  const sections: Array<
+    Pick<HackathonSection, "id" | "kind" | "title" | "subtitle" | "body_md" | "config">
+  > =
+    stored.length > 0
+      ? stored
+      : [
+          {
+            id: "default-phases",
+            kind: "phases",
+            title: "Como o hackathon acontece",
+            subtitle: `Duas fases. A primeira online, a segunda presencial em ${hackathon.location_city}.`,
+            body_md: null,
+            config: {},
+          },
+          {
+            id: "default-schedule",
+            kind: "schedule",
+            title: "Programação da Fase 1",
+            subtitle: "As gravações ficam disponíveis na plataforma depois de cada encontro.",
+            body_md: null,
+            config: {},
+          },
+          {
+            id: "default-deliverables",
+            kind: "deliverables",
+            title: "O que seu time entrega",
+            subtitle: null,
+            body_md: null,
+            config: { items: DELIVERABLES },
+          },
+          {
+            id: "default-prizes",
+            kind: "prizes",
+            title: "Premiação",
+            subtitle: null,
+            body_md: null,
+            config: {},
+          },
+        ];
 
   // The hero counts down to whatever comes next in the edition's life:
   // inscriptions, then submissions, then Pitch Day. Null once it is all over.
@@ -310,153 +332,26 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
 
-      <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Etapas">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-balance font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
-            Como o hackathon acontece
-          </h2>
-          <p className="mt-3 max-w-xl leading-relaxed text-muted">
-            Duas fases. A primeira online, a segunda presencial em {hackathon.location_city}.
-          </p>
-          <div className="mt-8">
-            <PhaseTimeline phases={phases} now={now} />
-          </div>
+      {sections.map((section) => (
+        <div key={section.id} className="relative">
+          {canEdit && (
+            <Link
+              href={
+                section.kind === "schedule"
+                  ? `/admin/h/${hackathon.slug}/content`
+                  : `/admin/h/${hackathon.slug}/sections#s-${section.id}`
+              }
+              className="absolute right-4 top-2 z-20 rounded-full border-2 border-green-dark bg-surface-raised px-3.5 py-1 text-xs font-bold text-ink transition-colors hover:bg-green-dark hover:text-surface sm:right-8"
+            >
+              Editar ✎
+            </Link>
+          )}
+          <SectionRenderer
+            section={section}
+            ctx={{ hackathon, phases, now, schedule }}
+          />
         </div>
-      </section>
-
-      {online.length > 0 && (
-        <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Programação">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <h2 className="font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
-                  Programação da Fase 1
-                </h2>
-              </div>
-              <p className="text-sm text-muted">
-                As gravações ficam disponíveis na plataforma depois de cada encontro.
-              </p>
-            </div>
-
-            <ul className="mt-8 grid gap-4 md:grid-cols-2">
-              {online.map((item) => {
-                const at = item.scheduled_at ? new Date(item.scheduled_at) : null;
-                return (
-                  <li
-                    key={item.id}
-                    className="flex gap-5 rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-5"
-                  >
-                    <div className="w-16 shrink-0 text-center">
-                      {at ? (
-                        <>
-                          <p className="font-heading text-2xl font-bold leading-none">
-                            {new Intl.DateTimeFormat("pt-BR", {
-                              day: "2-digit",
-                              timeZone: "America/Sao_Paulo",
-                            }).format(at)}
-                          </p>
-                          <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-emerald">
-                            {clean(WEEKDAY.format(at))}
-                          </p>
-                          <p className="mt-1 text-[11px] text-muted">{TIME.format(at)}</p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-muted">a definir</p>
-                      )}
-                    </div>
-
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted">
-                        {KIND_LABEL[item.kind] ?? item.kind}
-                      </span>
-                      <h3 className="mt-1 font-heading text-lg font-bold leading-tight">
-                        {item.title}
-                      </h3>
-                      {item.speaker && (
-                        <p className="mt-0.5 text-sm font-semibold text-emerald">{item.speaker}</p>
-                      )}
-                      {item.description && (
-                        <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </section>
-      )}
-
-      <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Entregáveis">
-        <div className="mx-auto max-w-6xl">
-          <p className={EYEBROW}>Entregáveis</p>
-          <h2 className="mt-3 font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
-            O que seu time entrega
-          </h2>
-          <p className="mt-3 max-w-xl leading-relaxed text-muted">
-            Até {DAY_LONG.format(new Date(hackathon.submission_deadline_at))} às{" "}
-            {TIME.format(new Date(hackathon.submission_deadline_at))}.
-          </p>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {DELIVERABLES.map((d) => (
-              <div
-                key={d.label}
-                className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-6"
-              >
-                <p className="font-mono text-4xl font-bold leading-none tabular-nums text-emerald">
-                  {d.value}
-                  <span className="ml-1.5 align-middle text-sm font-semibold text-muted">
-                    {d.unit}
-                  </span>
-                </p>
-                <h3 className="mt-4 font-heading text-lg font-bold">{d.label}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{d.note}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {hackathon.prize_summary && (
-        <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Premiação">
-          <div className="mx-auto max-w-6xl">
-            <div className="relative overflow-hidden rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
-              <div
-                aria-hidden
-                className="morth absolute -right-20 -top-24 h-72 w-72 bg-emerald/30"
-                style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-12deg)" }}
-              />
-              <div className="relative">
-                <h2 className="font-heading text-3xl font-black uppercase tracking-tight text-surface [font-stretch:118%] sm:text-4xl">
-                  Premiação
-                </h2>
-                <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {hackathon.prize_summary
-                    .split("·")
-                    .map((p) => p.trim())
-                    .filter(Boolean)
-                    .map((prize) => {
-                      const [place, ...rest] = prize.split(" - ");
-                      const detail = rest.join(" - ");
-                      return (
-                        <li
-                          key={prize}
-                          className="rounded-2xl border-2 border-surface/15 bg-surface/[0.04] p-5 transition-colors duration-200 hover:border-yellow/50"
-                        >
-                          <p className="font-heading text-xl font-black uppercase tracking-tight text-yellow [font-stretch:112%]">
-                            {detail ? place : "Prêmio"}
-                          </p>
-                          <p className="mt-2 text-sm leading-relaxed text-surface/80">{detail || place}</p>
-                        </li>
-                      );
-                    })}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+      ))}
 
 {finalists.length > 0 && (
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">

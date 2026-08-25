@@ -10,7 +10,7 @@ import { UserMenu } from "./user-menu";
 export async function Header() {
   const roles = await resolveRoleState();
   const state = roles?.state ?? null;
-  const admin = roles?.isAdmin ?? false;
+  const admin = (roles?.isAdmin ?? false) || (roles?.adminFor.length ?? 0) > 0;
   const judge = admin || (roles?.judgeFor.length ?? 0) > 0;
 
   const menuLinks = state

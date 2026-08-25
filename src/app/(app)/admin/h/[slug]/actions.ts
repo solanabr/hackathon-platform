@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdmin } from "@/lib/roles";
 import { sanitizeUrl, sanitizeText } from "@/lib/security";
 import { EDITION_FIELDS, fromLocalInput } from "@/lib/edition-fields";
 
@@ -15,7 +15,7 @@ export async function updateEdition(
   currentSlug: string,
   formData: FormData,
 ): Promise<EditionSaveResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdmin(hackathonId);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const patch: Record<string, unknown> = {};
@@ -89,7 +89,7 @@ export async function uploadEditionCover(
   slug: string,
   formData: FormData,
 ): Promise<EditionSaveResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdmin(hackathonId);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const file = formData.get("cover");

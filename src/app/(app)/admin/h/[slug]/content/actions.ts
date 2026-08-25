@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import { extractYouTubeId } from "@/lib/content";
 import { sanitizeText } from "@/lib/security";
 import { CONTENT_KINDS } from "@/lib/content-fields";
@@ -15,7 +15,7 @@ export async function uploadContentFile(input: {
   slug: string;
   formData: FormData;
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const file = input.formData.get("file");
@@ -54,7 +54,7 @@ export async function updateContent(input: {
   videoUrl: string;
   published: boolean;
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const raw = input.videoUrl.trim();
@@ -146,7 +146,7 @@ export async function createContent(input: {
   slug: string;
   details: DetailsInput;
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const parsed = toRow(input.details);
@@ -180,7 +180,7 @@ export async function updateContentDetails(input: {
   slug: string;
   details: DetailsInput;
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const parsed = toRow(input.details);
@@ -208,7 +208,7 @@ export async function deleteContent(input: {
   contentId: string;
   slug: string;
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
@@ -231,7 +231,7 @@ export async function moveContent(input: {
   slug: string;
   direction: "up" | "down";
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
@@ -267,7 +267,7 @@ export async function restoreContent(input: {
   contentId: string;
   slug: string;
 }): Promise<ContentActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();

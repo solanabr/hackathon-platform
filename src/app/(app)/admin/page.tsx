@@ -2,15 +2,17 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { requireAdmin } from "@/lib/roles";
+import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const gate = await requireAdmin();
-  if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
+  const roles = await resolveRoleState();
+  if (!roles) redirect("/auth");
+  const scoped = !roles.isAdmin;
+  if (scoped && roles.adminFor.length === 0) redirect("/");
 
   const ready = hasServiceRoleKey();
   const supabase = ready ? await createServiceRoleClient() : null;
@@ -18,7 +20,10 @@ export default async function AdminPage() {
   const { data } = supabase
     ? await supabase.from("hackathons").select("*").order("starts_at", { ascending: false })
     : { data: null };
-  const hackathons = (data as Hackathon[] | null) ?? [];
+  // An edition admin only sees the editions granted to them.
+  const hackathons = ((data as Hackathon[] | null) ?? []).filter(
+    (h) => !scoped || roles.adminFor.includes(h.id),
+  );
 
   const counts = supabase
     ? await Promise.all(
@@ -62,9 +67,11 @@ export default async function AdminPage() {
             </p>
             <h1 className="mt-1 font-heading text-3xl font-bold">Administração</h1>
           </div>
-          <Link href="/admin/people" className="btn-secondary min-h-11 px-5 py-2 text-sm">
-            Pessoas
-          </Link>
+          {!scoped && (
+            <Link href="/admin/people" className="btn-secondary min-h-11 px-5 py-2 text-sm">
+              Pessoas
+            </Link>
+          )}
         </div>
 
         <div className="mt-8 grid gap-4">

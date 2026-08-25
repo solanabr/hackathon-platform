@@ -51,7 +51,7 @@ export function RoleManager({
           name="hackathon_id"
           className="min-h-11 rounded-full border border-ink/10 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
         >
-          <option value="">Selecionar hackathon (jurado)</option>
+          <option value="">Hackathon (jurado sempre; admin: vazio = global)</option>
           {hackathons.map((h) => (
             <option key={h.id} value={h.id}>
               {h.name}

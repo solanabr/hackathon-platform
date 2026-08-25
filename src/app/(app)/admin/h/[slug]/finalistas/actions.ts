@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { getHackathonBySlug } from "@/lib/hackathon";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import { notifyFinalists as notifyFinalistsByEmail } from "@/lib/email";
 
 export type FinalistActionResult = { ok: true } | { ok: false; error: string };
@@ -46,7 +46,7 @@ export async function setFinalist(input: {
   teamId: string;
   isFinalist: boolean;
 }): Promise<FinalistActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const edition = await requireTeamInEdition(input.slug, input.teamId);
@@ -69,7 +69,7 @@ export async function setPlacement(input: {
   teamId: string;
   placement: number;
 }): Promise<FinalistActionResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   if (!Number.isInteger(input.placement) || input.placement < 1) {
@@ -95,7 +95,7 @@ export async function notifyFinalists(input: {
   slug: string;
   hackathonId: string;
 }): Promise<NotifyResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   // Same posture as the other actions here: the slug decides the edition,

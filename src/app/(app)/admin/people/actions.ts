@@ -28,18 +28,17 @@ export async function grantRole(
     return { error: "Ninguém com esse e-mail entrou na plataforma ainda. Peça para fazer login uma vez." };
   }
 
-  // Admin and judge rows have different keys (admin: user_id+role with a NULL
-  // hackathon_id, judge: user_id+role+hackathon_id), so an upsert cannot
-  // target both. Check-then-insert reads the two shapes honestly.
+  // A NULL hackathon_id makes an admin global; with an id the role is scoped
+  // to that edition (organizer). Judges are always scoped. The two key shapes
+  // mean an upsert cannot target both, so check-then-insert.
+  const scope = role === "judge" ? hackathonId : hackathonId || null;
   let existingQuery = supabase
     .from("platform_roles")
     .select("id")
     .eq("user_id", (user as { id: string }).id)
     .eq("role", role);
   existingQuery =
-    role === "admin"
-      ? existingQuery.is("hackathon_id", null)
-      : existingQuery.eq("hackathon_id", hackathonId);
+    scope === null ? existingQuery.is("hackathon_id", null) : existingQuery.eq("hackathon_id", scope);
 
   const { data: existing } = await existingQuery.maybeSingle();
   if (existing) {
@@ -49,7 +48,7 @@ export async function grantRole(
   const { error } = await supabase.from("platform_roles").insert({
     user_id: (user as { id: string }).id,
     role,
-    hackathon_id: role === "admin" ? null : hackathonId,
+    hackathon_id: scope,
     granted_by: gate.state.userId,
   });
 

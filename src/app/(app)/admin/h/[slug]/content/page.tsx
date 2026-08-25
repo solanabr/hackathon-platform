@@ -4,7 +4,7 @@ import { ContentRow, type AdminContentItem } from "@/components/admin/content-ro
 import { NewContentForm } from "@/components/admin/new-content-form";
 import { RemovedContent } from "@/components/admin/removed-content";
 import { toLocalInput } from "@/lib/edition-fields";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { HackathonContent } from "@/types/db";
@@ -25,7 +25,7 @@ export default async function AdminContentPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(slug);
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
   const hackathon = await getHackathonBySlug(slug);
