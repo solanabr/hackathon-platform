@@ -162,36 +162,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">{hackathon.tagline}</p>
             )}
 
-            <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-              <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">Quando</dt>
-                <dd className="mt-1 font-heading text-lg font-bold">
-                  {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
-                  {clean(
-                    DAY.format(
-                      new Date(hackathon.presential_at ?? hackathon.submission_deadline_at),
-                    ),
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">Onde</dt>
-                <dd className="mt-1 font-heading text-lg font-bold">
-                  {hackathon.location_city ?? "Online"}
-                </dd>
-              </div>
-              {hackathon.prize_summary && (
-                <div>
-                  <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                    Prêmios
-                  </dt>
-                  <dd className="mt-1 font-heading text-lg font-bold text-emerald">
-                    US$ 3.000 e mais
-                  </dd>
-                </div>
-              )}
-            </dl>
-
             <div className="mt-8">
               {registered ? (
                 <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
@@ -218,6 +188,36 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               />
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="px-4 pb-8 sm:px-6 lg:px-8" aria-label="Informações da edição">
+        <div className="mx-auto max-w-6xl">
+          <dl className="flex flex-wrap gap-x-12 gap-y-4 border-t border-green/15 pt-8">
+            <div>
+              <dt className="text-sm font-semibold text-muted">Quando</dt>
+              <dd className="mt-1 font-heading text-lg font-bold">
+                {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
+                {clean(
+                  DAY.format(new Date(hackathon.presential_at ?? hackathon.submission_deadline_at)),
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-semibold text-muted">Onde</dt>
+              <dd className="mt-1 font-heading text-lg font-bold">
+                {hackathon.location_city ?? "Online"}
+              </dd>
+            </div>
+            {hackathon.prize_summary && (
+              <div>
+                <dt className="text-sm font-semibold text-muted">Prêmios</dt>
+                <dd className="mt-1 font-heading text-lg font-bold text-emerald">
+                  US$ 3.000 e mais
+                </dd>
+              </div>
+            )}
+          </dl>
         </div>
       </section>
 
