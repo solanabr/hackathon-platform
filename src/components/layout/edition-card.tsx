@@ -45,13 +45,13 @@ export function EditionCard({ edition, index }: { edition: EditionCardData; inde
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-green-dark via-green-dark/40 to-green-dark/10" />
 
-        <div className="absolute left-4 top-4 rounded-xl bg-surface px-3 py-2 text-center shadow-lg">
+        <div className="absolute left-4 top-4 rounded-xl bg-surface px-3 py-2 text-center shadow-[0_8px_24px_rgba(0,140,76,0.2)]">
           <p className="text-[10px] font-bold uppercase tracking-wide text-emerald">{e.startMonth}</p>
           <p className="font-heading text-2xl font-bold leading-none text-ink">{e.startDay}</p>
         </div>
 
         {e.registrationOpen ? (
-          <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-yellow px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink shadow-lg">
+          <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-yellow px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink shadow-[0_8px_24px_rgba(0,140,76,0.2)]">
             <span className="relative flex h-2 w-2">
               <span className="absolute h-full w-full animate-ping rounded-full bg-ink/40" />
               <span className="relative h-2 w-2 rounded-full bg-ink" />
