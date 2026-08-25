@@ -109,3 +109,38 @@ export function ratingRound(h: Hackathon, now: Date = new Date()): RatingRound {
   if (!h.finalists_announced_at) return "triagem";
   return now.getTime() >= new Date(h.finalists_announced_at).getTime() ? "final" : "triagem";
 }
+
+/**
+ * When the public landing may show the finalist list. A closed edition always
+ * shows results; while judging, the announced date is the reveal signal so the
+ * cut is never leaked before it is public.
+ *
+ * Operational trap: the gate deliberately holds finalists until the edition
+ * status is flipped to `judging` (the live edition stays `published`). An
+ * operator must flip the status on announcement day — 09/10 in the live
+ * edition — or the public finalists section stays hidden until then. This is
+ * intentional, not a bug.
+ */
+export function isFinalistsVisible(h: Hackathon, now: Date = new Date()): boolean {
+  if (h.status !== "judging" && h.status !== "closed") return false;
+  if (h.status === "closed") return true;
+  return (
+    h.finalists_announced_at !== null &&
+    new Date(h.finalists_announced_at).getTime() <= now.getTime()
+  );
+}
+
+/**
+ * Total prize pool derived from the itemized `prize_summary` ("1º Lugar -
+ * US$1500 · ..."). Null when nothing parseable, so callers can hide the cell
+ * instead of showing a stale hardcoded amount.
+ */
+export function prizePoolLabel(summary: string | null): string | null {
+  if (!summary) return null;
+  const amounts = [...summary.matchAll(/US\$\s?([\d.,]+)/g)]
+    .map((m) => Number.parseInt(m[1].replace(/[.,]/g, ""), 10))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  if (amounts.length === 0) return null;
+  const total = amounts.reduce((a, b) => a + b, 0);
+  return `US$ ${new Intl.NumberFormat("pt-BR").format(total)} em prêmios`;
+}

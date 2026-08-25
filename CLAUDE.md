@@ -15,7 +15,7 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Submission flow for th
 - **Supabase clients:**
   - `createClient()` (browser) — user-scoped, RLS-enforced.
   - `createServerSupabaseClient()` (server) — same scoping, used in server components and route handlers.
-  - `createServiceRoleClient()` — bypasses RLS. Used by admin server actions (gated by `requireAdmin()`), cross-team reads in `/admin`, cron auto-lock, the team-leader manual add-member action, and the unauthenticated `/invite/[token]` page.
+  - `createServiceRoleClient()` — bypasses RLS. Used by admin server actions (gated by `requireAdmin()`), cross-team reads in `/admin`, cron auto-lock, and the team-leader manual add-member action.
 - **Cross-table mutations** route through one of two patterns:
   1. `SECURITY DEFINER` RPCs with explicit `auth.uid()` checks — `create_team_with_leader`, `accept_team_invite`, `submit_team`. Used by member-facing flows.
   2. Server actions that gate on `requireUser()` / `requireAdmin()` then write with `createServiceRoleClient()` — `addMemberByEmail`, `upsertRating`, `deleteRating`. Used when the gate lives in env (admin allowlist) or when the validation is simpler than the RPC overhead.
@@ -49,7 +49,7 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Submission flow for th
 - Auto-lock runs as a `pg_cron` job inside Postgres (`lock-overdue-submissions`, every minute), not as an HTTP endpoint. The deadline itself is enforced by `submit_team` and the submissions update policy; the job only materialises the locked state.
 - **Only three env vars exist:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. Admin and judge are rows in `platform_roles`, not an env allowlist — grant them at `/admin/people`.
 - **`submission_ratings` table** has RLS enabled but **no policies** — only `service_role` can touch it. All mutations route through the server actions in `src/app/(app)/admin/actions.ts`, which gate on `requireAdmin()`. Don't try to query it from the browser client; you'll silently get zero rows.
-- **Manual add-member flow** creates "ghost" `team_members` rows (`user_id is null`, `status='pending'`) when the email isn't registered yet. The `handle_new_user` trigger links them on signup. The legacy `/invite/[token]` page still works for any pre-existing token-based invites — kept for backward compat, no new tokens are generated.
+- **Manual add-member flow** creates "ghost" `team_members` rows (`user_id is null`, `status='pending'`) when the email isn't registered yet. The `handle_new_user` trigger links them on signup. The legacy `/invite/[token]` page was removed in the multi-edition rework; no token-based invites exist anymore.
 - **Form alignment with the regulamento:** the form has ONE required video field (`pitch_video_url`, labelled "Vídeo de apresentação (demo)"). The `demo_video_url` column still exists on the table for historical data but is no longer required by the form or by `submit_team` (migration 00013).
 
 ## Testing

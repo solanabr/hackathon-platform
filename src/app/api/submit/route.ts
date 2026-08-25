@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
+import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const RPC_ERRORS: Record<string, { status: number; message: string }> = {
@@ -41,6 +42,45 @@ export async function POST(request: NextRequest) {
       { status: mapped?.status ?? 500 },
     );
   }
+
+  // The RPC only lets the team leader through, so the session email is the
+  // leader's. after() runs once the response is flushed and, unlike a floated
+  // promise, survives the serverless instance being frozen at flush time.
+  after(async () => {
+    try {
+      const { data: teamRow } = await supabase
+        .from("teams")
+        .select("hackathons(name, slug), submissions(project_name)")
+        .eq("id", body.teamId)
+        .maybeSingle();
+
+      type TeamRow = {
+        hackathons:
+          | { name: string; slug: string }
+          | { name: string; slug: string }[]
+          | null;
+        submissions: { project_name: string | null } | { project_name: string | null }[] | null;
+      };
+      const row = teamRow as TeamRow | null;
+      const edition = Array.isArray(row?.hackathons) ? row?.hackathons[0] : row?.hackathons;
+      const submission = Array.isArray(row?.submissions)
+        ? row?.submissions[0]
+        : row?.submissions;
+
+      if (user.email && edition?.slug) {
+        const result = await sendSubmissionReceived({
+          to: user.email,
+          projectName: submission?.project_name ?? "Seu projeto",
+          editionName: edition.name ?? "",
+          editionUrl: `${siteUrl()}/h/${edition.slug}`,
+          dashboardUrl: `${siteUrl()}/h/${edition.slug}/dashboard`,
+        });
+        if (!result.ok) console.error("sendSubmissionReceived failed:", result.error);
+      }
+    } catch (err) {
+      console.error("sendSubmissionReceived error:", err);
+    }
+  });
 
   return NextResponse.json({ ok: true });
 }

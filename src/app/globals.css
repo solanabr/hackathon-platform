@@ -3,58 +3,105 @@
 @theme {
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
+  --color-surface-deep: #efe0ba;
   --color-ink: #1b231d;
-  --color-muted: #2f6b3f;
-  --color-emerald: #008c4c;
-  --color-yellow: #ffd23f;
-  --color-yellow-strong: #ffc107;
+  --color-muted: #5f6f60;
+
+  /* Keep Tailwind's built-in scales out of the brand greens/emeralds.
+     The wildcard resets must precede the bare tokens, or they wipe the
+     whole namespace (order matters in v4). */
   --color-green-*: initial;
+  --color-emerald-*: initial;
+
+  --color-emerald: #008c4c;
   --color-green: #2f6b3f;
   --color-green-dark: #1b231d;
+  --color-yellow: #ffd23f;
+  --color-yellow-strong: #ffc107;
+
+  /* Error text on the cream surface uses the dark red family; the light
+     red-200/300 shades some components use for text are remapped darker so
+     they stay legible on #f7eacb. */
+  --color-red-200: #b91c1c;
+  --color-red-300: #b91c1c;
+  --color-amber-300: #92600a;
 
   --font-heading: var(--font-archivo);
   --font-body: var(--font-inter);
 }
 
-body {
-  background-color: var(--color-surface);
-  color: var(--color-ink);
-  font-family: var(--font-body);
-}
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
 
-a, button, [role="button"], summary { cursor: pointer; }
+  /* Anchor targets stop clear of the floating dock. */
+  [id] {
+    scroll-margin-top: 5.5rem;
+  }
 
-::selection {
-  background-color: var(--color-yellow);
-  color: var(--color-ink);
+  body {
+    @apply bg-surface text-ink antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  a, button, [role="button"], summary {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background-color: var(--color-yellow);
+    color: var(--color-green-dark);
+  }
+
+  /* Safety net for any interactive element without an explicit ring;
+     components that opt into rings clear this with focus-visible:outline-none. */
+  :focus-visible {
+    outline: 2px solid var(--color-green-dark);
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-semibold text-ink transition-all duration-200 hover:bg-yellow-strong hover:shadow-lg;
+           font-semibold text-[#1b231d] transition-[background-color,transform] duration-200
+           hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-ink
-           bg-transparent px-6 py-3 font-semibold text-ink transition-all duration-200
-           hover:bg-ink hover:text-surface;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-green-dark
+           bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-200
+           hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-green-dark/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .card-hover {
-    @apply transition-transform duration-300 ease-out;
+    @apply transition-[transform,border-color] duration-300 ease-out;
   }
 
   .card-hover:hover {
-    @apply -translate-y-1;
+    @apply -translate-y-1 border-emerald/40;
   }
 
   .stats-card {
-    @apply rounded-2xl border border-green/15 bg-surface-raised p-6;
+    @apply rounded-2xl border border-emerald/15 bg-surface-raised p-6 tabular-nums;
   }
 
   .service-card {
     @apply rounded-2xl bg-emerald p-6 text-surface;
+  }
+
+  /* Same-element pairing fix: yellow badges carry text-ink (now off-white),
+     which is unreadable on #ffd23f — force the dark ink for that combo. */
+  .bg-yellow.text-ink {
+    color: var(--color-green-dark);
   }
 }
 
@@ -109,5 +156,53 @@ a, button, [role="button"], summary { cursor: pointer; }
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* LP hub homepage: morth shapes as paint, not watermark ------------------- */
+.morth {
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.text-outline-green {
+  -webkit-text-stroke: 2px #1b231d;
+  color: transparent;
+}
+
+@keyframes marqueeX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marqueeX 30s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-marquee,
+  .animate-float-a,
+  .animate-float-b,
+  .animate-float-c { animation: none; }
+}
+
+/* Brand loader: the symbol colors itself in from the bottom, then resets. */
+@keyframes brandFill {
+  0% { clip-path: inset(100% 0 0 0); }
+  60% { clip-path: inset(0 0 0 0); }
+  82% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(100% 0 0 0); }
+}
+.animate-brand-fill { animation: brandFill 1.9s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-brand-fill {
+    animation: none;
+    clip-path: none;
   }
 }

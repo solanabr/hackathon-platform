@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { NewTeamForm } from "@/components/team/new-team-form";
 import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
@@ -35,10 +34,13 @@ export default async function NewTeamPage({
       <div className="mx-auto max-w-2xl">
         <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
 
-        <Badge tone="emerald">Passo 2 de 3 · Time</Badge>
-        <h1 className="mt-4 font-heading text-3xl font-bold sm:text-4xl">Criar seu time</h1>
+        <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">Time</p>
+        <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Criar seu time</h1>
         <p className="mt-2 text-muted">
           Você vira o líder do time. Depois pode convidar até 3 pessoas por e-mail.
+        </p>
+        <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+          Passo 2 de 3
         </p>
 
         <Card className="mt-8 p-6 sm:p-8">

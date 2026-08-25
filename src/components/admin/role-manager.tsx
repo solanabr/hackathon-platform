@@ -38,14 +38,20 @@ export function RoleManager({
           type="email"
           required
           placeholder="e-mail"
-          className="rounded-full border border-green/30 bg-surface-raised px-4 py-2"
+          className="min-h-11 rounded-full border border-ink/10 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors placeholder:text-muted/60 focus:border-emerald"
         />
-        <select name="role" className="rounded-full border border-green/30 bg-surface-raised px-4 py-2">
+        <select
+          name="role"
+          className="min-h-11 rounded-full border border-ink/10 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
+        >
           <option value="admin">Admin</option>
           <option value="judge">Jurado</option>
         </select>
-        <select name="hackathon_id" className="rounded-full border border-green/30 bg-surface-raised px-4 py-2">
-          <option value="">— hackathon (jurado) —</option>
+        <select
+          name="hackathon_id"
+          className="min-h-11 rounded-full border border-ink/10 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
+        >
+          <option value="">Selecionar hackathon (jurado)</option>
           {hackathons.map((h) => (
             <option key={h.id} value={h.id}>
               {h.name}
@@ -57,14 +63,25 @@ export function RoleManager({
         </Button>
       </form>
 
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
 
-      <ul className="divide-y divide-green/10">
+      <ul className="divide-y divide-white-10">
         {rows.map((row) => (
           <li key={row.id} className="flex items-center justify-between gap-4 py-3">
-            <span>
-              <strong>{row.email}</strong> · {row.role === "admin" ? "Admin" : "Jurado"}
-              {row.hackathonName && <span className="text-muted"> · {row.hackathonName}</span>}
+            <span className="min-w-0">
+              <span className="font-mono text-sm">{row.email}</span>
+              <span
+                className={`ml-2 inline-flex items-center rounded border px-2 py-0.5 font-mono text-[11px] font-semibold uppercase ${
+                  row.role === "admin"
+                    ? "border-emerald/30 bg-emerald/10 text-emerald"
+                    : "border-yellow-strong/60 bg-yellow/40 text-green-dark"
+                }`}
+              >
+                {row.role === "admin" ? "Admin" : "Jurado"}
+              </span>
+              {row.hackathonName && (
+                <span className="ml-2 text-sm text-muted">{row.hackathonName}</span>
+              )}
             </span>
             <Button
               variant="ghost"

@@ -1,50 +1,56 @@
 import Link from "next/link";
 import Image from "next/image";
 import { resolveRoleState } from "@/lib/roles";
+import { UserMenu } from "./user-menu";
 
+/**
+ * Floating dark dock instead of a hairline bar: the cream page keeps its
+ * canvas, the chrome reads as one object sitting on top of it.
+ */
 export async function Header() {
   const roles = await resolveRoleState();
   const state = roles?.state ?? null;
   const admin = roles?.isAdmin ?? false;
   const judge = admin || (roles?.judgeFor.length ?? 0) > 0;
 
+  const menuLinks = state
+    ? [
+        { href: "/account", label: "Minha conta" },
+        ...(judge ? [{ href: "/judge", label: "Avaliação" }] : []),
+        ...(admin ? [{ href: "/admin", label: "Admin" }] : []),
+      ]
+    : [];
+
   return (
-    <header className="sticky top-0 z-50 border-b border-green/10 bg-surface/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
+    <header className="sticky top-3 z-50 px-3 sm:top-4 sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-[6px_6px_0_rgba(27,35,29,0.25)] sm:px-6">
+        <Link
+          href="/"
+          className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+        >
           <Image
-            src="/brand/stbr/logo/ST-DARK-GREEN-HORIZONTAL.svg"
+            src="/brand/stbr/logo/horizontal-fwhite.svg"
             alt="Superteam Brasil"
-            width={150}
-            height={28}
+            width={140}
+            height={24}
             priority
+            className="h-6 w-auto"
           />
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm font-semibold">
+        <nav className="flex items-center gap-1 text-sm sm:gap-1.5">
           {state ? (
-            <>
-              {judge && (
-                <Link href="/judge" className="text-muted transition-colors hover:text-ink">
-                  Avaliação
-                </Link>
-              )}
-              {admin && (
-                <Link href="/admin" className="text-muted transition-colors hover:text-ink">
-                  Admin
-                </Link>
-              )}
-              <Link href="/account" className="text-muted transition-colors hover:text-ink">
-                Minha conta
-              </Link>
-              <form action="/api/auth/signout" method="post">
-                <button type="submit" className="text-muted transition-colors hover:text-ink">
-                  Sair
-                </button>
-              </form>
-            </>
+            <UserMenu
+              name={state.profile?.full_name ?? null}
+              email={state.email}
+              avatarUrl={state.profile?.avatar_url ?? null}
+              links={menuLinks}
+            />
           ) : (
-            <Link href="/auth" className="btn-primary px-5 py-2 text-sm">
+            <Link
+              href="/auth"
+              className="rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+            >
               Entrar
             </Link>
           )}

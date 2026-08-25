@@ -1,11 +1,18 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getHackathonBySlug, isRegistrationOpen, phaseBoundaries } from "@/lib/hackathon";
+import {
+  getHackathonBySlug,
+  isRegistrationOpen,
+  isFinalistsVisible,
+  phaseBoundaries,
+  prizePoolLabel,
+} from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
+import { Countdown } from "@/components/ui/countdown";
 import type { HackathonContent } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +60,8 @@ const PARTNERS = [
   { src: "/brand/events/cursor-light.png", name: "Cursor", w: 6717, h: 1597 },
   { src: "/brand/stbr/logo/horizontal-offwhite.svg", name: "Superteam Brasil", w: 600, h: 112 },
 ];
+
+const EYEBROW = "text-xs font-bold uppercase tracking-wider text-emerald";
 
 type SupporterLogo = { src: string; name: string; w: number; h: number; cls: string };
 
@@ -104,6 +113,21 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           .publicUrl
     : null;
 
+  // teams has no anon select policy, so the public results list goes through
+  // the service role — this stays server-side and never reaches the browser.
+  let finalists: Array<{ teamId: string; teamName: string; placement: number | null }> = [];
+  if (isFinalistsVisible(hackathon)) {
+    const sr = await createServiceRoleClient();
+    const { data: rows } = await sr
+      .from("teams")
+      .select("id, name, placement")
+      .eq("hackathon_id", hackathon.id)
+      .eq("is_finalist", true)
+      .order("placement", { ascending: true, nullsFirst: false });
+    finalists = ((rows as Array<{ id: string; name: string; placement: number | null }> | null) ??
+      []).map((r) => ({ teamId: r.id, teamName: r.name, placement: r.placement }));
+  }
+
   const bounds = phaseBoundaries(hackathon);
   const phases: Phase[] = [
     {
@@ -148,96 +172,147 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   const online = schedule.filter((s) => s.kind !== "evento");
 
+  // The hero counts down to whatever comes next in the edition's life:
+  // inscriptions, then submissions, then Pitch Day. Null once it is all over.
+  const nowMs = Date.now();
+  const countdownTarget =
+    hackathon.registration_closes_at && new Date(hackathon.registration_closes_at).getTime() > nowMs
+      ? { label: "Inscrições encerram em", iso: hackathon.registration_closes_at }
+      : new Date(hackathon.submission_deadline_at).getTime() > nowMs
+        ? { label: "Submissões encerram em", iso: hackathon.submission_deadline_at }
+        : hackathon.presential_at && new Date(hackathon.presential_at).getTime() > nowMs
+          ? { label: "Pitch Day em", iso: hackathon.presential_at }
+          : null;
+
   return (
     <div>
-      <section className="px-4 pt-10 sm:px-6 lg:px-8" aria-label={hackathon.name}>
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
+      <section className="relative px-4 pb-6 pt-14 sm:px-6 lg:px-8 lg:pt-24" aria-label={hackathon.name}>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16">
           <div>
             <p
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${
-                open
-                  ? "border border-emerald/30 bg-emerald/10 text-emerald"
-                  : "border border-green/20 bg-surface-raised text-muted"
+              className={`mt-5 inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold ${
+                open ? "bg-green-dark text-surface" : "border-2 border-green-dark/20 bg-surface-raised text-muted"
               }`}
             >
               {open && (
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute h-full w-full animate-ping rounded-full bg-emerald/60" />
-                  <span className="relative h-2 w-2 rounded-full bg-emerald" />
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-yellow/70" />
+                  <span className="relative h-2 w-2 rounded-full bg-yellow" />
                 </span>
               )}
               {open ? "Inscrições abertas" : "Inscrições encerradas"}
             </p>
 
-            <h1 className="mt-5 text-balance font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
-              {hackathon.name}
+            <h1 className="mt-5 font-heading font-black uppercase leading-[0.95] tracking-tight">
+              <span className="block text-4xl [font-stretch:120%] sm:text-6xl">
+                {hackathon.name.split(" ")[0]}
+              </span>
+              {hackathon.name.split(" ").length > 1 && (
+                <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-2xl text-yellow [font-stretch:110%] sm:text-4xl">
+                  {hackathon.name.split(" ").slice(1).join(" ")}
+                </span>
+              )}
             </h1>
             {hackathon.tagline && (
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">{hackathon.tagline}</p>
             )}
 
-            <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-              <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">Quando</dt>
-                <dd className="mt-1 font-heading text-lg font-bold">
-                  {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
-                  {clean(
-                    DAY.format(
-                      new Date(hackathon.presential_at ?? hackathon.submission_deadline_at),
-                    ),
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">Onde</dt>
-                <dd className="mt-1 font-heading text-lg font-bold">
-                  {hackathon.location_city ?? "Online"}
-                </dd>
-              </div>
-              {hackathon.prize_summary && (
-                <div>
-                  <dt className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                    Prêmios
-                  </dt>
-                  <dd className="mt-1 font-heading text-lg font-bold text-emerald">
-                    US$ 3.000 e mais
-                  </dd>
-                </div>
-              )}
-            </dl>
-
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
               {registered ? (
-                <Link href={`/h/${hackathon.slug}/dashboard`} className="btn-primary">
+                <Link
+                  href={`/h/${hackathon.slug}/dashboard`}
+                  className="btn-primary px-10 py-4 text-lg shadow-[6px_6px_0_#1b231d]"
+                >
                   Acessar painel
                 </Link>
-              ) : (
-                <Link href={`/h/${hackathon.slug}/register`} className="btn-primary">
-                  {open ? "Fazer inscrição" : "Ver detalhes"}
+              ) : open ? (
+                <Link
+                  href={`/h/${hackathon.slug}/register`}
+                  className="btn-primary px-10 py-4 text-lg shadow-[6px_6px_0_#1b231d]"
+                >
+                  Fazer inscrição
                 </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="btn-primary cursor-not-allowed opacity-60"
+                >
+                  Inscrições encerradas
+                </button>
               )}
+
+            {countdownTarget && (
+              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-[6px_6px_0_#1b231d]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald">
+                  {countdownTarget.label}
+                </p>
+                <Countdown
+                  deadlineIso={countdownTarget.iso}
+                  variant="segments"
+                  size="md"
+                  className="mt-1.5 !justify-start !gap-3"
+                />
+              </div>
+            )}
             </div>
           </div>
 
           {coverUrl && (
-            <div className="relative overflow-hidden rounded-3xl border border-green/20 bg-green-dark shadow-[0_16px_48px_rgba(0,140,76,0.18)]">
+            <div className="relative rotate-2 rounded-2xl border-4 border-green-dark bg-green-dark shadow-[14px_14px_0_rgba(27,35,29,0.9)] transition-transform duration-300 hover:rotate-0">
+              <div
+                aria-hidden
+                className="absolute -top-4 left-1/2 z-10 h-8 w-28 -translate-x-1/2 -rotate-2 rounded-sm bg-yellow/90 shadow-sm"
+              />
+              <div className="overflow-hidden rounded-xl">
               <Image
                 src={coverUrl}
                 alt={`Arte do ${hackathon.name}`}
                 width={1080}
                 height={1080}
                 priority
-                className="h-full w-full object-cover"
+                className="h-auto w-full"
                 sizes="(max-width: 1024px) 100vw, 45vw"
               />
+              </div>
             </div>
           )}
         </div>
       </section>
 
+      <section className="px-4 pb-8 pt-16 sm:px-6 lg:px-8" aria-label="Informações da edição">
+        <div className="mx-auto max-w-6xl">
+          <dl className="flex flex-wrap gap-x-12 gap-y-4 border-t-2 border-green-dark/10 pt-8">
+            <div>
+              <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Quando</dt>
+              <dd className="mt-1 font-heading text-lg font-bold">
+                {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
+                {clean(
+                  DAY.format(new Date(hackathon.presential_at ?? hackathon.submission_deadline_at)),
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Onde</dt>
+              <dd className="mt-1 font-heading text-lg font-bold">
+                {hackathon.location_city ?? "Online"}
+              </dd>
+            </div>
+            {prizePoolLabel(hackathon.prize_summary) && (
+              <div>
+                <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Prêmios</dt>
+                <dd className="mt-1 font-heading text-lg font-bold text-emerald">
+                  {prizePoolLabel(hackathon.prize_summary)}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </section>
+
       <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Etapas">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl">
+          <h2 className="text-balance font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
             Como o hackathon acontece
           </h2>
           <p className="mt-3 max-w-xl leading-relaxed text-muted">
@@ -253,9 +328,11 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Programação">
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
-                Programação da Fase 1
-              </h2>
+              <div>
+                <h2 className="font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
+                  Programação da Fase 1
+                </h2>
+              </div>
               <p className="text-sm text-muted">
                 As gravações ficam disponíveis na plataforma depois de cada encontro.
               </p>
@@ -267,7 +344,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 return (
                   <li
                     key={item.id}
-                    className="flex gap-5 rounded-2xl border border-green/15 bg-surface-raised p-5"
+                    className="flex gap-5 rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-5"
                   >
                     <div className="w-16 shrink-0 text-center">
                       {at ? (
@@ -312,7 +389,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Entregáveis">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl">
+          <p className={EYEBROW}>Entregáveis</p>
+          <h2 className="mt-3 font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
             O que seu time entrega
           </h2>
           <p className="mt-3 max-w-xl leading-relaxed text-muted">
@@ -322,8 +400,11 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {DELIVERABLES.map((d) => (
-              <div key={d.label} className="rounded-2xl border border-green/15 bg-surface-raised p-6">
-                <p className="font-heading text-4xl font-bold leading-none text-emerald">
+              <div
+                key={d.label}
+                className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-6"
+              >
+                <p className="font-mono text-4xl font-bold leading-none tabular-nums text-emerald">
                   {d.value}
                   <span className="ml-1.5 align-middle text-sm font-semibold text-muted">
                     {d.unit}
@@ -340,26 +421,36 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
       {hackathon.prize_summary && (
         <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Premiação">
           <div className="mx-auto max-w-6xl">
-            <div className="relative overflow-hidden rounded-3xl bg-green-dark px-8 py-12 sm:px-12">
+            <div className="relative overflow-hidden rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
               <div
                 aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(ellipse 80% 120% at 10% 10%, rgba(255,210,63,0.16) 0%, rgba(0,140,76,0.10) 45%, transparent 75%)",
-                }}
+                className="morth absolute -right-20 -top-24 h-72 w-72 bg-emerald/30"
+                style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-12deg)" }}
               />
               <div className="relative">
-                <h2 className="font-heading text-3xl font-bold text-surface sm:text-4xl">
+                <h2 className="font-heading text-3xl font-black uppercase tracking-tight text-surface [font-stretch:118%] sm:text-4xl">
                   Premiação
                 </h2>
-                <ul className="mt-6 grid gap-x-10 gap-y-3 text-surface/85 sm:grid-cols-2">
-                  {hackathon.prize_summary.split("·").map((prize) => (
-                    <li key={prize} className="flex gap-3 leading-relaxed">
-                      <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow" />
-                      <span>{prize.trim()}</span>
-                    </li>
-                  ))}
+                <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {hackathon.prize_summary
+                    .split("·")
+                    .map((p) => p.trim())
+                    .filter(Boolean)
+                    .map((prize) => {
+                      const [place, ...rest] = prize.split(" - ");
+                      const detail = rest.join(" - ");
+                      return (
+                        <li
+                          key={prize}
+                          className="rounded-2xl border-2 border-surface/15 bg-surface/[0.04] p-5 transition-colors duration-200 hover:border-yellow/50"
+                        >
+                          <p className="font-heading text-xl font-black uppercase tracking-tight text-yellow [font-stretch:112%]">
+                            {detail ? place : "Prêmio"}
+                          </p>
+                          <p className="mt-2 text-sm leading-relaxed text-surface/80">{detail || place}</p>
+                        </li>
+                      );
+                    })}
                 </ul>
               </div>
             </div>
@@ -367,16 +458,42 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      <section
-        className={`px-4 sm:px-6 lg:px-8 ${supporters.length > 0 ? "pb-4" : "pb-24"}`}
-        aria-label="Realização"
-      >
+{finalists.length > 0 && (
+        <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
+              Finalistas
+            </h2>
+            <p className="mt-3 max-w-xl leading-relaxed text-muted">
+              As equipes classificadas para a fase final.
+            </p>
+
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {finalists.map((f) => (
+                <li
+                  key={f.teamId}
+                  className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-6"
+                >
+                  {f.placement !== null && (
+                    <p className="font-mono text-sm font-bold tabular-nums text-emerald">
+                      {f.placement}º lugar
+                    </p>
+                  )}
+                  <h3 className="mt-1 font-heading text-lg font-bold">{f.teamName}</h3>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização e apoiadores">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
+          <div className="rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
             <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
               Realização
             </h2>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
               {PARTNERS.map((p) => (
                 <Image
                   key={p.name}
@@ -389,34 +506,32 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 />
               ))}
             </div>
+
+            {supporters.length > 0 && (
+              <>
+                <div aria-hidden className="mx-auto mt-10 h-px max-w-xl bg-surface/15" />
+                <h2 className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+                  Apoiadores
+                </h2>
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16">
+                  {supporters.map((sp) => (
+                    <Image
+                      key={sp.name}
+                      src={sp.src}
+                      alt={sp.name}
+                      width={sp.w}
+                      height={sp.h}
+                      loading="lazy"
+                      className={`w-auto opacity-80 ${sp.cls}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      {supporters.length > 0 && (
-        <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Apoiadores">
-          <div className="mx-auto max-w-6xl">
-            <div className="rounded-3xl bg-green-dark px-8 py-10 sm:px-12">
-              <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
-                Apoiadores
-              </h2>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
-                {supporters.map((s) => (
-                  <Image
-                    key={s.name}
-                    src={s.src}
-                    alt={s.name}
-                    width={s.w}
-                    height={s.h}
-                    loading="lazy"
-                    className={`w-auto opacity-90 ${s.cls}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

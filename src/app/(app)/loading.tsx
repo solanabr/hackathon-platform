@@ -1,7 +1,5 @@
-export default function Loading() {
-  return (
-    <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted">
-      Carregando...
-    </div>
-  );
+import Loading from "@/components/ui/loading";
+
+export default function AppLoading() {
+  return <Loading className="min-h-[40vh]" />;
 }

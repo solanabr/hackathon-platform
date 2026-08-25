@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 type Props = {
   memberId: string;
@@ -30,7 +31,6 @@ export function MemberRow({
   const [removing, setRemoving] = useState(false);
 
   async function handleRemove() {
-    if (!confirm(`Remover ${fullName ?? email} do time?`)) return;
     setRemoving(true);
     const res = await fetch("/api/team/member", {
       method: "DELETE",
@@ -48,15 +48,22 @@ export function MemberRow({
   return (
     <li className="flex items-center justify-between gap-3 py-3">
       <div className="flex min-w-0 items-center gap-3">
-        <Avatar src={avatarUrl} name={fullName ?? email} size="sm" />
+        <Avatar
+          src={avatarUrl}
+          name={fullName ?? email}
+          size="sm"
+          className={isLeader ? "ring-2 ring-emerald/20" : ""}
+        />
         <div className="min-w-0">
           <p className="font-medium text-ink">
             {fullName ?? email}
             {isLeader && (
-              <span className="ml-2 text-xs uppercase tracking-wider text-yellow">Líder</span>
+              <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-green">
+                Líder
+              </span>
             )}
           </p>
-          <p className="truncate text-xs text-muted">{email}</p>
+          <p className="truncate font-mono text-xs text-muted">{email}</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -66,14 +73,15 @@ export function MemberRow({
           </Badge>
         )}
         {canRemove && (
-          <button
-            type="button"
-            onClick={handleRemove}
+          <ConfirmButton
+            label={removing ? "Removendo..." : "Remover"}
+            variant="ghost"
             disabled={removing}
-            className="text-xs text-red-300 underline-offset-2 hover:underline disabled:opacity-50"
-          >
-            {removing ? "Removendo..." : "Remover"}
-          </button>
+            className="px-3 py-1 text-xs text-red-300 underline-offset-2 hover:underline disabled:opacity-50"
+            prompt={`Remover ${fullName ?? email} do time?`}
+            confirmLabel="Remover"
+            onConfirm={handleRemove}
+          />
         )}
       </div>
     </li>

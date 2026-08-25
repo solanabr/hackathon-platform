@@ -3,9 +3,11 @@ import {
   isRegistrationOpen,
   isSubmissionWindowOpen,
   isVotingOpen,
+  isFinalistsVisible,
   editionStage,
   phaseBoundaries,
   phaseState,
+  prizePoolLabel,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -112,6 +114,33 @@ describe("phaseBoundaries", () => {
   });
 });
 
+describe("isFinalistsVisible", () => {
+  it("hides the list before judging starts", () => {
+    const h = { ...base, status: "submissions_open" } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-11T00:00:00Z"))).toBe(false);
+  });
+
+  it("keeps the cut secret while judging until the announcement date", () => {
+    const h = { ...base, status: "judging" } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-09T18:00:00Z"))).toBe(false);
+  });
+
+  it("shows the list once the announcement date arrives", () => {
+    const h = { ...base, status: "judging" } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-10T15:00:00Z"))).toBe(true);
+  });
+
+  it("shows the list for a closed edition even without an announcement date", () => {
+    const h = { ...base, status: "closed", finalists_announced_at: null } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-13T00:00:00Z"))).toBe(true);
+  });
+
+  it("never leaks while judging with no announcement date set", () => {
+    const h = { ...base, status: "judging", finalists_announced_at: null } as Hackathon;
+    expect(isFinalistsVisible(h, new Date("2026-09-11T00:00:00Z"))).toBe(false);
+  });
+});
+
 describe("phase one split", () => {
   it("ends the classes when building starts, not when registration closes", () => {
     const b = phaseBoundaries(base);
@@ -140,5 +169,25 @@ describe("phase one split", () => {
       development_starts_at: null,
     } as Hackathon);
     expect(legacy.fase1.endsAt).toBe(new Date("2026-09-08T02:59:00Z").getTime());
+  });
+});
+
+describe("prizePoolLabel", () => {
+  it("sums the US$ amounts across the itemized summary", () => {
+    expect(
+      prizePoolLabel(
+        "1º Lugar - US$1500 + Kit · 2º Lugar - US$900 · 3º Lugar - US$450 · Menção Honrosa - US$150",
+      ),
+    ).toBe("US$ 3.000 em prêmios");
+  });
+
+  it("handles pt-BR thousand separators", () => {
+    expect(prizePoolLabel("1º Lugar - US$ 1.500")).toBe("US$ 1.500 em prêmios");
+  });
+
+  it("returns null when nothing is parseable", () => {
+    expect(prizePoolLabel(null)).toBeNull();
+    expect(prizePoolLabel("")).toBeNull();
+    expect(prizePoolLabel("Prêmios surpresa")).toBeNull();
   });
 });

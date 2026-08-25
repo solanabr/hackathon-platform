@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { ImageUpload } from "./image-upload";
 import { sanitizeText, sanitizeUrl } from "@/lib/security";
@@ -34,6 +35,16 @@ type FormState = {
 
 function formatSavedAt(date: Date): string {
   // Pin to America/Sao_Paulo so SSR (UTC) and client (BRT) format identically.
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatSubmittedAt(date: Date): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: "America/Sao_Paulo",
     day: "2-digit",
@@ -124,7 +135,6 @@ export function SubmissionEditor({
 
   async function submit() {
     if (!editable || !isLeader) return;
-    if (!confirm("Após submeter, ninguém do time pode editar. Confirma?")) return;
 
     const saved = await save();
     if (!saved) return;
@@ -148,6 +158,28 @@ export function SubmissionEditor({
       router.refresh();
     });
   }
+
+  const isDraft = initial.status !== "submitted";
+  const saveRef = useRef(save);
+  useEffect(() => {
+    saveRef.current = save;
+  });
+
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    // Autosave drafts 800ms after the last keystroke, but never while a
+    // submit is in flight; the manual "Salvar rascunho" button still saves
+    // on click.
+    if (!editable || pendingSubmit || !isDraft) return;
+    const id = setTimeout(() => {
+      void saveRef.current();
+    }, 800);
+    return () => clearTimeout(id);
+  }, [form, pendingSubmit, editable, isDraft]);
 
   const allRequiredFilled =
     !!form.project_name.trim() &&
@@ -236,7 +268,7 @@ export function SubmissionEditor({
             </p>
           </div>
           <div className="sm:col-span-2">
-            <label className="flex items-start gap-3 rounded-xl border border-green/15 bg-surface-raised p-4">
+            <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
               <input
                 type="checkbox"
                 checked={form.github_access_granted}
@@ -280,7 +312,7 @@ export function SubmissionEditor({
         </div>
 
         <div>
-          <Label hint="JPG / PNG · 250 × 250 px · até 5 MB">Imagem de capa do projeto</Label>
+          <Label hint="JPG / PNG, 250 × 250 px, até 5 MB">Imagem de capa do projeto</Label>
           <ImageUpload
             teamId={teamId}
             currentPath={imagePath}
@@ -304,14 +336,18 @@ export function SubmissionEditor({
       </fieldset>
 
       {submitError && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">
           {submitError}
         </p>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-green/15 pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-green-dark/15 pt-6">
         <p className="text-xs text-muted" suppressHydrationWarning>
-          {savedAt ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).` : "Nenhuma edição salva ainda."}
+          {initial.submitted_at
+            ? `Submetido em ${formatSubmittedAt(new Date(initial.submitted_at))} (horário de Brasília).`
+            : savedAt
+              ? `Salvo às ${formatSavedAt(savedAt)} (horário de Brasília).`
+              : "Nenhuma edição salva ainda."}
         </p>
         <div className="flex flex-wrap gap-3">
           {editable && (
@@ -320,18 +356,21 @@ export function SubmissionEditor({
           </Button>
           )}
           {isLeader && (
-            <Button
-              type="button"
+            <ConfirmButton
+              label={pendingSubmit ? "Submetendo..." : "Submeter projeto"}
               variant="primary"
-              onClick={submit}
               disabled={!editable || pendingSubmit || !canSubmit}
               title={blockedReason}
-            >
-              {pendingSubmit ? "Submetendo..." : "Submeter projeto"}
-            </Button>
+              prompt="Após submeter, ninguém do time pode editar."
+              confirmLabel="Submeter"
+              onConfirm={submit}
+            />
           )}
         </div>
       </div>
+      {editable && isLeader && !canSubmit && (
+        <p className="text-sm font-medium text-red-300">{blockedReason}.</p>
+      )}
     </div>
   );
 }

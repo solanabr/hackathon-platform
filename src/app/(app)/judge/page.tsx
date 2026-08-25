@@ -68,6 +68,8 @@ export default async function JudgeIndexPage() {
       ids = ids.filter((id) => allowed.has(id));
     }
 
+    // A row only counts as rated once it carries a grade — a comment-only save
+    // is a draft and must not move the progress bar.
     const { count } = ids.length
       ? await supabase
           .from("submission_ratings")
@@ -75,6 +77,7 @@ export default async function JudgeIndexPage() {
           .in("submission_id", ids)
           .eq("judge_id", roles.state.userId)
           .eq("round", ratingRound(edition))
+          .not("grade", "is", null)
       : { count: 0 };
 
     counts.set(edition.id, { total: ids.length, rated: count ?? 0 });
@@ -86,7 +89,10 @@ export default async function JudgeIndexPage() {
         <BackLink href="/" label="Hackathons" />
 
         <header>
-          <h1 className="font-heading text-3xl font-bold sm:text-4xl">Avaliação</h1>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            Painel do jurado
+          </p>
+          <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Avaliação</h1>
           <p className="mt-2 text-muted">
             {roles.isAdmin
               ? "Como admin você avalia qualquer edição."
@@ -98,7 +104,7 @@ export default async function JudgeIndexPage() {
 
         {editions.length === 0 ? (
           <Card className="p-7">
-            <p className="text-muted">Nenhuma edição atribuída a você ainda.</p>
+            <p className="font-mono text-sm text-muted">Nenhuma edição atribuída a você ainda.</p>
           </Card>
         ) : (
           <ul className="space-y-4">
@@ -119,26 +125,34 @@ export default async function JudgeIndexPage() {
                       </div>
                       <p className="mt-1.5 text-sm text-muted">
                         Pitch Day{" "}
-                        {edition.presential_at
-                          ? DAY.format(new Date(edition.presential_at)).replace(/\./g, "")
-                          : "a definir"}
+                        <span className="font-mono tabular-nums">
+                          {edition.presential_at
+                            ? DAY.format(new Date(edition.presential_at)).replace(/\./g, "")
+                            : "a definir"}
+                        </span>
                         {" · "}
-                        {c.total === 0
-                          ? roles.isAdmin
-                            ? "nenhum projeto submetido"
-                            : "nenhum projeto atribuído a você"
-                          : `${c.rated} de ${c.total} avaliados`}
+                        <span className="font-mono tabular-nums">
+                          {c.total === 0
+                            ? roles.isAdmin
+                              ? "nenhum projeto submetido"
+                              : "nenhum projeto atribuído a você"
+                            : `${c.rated} de ${c.total} avaliados`}
+                        </span>
                       </p>
                     </div>
 
                     {c.total === 0 ? (
-                      <span className="text-sm text-muted">
+                      <span className="font-mono text-sm tabular-nums text-muted">
                         {roles.isAdmin ? "Aguardando submissões" : "Nada atribuído ainda"}
                       </span>
                     ) : (
                       <Link
                         href={`/judge/h/${edition.slug}`}
-                        className={done ? "btn-secondary px-5 py-2 text-sm" : "btn-primary px-5 py-2 text-sm"}
+                        className={
+                          done
+                            ? "btn-secondary min-h-11 px-5 py-2 text-sm"
+                            : "btn-primary min-h-11 px-5 py-2 text-sm text-[#1b231d]"
+                        }
                       >
                         {done ? "Revisar notas" : "Avaliar projetos"}
                       </Link>

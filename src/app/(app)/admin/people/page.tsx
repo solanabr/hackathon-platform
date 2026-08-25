@@ -35,7 +35,7 @@ export default async function PeoplePage() {
     return {
       id: r.id,
       role: r.role,
-      email: user?.email ?? "—",
+      email: user?.email ?? "-",
       hackathonName: hackathon?.name ?? null,
     };
   });
@@ -45,7 +45,10 @@ export default async function PeoplePage() {
       <div className="mx-auto max-w-3xl">
         <BackLink href="/admin" label="Administração" />
 
-        <h1 className="font-heading text-3xl font-bold">Pessoas</h1>
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+          Operação
+        </p>
+        <h1 className="mt-1 font-heading text-3xl font-bold">Pessoas</h1>
         <p className="mt-2 text-muted">
           Admins enxergam tudo. Jurados só votam no hackathon em que foram indicados.
         </p>

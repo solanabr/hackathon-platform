@@ -8,6 +8,35 @@ export type TeamSnapshot = {
   isLeader: boolean;
 };
 
+export type PendingTeamSnapshot = {
+  teamId: string;
+  teamName: string;
+  leaderName: string | null;
+  leaderEmail: string | null;
+  /**
+   * The pending row only auto-accepts at signup, and only while the team is
+   * unlocked with fewer than four accepted members. Locked or full teams leave
+   * the invitee in limbo, so the UI needs to know.
+   */
+  locked: boolean;
+  full: boolean;
+};
+
+/**
+ * The invited user's own PENDING membership for an edition, if any. Goes
+ * through the security-definer RPC because RLS only exposes team_members rows
+ * to accepted teammates.
+ */
+export async function getPendingTeamForHackathon(
+  hackathonId: string,
+): Promise<PendingTeamSnapshot | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase.rpc("pending_membership_for_edition", {
+    p_hackathon_id: hackathonId,
+  });
+  return (data as PendingTeamSnapshot[] | null)?.[0] ?? null;
+}
+
 export async function getTeamForHackathon(userId: string, hackathonId: string): Promise<TeamSnapshot | null> {
   const supabase = await createServerSupabaseClient();
 
