@@ -10,8 +10,8 @@ export default async function AuthPage() {
   if (state) redirect(state.redirectPath);
 
   return (
-    <main className="relative min-h-screen bg-surface">
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-16 sm:px-6 sm:py-20">
+    <main className="relative bg-surface">
+      <div className="relative z-10 flex justify-center px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28">
         <Suspense fallback={null}>
           <AuthForm />
         </Suspense>
