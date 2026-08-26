@@ -9,13 +9,10 @@ import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { EditionInfoCard } from "@/components/edition/info-card";
 import { Avatar } from "@/components/ui/avatar";
-import { PhaseTimeline } from "@/components/edition/phase-timeline";
 import { PainelNav } from "@/components/edition/painel-nav";
-import { buildPhases } from "@/lib/phase-copy";
 import {
   getHackathonBySlug,
   isSubmissionWindowOpen,
-  prizePoolLabel,
 } from "@/lib/hackathon";
 import {
   confirmedMemberIds,
@@ -145,8 +142,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     };
   })();
 
-  const phases = buildPhases(hackathon);
-
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-8">
@@ -206,10 +201,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             </Link>
           </div>
         )}
-
-        <section aria-label="Etapas">
-          <PhaseTimeline phases={phases} now={now} />
-        </section>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <div className="space-y-6">
@@ -392,47 +383,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </div>
 
           <aside className="space-y-6">
-            {hackathon.prize_summary && (
-              <div className="relative overflow-hidden rounded-2xl border-2 border-green-dark bg-green-dark p-6 shadow-[6px_6px_0_rgba(27,35,29,0.25)]">
-                <div
-                  aria-hidden
-                  className="morth pointer-events-none absolute -right-14 -top-16 h-44 w-44 bg-emerald/30"
-                  style={{
-                    maskImage: "url(/brand/stbr/elements/morth-12.svg)",
-                    WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)",
-                    transform: "rotate(-12deg)",
-                  }}
-                />
-                <div className="relative">
-                  <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-surface/70">
-                    Prêmios
-                  </p>
-                  {prizePoolLabel(hackathon.prize_summary) && (
-                    <p className="mt-2 font-heading text-3xl font-black uppercase tracking-tight text-yellow [font-stretch:118%]">
-                      {prizePoolLabel(hackathon.prize_summary)?.replace(" em prêmios", "")}
-                    </p>
-                  )}
-                  <ul className="mt-4 space-y-2.5">
-                    {hackathon.prize_summary
-                      .split("·")
-                      .map((p) => p.trim())
-                      .filter(Boolean)
-                      .map((prize) => {
-                        const [place, ...rest] = prize.split(" - ");
-                        return (
-                          <li key={prize} className="text-sm leading-snug">
-                            <span className="font-bold text-surface">{place}</span>
-                            {rest.length > 0 && (
-                              <span className="block text-surface/70">{rest.join(" - ")}</span>
-                            )}
-                          </li>
-                        );
-                      })}
-                  </ul>
-                </div>
-              </div>
-            )}
-
             <EditionInfoCard hackathon={hackathon} />
           </aside>
         </div>
