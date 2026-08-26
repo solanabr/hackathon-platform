@@ -17,7 +17,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "name", label: "Nome", kind: "text", group: "Identidade" },
   { key: "slug", label: "Slug", kind: "text", group: "Identidade", help: "Muda a URL pública da edição." },
   { key: "tagline", label: "Chamada", kind: "text", group: "Identidade" },
-  { key: "description", label: "Descrição", kind: "textarea", group: "Identidade" },
+  {
+    key: "description",
+    label: "Descrição",
+    kind: "textarea",
+    group: "Identidade",
+    help: "Aparece no Google e no card ao compartilhar o link da edição.",
+  },
   {
     key: "status",
     label: "Status",

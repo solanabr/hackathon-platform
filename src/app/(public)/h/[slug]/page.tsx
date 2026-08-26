@@ -19,6 +19,31 @@ import { BackLink } from "@/components/ui/back-link";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const hackathon = await getHackathonBySlug(slug);
+  if (!hackathon || hackathon.status === "draft") return {};
+
+  const description = hackathon.description ?? hackathon.tagline ?? undefined;
+  return {
+    title: hackathon.name,
+    description,
+    openGraph: {
+      title: hackathon.name,
+      description,
+      ...(hackathon.cover_image_path
+        ? {
+            images: [
+              hackathon.cover_image_path.startsWith("/")
+                ? hackathon.cover_image_path
+                : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/hackathon-covers/${hackathon.cover_image_path}`,
+            ],
+          }
+        : {}),
+    },
+  };
+}
+
 const DAY = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
   month: "short",
