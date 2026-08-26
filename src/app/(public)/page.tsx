@@ -37,6 +37,8 @@ type CardData = {
   prizeSummary: string | null;
   registrationClosesLabel: string | null;
   externalUrl?: string;
+  // The deck crops covers square; a wide OG image loses its text there.
+  deckCoverUrl?: string;
 };
 
 // Editions that live outside the platform still get a card on the hub; the
@@ -57,6 +59,7 @@ function uniEdition(now = new Date()): CardData {
     prizeSummary: null,
     registrationClosesLabel: "07/09",
     externalUrl: "https://uni.superteam.com.br/",
+    deckCoverUrl: "/brand/uni-cover-square.png",
   };
 }
 
@@ -133,7 +136,7 @@ export default async function HomePage({
       href: e.externalUrl ?? `/h/${e.slug}`,
       label: e.name,
       meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
-      coverUrl: e.coverUrl,
+      coverUrl: e.deckCoverUrl ?? e.coverUrl,
     }));
   while (deck.length < 3) {
     deck.push({
