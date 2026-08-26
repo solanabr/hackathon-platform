@@ -27,7 +27,29 @@ type CardData = {
   locationCity: string | null;
   prizeSummary: string | null;
   registrationClosesLabel: string | null;
+  externalUrl?: string;
 };
+
+// Editions that live outside the platform still get a card on the hub; the
+// click goes straight to their own LP. Dates are hard-coded so the card
+// ages out of "Acontecendo" on its own.
+function uniEdition(now = new Date()): CardData {
+  const deadline = new Date("2026-09-08T02:59:59Z");
+  return {
+    slug: "hackathon-universitario",
+    name: "Hackathon Universitário",
+    coverUrl: "/brand/uni-cover.png",
+    stage: now.getTime() < deadline.getTime() ? "running" : "finished",
+    registrationOpen: now.getTime() < deadline.getTime(),
+    startDay: 17,
+    startMonth: "AGO",
+    dateRange: "17 DE AGO A 7 DE SET",
+    locationCity: "Online",
+    prizeSummary: null,
+    registrationClosesLabel: "07/09",
+    externalUrl: "https://uni.superteam.com.br/",
+  };
+}
 
 const FILTERS = [
   { key: "todos", label: "Todas" },
@@ -62,7 +84,7 @@ export default async function HomePage({
   const hackathons = await listHackathons();
   const supabase = await createServerSupabaseClient();
 
-  const editions: CardData[] = hackathons.map((h: Hackathon) => {
+  const dbEditions: CardData[] = hackathons.map((h: Hackathon) => {
     const start = new Date(h.starts_at);
     const end = new Date(h.presential_at ?? h.submission_deadline_at);
     return {
@@ -85,13 +107,15 @@ export default async function HomePage({
     };
   });
 
+  const editions: CardData[] = [...dbEditions, uniEdition()];
+
   const live = hackathons.find((h) => isRegistrationOpen(h) && editionStage(h) !== "finished") ?? null;
 
   const counts: Record<string, number> = { todos: editions.length };
   for (const e of editions) counts[e.stage] = (counts[e.stage] ?? 0) + 1;
   const filtered = filter === "todos" ? editions : editions.filter((e) => e.stage === filter);
 
-  const deck: DeckCard[] = editions.slice(0, 3).map((e) => ({
+  const deck: DeckCard[] = dbEditions.slice(0, 3).map((e) => ({
     key: e.slug,
     href: `/h/${e.slug}`,
     label: e.name,
@@ -212,12 +236,11 @@ export default async function HomePage({
             </p>
           ) : (
             <ul className="-mx-4 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
-              {filtered.map((e) => (
-                <li key={e.slug} className="w-[85%] min-w-0 shrink-0 snap-center sm:w-auto sm:shrink">
-                  <Link
-                    href={`/h/${e.slug}`}
-                    className="group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-sticker transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-sticker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
-                  >
+              {filtered.map((e) => {
+                const cardClass =
+                  "group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-sticker transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-sticker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]";
+                const inner = (
+                  <>
                     <div className="relative aspect-video overflow-hidden border-b-2 border-[#1b231d] bg-[#1b231d]">
                       {e.coverUrl ? (
                         <Image
@@ -256,18 +279,38 @@ export default async function HomePage({
                           {e.locationCity ? ` · ${e.locationCity}` : ""}
                         </p>
                         <p className="mt-2.5 text-xs font-bold text-[#008c4c]">
-                          {e.registrationOpen && e.registrationClosesLabel
-                            ? `Inscrições até ${e.registrationClosesLabel}`
-                            : e.stage === "finished"
-                              ? "Ver projetos"
-                              : "Ver detalhes"}
-                          <span aria-hidden className="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-1">→</span>
+                          {e.externalUrl
+                            ? e.registrationOpen && e.registrationClosesLabel
+                              ? `Inscrições até ${e.registrationClosesLabel}`
+                              : "Acessar site"
+                            : e.registrationOpen && e.registrationClosesLabel
+                              ? `Inscrições até ${e.registrationClosesLabel}`
+                              : e.stage === "finished"
+                                ? "Ver projetos"
+                                : "Ver detalhes"}
+                          <span aria-hidden className="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-1">
+                            {e.externalUrl ? "↗" : "→"}
+                          </span>
                         </p>
                       </div>
                     </div>
-                  </Link>
-                </li>
-              ))}
+                  </>
+                );
+
+                return (
+                  <li key={e.slug} className="w-[85%] min-w-0 shrink-0 snap-center sm:w-auto sm:shrink">
+                    {e.externalUrl ? (
+                      <a href={e.externalUrl} target="_blank" rel="noreferrer" className={cardClass}>
+                        {inner}
+                      </a>
+                    ) : (
+                      <Link href={`/h/${e.slug}`} className={cardClass}>
+                        {inner}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
