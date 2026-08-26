@@ -82,13 +82,27 @@ export function HeroDeck({ cards }: { cards: DeckCard[] }) {
               className="absolute inset-0 transition-[transform,opacity] duration-600 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform motion-reduce:transition-none"
             >
               {isFront && card.href ? (
-                <Link
-                  href={card.href}
-                  aria-label={card.label}
-                  className="block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
-                >
-                  {face}
-                </Link>
+                // External editions open their LP in a new tab, matching the
+                // grid cards below.
+                card.href.startsWith("http") ? (
+                  <a
+                    href={card.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={card.label}
+                    className="block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
+                  >
+                    {face}
+                  </a>
+                ) : (
+                  <Link
+                    href={card.href}
+                    aria-label={card.label}
+                    className="block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
+                  >
+                    {face}
+                  </Link>
+                )
               ) : (
                 <button
                   type="button"
