@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
-import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { defaultAuthRedirect, resolveAuthenticatedUserState } from "@/lib/user-state";
 import { sanitizeRedirect } from "@/lib/security";
 import { Suspense } from "react";
 
@@ -17,7 +17,9 @@ export default async function AuthPage({
     // Keep the deep link: someone mid-registration who is already signed in
     // continues where they were, not on their painel.
     redirect(
-      sanitizeRedirect(next ?? null) ?? sanitizeRedirect(redirectParam ?? null) ?? state.redirectPath,
+      sanitizeRedirect(next ?? null) ??
+        sanitizeRedirect(redirectParam ?? null) ??
+        (await defaultAuthRedirect(state)),
     );
   }
 

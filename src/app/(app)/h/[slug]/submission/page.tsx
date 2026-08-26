@@ -32,16 +32,16 @@ export default async function SubmissionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const state = await requireUser();
-  const hackathon = await getHackathonBySlug(slug);
+  const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
 
   if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/submission`);
 
-  const registration = await getRegistration(state.userId, hackathon.id);
+  const [registration, snapshot] = await Promise.all([
+    getRegistration(state.userId, hackathon.id),
+    getTeamForHackathon(state.userId, hackathon.id),
+  ]);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
-
-  const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
   if (!snapshot) redirect(`/h/${slug}/dashboard`);
 
   const { team, submission, isLeader } = snapshot;

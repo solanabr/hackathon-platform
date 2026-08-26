@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { defaultAuthRedirect, resolveAuthenticatedUserState } from "@/lib/user-state";
 import { sanitizeRedirect } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
@@ -40,5 +40,5 @@ export async function GET(request: NextRequest) {
   const state = await resolveAuthenticatedUserState();
   if (!state) return fail("auth_failed");
 
-  return NextResponse.redirect(new URL(dest ?? state.redirectPath, url.origin));
+  return NextResponse.redirect(new URL(dest ?? (await defaultAuthRedirect(state)), url.origin));
 }

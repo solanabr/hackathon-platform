@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -12,7 +13,8 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
-async function getProfile(id: string) {
+// generateMetadata and the page body both need this row — one read per request.
+const getProfile = cache(async (id: string) => {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("public_profiles")
@@ -20,7 +22,7 @@ async function getProfile(id: string) {
     .eq("id", id)
     .maybeSingle();
   return { profile: data as PublicProfile | null, error };
-}
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;

@@ -2,9 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { EditionPageDoc, type DocContext } from "@/components/edition/page-doc";
+import type { DocContext } from "@/components/edition/page-doc";
 import { savePageMd } from "@/app/(app)/admin/h/[slug]/page/actions";
+
+// The live preview drags the whole markdown pipeline (micromark, remark-gfm)
+// into the client — load it lazily so the editor paints without it.
+const EditionPageDoc = dynamic(
+  () => import("@/components/edition/page-doc").then((m) => m.EditionPageDoc),
+  { ssr: false, loading: () => <p className="p-6 font-mono text-sm text-muted">Carregando…</p> },
+);
 
 export function PageEditor({
   slug,

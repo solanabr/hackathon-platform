@@ -26,11 +26,18 @@ export default async function AdminJudgesPage({
 
   // platform_roles has two FKs into users (user_id and granted_by); a bare
   // users(...) embed is ambiguous and PostgREST rejects the whole query.
-  const { data: roleRows, error: rolesError } = await supabase
-    .from("platform_roles")
-    .select("user_id, users!platform_roles_user_id_fkey(full_name, email)")
-    .eq("role", "judge")
-    .eq("hackathon_id", hackathon.id);
+  const [{ data: roleRows, error: rolesError }, teamsResult] = await Promise.all([
+    supabase
+      .from("platform_roles")
+      .select("user_id, users!platform_roles_user_id_fkey(full_name, email)")
+      .eq("role", "judge")
+      .eq("hackathon_id", hackathon.id),
+    supabase
+      .from("teams")
+      .select("id, name, submissions(id, project_name, status)")
+      .eq("hackathon_id", hackathon.id)
+      .order("name", { ascending: true }),
+  ]);
 
   // "Nenhum jurado" on a failed read sends the organizer to re-grant roles
   // that already exist — show the failure instead.
@@ -43,11 +50,7 @@ export default async function AdminJudgesPage({
   }));
 
   const teamRows = unwrap(
-    await supabase
-      .from("teams")
-      .select("id, name, submissions(id, project_name, status)")
-      .eq("hackathon_id", hackathon.id)
-      .order("name", { ascending: true }),
+    teamsResult,
     "admin.judges.teams",
   );
 

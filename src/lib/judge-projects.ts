@@ -42,8 +42,9 @@ export async function loadJudgeProjects(
   const supabase = await createServiceRoleClient();
   const round = ratingRound(hackathon);
 
-  const data = unwrap(
-    await supabase
+  // Teams and this judge's assignments don't depend on each other — one batch.
+  const [teamsResult, assignmentsResult] = await Promise.all([
+    supabase
       .from("teams")
       .select(
         `id, name,
@@ -52,8 +53,15 @@ export async function loadJudgeProjects(
       )
       .eq("hackathon_id", hackathon.id)
       .order("name", { ascending: true }),
-    "judge.projects.teams",
-  );
+    isAdmin
+      ? Promise.resolve(null)
+      : supabase
+          .from("submission_assignments")
+          .select("submission_id")
+          .eq("judge_id", judgeId)
+          .eq("round", round),
+  ]);
+  const data = unwrap(teamsResult, "judge.projects.teams");
 
   let projects: JudgeProject[] = ((data as unknown as TeamRow[] | null) ?? [])
     .map((team) => {
@@ -101,16 +109,8 @@ export async function loadJudgeProjects(
     })
     .filter((p): p is JudgeProject => p !== null);
 
-  if (!isAdmin) {
-    const mine = unwrap(
-      await supabase
-        .from("submission_assignments")
-        .select("submission_id")
-        .eq("judge_id", judgeId)
-        .eq("round", round),
-      "judge.projects.assignments",
-    );
-
+  if (!isAdmin && assignmentsResult) {
+    const mine = unwrap(assignmentsResult, "judge.projects.assignments");
     const allowed = new Set(
       ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
     );

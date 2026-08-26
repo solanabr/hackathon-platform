@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "./supabase/server";
 import { logQueryError } from "./supabase/unwrap";
 import { sanitizeRedirect } from "./security";
@@ -12,7 +11,6 @@ export type AuthenticatedState = {
   userId: string;
   email: string;
   profile: User | null;
-  redirectPath: string;
 };
 
 /**
@@ -23,21 +21,13 @@ export type AuthenticatedState = {
  * teamless registrant landing on a closed window would get a dead dashboard
  * ("Submissão encerrada" and a "Criar time" CTA that can no longer be used).
  */
-async function latestLiveDashboard(
-  supabase: SupabaseClient,
-  hackathonIds: string[],
+function latestLiveDashboard(
+  hackathons: Hackathon[],
+  hackathonIds: Set<string>,
   preferOpenWindow = false,
-): Promise<string | null> {
-  if (hackathonIds.length === 0) return null;
-
-  const { data: hackathons, error: hackathonsError } = await supabase
-    .from("hackathons")
-    .select("slug, status, starts_at, submission_deadline_at, presential_at, voting_closes_at")
-    .in("id", hackathonIds);
-  if (hackathonsError) logQueryError("userState.latestLiveDashboard", hackathonsError);
-
-  const live = ((hackathons as Hackathon[] | null) ?? []).filter(
-    (h) => h.status !== "draft" && editionStage(h) !== "finished",
+): string | null {
+  const live = hackathons.filter(
+    (h) => hackathonIds.has(h.id) && h.status !== "draft" && editionStage(h) !== "finished",
   );
   if (live.length === 0) return null;
 
@@ -68,36 +58,54 @@ async function latestLiveDashboard(
 const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const supabase = await createServerSupabaseClient();
 
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("team_members")
-    .select("hackathon_id")
-    .eq("user_id", userId)
-    .eq("status", "accepted");
+  const [
+    { data: memberships, error: membershipsError },
+    { data: registrations, error: registrationsError },
+  ] = await Promise.all([
+    supabase
+      .from("team_members")
+      .select("hackathon_id")
+      .eq("user_id", userId)
+      .eq("status", "accepted"),
+    supabase.from("hackathon_registrations").select("hackathon_id").eq("user_id", userId),
+  ]);
   if (membershipsError) logQueryError("userState.liveDashboardPath.memberships", membershipsError);
-
-  const membershipIds = Array.from(
-    new Set(((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id)),
-  );
-
-  const fromMembership = await latestLiveDashboard(supabase, membershipIds);
-  if (fromMembership) return fromMembership;
-
-  const { data: registrations, error: registrationsError } = await supabase
-    .from("hackathon_registrations")
-    .select("hackathon_id")
-    .eq("user_id", userId);
   if (registrationsError)
     logQueryError("userState.liveDashboardPath.registrations", registrationsError);
 
-  const registrationIds = Array.from(
-    new Set(((registrations as { hackathon_id: string }[] | null) ?? []).map((r) => r.hackathon_id)),
+  const membershipIds = new Set(
+    ((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id),
+  );
+  const registrationIds = new Set(
+    ((registrations as { hackathon_id: string }[] | null) ?? []).map((r) => r.hackathon_id),
   );
 
-  const fromRegistration = await latestLiveDashboard(supabase, registrationIds, true);
-  if (fromRegistration) return fromRegistration;
+  const allIds = [...new Set([...membershipIds, ...registrationIds])];
+  if (allIds.length === 0) return "/";
 
-  return "/";
+  const { data: hackathons, error: hackathonsError } = await supabase
+    .from("hackathons")
+    .select("id, slug, status, starts_at, submission_deadline_at, presential_at, voting_closes_at")
+    .in("id", allIds);
+  if (hackathonsError) logQueryError("userState.liveDashboardPath.hackathons", hackathonsError);
+
+  const rows = (hackathons as Hackathon[] | null) ?? [];
+  return (
+    latestLiveDashboard(rows, membershipIds) ??
+    latestLiveDashboard(rows, registrationIds, true) ??
+    "/"
+  );
 });
+
+/**
+ * Where a signed-in visitor lands when the auth flow has no deep link to
+ * return to. Only /auth and the OAuth callback pay for this lookup — the
+ * header and page gates never need it.
+ */
+export async function defaultAuthRedirect(state: AuthenticatedState): Promise<string> {
+  if (!state.profile?.full_name) return "/account";
+  return liveDashboardPath(state.userId);
+}
 
 // Header, gates, and pages all call this per request; one auth+profile read.
 export const resolveAuthenticatedUserState = cache(async (): Promise<AuthenticatedState | null> => {
@@ -114,14 +122,10 @@ export const resolveAuthenticatedUserState = cache(async (): Promise<Authenticat
     .maybeSingle();
   if (profileError) logQueryError("userState.resolveAuthenticatedUserState.profile", profileError);
 
-  const typed = profile as User | null;
-  const needsProfile = !typed?.full_name;
-
   return {
     userId: user.id,
     email: user.email!,
-    profile: typed,
-    redirectPath: needsProfile ? "/account" : await liveDashboardPath(user.id),
+    profile: profile as User | null,
   };
 });
 

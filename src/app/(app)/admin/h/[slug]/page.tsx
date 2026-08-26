@@ -49,31 +49,36 @@ export default async function AdminEditionPage({
           .publicUrl
     : null;
 
-  const [registrations, teams] = await Promise.all([
+  const round = ratingRound(hackathon);
+  // Everything keyed only on the edition loads as one batch; assignments and
+  // ratings genuinely depend on the submitted ids and follow as a second one.
+  const [registrations, teams, submittedResult, judgeRoles, acceptedResult] = await Promise.all([
     listRegistrationsForEdition(hackathon.id),
     listTeamsForEdition(hackathon.id),
-  ]);
-  const submittedTeams = teams.filter(
-    (t) => t.submission?.status === "submitted",
-  ).length;
-
-  const round = ratingRound(hackathon);
-  const submittedRows = unwrap(
-    await supabase
+    supabase
       .from("submissions")
       .select("id, teams!inner(hackathon_id)")
       .eq("teams.hackathon_id", hackathon.id)
       .eq("status", "submitted"),
-    "admin.overview.submitted",
-  );
-  const submittedIds = ((submittedRows as { id: string }[] | null) ?? []).map((s) => s.id);
-
-  const [judgeRoles, assignmentRows, ratingCount] = await Promise.all([
     supabase
       .from("platform_roles")
       .select("id", { count: "exact", head: true })
       .eq("role", "judge")
       .eq("hackathon_id", hackathon.id),
+    supabase
+      .from("team_members")
+      .select("user_id, teams!inner(name)")
+      .eq("hackathon_id", hackathon.id)
+      .eq("status", "accepted"),
+  ]);
+  const submittedTeams = teams.filter(
+    (t) => t.submission?.status === "submitted",
+  ).length;
+
+  const submittedRows = unwrap(submittedResult, "admin.overview.submitted");
+  const submittedIds = ((submittedRows as { id: string }[] | null) ?? []).map((s) => s.id);
+
+  const [assignmentRows, ratingCount] = await Promise.all([
     submittedIds.length
       ? supabase
           .from("submission_assignments")
@@ -101,11 +106,7 @@ export default async function AdminEditionPage({
   const windowOpen = isSubmissionWindowOpen(hackathon);
   const roundLabel = round === "triagem" ? "triagem" : "banca final";
 
-  const { data: acceptedMembers, error: acceptedMembersError } = await supabase
-    .from("team_members")
-    .select("user_id, teams!inner(name)")
-    .eq("hackathon_id", hackathon.id)
-    .eq("status", "accepted");
+  const { data: acceptedMembers, error: acceptedMembersError } = acceptedResult;
   if (acceptedMembersError) logQueryError("admin.overview.acceptedMembers", acceptedMembersError);
   const teamNameByUser = new Map<string, string>();
   for (const m of (acceptedMembers as unknown as Array<{

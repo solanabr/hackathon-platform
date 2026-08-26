@@ -11,6 +11,15 @@ export const dynamic = "force-dynamic";
 
 const MONTHS = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
+const DAY_OF_MONTH = new Intl.DateTimeFormat("pt-BR", {
+  day: "numeric",
+  timeZone: "America/Sao_Paulo",
+});
+const MONTH_NUMBER = new Intl.DateTimeFormat("en-US", {
+  month: "numeric",
+  timeZone: "America/Sao_Paulo",
+});
+
 function clean(s: string): string {
   return stripPeriods(s).toUpperCase();
 }
@@ -97,9 +106,8 @@ export default async function HomePage({
         : null,
       stage: editionStage(h),
       registrationOpen: isRegistrationOpen(h) && editionStage(h) !== "finished",
-      startDay: Number(new Intl.DateTimeFormat("pt-BR", { day: "numeric", timeZone: "America/Sao_Paulo" }).format(start)),
-      startMonth:
-        MONTHS[Number(new Intl.DateTimeFormat("en-US", { month: "numeric", timeZone: "America/Sao_Paulo" }).format(start)) - 1],
+      startDay: Number(DAY_OF_MONTH.format(start)),
+      startMonth: MONTHS[Number(MONTH_NUMBER.format(start)) - 1],
       dateRange: `${clean(DAY_MONTH.format(start))} A ${clean(DAY_MONTH.format(end))}`,
       locationCity: h.location_city,
       prizeSummary: h.prize_summary,

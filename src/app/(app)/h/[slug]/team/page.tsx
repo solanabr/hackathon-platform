@@ -23,17 +23,17 @@ export default async function TeamPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const state = await requireUser();
-  const hackathon = await getHackathonBySlug(slug);
+  const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
 
   if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/register`);
 
-  const registration = await getRegistration(state.userId, hackathon.id);
+  const [registration, snapshot, pendingTeam] = await Promise.all([
+    getRegistration(state.userId, hackathon.id),
+    getTeamForHackathon(state.userId, hackathon.id),
+    getPendingTeamForHackathon(hackathon.id),
+  ]);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
-
-  const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
-  const pendingTeam = await getPendingTeamForHackathon(hackathon.id);
   if (!snapshot) {
     if (pendingTeam) {
       return (

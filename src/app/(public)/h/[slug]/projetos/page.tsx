@@ -44,13 +44,27 @@ export default async function ProjectsGalleryPage({
   // Member avatars come from the public_team_members view, keyed by team.
   // A missing view or an empty team degrades to no stack, not a broken card.
   const teamIds = [...new Set(projects.map((p) => p.team_id))];
-  const { data: teamMembers, error: membersError } =
+  // Placements only need the edition, so they load alongside the avatars.
+  const [membersResult, placementsResult] = await Promise.all([
     teamIds.length > 0
-      ? await supabase
+      ? supabase
           .from("public_team_members")
           .select("team_id, user_id, full_name, avatar_url")
           .in("team_id", teamIds)
-      : { data: null, error: null };
+      : Promise.resolve({ data: null, error: null }),
+    isFinalistsVisible(hackathon)
+      ? (async () => {
+          const service = await createServiceRoleClient();
+          return service
+            .from("teams")
+            .select("id, placement")
+            .eq("hackathon_id", hackathon.id)
+            .eq("is_finalist", true)
+            .not("placement", "is", null);
+        })()
+      : Promise.resolve(null),
+  ]);
+  const { data: teamMembers, error: membersError } = membersResult;
   if (membersError) logQueryError("public.gallery.members", membersError);
 
   const membersByTeam = new Map<string, PublicTeamMember[]>();
@@ -65,14 +79,8 @@ export default async function ProjectsGalleryPage({
   // Only when the same gate the landing uses says finalists are visible do we
   // read placements server-side and pin 1º/2º/3º to the top of the grid.
   const placementByTeam = new Map<string, number>();
-  if (isFinalistsVisible(hackathon)) {
-    const service = await createServiceRoleClient();
-    const { data: finalists, error: placementsError } = await service
-      .from("teams")
-      .select("id, placement")
-      .eq("hackathon_id", hackathon.id)
-      .eq("is_finalist", true)
-      .not("placement", "is", null);
+  if (placementsResult) {
+    const { data: finalists, error: placementsError } = placementsResult;
     // Winners degrade to an unpinned grid rather than an error banner.
     if (placementsError) logQueryError("public.gallery.placements", placementsError);
     for (const t of (finalists as Array<{ id: string; placement: number }> | null) ?? []) {

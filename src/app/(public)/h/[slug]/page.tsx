@@ -61,14 +61,17 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const prizePool = hackathon.prize_summary;
 
   const viewer = await resolveAuthenticatedUserState();
-  const registered =
-    viewer !== null && isRegistrationComplete(await getRegistration(viewer.userId, hackathon.id));
-
-  const roles = viewer ? await resolveRoleState() : null;
+  // Registration, roles and sponsors are mutually independent — one batch.
+  const [viewerRegistration, roles, sponsorRows] = await Promise.all([
+    viewer ? getRegistration(viewer.userId, hackathon.id) : Promise.resolve(null),
+    viewer ? resolveRoleState() : Promise.resolve(null),
+    listSponsors(hackathon.id),
+  ]);
+  const registered = viewer !== null && isRegistrationComplete(viewerRegistration);
   const canEdit =
     (roles?.isAdmin ?? false) || (roles?.adminFor.includes(hackathon.id) ?? false);
 
-  const sponsors = groupByTier(await listSponsors(hackathon.id));
+  const sponsors = groupByTier(sponsorRows);
 
   const coverUrl = hackathon.cover_image_path
     ? hackathon.cover_image_path.startsWith("/")

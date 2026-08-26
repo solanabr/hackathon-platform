@@ -34,26 +34,24 @@ export default async function AccountPage({
   const profile = state.profile;
   const supabase = await createServerSupabaseClient();
 
-  const regs = unwrap(
-    await supabase
+  const [regsResult, membershipsResult] = await Promise.all([
+    supabase
       .from("hackathon_registrations")
       .select("hackathon_id, registered_at, hackathons(*)")
       .eq("user_id", state.userId)
       .order("registered_at", { ascending: false }),
-    "account.registrations",
-  );
-
-  type RegRow = { hackathon_id: string; hackathons: Hackathon | Hackathon[] | null };
-  const rows = (regs as unknown as RegRow[] | null) ?? [];
-
-  const memberships = unwrap(
-    await supabase
+    supabase
       .from("team_members")
       .select("team_id, teams(id, name, hackathon_id, is_finalist)")
       .eq("user_id", state.userId)
       .eq("status", "accepted"),
-    "account.memberships",
-  );
+  ]);
+  const regs = unwrap(regsResult, "account.registrations");
+
+  type RegRow = { hackathon_id: string; hackathons: Hackathon | Hackathon[] | null };
+  const rows = (regs as unknown as RegRow[] | null) ?? [];
+
+  const memberships = unwrap(membershipsResult, "account.memberships");
 
   type TeamRow = {
     teams:

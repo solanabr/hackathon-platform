@@ -38,55 +38,95 @@ export default async function JudgeIndexPage() {
   const editions =
     (unwrap(await query, "judge.index.editions") as Hackathon[] | null) ?? [];
 
+  // Grouped queries instead of a per-edition loop: one sweep for submitted
+  // projects, then assignments and ratings for all of them at once — the
+  // round-trip count no longer grows with the number of editions.
+  const roundByEdition = new Map(editions.map((e) => [e.id, ratingRound(e)]));
+  const rounds = [...new Set(roundByEdition.values())];
+
+  const teams = editions.length
+    ? unwrap(
+        await supabase
+          .from("teams")
+          .select("hackathon_id, submissions!inner(id, status)")
+          .in(
+            "hackathon_id",
+            editions.map((e) => e.id),
+          ),
+        "judge.index.teams",
+      )
+    : [];
+
+  const submittedByEdition = new Map<string, string[]>();
+  for (const t of (teams as Array<{
+    hackathon_id: string;
+    submissions: { id: string; status: string } | { id: string; status: string }[];
+  }> | null) ?? []) {
+    const subs = Array.isArray(t.submissions) ? t.submissions : [t.submissions];
+    for (const s of subs) {
+      if (s?.status !== "submitted") continue;
+      const list = submittedByEdition.get(t.hackathon_id) ?? [];
+      list.push(s.id);
+      submittedByEdition.set(t.hackathon_id, list);
+    }
+  }
+  const allIds = [...submittedByEdition.values()].flat();
+
+  const [assignmentsResult, ratingsResult] = allIds.length
+    ? await Promise.all([
+        roles.isAdmin
+          ? Promise.resolve(null)
+          : supabase
+              .from("submission_assignments")
+              .select("submission_id, round")
+              .eq("judge_id", roles.state.userId)
+              .in("submission_id", allIds)
+              .in("round", rounds),
+        // A row only counts as rated once it carries a grade — a comment-only
+        // save is a draft and must not move the progress bar.
+        supabase
+          .from("submission_ratings")
+          .select("submission_id, round")
+          .eq("judge_id", roles.state.userId)
+          .in("submission_id", allIds)
+          .in("round", rounds)
+          .not("grade", "is", null),
+      ])
+    : [null, null];
+
+  const assigned = new Set(
+    (
+      (assignmentsResult
+        ? (unwrap(assignmentsResult, "judge.index.assignments") as Array<{
+            submission_id: string;
+            round: string;
+          }> | null)
+        : null) ?? []
+    ).map((r) => `${r.submission_id}:${r.round}`),
+  );
+  const rated = new Set(
+    (
+      (ratingsResult
+        ? (unwrap(ratingsResult, "judge.index.ratings") as Array<{
+            submission_id: string;
+            round: string;
+          }> | null)
+        : null) ?? []
+    ).map((r) => `${r.submission_id}:${r.round}`),
+  );
+
   const counts = new Map<string, { total: number; rated: number }>();
   for (const edition of editions) {
-    const teams = unwrap(
-      await supabase
-        .from("teams")
-        .select("submissions!inner(id, status)")
-        .eq("hackathon_id", edition.id),
-      "judge.index.teams",
-    );
-
-    let ids = ((teams as Array<{ submissions: { id: string; status: string } | { id: string; status: string }[] }> | null) ?? [])
-      .flatMap((t) => (Array.isArray(t.submissions) ? t.submissions : [t.submissions]))
-      .filter((s) => s?.status === "submitted")
-      .map((s) => s.id);
-
+    const round = roundByEdition.get(edition.id)!;
     // The denominator has to be what this judge can open, not every submission,
     // or their progress never reaches the total and "done" is unreachable.
-    if (!roles.isAdmin && ids.length) {
-      const mine = unwrap(
-        await supabase
-          .from("submission_assignments")
-          .select("submission_id")
-          .eq("judge_id", roles.state.userId)
-          .eq("round", ratingRound(edition))
-          .in("submission_id", ids),
-        "judge.index.assignments",
-      );
-
-      const allowed = new Set(
-        ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
-      );
-      ids = ids.filter((id) => allowed.has(id));
-    }
-
-    // A row only counts as rated once it carries a grade — a comment-only save
-    // is a draft and must not move the progress bar.
-    const ratedResult = ids.length
-      ? await supabase
-          .from("submission_ratings")
-          .select("submission_id", { count: "exact", head: true })
-          .in("submission_id", ids)
-          .eq("judge_id", roles.state.userId)
-          .eq("round", ratingRound(edition))
-          .not("grade", "is", null)
-      : { data: null, error: null, count: 0 };
-    unwrap(ratedResult, "judge.index.ratedCount");
-    const count = ratedResult.count;
-
-    counts.set(edition.id, { total: ids.length, rated: count ?? 0 });
+    const ids = (submittedByEdition.get(edition.id) ?? []).filter(
+      (id) => roles.isAdmin || assigned.has(`${id}:${round}`),
+    );
+    counts.set(edition.id, {
+      total: ids.length,
+      rated: ids.filter((id) => rated.has(`${id}:${round}`)).length,
+    });
   }
 
   return (

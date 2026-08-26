@@ -30,23 +30,32 @@ export default async function AdminPage() {
     (h) => !scoped || roles.adminFor.includes(h.id),
   );
 
-  const counts = supabase
-    ? await Promise.all(
-        hackathons.map(async (h) => {
-          const [registrations, teams] = await Promise.all([
-            supabase
-              .from("hackathon_registrations")
-              .select("id", { count: "exact", head: true })
-              .eq("hackathon_id", h.id),
-            supabase
-              .from("teams")
-              .select("id", { count: "exact", head: true })
-              .eq("hackathon_id", h.id),
-          ]);
-          return { id: h.id, registrations: registrations.count ?? 0, teams: teams.count ?? 0 };
-        }),
-      )
-    : [];
+  // Two grouped reads instead of two head-counts per edition.
+  const counts: Array<{ id: string; registrations: number; teams: number }> = [];
+  if (supabase && hackathons.length) {
+    const ids = hackathons.map((h) => h.id);
+    const [regsResult, teamsResult] = await Promise.all([
+      supabase.from("hackathon_registrations").select("hackathon_id").in("hackathon_id", ids),
+      supabase.from("teams").select("hackathon_id").in("hackathon_id", ids),
+    ]);
+    if (regsResult.error) logQueryError("admin.index.registrations", regsResult.error);
+    if (teamsResult.error) logQueryError("admin.index.teams", teamsResult.error);
+
+    const tally = (rows: Array<{ hackathon_id: string }> | null) => {
+      const m = new Map<string, number>();
+      for (const r of rows ?? []) m.set(r.hackathon_id, (m.get(r.hackathon_id) ?? 0) + 1);
+      return m;
+    };
+    const regCounts = tally(regsResult.data as Array<{ hackathon_id: string }> | null);
+    const teamCounts = tally(teamsResult.data as Array<{ hackathon_id: string }> | null);
+    for (const h of hackathons) {
+      counts.push({
+        id: h.id,
+        registrations: regCounts.get(h.id) ?? 0,
+        teams: teamCounts.get(h.id) ?? 0,
+      });
+    }
+  }
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">

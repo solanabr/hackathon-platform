@@ -25,6 +25,7 @@ import {
 import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 
 export const dynamic = "force-dynamic";
 
@@ -48,25 +49,30 @@ const REQUIRED: Array<{ key: string; label: string }> = [
 
 export default async function PainelPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const state = await requireUser();
-  const hackathon = await getHackathonBySlug(slug);
+  const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
-
-  const registration = await getRegistration(state.userId, hackathon.id);
-  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
-
-  const snapshot = await getTeamForHackathon(state.userId, hackathon.id);
-  const pendingTeam = await getPendingTeamForHackathon(hackathon.id);
-  const open = isSubmissionWindowOpen(hackathon);
-  const now = Date.now();
-  const submitted = snapshot?.submission.status === "submitted";
 
   const supabase = await createServerSupabaseClient();
 
-  const { count: totalCount } = await supabase
-    .from("public_schedule")
-    .select("id", { count: "exact", head: true })
-    .eq("hackathon_id", hackathon.id);
+  // Registration, team, pending invite and the schedule count only need the
+  // user and the edition — one batch instead of four sequential round-trips.
+  const [registration, snapshot, pendingTeam, scheduleResult] = await Promise.all([
+    getRegistration(state.userId, hackathon.id),
+    getTeamForHackathon(state.userId, hackathon.id),
+    getPendingTeamForHackathon(hackathon.id),
+    supabase
+      .from("public_schedule")
+      .select("id", { count: "exact", head: true })
+      .eq("hackathon_id", hackathon.id),
+  ]);
+  if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
+
+  if (scheduleResult.error) logQueryError("painel.scheduleCount", scheduleResult.error);
+  const totalCount = scheduleResult.count;
+
+  const open = isSubmissionWindowOpen(hackathon);
+  const now = Date.now();
+  const submitted = snapshot?.submission.status === "submitted";
 
   const memberIds = (snapshot?.members ?? []).map((m) => m.user_id).filter(Boolean) as string[];
   const confirmedIds = await confirmedMemberIds(hackathon.id, memberIds);

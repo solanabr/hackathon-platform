@@ -52,8 +52,7 @@ export default async function ContentsPage({
 }) {
   const { slug } = await params;
   const { f } = await searchParams;
-  const state = await requireUser();
-  const hackathon = await getHackathonBySlug(slug);
+  const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const registration = await getRegistration(state.userId, hackathon.id);

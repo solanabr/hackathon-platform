@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -13,7 +14,8 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string; submissionId: string }> };
 
-async function getSubmission(slug: string, id: string) {
+// generateMetadata and the page body both need this row — one read per request.
+const getSubmission = cache(async (slug: string, id: string) => {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("public_submissions")
@@ -24,7 +26,7 @@ async function getSubmission(slug: string, id: string) {
     .eq("hackathon_slug", slug)
     .maybeSingle();
   return { submission: data as PublicSubmission | null, error };
-}
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, submissionId } = await params;
