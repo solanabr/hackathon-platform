@@ -7,6 +7,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { PainelNav } from "@/components/edition/painel-nav";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm } from "@/components/team/add-member-form";
+import { PendingInviteActions } from "@/components/team/pending-invite-actions";
 import { TeamDangerZone } from "@/components/team/team-danger-zone";
 import { MemberRow } from "@/components/team/member-row";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -42,14 +43,21 @@ export default async function TeamPage({
               Você foi adicionado ao time {pendingTeam.teamName}
             </h1>
             <p className="mt-2 text-muted">
-              {pendingTeam.leaderName ?? "O líder do time"} te adicionou por e-mail.{" "}
+              {pendingTeam.leaderName ?? "O líder do time"} te convidou por e-mail.{" "}
               {pendingTeam.locked || pendingTeam.full
-                ? "O time já está com a submissão fechada ou sem vagas: sua entrada continua pendente até o líder liberar um lugar."
-                : "A entrada é confirmada assim que você mantiver a inscrição completa."}
+                ? "O time já está com a submissão fechada ou sem vagas: sua entrada fica pendente até o líder liberar um lugar."
+                : "Você decide: aceite para entrar no time, ou recuse para liberar a vaga."}
             </p>
-            <div className="mt-6">
-              <Link href={`/h/${slug}/dashboard`}>
-                <Button variant="primary">Voltar ao painel</Button>
+            <PendingInviteActions
+              teamId={pendingTeam.teamId}
+              blocked={pendingTeam.locked || pendingTeam.full}
+            />
+            <div className="mt-4">
+              <Link
+                href={`/h/${slug}/dashboard`}
+                className="text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
+              >
+                Voltar ao painel
               </Link>
             </div>
           </Card>
@@ -193,8 +201,8 @@ export default async function TeamPage({
             <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">CONVITES</p>
             <h2 className="mt-1 font-heading text-lg font-semibold">Adicionar integrante</h2>
             <p className="mt-1 text-sm text-muted">
-              Digite o e-mail. Se a pessoa já tiver conta, entra direto no time.
-              Senão, vai aparecer automaticamente quando ela se cadastrar com este e-mail.
+              Digite o e-mail. Se a pessoa já tiver conta, ela recebe o convite e aceita no
+              painel. Senão, entra automaticamente ao se cadastrar com este e-mail.
             </p>
             <div className="mt-5">
               <AddMemberForm teamId={team.id} />

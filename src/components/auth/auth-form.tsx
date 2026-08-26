@@ -14,14 +14,24 @@ const PROVIDER_LABELS: Record<Provider, string> = {
   github: "GitHub",
 };
 
+const CALLBACK_ERRORS: Record<string, string> = {
+  link_invalid: "O link de acesso expirou ou já foi usado. Peça um novo código abaixo.",
+  provider_error: "O provedor de login recusou o acesso. Tente de novo ou use o código por e-mail.",
+  auth_failed:
+    "Não foi possível concluir o login. Abra o link no mesmo navegador em que pediu o código, ou peça um novo.",
+};
+
 export function AuthForm() {
+  const searchParams = useSearchParams();
+  const callbackError = searchParams.get("error");
   const [loading, setLoading] = useState<Provider | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    callbackError ? (CALLBACK_ERRORS[callbackError] ?? CALLBACK_ERRORS.auth_failed) : null,
+  );
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
   const supabase = createClient();
-  const searchParams = useSearchParams();
   // `next` carries the page the user came from (requireUser/middleware);
   // `redirect` is kept as a legacy alias for invite links that still use it.
   const postLoginPath =

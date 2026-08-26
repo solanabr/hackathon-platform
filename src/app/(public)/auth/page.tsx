@@ -1,13 +1,25 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { sanitizeRedirect } from "@/lib/security";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthPage() {
+export default async function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; redirect?: string }>;
+}) {
+  const { next, redirect: redirectParam } = await searchParams;
   const state = await resolveAuthenticatedUserState();
-  if (state) redirect(state.redirectPath);
+  if (state) {
+    // Keep the deep link: someone mid-registration who is already signed in
+    // continues where they were, not on their painel.
+    redirect(
+      sanitizeRedirect(next ?? null) ?? sanitizeRedirect(redirectParam ?? null) ?? state.redirectPath,
+    );
+  }
 
   return (
     <main className="relative bg-surface">

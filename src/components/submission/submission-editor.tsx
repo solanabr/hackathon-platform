@@ -122,10 +122,23 @@ export function SubmissionEditor({
       github_access_granted: form.github_access_granted,
     };
 
-    const { error } = await supabase.from("submissions").update(payload).eq("team_id", teamId);
+    // Without .select() PostgREST answers 204 even when RLS matched zero rows
+    // (locked team, deadline passed) — the editor would paint "Salvo" over
+    // writes being thrown away.
+    const { data, error } = await supabase
+      .from("submissions")
+      .update(payload)
+      .eq("team_id", teamId)
+      .select("id");
     setSaving(false);
     if (error) {
       setSubmitError("Não foi possível salvar. Tente novamente.");
+      return false;
+    }
+    if (!data || data.length === 0) {
+      setSubmitError(
+        "Nada foi salvo: o prazo de submissão passou e o time foi travado. Recarregue a página.",
+      );
       return false;
     }
     setSavedAt(new Date());
@@ -133,11 +146,18 @@ export function SubmissionEditor({
     return true;
   }
 
+  const submitInFlight = useRef(false);
+
   async function submit() {
     if (!editable || !isLeader) return;
+    if (submitInFlight.current || pendingSubmit) return;
+    submitInFlight.current = true;
 
     const saved = await save();
-    if (!saved) return;
+    if (!saved) {
+      submitInFlight.current = false;
+      return;
+    }
 
     startSubmit(async () => {
       setSubmitError(null);
@@ -152,6 +172,7 @@ export function SubmissionEditor({
         setSubmitError(
           (code && SUBMIT_ERRORS[code]) ?? data.error ?? "Não foi possível submeter.",
         );
+        submitInFlight.current = false;
         return;
       }
       router.push(dashboardHref);
@@ -323,12 +344,19 @@ export function SubmissionEditor({
               setImageUrl(url);
               if (!editable) return;
               setSubmitError(null);
-              const { error } = await supabase
+              const { data, error } = await supabase
                 .from("submissions")
                 .update({ image_path: path })
-                .eq("team_id", teamId);
+                .eq("team_id", teamId)
+                .select("id");
               if (error) {
                 setSubmitError("A imagem subiu, mas não foi salva no projeto. Tente de novo.");
+                return;
+              }
+              if (!data || data.length === 0) {
+                setSubmitError(
+                  "A imagem subiu, mas nada foi salvo: o prazo passou e o time foi travado.",
+                );
                 return;
               }
               setSavedAt(new Date());
