@@ -33,15 +33,12 @@ export const EDITION_FIELDS: EditionField[] = [
     ],
   },
 
+  // The platform's date model ends at the announcement plus an optional end
+  // (docs/EDITION-DATES.md). The retired columns (development_starts_at,
+  // presential_at, voting_*) still exist and are read by code until the
+  // post-event cutover — they just can't be edited anymore.
   { key: "starts_at", label: "Início", kind: "datetime", group: "Datas" },
   { key: "registration_closes_at", label: "Fim das inscrições", kind: "datetime", group: "Datas" },
-  {
-    key: "development_starts_at",
-    label: "Início do desenvolvimento",
-    kind: "datetime",
-    group: "Datas",
-    help: "Separa a capacitação da fase de construção na linha do tempo.",
-  },
   {
     key: "submission_deadline_at",
     label: "Prazo de submissão",
@@ -50,9 +47,20 @@ export const EDITION_FIELDS: EditionField[] = [
     help: "Depois disso o cron tranca os times.",
   },
   { key: "finalists_announced_at", label: "Anúncio dos finalistas", kind: "datetime", group: "Datas" },
-  { key: "presential_at", label: "Fase presencial", kind: "datetime", group: "Datas" },
-  { key: "voting_opens_at", label: "Abertura da votação", kind: "datetime", group: "Datas" },
-  { key: "voting_closes_at", label: "Fim da votação", kind: "datetime", group: "Datas" },
+  {
+    key: "finalists_count",
+    label: "Número de finalistas",
+    kind: "number",
+    group: "Datas",
+    help: "Em branco enquanto a organização não fecha o número.",
+  },
+  {
+    key: "ends_at",
+    label: "Encerramento",
+    kind: "datetime",
+    group: "Datas",
+    help: "Opcional. Sem ele, a edição termina no anúncio dos finalistas.",
+  },
 
   { key: "location_name", label: "Local", kind: "text", group: "Local e links" },
   { key: "location_city", label: "Cidade", kind: "text", group: "Local e links" },
@@ -60,14 +68,6 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "community_url", label: "Comunidade", kind: "url", group: "Local e links" },
   { key: "rules_url", label: "Regulamento", kind: "url", group: "Local e links" },
 
-  { key: "prize_summary", label: "Premiação", kind: "textarea", group: "Prêmios", help: "Separe os itens com ·" },
-  {
-    key: "finalists_count",
-    label: "Número de finalistas",
-    kind: "number",
-    group: "Prêmios",
-    help: "Em branco enquanto a organização não fecha o número.",
-  },
 ];
 
 const OFFSET = "-03:00";

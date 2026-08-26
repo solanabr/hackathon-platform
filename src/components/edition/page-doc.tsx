@@ -1,7 +1,13 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
-import { extractOutline, slugifyHeading, type OutlineEntry } from "@/lib/page-doc";
+import {
+  parsePageDoc,
+  extractOutline,
+  slugifyHeading,
+  type MarkerName,
+  type OutlineEntry,
+} from "@/lib/page-doc";
 import type { SponsorLogo } from "@/lib/sponsors";
 import type { Hackathon, HackathonContent, SponsorTier } from "@/types/db";
 
@@ -55,14 +61,16 @@ export type DocContext = {
 };
 
 /**
- * The page body: the edition's markdown document (pure prose — headings,
- * lists, tables) followed by the furniture — the live sections every
- * edition gets in a fixed order, each rendering nothing when it has no
- * data. Furniture is not part of the document so it can never be
- * forgotten, and Programação updates when a recording is published
- * without anyone opening the editor.
+ * The page body is the edition's markdown document. Prose (headings, lists,
+ * tables) renders as written; a marker line (```phases``` or
+ * ```schedule```) drops the matching live visual in place, with its heading
+ * and copy coming from the document above it. Finalists (date-gated) and
+ * the sponsor band are not part of the document — they always render after
+ * it so they can never be forgotten, and Programação updates when a
+ * recording is published without anyone opening the editor.
  */
 export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
+  const segments = parsePageDoc(doc);
   const schedule = ctx.schedule.filter((s) => s.kind !== "evento");
   const showFinalists = ctx.finalistsVisible && ctx.finalists.length > 0;
   const showPartners =
@@ -70,11 +78,6 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
 
   const outline: OutlineEntry[] = [
     ...extractOutline(doc),
-    ...(ctx.phases.length > 0
-      ? [{ id: "como-o-hackathon-acontece", text: "Como o hackathon acontece" }]
-      : []),
-    ...(schedule.length > 0 ? [{ id: "programacao", text: "Programação" }] : []),
-    ...(ctx.hackathon.prize_summary ? [{ id: "premiacao", text: "Premiação" }] : []),
     ...(showFinalists ? [{ id: "finalistas", text: "Finalistas" }] : []),
   ];
   const withNav = outline.length >= 2;
@@ -88,12 +91,13 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
       >
         {withNav && <OutlineNav outline={outline} />}
 
-        <div className="min-w-0 space-y-16">
-          {doc.trim() !== "" && <ProseDoc md={doc} />}
-          {ctx.phases.length > 0 && <PhasesSection ctx={ctx} />}
-          {schedule.length > 0 && <ScheduleSection items={schedule} />}
-          {ctx.hackathon.prize_summary && (
-            <PrizesSection summary={ctx.hackathon.prize_summary} />
+        <div className="min-w-0 space-y-14">
+          {segments.map((seg, i) =>
+            seg.type === "prose" ? (
+              <ProseDoc key={i} md={seg.md} />
+            ) : (
+              <MarkerVisual key={i} name={seg.name} ctx={ctx} schedule={schedule} />
+            ),
           )}
           {showFinalists && <FinalistsSection finalists={ctx.finalists} />}
           {showPartners && <PartnersSection sponsors={ctx.sponsors} />}
@@ -101,6 +105,25 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
       </div>
     </div>
   );
+}
+
+function MarkerVisual({
+  name,
+  ctx,
+  schedule,
+}: {
+  name: MarkerName;
+  ctx: DocContext;
+  schedule: ScheduleRow[];
+}) {
+  switch (name) {
+    case "phases":
+      return ctx.phases.length > 0 ? <PhaseTimeline phases={ctx.phases} now={ctx.now} /> : null;
+    case "schedule":
+      return schedule.length > 0 ? <ScheduleGrid items={schedule} /> : null;
+    default:
+      return null;
+  }
 }
 
 function OutlineNav({ outline }: { outline: OutlineEntry[] }) {
@@ -180,32 +203,9 @@ function FurnitureHeading({ id, children }: { id: string; children: React.ReactN
   );
 }
 
-function PhasesSection({ ctx }: { ctx: DocContext }) {
+function ScheduleGrid({ items }: { items: ScheduleRow[] }) {
   return (
-    <section aria-label="Como o hackathon acontece">
-      <FurnitureHeading id="como-o-hackathon-acontece">
-        Como o hackathon acontece
-      </FurnitureHeading>
-      {ctx.hackathon.location_city && (
-        <p className="mt-3 max-w-xl leading-relaxed text-muted">
-          Duas fases. A primeira online, a segunda presencial em {ctx.hackathon.location_city}.
-        </p>
-      )}
-      <div className="mt-8">
-        <PhaseTimeline phases={ctx.phases} now={ctx.now} />
-      </div>
-    </section>
-  );
-}
-
-function ScheduleSection({ items }: { items: ScheduleRow[] }) {
-  return (
-    <section aria-label="Programação">
-      <FurnitureHeading id="programacao">Programação</FurnitureHeading>
-      <p className="mt-3 max-w-xl leading-relaxed text-muted">
-        As gravações ficam disponíveis na plataforma depois de cada encontro.
-      </p>
-      <ul className="mt-8 grid gap-4 md:grid-cols-2">
+      <ul className="grid gap-4 md:grid-cols-2">
         {items.map((item) => {
           const at = item.scheduled_at ? new Date(item.scheduled_at) : null;
           return (
@@ -245,47 +245,6 @@ function ScheduleSection({ items }: { items: ScheduleRow[] }) {
           );
         })}
       </ul>
-    </section>
-  );
-}
-
-function PrizesSection({ summary }: { summary: string }) {
-  return (
-    <section aria-label="Premiação">
-      <FurnitureHeading id="premiacao">Premiação</FurnitureHeading>
-      <div className="relative mt-8 overflow-hidden rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
-        <div
-          aria-hidden
-          className="morth absolute -right-20 -top-24 h-72 w-72 bg-emerald/30"
-          style={{
-            maskImage: "url(/brand/stbr/elements/morth-12.svg)",
-            WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)",
-            transform: "rotate(-12deg)",
-          }}
-        />
-        <ul className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {summary
-            .split("·")
-            .map((p) => p.trim())
-            .filter(Boolean)
-            .map((prize) => {
-              const [place, ...rest] = prize.split(" - ");
-              const detail = rest.join(" - ");
-              return (
-                <li
-                  key={prize}
-                  className="rounded-2xl border-2 border-surface/15 bg-surface/[0.04] p-5 transition-colors duration-200 hover:border-yellow/50"
-                >
-                  <p className="font-heading text-xl font-black uppercase tracking-tight text-yellow [font-stretch:112%]">
-                    {detail ? place : "Prêmio"}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-surface/80">{detail || place}</p>
-                </li>
-              );
-            })}
-        </ul>
-      </div>
-    </section>
   );
 }
 

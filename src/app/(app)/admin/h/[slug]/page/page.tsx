@@ -5,7 +5,6 @@ import { PageEditor } from "@/components/admin/page-editor";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
 import { buildPhases } from "@/lib/phase-copy";
-import { listSponsors, groupByTier } from "@/lib/sponsors";
 import { DEFAULT_PAGE_MD } from "@/lib/page-template";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import type { ScheduleRow } from "@/components/edition/page-doc";
@@ -27,7 +26,6 @@ export default async function AdminPageEditorPage({
   // The preview renders the real blocks, so it needs the same context the
   // public page assembles — a preview that fakes them teaches nothing.
   const supabase = await createServerSupabaseClient();
-  const sponsorRows = await listSponsors(hackathon.id);
   const { data: scheduleData } = await supabase
     .from("public_schedule")
     .select("id, kind, title, speaker, description, scheduled_at, location, position")
@@ -52,7 +50,9 @@ export default async function AdminPageEditorPage({
     phases: buildPhases(hackathon),
     now: Date.now(),
     schedule: (scheduleData as ScheduleRow[] | null) ?? [],
-    sponsors: groupByTier(sponsorRows),
+    // The sponsor band is not part of the document, so it stays out of the
+    // editor preview — it is managed and previewed in Marcas.
+    sponsors: { realizacao: [], apoiador: [] },
     finalists,
     finalistsVisible: isFinalistsVisible(hackathon),
   };

@@ -72,9 +72,12 @@ export function PageEditor({
       </div>
 
       <p className="mt-4 max-w-2xl text-xs text-muted">
-        O documento é markdown puro — títulos com ##, listas e tabelas. As seções ao vivo
-        (etapas, programação, premiação, finalistas e marcas) entram sozinhas depois do texto e
-        são editadas nas telas delas: datas na edição, agenda em Conteúdos, logos em Marcas.
+        O documento é markdown — títulos com ##, listas e tabelas. Uma linha com{" "}
+        <code className="rounded bg-green-dark/10 px-1.5 py-0.5 font-mono text-xs">```phases```</code>{" "}
+        ou{" "}
+        <code className="rounded bg-green-dark/10 px-1.5 py-0.5 font-mono text-xs">```schedule```</code>{" "}
+        solta ali a linha do tempo ou a agenda ao vivo (datas na edição, agenda em Conteúdos).
+        Finalistas e as marcas entram sozinhos no fim da página.
       </p>
     </div>
   );
