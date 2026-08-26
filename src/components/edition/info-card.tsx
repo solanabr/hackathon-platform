@@ -47,19 +47,35 @@ export function EditionInfoCard({ hackathon }: { hackathon: Hackathon }) {
         })}
       </ol>
 
-      {hackathon.community_url && (
+      {(hackathon.community_url || hackathon.rules_url) && (
         <div className="mt-5 border-t-2 border-green-dark/10 pt-4">
-          <a
-            href={hackathon.community_url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark px-5 py-2 text-sm font-bold text-ink transition-colors duration-150 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-          >
-            Tirar dúvida no grupo
-          </a>
-          <p className="mt-2 text-xs leading-relaxed text-muted">
-            Mentores e organização respondem por lá durante todo o evento.
-          </p>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {hackathon.community_url && (
+              <a
+                href={hackathon.community_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark px-5 py-2 text-sm font-bold text-ink transition-colors duration-150 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              >
+                Tirar dúvida no grupo
+              </a>
+            )}
+            {hackathon.rules_url && (
+              <a
+                href={hackathon.rules_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark/20 px-5 py-2 text-sm font-bold text-muted transition-colors duration-150 hover:border-green-dark hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              >
+                Regulamento
+              </a>
+            )}
+          </div>
+          {hackathon.community_url && (
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Mentores e organização respondem por lá durante todo o evento.
+            </p>
+          )}
         </div>
       )}
     </SectionCard>
