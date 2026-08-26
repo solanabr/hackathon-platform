@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar } from "@/components/ui/avatar";
 import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import type { PublicSubmission, PublicTeamMember } from "@/types/public";
 
 export const dynamic = "force-dynamic";
@@ -71,12 +72,14 @@ export default async function ProjectsGalleryPage({
   const placementByTeam = new Map<string, number>();
   if (isFinalistsVisible(hackathon)) {
     const service = await createServiceRoleClient();
-    const { data: finalists } = await service
+    const { data: finalists, error: placementsError } = await service
       .from("teams")
       .select("id, placement")
       .eq("hackathon_id", hackathon.id)
       .eq("is_finalist", true)
       .not("placement", "is", null);
+    // Winners degrade to an unpinned grid rather than an error banner.
+    if (placementsError) logQueryError("public.gallery.placements", placementsError);
     for (const t of (finalists as Array<{ id: string; placement: number }> | null) ?? []) {
       placementByTeam.set(t.id, t.placement);
     }

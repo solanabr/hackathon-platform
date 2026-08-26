@@ -5,6 +5,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { StatusChip } from "@/components/ui/section-card";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
 import { editionStage, ratingRound } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -37,15 +38,18 @@ export default async function JudgeIndexPage() {
     .order("starts_at", { ascending: false });
   if (!roles.isAdmin) query = query.in("id", roles.judgeFor);
 
-  const { data } = await query;
-  const editions = (data as Hackathon[] | null) ?? [];
+  const editions =
+    (unwrap(await query, "judge.index.editions") as Hackathon[] | null) ?? [];
 
   const counts = new Map<string, { total: number; rated: number }>();
   for (const edition of editions) {
-    const { data: teams } = await supabase
-      .from("teams")
-      .select("submissions!inner(id, status)")
-      .eq("hackathon_id", edition.id);
+    const teams = unwrap(
+      await supabase
+        .from("teams")
+        .select("submissions!inner(id, status)")
+        .eq("hackathon_id", edition.id),
+      "judge.index.teams",
+    );
 
     let ids = ((teams as Array<{ submissions: { id: string; status: string } | { id: string; status: string }[] }> | null) ?? [])
       .flatMap((t) => (Array.isArray(t.submissions) ? t.submissions : [t.submissions]))
@@ -55,12 +59,15 @@ export default async function JudgeIndexPage() {
     // The denominator has to be what this judge can open, not every submission,
     // or their progress never reaches the total and "done" is unreachable.
     if (!roles.isAdmin && ids.length) {
-      const { data: mine } = await supabase
-        .from("submission_assignments")
-        .select("submission_id")
-        .eq("judge_id", roles.state.userId)
-        .eq("round", ratingRound(edition))
-        .in("submission_id", ids);
+      const mine = unwrap(
+        await supabase
+          .from("submission_assignments")
+          .select("submission_id")
+          .eq("judge_id", roles.state.userId)
+          .eq("round", ratingRound(edition))
+          .in("submission_id", ids),
+        "judge.index.assignments",
+      );
 
       const allowed = new Set(
         ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
@@ -70,7 +77,7 @@ export default async function JudgeIndexPage() {
 
     // A row only counts as rated once it carries a grade — a comment-only save
     // is a draft and must not move the progress bar.
-    const { count } = ids.length
+    const ratedResult = ids.length
       ? await supabase
           .from("submission_ratings")
           .select("submission_id", { count: "exact", head: true })
@@ -78,7 +85,9 @@ export default async function JudgeIndexPage() {
           .eq("judge_id", roles.state.userId)
           .eq("round", ratingRound(edition))
           .not("grade", "is", null)
-      : { count: 0 };
+      : { data: null, error: null, count: 0 };
+    unwrap(ratedResult, "judge.index.ratedCount");
+    const count = ratedResult.count;
 
     counts.set(edition.id, { total: ids.length, rated: count ?? 0 });
   }

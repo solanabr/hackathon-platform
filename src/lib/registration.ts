@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "./supabase/server";
+import { unwrap } from "./supabase/unwrap";
 import type { HackathonRegistration, User } from "@/types/db";
 
 export async function getRegistration(
@@ -28,11 +29,16 @@ export async function confirmedMemberIds(
 ): Promise<Set<string>> {
   if (memberIds.length === 0) return new Set();
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("hackathon_registrations")
-    .select("user_id, luma_confirmed_at")
-    .eq("hackathon_id", hackathonId)
-    .in("user_id", memberIds);
+  // An empty Set on a failed read would flag every member as unconfirmed and
+  // block the submission for the wrong reason.
+  const data = unwrap(
+    await supabase
+      .from("hackathon_registrations")
+      .select("user_id, luma_confirmed_at")
+      .eq("hackathon_id", hackathonId)
+      .in("user_id", memberIds),
+    "registration.confirmedMemberIds",
+  );
 
   return new Set(
     ((data as { user_id: string; luma_confirmed_at: string | null }[] | null) ?? [])

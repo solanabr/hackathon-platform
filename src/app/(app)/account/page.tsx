@@ -51,7 +51,7 @@ export default async function AccountPage({
 
   const { data: memberships } = await supabase
     .from("team_members")
-    .select("team_id, teams(id, name, hackathon_id, is_finalist), submissions:teams(id)")
+    .select("team_id, teams(id, name, hackathon_id, is_finalist)")
     .eq("user_id", state.userId)
     .eq("status", "accepted");
 

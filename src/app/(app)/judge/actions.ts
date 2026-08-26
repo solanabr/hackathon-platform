@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireJudge, resolveRoleState } from "@/lib/roles";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import type { RatingRound } from "@/lib/hackathon";
 import { sanitizeText } from "@/lib/security";
 
@@ -40,7 +41,7 @@ async function gate(hackathonId: string, submissionId: string, round: RatingRoun
   // average that decides classification (regulamento 7.1).
   const roles = await resolveRoleState();
   if (!roles?.isAdmin) {
-    const { data: assignment } = await supabase
+    const { data: assignment, error: assignmentError } = await supabase
       .from("submission_assignments")
       .select("submission_id")
       .eq("submission_id", submissionId)
@@ -48,6 +49,15 @@ async function gate(hackathonId: string, submissionId: string, round: RatingRoun
       .eq("round", round)
       .maybeSingle();
 
+    // A failed read is not "not assigned" — that message sends the judge to
+    // the organizer to re-request an assignment that already exists.
+    if (assignmentError) {
+      logQueryError("judge.gate.assignment", assignmentError);
+      return {
+        ok: false as const,
+        error: "Não foi possível verificar a atribuição. Tente novamente.",
+      };
+    }
     if (!assignment) {
       return { ok: false as const, error: "Este projeto não foi atribuído a você." };
     }

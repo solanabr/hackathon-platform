@@ -2,6 +2,7 @@ import { cache } from "react";
 import { resolveAuthenticatedUserState, type AuthenticatedState } from "./user-state";
 import { getHackathonBySlug } from "./hackathon";
 import { createServiceRoleClient } from "./supabase/server";
+import { unwrap } from "./supabase/unwrap";
 import type { Hackathon, PlatformRole } from "@/types/db";
 
 type RoleCheck =
@@ -33,11 +34,12 @@ export function resolveRoles(
 // collapses them into one platform_roles read.
 const loadRoles = cache(async (userId: string): Promise<PlatformRole[]> => {
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
+  const result = await supabase
     .from("platform_roles")
     .select("*")
     .eq("user_id", userId);
-  return (data as PlatformRole[] | null) ?? [];
+  // A failed read here would silently demote every admin and judge.
+  return (unwrap(result, "roles.loadRoles") as PlatformRole[] | null) ?? [];
 });
 
 export async function isAdminFor(state: AuthenticatedState): Promise<boolean> {

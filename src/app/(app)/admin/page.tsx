@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +18,10 @@ export default async function AdminPage() {
   const ready = hasServiceRoleKey();
   const supabase = ready ? await createServiceRoleClient() : null;
 
-  const { data } = supabase
+  const { data, error } = supabase
     ? await supabase.from("hackathons").select("*").order("starts_at", { ascending: false })
-    : { data: null };
+    : { data: null, error: null };
+  if (error) logQueryError("admin.index.hackathons", error);
   // An edition admin only sees the editions granted to them.
   const hackathons = ((data as Hackathon[] | null) ?? []).filter(
     (h) => !scoped || roles.adminFor.includes(h.id),

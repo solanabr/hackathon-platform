@@ -5,6 +5,7 @@ import { AssignmentGrid, type AssignmentProject } from "@/components/admin/assig
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,17 @@ export default async function AdminJudgesPage({
   const supabase = await createServiceRoleClient();
   const round = ratingRound(hackathon);
 
-  const { data: roleRows } = await supabase
+  // platform_roles has two FKs into users (user_id and granted_by); a bare
+  // users(...) embed is ambiguous and PostgREST rejects the whole query.
+  const { data: roleRows, error: rolesError } = await supabase
     .from("platform_roles")
-    .select("user_id, users(full_name, email)")
+    .select("user_id, users!platform_roles_user_id_fkey(full_name, email)")
     .eq("role", "judge")
     .eq("hackathon_id", hackathon.id);
+
+  // "Nenhum jurado" on a failed read sends the organizer to re-grant roles
+  // that already exist — show the failure instead.
+  if (rolesError) logQueryError("admin.judges.roleRows", rolesError);
 
   type RoleRow = { user_id: string; users: { full_name: string | null; email: string } | null };
   const judges = ((roleRows as RoleRow[] | null) ?? []).map((r) => ({
@@ -107,7 +114,15 @@ export default async function AdminJudgesPage({
           </p>
         </header>
 
-        {judges.length === 0 ? (
+        {rolesError ? (
+          <div className="rounded-2xl border-2 border-red-700/40 bg-red-700/10 p-5">
+            <p className="font-heading font-bold">Não foi possível carregar os jurados.</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">
+              A lista pode existir mesmo assim — não conceda papéis de novo. Recarregue a página e,
+              se persistir, veja o log do servidor.
+            </p>
+          </div>
+        ) : judges.length === 0 ? (
           <p className="rounded-2xl border-2 border-yellow bg-yellow/10 p-5 text-sm leading-relaxed">
             Nenhum jurado nesta edição ainda. Conceda o papel em{" "}
             <strong>Administração · Pessoas</strong> antes de atribuir projetos. A pessoa precisa

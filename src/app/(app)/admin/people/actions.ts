@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireAdmin } from "@/lib/roles";
 
 export async function grantRole(
@@ -18,11 +19,12 @@ export async function grantRole(
 
   const supabase = await createServiceRoleClient();
 
-  const { data: user } = await supabase
+  const { data: user, error: userError } = await supabase
     .from("users")
     .select("id")
     .eq("email", email.trim().toLowerCase())
     .maybeSingle();
+  if (userError) logQueryError("people.grantRole.user", userError);
 
   if (!user) {
     return { error: "Ninguém com esse e-mail entrou na plataforma ainda. Peça para fazer login uma vez." };

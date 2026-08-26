@@ -5,6 +5,7 @@ import { FinalistPicker } from "@/components/admin/finalist-picker";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
 import { finalistCandidates, type FinalistRow } from "@/lib/finalists";
 
 export const dynamic = "force-dynamic";
@@ -25,16 +26,19 @@ export default async function AdminFinalistsPage({
   // `!left` keeps submitted-but-unrated projects in the picker: filtering an
   // embedded resource would otherwise turn the join into an INNER one and drop
   // rows with no triagem ratings yet.
-  const { data } = await supabase
-    .from("submissions")
-    .select(
-      "id, project_name, teams!inner(id, name, is_finalist, finalist_notified_at, placement), submission_ratings!left(grade)",
-    )
-    .eq("teams.hackathon_id", hackathon.id)
-    .eq("status", "submitted")
-    .eq("submission_ratings.round", "triagem");
+  const data = unwrap(
+    await supabase
+      .from("submissions")
+      .select(
+        "id, project_name, teams!inner(id, name, is_finalist, finalist_notified_at, placement), submission_ratings!left(grade)",
+      )
+      .eq("teams.hackathon_id", hackathon.id)
+      .eq("status", "submitted")
+      .eq("submission_ratings.round", "triagem"),
+    "admin.finalistas.candidates",
+  );
 
-  const candidates = finalistCandidates(data as FinalistRow[] | null);
+  const candidates = finalistCandidates(data as unknown as FinalistRow[] | null);
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">

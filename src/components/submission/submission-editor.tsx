@@ -322,14 +322,17 @@ export function SubmissionEditor({
               setImagePath(path);
               setImageUrl(url);
               if (!editable) return;
+              setSubmitError(null);
               const { error } = await supabase
                 .from("submissions")
                 .update({ image_path: path })
                 .eq("team_id", teamId);
-              if (!error) {
-                setSavedAt(new Date());
-                router.refresh();
+              if (error) {
+                setSubmitError("A imagem subiu, mas não foi salva no projeto. Tente de novo.");
+                return;
               }
+              setSavedAt(new Date());
+              router.refresh();
             }}
           />
         </div>

@@ -254,16 +254,19 @@ export async function moveContent(input: {
   const target = input.direction === "up" ? index - 1 : index + 1;
   if (target < 0 || target >= rows.length) return { ok: true };
 
-  await supabase
-    .from("hackathon_contents")
-    .update({ position: rows[target].position })
-    .eq("id", rows[index].id)
-    .eq("hackathon_id", gate.hackathon.id);
-  await supabase
-    .from("hackathon_contents")
-    .update({ position: rows[index].position })
-    .eq("id", rows[target].id)
-    .eq("hackathon_id", gate.hackathon.id);
+  const [a, b] = await Promise.all([
+    supabase
+      .from("hackathon_contents")
+      .update({ position: rows[target].position })
+      .eq("id", rows[index].id)
+      .eq("hackathon_id", gate.hackathon.id),
+    supabase
+      .from("hackathon_contents")
+      .update({ position: rows[index].position })
+      .eq("id", rows[target].id)
+      .eq("hackathon_id", gate.hackathon.id),
+  ]);
+  if (a.error || b.error) return { ok: false, error: "Não foi possível reordenar." };
 
   revalidatePath(`/admin/h/${input.slug}/content`);
   revalidatePath(`/h/${input.slug}/content`);

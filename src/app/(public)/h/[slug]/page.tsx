@@ -12,6 +12,7 @@ import { buildPhases } from "@/lib/phase-copy";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
 
 import { EditionPageDoc, type ScheduleRow } from "@/components/edition/page-doc";
@@ -75,12 +76,14 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   let finalists: Array<{ teamId: string; teamName: string; placement: number | null }> = [];
   if (isFinalistsVisible(hackathon)) {
     const sr = await createServiceRoleClient();
-    const { data: rows } = await sr
+    const { data: rows, error: finalistsError } = await sr
       .from("teams")
       .select("id, name, placement")
       .eq("hackathon_id", hackathon.id)
       .eq("is_finalist", true)
       .order("placement", { ascending: true, nullsFirst: false });
+    // The public reveal degrades to no list rather than an error banner.
+    if (finalistsError) logQueryError("public.landing.finalists", finalistsError);
     finalists = ((rows as Array<{ id: string; name: string; placement: number | null }> | null) ??
       []).map((r) => ({ teamId: r.id, teamName: r.name, placement: r.placement }));
   }

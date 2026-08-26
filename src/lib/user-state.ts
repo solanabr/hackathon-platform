@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "./supabase/server";
+import { logQueryError } from "./supabase/unwrap";
 import { sanitizeRedirect } from "./security";
 import { editionStage } from "./hackathon";
 import type { Hackathon, User } from "@/types/db";
@@ -66,11 +67,12 @@ async function latestLiveDashboard(
 const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const supabase = await createServerSupabaseClient();
 
-  const { data: memberships } = await supabase
+  const { data: memberships, error: membershipsError } = await supabase
     .from("team_members")
     .select("hackathon_id")
     .eq("user_id", userId)
     .eq("status", "accepted");
+  if (membershipsError) logQueryError("userState.liveDashboardPath.memberships", membershipsError);
 
   const membershipIds = Array.from(
     new Set(((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id)),
@@ -102,11 +104,12 @@ export const resolveAuthenticatedUserState = cache(async (): Promise<Authenticat
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
+  if (profileError) logQueryError("userState.resolveAuthenticatedUserState.profile", profileError);
 
   const typed = profile as User | null;
   const needsProfile = !typed?.full_name;

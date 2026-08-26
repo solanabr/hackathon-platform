@@ -3,6 +3,7 @@
 import { requireUser } from "@/lib/user-state";
 import { sendTeamInvite } from "@/lib/email";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 
 export type AddMemberResult =
   | { ok: true; hasAccount: boolean; email: string; emailSent: boolean }
@@ -41,11 +42,17 @@ export async function addMemberByEmail(input: {
     return { ok: false, error: "Time já está bloqueado." };
   }
 
-  const { data: existingMembers } = await admin
+  const { data: existingMembers, error: membersError } = await admin
     .from("team_members")
     .select("id, invited_email")
     .eq("team_id", input.teamId)
     .in("status", ["accepted", "pending"]);
+
+  // A failed read here would make the cap and duplicate checks pass vacuously.
+  if (membersError) {
+    logQueryError("team.addMemberByEmail.members", membersError);
+    return { ok: false, error: "Não foi possível validar o time. Tente novamente." };
+  }
 
   if ((existingMembers?.length ?? 0) >= 4) {
     return { ok: false, error: "Time já tem 4 integrantes." };
@@ -61,14 +68,21 @@ export async function addMemberByEmail(input: {
     .maybeSingle();
 
   if (existingUser) {
-    const { data: otherTeam } = await admin
+    // Plain select, not maybeSingle: someone already on two accepted teams
+    // made maybeSingle error out, and the error path let them into a third.
+    const { data: otherTeams, error: otherTeamsError } = await admin
       .from("team_members")
       .select("teams(name)")
       .eq("user_id", existingUser.id)
       .eq("hackathon_id", leaderCheck.hackathon_id)
-      .eq("status", "accepted")
-      .maybeSingle();
+      .eq("status", "accepted");
 
+    if (otherTeamsError) {
+      logQueryError("team.addMemberByEmail.otherTeams", otherTeamsError);
+      return { ok: false, error: "Não foi possível validar o time. Tente novamente." };
+    }
+
+    const otherTeam = otherTeams?.[0];
     if (otherTeam) {
       const teamRel = Array.isArray(otherTeam.teams)
         ? otherTeam.teams[0]

@@ -1,16 +1,18 @@
 import { cache } from "react";
 import type { PhaseBounds } from "./phases";
 import { createServerSupabaseClient } from "./supabase/server";
+import { logQueryError } from "./supabase/unwrap";
 import type { Hackathon } from "@/types/db";
 
 // Gate and page resolve the same slug in one request; dedupe the read.
 export const getHackathonBySlug = cache(async (slug: string): Promise<Hackathon | null> => {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("hackathons")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
+  if (error) logQueryError("hackathon.getHackathonBySlug", error);
   return data as Hackathon | null;
 });
 

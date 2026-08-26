@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "./supabase/server";
+import { unwrap } from "./supabase/unwrap";
 import type { Team, TeamMember, Submission, User } from "@/types/db";
 
 export type TeamSnapshot = {
@@ -40,11 +41,16 @@ export async function getPendingTeamForHackathon(
 export async function getTeamForHackathon(userId: string, hackathonId: string): Promise<TeamSnapshot | null> {
   const supabase = await createServerSupabaseClient();
 
-  const { data: memberships } = await supabase
-    .from("team_members")
-    .select("team_id, teams!inner(id, hackathon_id)")
-    .eq("user_id", userId)
-    .eq("status", "accepted");
+  // null here reads as "no team" and shows the create-team CTA to someone who
+  // already has one — fail loud instead.
+  const memberships = unwrap(
+    await supabase
+      .from("team_members")
+      .select("team_id, teams!inner(id, hackathon_id)")
+      .eq("user_id", userId)
+      .eq("status", "accepted"),
+    "team.getTeamForHackathon.memberships",
+  );
 
   type Row = { team_id: string; teams: { id: string; hackathon_id: string } | { id: string; hackathon_id: string }[] };
   const match = (memberships as Row[] | null)?.find((m) => {
@@ -55,7 +61,7 @@ export async function getTeamForHackathon(userId: string, hackathonId: string): 
 
   const teamId = match.team_id;
 
-  const [{ data: team }, { data: members }, { data: submission }] = await Promise.all([
+  const [teamResult, membersResult, submissionResult] = await Promise.all([
     supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
     supabase
       .from("team_members")
@@ -65,6 +71,9 @@ export async function getTeamForHackathon(userId: string, hackathonId: string): 
       .order("invited_at", { ascending: true }),
     supabase.from("submissions").select("*").eq("team_id", teamId).maybeSingle(),
   ]);
+  const team = unwrap(teamResult, "team.getTeamForHackathon.team");
+  const members = unwrap(membersResult, "team.getTeamForHackathon.members");
+  const submission = unwrap(submissionResult, "team.getTeamForHackathon.submission");
 
   if (!team || !submission) return null;
 
