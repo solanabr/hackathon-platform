@@ -10,7 +10,9 @@ import { useLayoutEffect } from "react";
  */
 export function ScrollReset() {
   useLayoutEffect(() => {
-    window.scrollTo(0, 0);
+    // "instant" overrides the global scroll-behavior: smooth — a loading
+    // screen snaps to the top, it doesn't animate its way there.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, []);
   return null;
 }
