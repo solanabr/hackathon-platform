@@ -12,6 +12,7 @@ import { buildPhases } from "@/lib/phase-copy";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { listSponsors, groupByTier, type SponsorLogo } from "@/lib/sponsors";
 
 import { SectionRenderer, type ScheduleRow } from "@/components/edition/sections";
 import { Countdown } from "@/components/ui/countdown";
@@ -38,26 +39,23 @@ const DELIVERABLES = [
   { value: "1", unit: "repositório", label: "Código no GitHub", note: "Pode ser privado, com acesso para os jurados." },
 ];
 
-const PARTNERS = [
-  { src: "/brand/events/solana-light.png", name: "Solana", w: 2584, h: 384 },
-  { src: "/brand/events/cursor-light.png", name: "Cursor", w: 6717, h: 1597 },
-  { src: "/brand/stbr/logo/horizontal-offwhite.svg", name: "Superteam Brasil", w: 600, h: 112 },
-];
-
-type SupporterLogo = { src: string; name: string; w: number; h: number; cls: string };
-
-const SUPPORTERS: Record<string, SupporterLogo[] | undefined> = {
-  "solana-cursor-passo-fundo-2026": [
-    { src: "/brand/events/upf-light.png", name: "UPF", w: 308, h: 240, cls: "h-10 sm:h-12" },
-    { src: "/brand/events/upf-parque-light.png", name: "UPF Parque", w: 603, h: 240, cls: "h-9 sm:h-10" },
-    { src: "/brand/events/passo-fundo-valley-light.png", name: "Passo Fundo Valley", w: 697, h: 240, cls: "h-8 sm:h-9" },
-    { src: "/brand/events/apollo-light.png", name: "Apollo", w: 925, h: 240, cls: "h-7 sm:h-8" },
-    { src: "/brand/events/vertice-light.png", name: "Vértice", w: 998, h: 240, cls: "h-7 sm:h-8" },
-  ],
-};
-
 function clean(s: string): string {
   return s.replace(/\./g, "");
+}
+
+// Uploaded logos have no known intrinsic size, so plain <img> with dual
+// max-h/max-w caps — wide logos shrink by width, tall ones by height, which
+// keeps mixed aspect ratios visually balanced without per-logo tuning.
+function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className: string }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  const img = <img src={sponsor.src} alt={sponsor.name ?? ""} loading="lazy" className={className} />;
+  return sponsor.url ? (
+    <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
+      {img}
+    </a>
+  ) : (
+    img
+  );
 }
 
 export default async function EditionPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -85,7 +83,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const canEdit =
     (roles?.isAdmin ?? false) || (roles?.adminFor.includes(hackathon.id) ?? false);
 
-  const supporters = SUPPORTERS[hackathon.slug] ?? [];
+  const sponsors = groupByTier(await listSponsors(hackathon.id));
 
   const coverUrl = hackathon.cover_image_path
     ? hackathon.cover_image_path.startsWith("/")
@@ -366,50 +364,50 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização e apoiadores">
-        <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
-            <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
-              Realização
-            </h2>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
-              {PARTNERS.map((p) => (
-                <Image
-                  key={p.name}
-                  src={p.src}
-                  alt={p.name}
-                  width={p.w}
-                  height={p.h}
-                  loading="lazy"
-                  className="h-7 w-auto opacity-90 sm:h-8"
-                />
-              ))}
-            </div>
+      {(sponsors.realizacao.length > 0 || sponsors.apoiador.length > 0) && (
+        <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização e apoiadores">
+          <div className="mx-auto max-w-6xl">
+            <div className="rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
+              {sponsors.realizacao.length > 0 && (
+                <>
+                  <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+                    Realização
+                  </h2>
+                  <div className="mt-7 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
+                    {sponsors.realizacao.map((p) => (
+                      <SponsorImage
+                        key={p.id}
+                        sponsor={p}
+                        className="max-h-7 w-auto max-w-[190px] opacity-90 sm:max-h-8 sm:max-w-[218px]"
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
-            {supporters.length > 0 && (
-              <>
-                <div aria-hidden className="mx-auto mt-10 h-px max-w-xl bg-surface/15" />
-                <h2 className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
-                  Apoiadores
-                </h2>
-                <div className="mt-7 flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16">
-                  {supporters.map((sp) => (
-                    <Image
-                      key={sp.name}
-                      src={sp.src}
-                      alt={sp.name}
-                      width={sp.w}
-                      height={sp.h}
-                      loading="lazy"
-                      className={`w-auto opacity-80 ${sp.cls}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              {sponsors.apoiador.length > 0 && (
+                <>
+                  {sponsors.realizacao.length > 0 && (
+                    <div aria-hidden className="mx-auto mt-10 h-px max-w-xl bg-surface/15" />
+                  )}
+                  <h2 className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
+                    Apoiadores
+                  </h2>
+                  <div className="mt-7 flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16">
+                    {sponsors.apoiador.map((sp) => (
+                      <SponsorImage
+                        key={sp.id}
+                        sponsor={sp}
+                        className="max-h-9 w-auto max-w-[112px] opacity-80 sm:max-h-10 sm:max-w-[128px]"
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
     </div>
   );

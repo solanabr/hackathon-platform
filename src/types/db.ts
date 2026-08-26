@@ -123,6 +123,19 @@ export type HackathonContent = {
   updated_at: string;
 };
 
+export type SponsorTier = "realizacao" | "apoiador";
+
+export type HackathonSponsor = {
+  id: string;
+  hackathon_id: string;
+  tier: SponsorTier;
+  name: string | null;
+  image_path: string;
+  url: string | null;
+  position: number;
+  created_at: string;
+};
+
 export type SectionKind = "markdown" | "phases" | "schedule" | "deliverables" | "prizes";
 
 export type HackathonSection = {
