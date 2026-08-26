@@ -97,6 +97,12 @@ export default async function AdminEditionPage({
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
+              href={`/admin/h/${hackathon.slug}/page`}
+              className="btn-secondary px-5 py-2 text-sm"
+            >
+              Página
+            </Link>
+            <Link
               href={`/admin/h/${hackathon.slug}/sections`}
               className="btn-secondary px-5 py-2 text-sm"
             >

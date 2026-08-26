@@ -15,6 +15,7 @@ import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supab
 import { listSponsors, groupByTier, type SponsorLogo } from "@/lib/sponsors";
 
 import { SectionRenderer, type ScheduleRow } from "@/components/edition/sections";
+import { EditionPageDoc } from "@/components/edition/page-doc";
 import { Countdown } from "@/components/ui/countdown";
 import { BackLink } from "@/components/ui/back-link";
 import type { HackathonSection } from "@/types/db";
@@ -306,6 +307,35 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
 
+      {hackathon.page_md != null ? (
+        <div className="relative pt-20">
+          {canEdit && (
+            <div className="pointer-events-none absolute inset-x-4 top-6 z-20 sm:inset-x-6 lg:inset-x-8">
+              <div className="mx-auto flex max-w-6xl justify-end">
+                <Link
+                  href={`/admin/h/${hackathon.slug}/page`}
+                  className="pointer-events-auto rounded-full border-2 border-green-dark bg-surface-raised px-3.5 py-1 text-xs font-bold text-ink transition-colors hover:bg-green-dark hover:text-surface"
+                >
+                  Editar página ✎
+                </Link>
+              </div>
+            </div>
+          )}
+          <EditionPageDoc
+            doc={hackathon.page_md}
+            ctx={{
+              hackathon,
+              phases,
+              now,
+              schedule,
+              sponsors,
+              finalists,
+              finalistsVisible: isFinalistsVisible(hackathon),
+            }}
+          />
+        </div>
+      ) : (
+        <>
       <div className="pt-20">
       {sections.map((section) => (
         <div key={section.id} className="relative">
@@ -407,6 +437,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
         </section>
+      )}
+        </>
       )}
 
     </div>

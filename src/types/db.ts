@@ -43,6 +43,8 @@ export type Hackathon = {
   community_url: string | null;
   prize_summary: string | null;
   rules_url: string | null;
+  // null until migration 00039 runs; the page then falls back to sections.
+  page_md: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
