@@ -6,8 +6,25 @@ import { Input, Label } from "@/components/ui/input";
 import { updateProfile } from "@/app/(app)/account/actions";
 import type { User } from "@/types/db";
 
-export function ProfileForm({ profile, next }: { profile: User | null; next?: string }) {
-  const [state, formAction, pending] = useActionState(updateProfile, {});
+export function ProfileForm({
+  profile,
+  next,
+  onSaved,
+  onCancel,
+}: {
+  profile: User | null;
+  next?: string;
+  onSaved?: () => void;
+  onCancel?: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(
+    async (prev: { error?: string }, formData: FormData) => {
+      const result = await updateProfile(prev, formData);
+      if (!result.error) onSaved?.();
+      return result;
+    },
+    {},
+  );
 
   return (
     <form action={formAction} className="space-y-4">
@@ -56,14 +73,25 @@ export function ProfileForm({ profile, next }: { profile: User | null; next?: st
       </div>
 
       {state.error && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Salvando..." : "Salvar"}
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Salvando..." : "Salvar"}
+        </Button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
+          >
+            Cancelar
+          </button>
+        )}
+      </div>
     </form>
   );
 }
