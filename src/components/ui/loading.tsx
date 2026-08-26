@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ScrollReset } from "./scroll-reset";
 
 /**
  * The symbol paints itself in from the bottom while the page loads. Two
@@ -12,6 +13,7 @@ export default function Loading({ className = "min-h-screen" }: { className?: st
       aria-live="polite"
       className={`flex flex-col items-center justify-center gap-6 ${className}`}
     >
+      <ScrollReset />
       <div aria-hidden className="relative h-20 w-20">
         <Image
           src="/brand/stbr/logo/SYMBOL-EMERALD-GREEN.svg"
