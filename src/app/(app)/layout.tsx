@@ -11,7 +11,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <Background />
       <div className="relative z-10 flex min-h-screen flex-col">
         <Header />
-        <div className="flex-1">{children}</div>
+        {/* Same fold rule as the public layout: link block may peek, the
+            wordmark stays below the scroll. */}
+        <div className="min-h-[calc(100dvh-24rem)] flex-1">{children}</div>
         <Footer />
       </div>
     </main>
