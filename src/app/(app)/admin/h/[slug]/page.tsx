@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { EditionForm } from "@/components/admin/edition-form";
 import { CoverUpload } from "@/components/admin/cover-upload";
 import { LifecycleControl } from "@/components/admin/lifecycle-control";
+import { RegistrationsTable } from "@/components/admin/registrations-table";
+import { TeamsTable } from "@/components/admin/teams-table";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, isSubmissionWindowOpen, ratingRound } from "@/lib/hackathon";
 import {
@@ -14,6 +16,7 @@ import {
   listTeamsForEdition,
 } from "@/lib/admin";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 
 const SUBMITTED_AT = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -22,34 +25,6 @@ const SUBMITTED_AT = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
   timeZone: "America/Sao_Paulo",
 });
-
-function FlagChip({ on }: { on: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
-        on ? "border-emerald/30 bg-emerald/10 text-emerald" : "border-green-dark/20 text-muted"
-      }`}
-    >
-      {on ? "Sim" : "Não"}
-    </span>
-  );
-}
-
-function TeamStatusChip({ status }: { status: string | null }) {
-  const submitted = status === "submitted";
-  const label = submitted ? "Submetido" : status === "draft" ? "Rascunho" : "Sem submissão";
-  return (
-    <span
-      className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[11px] font-semibold ${
-        submitted
-          ? "border-emerald/30 bg-emerald/10 text-emerald"
-          : "border-green-dark/20 text-muted"
-      }`}
-    >
-      {label}
-    </span>
-  );
-}
 
 export const dynamic = "force-dynamic";
 
@@ -77,12 +52,6 @@ export default async function AdminEditionPage({
     listRegistrationsForEdition(hackathon.id),
     listTeamsForEdition(hackathon.id),
   ]);
-  const isMock = (email: string | null | undefined) => !!email?.endsWith("@mock.test");
-  const realRegistrations = registrations.filter((r) => !isMock(r.user?.email));
-  const mockRegistrations = registrations.length - realRegistrations.length;
-  const confirmedRegistrations = realRegistrations.filter(
-    (r) => r.luma_confirmed_at && r.terms_accepted_at,
-  ).length;
   const submittedTeams = teams.filter(
     (t) => t.submission?.status === "submitted",
   ).length;
@@ -127,6 +96,37 @@ export default async function AdminEditionPage({
 
   const windowOpen = isSubmissionWindowOpen(hackathon);
   const roundLabel = round === "triagem" ? "triagem" : "banca final";
+
+  const { data: acceptedMembers, error: acceptedMembersError } = await supabase
+    .from("team_members")
+    .select("user_id, teams!inner(name)")
+    .eq("hackathon_id", hackathon.id)
+    .eq("status", "accepted");
+  if (acceptedMembersError) logQueryError("admin.overview.acceptedMembers", acceptedMembersError);
+  const teamNameByUser = new Map<string, string>();
+  for (const m of (acceptedMembers as unknown as Array<{
+    user_id: string | null;
+    teams: { name: string } | { name: string }[] | null;
+  }> | null) ?? []) {
+    const t = Array.isArray(m.teams) ? m.teams[0] : m.teams;
+    if (m.user_id && t) teamNameByUser.set(m.user_id, t.name);
+  }
+
+  const registrationRows = registrations.map((r) => ({
+    userId: r.user_id,
+    name: r.user?.full_name ?? null,
+    email: r.user?.email ?? null,
+    teamName: teamNameByUser.get(r.user_id) ?? null,
+  }));
+  const teamRows = teams.map((t) => ({
+    id: t.id,
+    name: t.name,
+    acceptedMembers: t.acceptedMembers,
+    status: t.submission?.status ?? null,
+    submittedAtLabel: t.submission?.submitted_at
+      ? SUBMITTED_AT.format(new Date(t.submission.submitted_at))
+      : null,
+  }));
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
@@ -179,7 +179,7 @@ export default async function AdminEditionPage({
             </p>
             <p className="mt-1 font-heading text-xl font-bold tabular-nums">{judgeCount}</p>
             <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
-              {fullyAssigned} de {submittedIds.length} projetos com 2 jurados
+              projetos com dupla completa: {fullyAssigned} de {submittedIds.length}
             </p>
           </div>
           <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
@@ -229,51 +229,15 @@ export default async function AdminEditionPage({
               </p>
               <h2 className="mt-1 font-heading text-lg font-bold">Inscrições</h2>
               <p className="mt-1 text-sm text-muted">
-                <span className="font-mono tabular-nums">{realRegistrations.length}</span> inscrições
-                reais ·<span className="font-mono tabular-nums"> {mockRegistrations}</span> de teste
-                ·<span className="font-mono tabular-nums"> {confirmedRegistrations}</span> reais
-                confirmadas no Luma e com termos aceitos
+                <span className="font-mono tabular-nums">{registrations.length}</span>{" "}
+                {registrations.length === 1 ? "inscrição" : "inscrições"}
               </p>
             </div>
           </div>
           {registrations.length === 0 ? (
             <p className="mt-5 font-mono text-sm text-muted">Nenhuma inscrição ainda.</p>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="font-mono text-[11px] uppercase tracking-widest text-muted">
-                    <th className="py-3 pl-4 pr-4 font-semibold">Nome</th>
-                    <th className="py-3 pr-4 font-semibold">E-mail</th>
-                    <th className="py-3 pr-4 font-semibold">Luma</th>
-                    <th className="py-3 pr-4 font-semibold">Termos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrations.map((r) => (
-                    <tr key={r.user_id} className="odd:bg-surface-deep">
-                      <td className="py-2.5 pl-4 pr-4 font-medium">
-                        {r.user?.full_name ?? "—"}
-                        {isMock(r.user?.email) && (
-                          <span className="ml-2 inline-flex items-center rounded border border-yellow-strong/60 bg-yellow/40 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-green-dark">
-                            teste
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-2.5 pr-4 font-mono text-xs text-muted">
-                        {r.user?.email ?? "—"}
-                      </td>
-                      <td className="py-2.5 pr-4">
-                        <FlagChip on={!!r.luma_confirmed_at} />
-                      </td>
-                      <td className="py-2.5 pr-4">
-                        <FlagChip on={!!r.terms_accepted_at} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RegistrationsTable rows={registrationRows} />
           )}
         </Card>
 
@@ -293,36 +257,7 @@ export default async function AdminEditionPage({
           {teams.length === 0 ? (
             <p className="mt-5 font-mono text-sm text-muted">Nenhum time formado ainda.</p>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="font-mono text-[11px] uppercase tracking-widest text-muted">
-                    <th className="py-3 pl-4 pr-4 font-semibold">Time</th>
-                    <th className="py-3 pr-4 font-semibold">Membros aceitos</th>
-                    <th className="py-3 pr-4 font-semibold">Status</th>
-                    <th className="py-3 pr-4 font-semibold">Submetido em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teams.map((t) => (
-                    <tr key={t.id} className="odd:bg-surface-deep">
-                      <td className="py-2.5 pl-4 pr-4 font-medium">{t.name}</td>
-                      <td className="py-2.5 pr-4 font-mono tabular-nums text-muted">
-                        {t.acceptedMembers}
-                      </td>
-                      <td className="py-2.5 pr-4">
-                        <TeamStatusChip status={t.submission?.status ?? null} />
-                      </td>
-                      <td className="py-2.5 pr-4 font-mono text-xs tabular-nums text-muted">
-                        {t.submission?.submitted_at
-                          ? SUBMITTED_AT.format(new Date(t.submission.submitted_at))
-                          : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <TeamsTable rows={teamRows} />
           )}
         </Card>
 
