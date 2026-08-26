@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { publicStorageUrl } from "@/lib/storage";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,6 +53,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
+  // External editions live elsewhere — deep links forward to their LP.
+  if (hackathon.external_url) redirect(hackathon.external_url);
 
   const open = isRegistrationOpen(hackathon);
   const now = Date.now();
