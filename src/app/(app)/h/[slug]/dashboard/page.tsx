@@ -36,8 +36,9 @@ const TIME = TIME_HM;
 
 const clean = stripPeriods;
 
+// project_name is not listed: it mirrors the team name via trigger, so it can
+// never be missing.
 const REQUIRED: Array<{ key: string; label: string }> = [
-  { key: "project_name", label: "Nome do projeto" },
   { key: "description", label: "Descrição" },
   { key: "pitch_deck_url", label: "Pitch deck" },
   { key: "pitch_video_url", label: "Vídeo demo" },

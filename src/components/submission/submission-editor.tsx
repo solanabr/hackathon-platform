@@ -13,6 +13,7 @@ import type { Submission } from "@/types/db";
 
 type Props = {
   teamId: string;
+  teamName: string;
   isLeader: boolean;
   editable: boolean;
   initial: Submission;
@@ -24,7 +25,6 @@ type Props = {
 };
 
 type FormState = {
-  project_name: string;
   description: string;
   pitch_deck_url: string;
   pitch_video_url: string;
@@ -41,7 +41,6 @@ const formatSubmittedAt = formatSavedAt;
 
 function toForm(s: Submission): FormState {
   return {
-    project_name: s.project_name ?? "",
     description: s.description ?? "",
     pitch_deck_url: s.pitch_deck_url ?? "",
     pitch_video_url: s.pitch_video_url ?? "",
@@ -68,6 +67,7 @@ const SUBMIT_ERRORS: Record<string, string> = {
 
 export function SubmissionEditor({
   teamId,
+  teamName,
   isLeader,
   editable,
   initial,
@@ -80,6 +80,8 @@ export function SubmissionEditor({
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
+  const [name, setName] = useState(teamName);
+  const savedName = useRef(teamName);
   const [imagePath, setImagePath] = useState<string | null>(initial.image_path);
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl);
   const [savedAt, setSavedAt] = useState<Date | null>(initial.updated_at ? new Date(initial.updated_at) : null);
@@ -96,7 +98,6 @@ export function SubmissionEditor({
     setSubmitError(null);
 
     const payload = {
-      project_name: sanitizeText(form.project_name, 120),
       description: sanitizeText(form.description, 4000),
       pitch_deck_url: sanitizeUrl(form.pitch_deck_url),
       pitch_video_url: sanitizeUrl(form.pitch_video_url),
@@ -127,6 +128,32 @@ export function SubmissionEditor({
       );
       return false;
     }
+
+    // The name is the team's name — one edit point. The teams trigger is the
+    // only writer of project_name; RLS lets only the unlocked team's leader
+    // through here.
+    const nextName = sanitizeText(name, 80);
+    if (isLeader && nextName && nextName !== savedName.current) {
+      const { data: renamed, error: renameError } = await supabase
+        .from("teams")
+        .update({ name: nextName })
+        .eq("id", teamId)
+        .select("id");
+      if (renameError) {
+        setSubmitError(
+          renameError.code === "23505"
+            ? "Já existe um time com esse nome."
+            : "Não foi possível salvar o nome. Tente novamente.",
+        );
+        return false;
+      }
+      if (!renamed || renamed.length === 0) {
+        setSubmitError("O nome não foi salvo: o time já está travado.");
+        return false;
+      }
+      savedName.current = nextName;
+    }
+
     setSavedAt(new Date());
     router.refresh();
     return true;
@@ -186,10 +213,10 @@ export function SubmissionEditor({
       void saveRef.current();
     }, 800);
     return () => clearTimeout(id);
-  }, [form, pendingSubmit, editable, isDraft]);
+  }, [form, name, pendingSubmit, editable, isDraft]);
 
   const allRequiredFilled =
-    !!form.project_name.trim() &&
+    !!name.trim() &&
     !!form.description.trim() &&
     !!sanitizeUrl(form.pitch_deck_url) &&
     !!sanitizeUrl(form.pitch_video_url) &&
@@ -213,10 +240,11 @@ export function SubmissionEditor({
             <Label htmlFor="project_name">Nome do projeto*</Label>
             <Input
               id="project_name"
-              maxLength={120}
+              maxLength={80}
               placeholder="Ex.: Cerrado Pay"
-              value={form.project_name}
-              onChange={(e) => set("project_name", e.target.value)}
+              value={name}
+              disabled={!isLeader}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="sm:col-span-2">

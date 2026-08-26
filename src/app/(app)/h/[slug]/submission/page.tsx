@@ -179,6 +179,7 @@ export default async function SubmissionPage({
           <Card className="mt-8 p-6 sm:p-8">
             <SubmissionEditor
               teamId={team.id}
+              teamName={team.name}
               isLeader={isLeader}
               editable={canEdit}
               initial={submission}

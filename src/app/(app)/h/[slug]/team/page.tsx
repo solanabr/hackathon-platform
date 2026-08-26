@@ -109,12 +109,14 @@ export default async function TeamPage({
 
         <header className="rounded-3xl border-2 border-green-dark bg-surface-raised p-7 shadow-sticker">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                 Time
               </p>
               <h1 className="mt-1 font-heading text-3xl font-bold">{team.name}</h1>
-              {team.description && <p className="mt-2 text-sm text-muted">{team.description}</p>}
+              {team.description && team.description !== team.name && (
+                <p className="mt-2 text-sm text-muted">{team.description}</p>
+              )}
             </div>
             <div className="flex flex-col items-end gap-3">
               <Badge tone={team.locked ? "neutral" : "emerald"}>
