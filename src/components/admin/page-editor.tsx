@@ -16,10 +16,20 @@ const BLOCK_INFO: Record<BlockName, { label: string; detail: string }> = {
   partners: { label: "Marcas", detail: "Faixa Realização/Apoiadores, gerida em Marcas." },
 };
 
-export function PageEditor({ slug, initialDoc }: { slug: string; initialDoc: string }) {
+export function PageEditor({
+  slug,
+  initialDoc,
+  savedDoc,
+}: {
+  slug: string;
+  initialDoc: string;
+  // What the DB currently holds — differs from initialDoc when the editor
+  // pre-fills the template for an edition that has no document yet.
+  savedDoc?: string;
+}) {
   const router = useRouter();
   const [doc, setDoc] = useState(initialDoc);
-  const [saved, setSaved] = useState(initialDoc);
+  const [saved, setSaved] = useState(savedDoc ?? initialDoc);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const segments = useMemo(() => parsePageDoc(doc), [doc]);

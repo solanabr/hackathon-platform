@@ -4,6 +4,7 @@ import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { PageEditor } from "@/components/admin/page-editor";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
+import { DEFAULT_PAGE_MD } from "@/lib/page-template";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,11 @@ export default async function AdminPageEditorPage({
           </p>
         </header>
 
-        <PageEditor slug={hackathon.slug} initialDoc={hackathon.page_md ?? ""} />
+        <PageEditor
+          slug={hackathon.slug}
+          initialDoc={hackathon.page_md ?? DEFAULT_PAGE_MD}
+          savedDoc={hackathon.page_md ?? ""}
+        />
       </div>
     </div>
   );

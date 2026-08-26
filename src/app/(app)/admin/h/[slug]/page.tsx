@@ -100,12 +100,6 @@ export default async function AdminEditionPage({
             <p className="mt-1 font-mono text-sm tabular-nums text-muted">/{hackathon.slug}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/admin/h/${hackathon.slug}/sections`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Seções
-            </Link>
             <Link href={`/h/${hackathon.slug}`} className="btn-secondary px-5 py-2 text-sm">
               Ver página
             </Link>

@@ -12,13 +12,11 @@ import { buildPhases } from "@/lib/phase-copy";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { listSponsors, groupByTier, type SponsorLogo } from "@/lib/sponsors";
+import { listSponsors, groupByTier } from "@/lib/sponsors";
 
-import { SectionRenderer, type ScheduleRow } from "@/components/edition/sections";
-import { EditionPageDoc } from "@/components/edition/page-doc";
+import { EditionPageDoc, type ScheduleRow } from "@/components/edition/page-doc";
 import { Countdown } from "@/components/ui/countdown";
 import { BackLink } from "@/components/ui/back-link";
-import type { HackathonSection } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -34,29 +32,8 @@ const TIME = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
 });
 
-const DELIVERABLES = [
-  { value: "10", unit: "slides", label: "Pitch deck", note: "Quem passar do limite é desclassificado." },
-  { value: "3", unit: "minutos", label: "Vídeo demo", note: "Mostre o produto funcionando." },
-  { value: "1", unit: "repositório", label: "Código no GitHub", note: "Pode ser privado, com acesso para os jurados." },
-];
-
 function clean(s: string): string {
   return s.replace(/\./g, "");
-}
-
-// Uploaded logos have no known intrinsic size, so plain <img> with dual
-// max-h/max-w caps — wide logos shrink by width, tall ones by height, which
-// keeps mixed aspect ratios visually balanced without per-logo tuning.
-function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className: string }) {
-  // eslint-disable-next-line @next/next/no-img-element
-  const img = <img src={sponsor.src} alt={sponsor.name ?? ""} loading="lazy" className={className} />;
-  return sponsor.url ? (
-    <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
-      {img}
-    </a>
-  ) : (
-    img
-  );
 }
 
 export default async function EditionPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -109,60 +86,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   }
 
   const phases = buildPhases(hackathon);
-
-  // Sections drive the page body. The defaults only apply while the edition
-  // has no section rows at all (pre-seed) — hidden rows count as "composed",
-  // so an admin hiding everything gets a blank body, not a resurrection of
-  // the hardcoded blocks. Service role because hidden rows are RLS-invisible.
-  const sectionsClient = await createServiceRoleClient();
-  const { data: sectionRows } = await sectionsClient
-    .from("hackathon_sections")
-    .select("*")
-    .eq("hackathon_id", hackathon.id)
-    .is("deleted_at", null)
-    .order("position", { ascending: true });
-  const allSections = (sectionRows as HackathonSection[] | null) ?? [];
-  const usingDefaults = allSections.length === 0;
-  const stored = allSections.filter((s) => s.visible);
-  const sections: Array<
-    Pick<HackathonSection, "id" | "kind" | "title" | "subtitle" | "body_md" | "config">
-  > =
-    !usingDefaults
-      ? stored
-      : [
-          {
-            id: "default-phases",
-            kind: "phases",
-            title: "Como o hackathon acontece",
-            subtitle: `Duas fases. A primeira online, a segunda presencial em ${hackathon.location_city}.`,
-            body_md: null,
-            config: {},
-          },
-          {
-            id: "default-schedule",
-            kind: "schedule",
-            title: "Programação da Fase 1",
-            subtitle: "As gravações ficam disponíveis na plataforma depois de cada encontro.",
-            body_md: null,
-            config: {},
-          },
-          {
-            id: "default-deliverables",
-            kind: "deliverables",
-            title: "O que seu time entrega",
-            subtitle: null,
-            body_md: null,
-            config: { items: DELIVERABLES },
-          },
-          {
-            id: "default-prizes",
-            kind: "prizes",
-            title: "Premiação",
-            subtitle: null,
-            body_md: null,
-            config: {},
-          },
-        ];
 
   // The hero counts down to whatever comes next in the edition's life:
   // inscriptions, then submissions, then Pitch Day. Null once it is all over.
@@ -307,7 +230,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
 
-      {hackathon.page_md != null ? (
+      {hackathon.page_md != null && (
         <div className="relative pt-20">
           {canEdit && (
             <div className="pointer-events-none absolute inset-x-4 top-6 z-20 sm:inset-x-6 lg:inset-x-8">
@@ -334,111 +257,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
             }}
           />
         </div>
-      ) : (
-        <>
-      <div className="pt-20">
-      {sections.map((section) => (
-        <div key={section.id} className="relative">
-          {canEdit && (
-            <div className="pointer-events-none absolute inset-x-4 top-6 z-20 sm:inset-x-6 lg:inset-x-8">
-              <div className="mx-auto flex max-w-6xl justify-end">
-                <Link
-                  href={
-                    section.kind === "schedule"
-                      ? `/admin/h/${hackathon.slug}/content`
-                      : usingDefaults
-                        ? `/admin/h/${hackathon.slug}/sections`
-                        : `/admin/h/${hackathon.slug}/sections#s-${section.id}`
-                  }
-                  className="pointer-events-auto rounded-full border-2 border-green-dark bg-surface-raised px-3.5 py-1 text-xs font-bold text-ink transition-colors hover:bg-green-dark hover:text-surface"
-                >
-                  Editar ✎
-                </Link>
-              </div>
-            </div>
-          )}
-          <SectionRenderer
-            section={section}
-            ctx={{ hackathon, phases, now, schedule }}
-          />
-        </div>
-      ))}
-      </div>
-
-{finalists.length > 0 && (
-        <section className="px-4 pb-20 sm:px-6 lg:px-8" aria-label="Finalistas">
-          <div className="mx-auto max-w-6xl">
-            <h2 className="font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl">
-              Finalistas
-            </h2>
-            <p className="mt-3 max-w-xl leading-relaxed text-muted">
-              As equipes classificadas para a fase final.
-            </p>
-
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {finalists.map((f) => (
-                <li
-                  key={f.teamId}
-                  className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-6"
-                >
-                  {f.placement !== null && (
-                    <p className="font-mono text-sm font-bold tabular-nums text-emerald">
-                      {f.placement}º lugar
-                    </p>
-                  )}
-                  <h3 className="mt-1 font-heading text-lg font-bold">{f.teamName}</h3>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
-      {(sponsors.realizacao.length > 0 || sponsors.apoiador.length > 0) && (
-        <section className="px-4 pb-24 sm:px-6 lg:px-8" aria-label="Realização e apoiadores">
-          <div className="mx-auto max-w-6xl">
-            <div className="rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
-              {sponsors.realizacao.length > 0 && (
-                <>
-                  <h2 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
-                    Realização
-                  </h2>
-                  <div className="mt-7 flex flex-wrap items-center justify-center gap-x-14 gap-y-8 sm:gap-x-20">
-                    {sponsors.realizacao.map((p) => (
-                      <SponsorImage
-                        key={p.id}
-                        sponsor={p}
-                        className="max-h-7 w-auto max-w-[190px] opacity-90 sm:max-h-8 sm:max-w-[218px]"
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {sponsors.apoiador.length > 0 && (
-                <>
-                  {sponsors.realizacao.length > 0 && (
-                    <div aria-hidden className="mx-auto mt-10 h-px max-w-xl bg-surface/15" />
-                  )}
-                  <h2 className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-surface/50">
-                    Apoiadores
-                  </h2>
-                  <div className="mt-7 flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16">
-                    {sponsors.apoiador.map((sp) => (
-                      <SponsorImage
-                        key={sp.id}
-                        sponsor={sp}
-                        className="max-h-9 w-auto max-w-[112px] opacity-80 sm:max-h-10 sm:max-w-[128px]"
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-        </>
       )}
 
     </div>
