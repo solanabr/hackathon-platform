@@ -43,13 +43,15 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims verifies the JWT locally against the project's cached JWKS
+  // (asymmetric keys) — no Auth API round-trip per navigation like getUser.
+  // It still refreshes an expired session through the cookie handlers above.
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims ?? null;
 
   const path = request.nextUrl.pathname;
 
-  if (!user && !isPublicRoute(path)) {
+  if (!claims && !isPublicRoute(path)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
     url.search = "";
