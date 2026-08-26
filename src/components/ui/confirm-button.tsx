@@ -8,7 +8,7 @@ type Props = {
   prompt?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
   disabled?: boolean;
   title?: string;
   className?: string;
