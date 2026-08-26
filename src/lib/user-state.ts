@@ -112,8 +112,10 @@ export const resolveAuthenticatedUserState = cache(async (): Promise<Authenticat
   const supabase = await createServerSupabaseClient();
   // Local JWT verification against the cached JWKS — no Auth API round-trip.
   const { data } = await supabase.auth.getClaims();
+  // email stays asserted like the old user.email! — gating on it would turn a
+  // valid session with no email claim into a silent logout.
   const claims = data?.claims;
-  if (!claims?.sub || !claims.email) return null;
+  if (!claims?.sub) return null;
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
