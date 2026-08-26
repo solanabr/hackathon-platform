@@ -47,11 +47,11 @@ const STEPS = [
   },
   {
     title: "Monte o time e construa",
-    body: "De 2 a 4 builders por time. Aulas, mentorias e o grupo da comunidade durante toda a fase online.",
+    body: "Cada edição define o tamanho do time. Aulas, mentorias e o grupo da comunidade durante toda a fase online.",
   },
   {
-    title: "Submeta e dispute o Pitch Day",
-    body: "Deck, vídeo demo e repositório até o prazo. As melhores equipes apresentam ao vivo para a banca.",
+    title: "Submeta e dispute os prêmios",
+    body: "Deck, vídeo demo e repositório até o prazo. As melhores equipes apresentam para a banca.",
   },
 ];
 
@@ -95,11 +95,13 @@ export default async function HomePage({
   for (const e of editions) counts[e.stage] = (counts[e.stage] ?? 0) + 1;
   const filtered = filter === "todos" ? editions : editions.filter((e) => e.stage === filter);
 
+  // The hub lists every edition, so the strip stays platform-level: no team
+  // sizes or Pitch Day, which are one regulamento's rules.
   const tickerItems = [
     "Construa no ecossistema Solana",
     live ? "Inscrições abertas" : "Novas edições em breve",
-    "Do primeiro commit ao Pitch Day",
-    "Times de 2 a 4 builders",
+    "Do primeiro commit ao demo",
+    "Projetos reais, prêmios reais",
   ];
 
   const deck: DeckCard[] = editions.slice(0, 3).map((e) => ({
@@ -160,7 +162,7 @@ export default async function HomePage({
 
             <p className="mt-7 max-w-xl text-pretty text-lg leading-relaxed text-ink/80">
               Competições reais no ecossistema Solana. Inscrição, time e submissão em um só lugar, do
-              primeiro commit ao Pitch Day.
+              primeiro commit ao demo.
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-3 sm:gap-4">

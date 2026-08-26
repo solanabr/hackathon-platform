@@ -180,16 +180,12 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   return (
     <div>
       <section
-        className={`relative px-4 pb-6 sm:px-6 lg:px-8 ${
-          registered ? "pt-8 lg:pt-14" : "pt-14 lg:pt-24"
-        }`}
+        className="relative px-4 pb-6 pt-8 sm:px-6 lg:px-8 lg:pt-14"
         aria-label={hackathon.name}
       >
-        {registered && (
-          <div className="relative mx-auto mb-8 max-w-6xl">
-            <BackLink href={`/h/${hackathon.slug}/dashboard`} label="Meu painel" />
-          </div>
-        )}
+        <div className="relative mx-auto mb-8 max-w-6xl">
+          <BackLink href="/" label="Hackathons" />
+        </div>
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16">
           <div>
