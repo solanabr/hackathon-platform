@@ -6,32 +6,44 @@ import { Card } from "@/components/ui/card";
 import { updateEditionStatus } from "@/app/(app)/admin/h/[slug]/actions";
 import type { HackathonStatus } from "@/types/db";
 
-const ORDER: HackathonStatus[] = ["draft", "published", "submissions_open", "judging", "closed"];
-
-const LABEL: Record<HackathonStatus, string> = {
-  draft: "Rascunho",
-  published: "Publicado",
-  submissions_open: "Submissões abertas",
-  judging: "Em julgamento",
-  closed: "Encerrado",
+type ManualAction = {
+  target: HackathonStatus;
+  label: string;
+  primary: boolean;
 };
 
-const UNLOCKS: Record<HackathonStatus, string> = {
-  draft: "Rascunho tira a edição da home e da página pública.",
-  published: "Publicado coloca a edição na home e abre a página pública.",
-  submissions_open: "Submissões abertas sinaliza a fase de construção para os participantes.",
+const ACTIONS: Partial<Record<HackathonStatus, ManualAction[]>> = {
+  draft: [{ target: "published", label: "Publicar edição", primary: true }],
+  published: [
+    { target: "judging", label: "Anunciar finalistas", primary: true },
+    { target: "draft", label: "Voltar para rascunho", primary: false },
+  ],
+  submissions_open: [{ target: "published", label: "Republicar edição", primary: true }],
+  judging: [
+    { target: "closed", label: "Encerrar edição", primary: true },
+    { target: "published", label: "Desfazer anúncio", primary: false },
+  ],
+  closed: [{ target: "judging", label: "Reabrir julgamento", primary: false }],
+};
+
+const NOTE: Partial<Record<HackathonStatus, string>> = {
+  draft: "Publicar coloca a edição na home e abre a página pública.",
+  published:
+    "Inscrições, submissões e julgamento seguem as datas configuradas — nada a avançar aqui. Anunciar finalistas libera a seção pública de finalistas na data de anúncio.",
   judging:
-    "Em julgamento libera a seção pública de finalistas assim que a data de anúncio passar.",
-  closed: "Encerrado sempre exibe os finalistas e os resultados na página pública.",
+    "Finalistas anunciados. Encerrar deixa os resultados públicos permanentemente.",
+  closed: "A edição está encerrada. Os resultados ficam públicos permanentemente.",
 };
 
 export function LifecycleControl({
   slug,
   status,
+  phaseLabel,
   finalistsAnnouncedAt,
 }: {
   slug: string;
   status: HackathonStatus;
+  phaseLabel: string;
   finalistsAnnouncedAt: string | null;
 }) {
   const router = useRouter();
@@ -39,9 +51,7 @@ export function LifecycleControl({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  const idx = ORDER.indexOf(status);
-  const next = ORDER[idx + 1] ?? null;
-  const prev = ORDER[idx - 1] ?? null;
+  const actions = ACTIONS[status] ?? [];
 
   function transition(target: HackathonStatus) {
     if (confirming !== target) {
@@ -63,58 +73,42 @@ export function LifecycleControl({
         Ciclo de vida
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <h2 className="font-heading text-lg font-bold">{LABEL[status]}</h2>
+        <h2 className="font-heading text-lg font-bold">{phaseLabel}</h2>
         <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
-          etapa {idx + 1} de {ORDER.length}
+          fases seguem as datas
         </span>
       </div>
 
-      {next && (
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{UNLOCKS[next]}</p>
+      {NOTE[status] && (
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{NOTE[status]}</p>
       )}
-      {next === "judging" && !finalistsAnnouncedAt && (
+      {status === "published" && !finalistsAnnouncedAt && (
         <p className="mt-2 max-w-xl rounded-xl border-2 border-yellow bg-yellow/10 p-3 text-sm leading-relaxed">
           A data de <strong>Anúncio dos finalistas</strong> está vazia. Sem ela, os finalistas
-          continuam invisíveis mesmo em julgamento.
-        </p>
-      )}
-      {!next && (
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-          A edição está encerrada. Os resultados ficam públicos permanentemente.
+          continuam invisíveis mesmo depois do anúncio.
         </p>
       )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        {next && (
+        {actions.map((action) => (
           <button
+            key={action.target}
             type="button"
             disabled={pending}
-            onClick={() => transition(next)}
-            className={`min-h-11 rounded-full border-2 px-5 py-2 text-sm font-bold transition-colors disabled:opacity-50 ${
-              confirming === next
-                ? "border-red-700/40 bg-red-700/10 text-red-700"
-                : "border-green-dark bg-green-dark text-surface hover:bg-green-dark/90"
+            onClick={() => transition(action.target)}
+            className={`min-h-11 rounded-full border-2 text-sm font-bold transition-colors disabled:opacity-50 ${
+              confirming === action.target
+                ? "border-red-700/40 bg-red-700/10 px-5 py-2 text-red-700"
+                : action.primary
+                  ? "border-green-dark bg-green-dark px-5 py-2 text-surface hover:bg-green-dark/90"
+                  : "border-green-dark/20 px-4 py-1.5 text-muted hover:border-green-dark hover:text-ink"
             }`}
           >
-            {confirming === next ? "Confirmar?" : `Avançar para ${LABEL[next]}`}
+            {confirming === action.target ? "Confirmar?" : action.label}
           </button>
-        )}
-        {prev && (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => transition(prev)}
-            className={`min-h-11 rounded-full border-2 px-4 py-1.5 text-sm font-bold transition-colors disabled:opacity-50 ${
-              confirming === prev
-                ? "border-red-700/40 bg-red-700/10 text-red-700"
-                : "border-green-dark/20 text-muted hover:border-green-dark hover:text-ink"
-            }`}
-          >
-            {confirming === prev ? "Confirmar?" : `Voltar para ${LABEL[prev]}`}
-          </button>
-        )}
+        ))}
         {confirming && (
           <button
             type="button"

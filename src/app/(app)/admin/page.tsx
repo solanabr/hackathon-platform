@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
+import { EDITION_PHASE_LABEL, editionPhase } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -85,7 +86,9 @@ export default async function AdminPage() {
               <Card sticker key={h.id} className="p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <Badge tone={h.status === "closed" ? "neutral" : "emerald"}>{h.status}</Badge>
+                    <Badge tone={h.status === "closed" || h.status === "draft" ? "neutral" : "emerald"}>
+                      {EDITION_PHASE_LABEL[editionPhase(h)]}
+                    </Badge>
                     <h2 className="mt-2 font-heading text-xl font-bold">{h.name}</h2>
                     <p className="font-mono text-sm tabular-nums text-muted">/{h.slug}</p>
                   </div>

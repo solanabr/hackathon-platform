@@ -13,12 +13,18 @@ export type EditionSaveResult =
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-const STATUS_ORDER: HackathonStatus[] = [
-  "draft",
-  "published",
-  "submissions_open",
-  "judging",
-  "closed",
+// Inscrições/submissões/julgamento follow the configured dates on their own.
+// The status column only carries the manual switches: publish, announce the
+// finalists (judging) and close — in either direction, one hop at a time.
+const MANUAL_TRANSITIONS: Array<[HackathonStatus, HackathonStatus]> = [
+  ["draft", "published"],
+  ["published", "draft"],
+  ["published", "judging"],
+  ["judging", "published"],
+  ["judging", "closed"],
+  ["closed", "judging"],
+  // Legacy value from the manual machine; lets an old row rejoin the flow.
+  ["submissions_open", "published"],
 ];
 
 export async function updateEditionStatus(input: {
@@ -28,11 +34,10 @@ export async function updateEditionStatus(input: {
   const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
-  const from = STATUS_ORDER.indexOf(gate.hackathon.status);
-  const to = STATUS_ORDER.indexOf(input.status);
-  // The lifecycle only walks one step at a time, in either direction; jumping
-  // stages skips the operational checks each transition implies.
-  if (to === -1 || Math.abs(to - from) !== 1) {
+  const allowed = MANUAL_TRANSITIONS.some(
+    ([from, to]) => from === gate.hackathon.status && to === input.status,
+  );
+  if (!allowed) {
     return { ok: false, error: "Transição de status inválida." };
   }
 

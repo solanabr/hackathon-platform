@@ -5,6 +5,7 @@ import {
   isVotingOpen,
   isFinalistsVisible,
   editionStage,
+  editionPhase,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -57,6 +58,30 @@ describe("hackathon phase helpers", () => {
     expect(editionStage(base, new Date("2026-08-01T00:00:00Z"))).toBe("upcoming");
     expect(editionStage(base, new Date("2026-09-05T00:00:00Z"))).toBe("running");
     expect(editionStage(base, new Date("2026-10-01T00:00:00Z"))).toBe("finished");
+  });
+});
+
+describe("editionPhase", () => {
+  it("follows the dates while published, no manual steps involved", () => {
+    expect(editionPhase(base, new Date("2026-08-27T00:00:00Z"))).toBe("inscricoes");
+    expect(editionPhase(base, new Date("2026-09-01T00:00:00Z"))).toBe("submissoes");
+    expect(editionPhase(base, new Date("2026-09-09T16:00:00Z"))).toBe("julgamento");
+  });
+
+  it("draft and closed come straight from the manual status", () => {
+    expect(editionPhase({ ...base, status: "draft" } as Hackathon, new Date())).toBe("rascunho");
+    expect(editionPhase({ ...base, status: "closed" } as Hackathon, new Date())).toBe("encerrado");
+  });
+
+  it("judging only shows finalistas after the reveal date", () => {
+    const h = { ...base, status: "judging" } as Hackathon;
+    expect(editionPhase(h, new Date("2026-09-10T00:00:00Z"))).toBe("julgamento");
+    expect(editionPhase(h, new Date("2026-09-10T16:00:00Z"))).toBe("finalistas");
+  });
+
+  it("legacy submissions_open rows still derive from dates", () => {
+    const h = { ...base, status: "submissions_open" } as Hackathon;
+    expect(editionPhase(h, new Date("2026-09-01T00:00:00Z"))).toBe("submissoes");
   });
 });
 

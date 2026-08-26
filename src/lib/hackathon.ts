@@ -54,6 +54,40 @@ export function editionStage(
   return new Date(endsAt).getTime() > t ? "running" : "finished";
 }
 
+export type EditionPhase =
+  | "rascunho"
+  | "inscricoes"
+  | "submissoes"
+  | "julgamento"
+  | "finalistas"
+  | "encerrado";
+
+export const EDITION_PHASE_LABEL: Record<EditionPhase, string> = {
+  rascunho: "Rascunho",
+  inscricoes: "Inscrições abertas",
+  submissoes: "Submissões abertas",
+  julgamento: "Em julgamento",
+  finalistas: "Finalistas anunciados",
+  encerrado: "Encerrado",
+};
+
+/**
+ * The stage a published edition is in follows the configured dates on their
+ * own — nobody advances it by hand. The only manual switches left are
+ * publishing (draft ↔ published), announcing the finalists (→ judging, which
+ * reveals the public finalists section) and closing the edition.
+ */
+export function editionPhase(h: Hackathon, now: Date = new Date()): EditionPhase {
+  if (h.status === "draft") return "rascunho";
+  if (h.status === "closed") return "encerrado";
+  if (h.status === "judging") {
+    return isFinalistsVisible(h, now) ? "finalistas" : "julgamento";
+  }
+  if (now.getTime() < new Date(h.starts_at).getTime()) return "inscricoes";
+  if (isSubmissionWindowOpen(h, now)) return "submissoes";
+  return "julgamento";
+}
+
 export type RatingRound = "triagem" | "final";
 
 /**

@@ -10,7 +10,13 @@ import { LifecycleControl } from "@/components/admin/lifecycle-control";
 import { RegistrationsTable } from "@/components/admin/registrations-table";
 import { TeamsTable } from "@/components/admin/teams-table";
 import { requireEditionAdminBySlug } from "@/lib/roles";
-import { getHackathonBySlug, isSubmissionWindowOpen, ratingRound } from "@/lib/hackathon";
+import {
+  EDITION_PHASE_LABEL,
+  editionPhase,
+  getHackathonBySlug,
+  isSubmissionWindowOpen,
+  ratingRound,
+} from "@/lib/hackathon";
 import {
   listRegistrationsForEdition,
   listTeamsForEdition,
@@ -194,6 +200,7 @@ export default async function AdminEditionPage({
         <LifecycleControl
           slug={hackathon.slug}
           status={hackathon.status}
+          phaseLabel={EDITION_PHASE_LABEL[editionPhase(hackathon)]}
           finalistsAnnouncedAt={hackathon.finalists_announced_at}
         />
 
