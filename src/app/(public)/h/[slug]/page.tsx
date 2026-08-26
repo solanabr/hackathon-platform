@@ -63,7 +63,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const [viewerRegistration, roles, sponsorRows] = await Promise.all([
     viewer ? getRegistration(viewer.userId, hackathon.id) : Promise.resolve(null),
     viewer ? resolveRoleState() : Promise.resolve(null),
-    listSponsors(hackathon.id),
+    // The band degrades to no logos on a read failure; the throw exists only
+    // so unstable_cache never stores the transient error.
+    listSponsors(hackathon.id).catch(() => []),
   ]);
   const registered = viewer !== null && isRegistrationComplete(viewerRegistration);
   const canEdit =

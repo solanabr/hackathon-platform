@@ -90,7 +90,9 @@ export default async function HomePage({
   const { f } = await searchParams;
   const filter = f === "running" || f === "upcoming" || f === "finished" ? f : "todos";
 
-  const hackathons = await listHackathons();
+  // An empty gallery on a transient read failure beats the error boundary;
+  // the throw inside the cached read only keeps the failure out of the cache.
+  const hackathons = await listHackathons().catch(() => []);
 
   const dbEditions: CardData[] = hackathons.map((h: Hackathon) => {
     const start = new Date(h.starts_at);

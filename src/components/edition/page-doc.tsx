@@ -166,7 +166,7 @@ function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className:
       decoding="async"
       width={190}
       height={64}
-      className={`h-auto w-auto ${className}`}
+      className={`h-auto w-auto object-contain ${className}`}
     />
   );
   return sponsor.url ? (
