@@ -61,7 +61,7 @@ export function UserMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-64 rounded-2xl border-2 border-green-dark bg-surface-raised p-2 shadow-[6px_6px_0_rgba(27,35,29,0.25)]"
+          className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-64 rounded-2xl border-2 border-green-dark bg-surface-raised p-2 shadow-sticker"
         >
           <div className="px-3 pb-2 pt-1.5">
             <p className="text-xs font-semibold text-muted">Conectado como</p>

@@ -5,15 +5,12 @@ import type { JudgeProject } from "@/components/judge/project-card";
 import { requireJudge, resolveRoleState } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_YEAR, stripPeriods } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH_YEAR;
 
 type TeamRow = {
   id: string;
@@ -55,17 +52,20 @@ export default async function JudgeEditionPage({
   }
 
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
-    .from("teams")
-    .select(
-      `id, name,
+  const data = unwrap(
+    await supabase
+      .from("teams")
+      .select(
+        `id, name,
        submissions(id, project_name, description, pitch_deck_url, pitch_video_url, demo_video_url, github_url, website_url, twitter_url, image_path, status, submitted_at),
        team_members(is_leader, status, invited_email, users(id, full_name, email, avatar_url, headline, github_url, linkedin_url, telegram_handle))`,
-    )
-    .eq("hackathon_id", hackathon.id)
-    .order("name", { ascending: true });
+      )
+      .eq("hackathon_id", hackathon.id)
+      .order("name", { ascending: true }),
+    "judge.edition.teams",
+  );
 
-  let projects: JudgeProject[] = ((data as TeamRow[] | null) ?? [])
+  let projects: JudgeProject[] = ((data as unknown as TeamRow[] | null) ?? [])
     .map((team) => {
       const s = (Array.isArray(team.submissions) ? team.submissions[0] : team.submissions) as
         | Record<string, unknown>
@@ -117,11 +117,14 @@ export default async function JudgeEditionPage({
   // Admins see everything, so they can spot-check without being assigned.
   const roles = await resolveRoleState();
   if (!roles?.isAdmin) {
-    const { data: mine } = await supabase
-      .from("submission_assignments")
-      .select("submission_id")
-      .eq("judge_id", gate.state.userId)
-      .eq("round", round);
+    const mine = unwrap(
+      await supabase
+        .from("submission_assignments")
+        .select("submission_id")
+        .eq("judge_id", gate.state.userId)
+        .eq("round", round),
+      "judge.edition.assignments",
+    );
 
     const allowed = new Set(
       ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
@@ -129,17 +132,20 @@ export default async function JudgeEditionPage({
     projects = projects.filter((p) => allowed.has(p.submissionId));
   }
 
-  const { data: ratingRows } = projects.length
-    ? await supabase
-        .from("submission_ratings")
-        .select("submission_id, grade, comment")
-        .in(
-          "submission_id",
-          projects.map((p) => p.submissionId),
-        )
-        .eq("judge_id", gate.state.userId)
-        .eq("round", round)
-    : { data: [] };
+  const ratingRows = projects.length
+    ? unwrap(
+        await supabase
+          .from("submission_ratings")
+          .select("submission_id, grade, comment")
+          .in(
+            "submission_id",
+            projects.map((p) => p.submissionId),
+          )
+          .eq("judge_id", gate.state.userId)
+          .eq("round", round),
+        "judge.edition.ratings",
+      )
+    : [];
 
   const mine = new Map(
     ((ratingRows as Array<{ submission_id: string; grade: number | null; comment: string | null }> | null) ?? []).map(
@@ -196,7 +202,7 @@ export default async function JudgeEditionPage({
             <p className="mt-1 text-sm text-muted">
               Avaliações até{" "}
               <span className="font-mono tabular-nums">
-                {DAY.format(new Date(roundDeadline)).replace(/\./g, "")}
+                {stripPeriods(DAY.format(new Date(roundDeadline)))}
               </span>
               .
             </p>

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
+import { PainelNav } from "@/components/edition/painel-nav";
 import { Badge } from "@/components/ui/badge";
 import { CopyLink } from "@/components/ui/copy-link";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
@@ -17,26 +18,13 @@ import {
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  DAY_MONTH as DAY,
+  DAY_MONTH_LONG_TIME as FULL,
+  stripPeriods as clean,
+} from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
-
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
-
-const FULL = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
 
 export default async function SubmissionPage({
   params,
@@ -77,7 +65,10 @@ export default async function SubmissionPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
+          <PainelNav slug={slug} />
+        </div>
 
         {submission.status === "submitted" ? (
           <div className="mt-4 rounded-2xl border border-emerald/40 bg-emerald/10 p-6 sm:p-8">
@@ -188,6 +179,7 @@ export default async function SubmissionPage({
           <Card className="mt-8 p-6 sm:p-8">
             <SubmissionEditor
               teamId={team.id}
+              teamName={team.name}
               isLeader={isLeader}
               editable={canEdit}
               initial={submission}
@@ -195,6 +187,7 @@ export default async function SubmissionPage({
               dashboardHref={`/h/${slug}/dashboard`}
               membersPending={membersPending}
               membersAccepted={membersAccepted}
+              judgeGithubHandle={hackathon.judge_github_handle}
             />
           </Card>
         )}

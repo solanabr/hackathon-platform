@@ -1,3 +1,4 @@
+import { DAY_MONTH, DAY_MONTH_LONG_TIME, TIME_HM, stripPeriods } from "@/lib/dates";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,8 +10,12 @@ import { BackLink } from "@/components/ui/back-link";
 import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card";
 import { EditionInfoCard } from "@/components/edition/info-card";
 import { Avatar } from "@/components/ui/avatar";
-import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
-import { getHackathonBySlug, isSubmissionWindowOpen, phaseBoundaries } from "@/lib/hackathon";
+import { PainelNav } from "@/components/edition/painel-nav";
+import { buildMilestones } from "@/lib/milestones";
+import {
+  getHackathonBySlug,
+  isSubmissionWindowOpen,
+} from "@/lib/hackathon";
 import {
   confirmedMemberIds,
   getRegistration,
@@ -23,32 +28,17 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH;
 
-const FULL = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const FULL = DAY_MONTH_LONG_TIME;
 
-const TIME = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const TIME = TIME_HM;
 
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+const clean = stripPeriods;
 
+// project_name is not listed: it mirrors the team name via trigger, so it can
+// never be missing.
 const REQUIRED: Array<{ key: string; label: string }> = [
-  { key: "project_name", label: "Nome do projeto" },
   { key: "description", label: "Descrição" },
   { key: "pitch_deck_url", label: "Pitch deck" },
   { key: "pitch_video_url", label: "Vídeo demo" },
@@ -73,11 +63,6 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
   const supabase = await createServerSupabaseClient();
 
-  const { count: publishedCount } = await supabase
-    .from("hackathon_contents")
-    .select("id", { count: "exact", head: true })
-    .eq("hackathon_id", hackathon.id);
-
   const { count: totalCount } = await supabase
     .from("public_schedule")
     .select("id", { count: "exact", head: true })
@@ -96,6 +81,14 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       })
     : REQUIRED;
 
+  // The checklist shows the team conditions too, so the count covers them.
+  const checklistTotal = REQUIRED.length + 2;
+  const checklistDone =
+    REQUIRED.length -
+    missing.length +
+    (acceptedMembers >= 2 ? 1 : 0) +
+    (pendingMembers.length === 0 ? 1 : 0);
+
   // The hero counts down to whichever milestone comes next: the submission
   // deadline while the window is open, then the finalists, then Pitch Day.
   const finalistsAt = hackathon.finalists_announced_at
@@ -103,12 +96,15 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     : null;
   const pitchAt = hackathon.presential_at ? new Date(hackathon.presential_at).getTime() : null;
 
+  const milestones = buildMilestones(hackathon);
+  const closingLabel = milestones.find((m) => m.key === "ends")?.label ?? "Encerramento";
+
   const hero = (() => {
     if (open) {
       return {
         target: hackathon.submission_deadline_at,
         label: "Submissão fecha em",
-        badge: "Inscrições abertas",
+        badge: null,
         tone: "yellow" as const,
       };
     }
@@ -123,8 +119,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     if (pitchAt !== null && now < pitchAt) {
       return {
         target: hackathon.presential_at as string,
-        label: "Pitch Day em",
-        badge: "Pitch Day em",
+        label: `${closingLabel} em`,
+        badge: closingLabel,
         tone: "emerald" as const,
       };
     }
@@ -139,54 +135,15 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     };
   })();
 
-  const bounds = phaseBoundaries(hackathon);
-  const phases: Phase[] = [
-    {
-      ...bounds.fase1,
-      key: "fase1",
-      label: "Fase 1, capacitação",
-      when: `${clean(DAY.format(new Date(hackathon.starts_at)))} a ${clean(DAY.format(new Date(bounds.fase1.endsAt - 1)))}`,
-      detail: "Minicursos e conteúdos preparatórios. Monte seu time nesse período.",
-    },
-    {
-      ...bounds.submissao,
-      key: "submissao",
-      label: "Desenvolvimento e submissão",
-      when: `${clean(DAY.format(new Date(bounds.submissao.startsAt)))} a ${clean(DAY.format(new Date(hackathon.submission_deadline_at)))}, ${TIME.format(new Date(hackathon.submission_deadline_at))}`,
-      detail: "Mentoria no dia 5. O líder envia deck, vídeo e repositório.",
-    },
-    ...(bounds.selecao && hackathon.finalists_announced_at
-      ? [
-          {
-            ...bounds.selecao,
-            key: "selecao",
-            label: "Seleção",
-            when: clean(DAY.format(new Date(hackathon.finalists_announced_at))),
-            detail: hackathon.finalists_count
-              ? `Os ${hackathon.finalists_count} finalistas são anunciados.`
-              : "As equipes classificadas são anunciadas.",
-          },
-        ]
-      : []),
-    ...(bounds.fase2 && hackathon.presential_at
-      ? [
-          {
-            ...bounds.fase2,
-            key: "fase2",
-            label: "Fase 2, presencial",
-            when: clean(DAY.format(new Date(hackathon.presential_at))),
-            detail: "Pitch Day e premiação.",
-          },
-        ]
-      : []),
-  ];
-
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-10">
-        <BackLink href={`/h/${slug}`} label={hackathon.name} />
+      <div className="mx-auto max-w-6xl space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/h/${slug}`} label={hackathon.name} />
+          <PainelNav slug={slug} />
+        </div>
 
-        <header className="relative overflow-hidden rounded-3xl border border-green-dark/15 bg-surface-raised p-6 sm:p-8">
+        <header className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
             <Image
               src="/brand/stbr/elements/morth-05.svg"
@@ -197,27 +154,34 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             />
           </div>
 
-          <div className="relative">
-            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">PAINEL</p>
-            <h1 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">
-              Olá, {state.profile?.full_name?.split(" ")[0]}.
-            </h1>
-            <p className="mt-1 text-muted">{hackathon.name}</p>
-          </div>
-
-          <div className="relative mt-6 overflow-hidden rounded-2xl border border-green-dark/15 bg-surface-deep px-6 py-6 sm:px-8">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-                {hero.label}
+          <div className="relative flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                Painel
               </p>
-              <Badge tone={hero.tone}>{hero.badge}</Badge>
+              <h1 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-4xl">
+                Olá, {state.profile?.full_name?.split(" ")[0]}.
+              </h1>
+              <p className="mt-1.5 font-semibold text-muted">{hackathon.name}</p>
             </div>
-            <p className="mt-3 font-mono text-5xl font-bold tabular-nums tracking-tight text-ink">
-              <Countdown deadlineIso={hero.target} placeholder="—" />
-            </p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">
-              {FULL.format(new Date(hero.target))}
-            </p>
+
+            <div className="rounded-2xl border-2 border-green-dark bg-yellow/20 px-5 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
+                  {hero.label}
+                </p>
+                {hero.badge && <Badge tone={hero.tone}>{hero.badge}</Badge>}
+              </div>
+              <Countdown
+                deadlineIso={hero.target}
+                variant="segments"
+                size="md"
+                className="mt-2 !justify-start !gap-3"
+              />
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                {FULL.format(new Date(hero.target))}
+              </p>
+            </div>
           </div>
         </header>
 
@@ -236,14 +200,10 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </div>
         )}
 
-        <section aria-label="Etapas">
-          <PhaseTimeline phases={phases} now={now} />
-        </section>
-
-        <EditionInfoCard hackathon={hackathon} />
-
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div className="space-y-6">
           <SectionCard
+            sticker
             title={snapshot ? snapshot.team.name : "Você ainda não tem time"}
             action={snapshot ? { href: `/h/${slug}/team`, label: "Gerenciar" } : undefined}
           >
@@ -305,6 +265,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </SectionCard>
 
           <SectionCard
+            sticker
             title="Submissão"
             action={
               snapshot
@@ -333,7 +294,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                   )}
                   {hackathon.presential_at && (
                     <>
-                      O Pitch Day é em{" "}
+                      {closingLabel} é em{" "}
                       <strong className="text-emerald">
                         {clean(DAY.format(new Date(hackathon.presential_at)))}
                       </strong>
@@ -352,10 +313,10 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               <>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm text-muted">
-                    {missing.length === 0 && pendingMembers.length === 0 && acceptedMembers >= 2
+                    {checklistDone === checklistTotal
                       ? "Tudo pronto. O líder pode enviar."
                       : missing.length > 0
-                        ? `Faltam ${missing.length} de ${REQUIRED.length} itens.`
+                        ? `Faltam ${checklistTotal - checklistDone} de ${checklistTotal} itens.`
                         : acceptedMembers < 2
                           ? "O time precisa de pelo menos 2 integrantes."
                           : `Falta a inscrição de ${pendingMembers.length} ${
@@ -363,15 +324,13 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                             }.`}
                   </p>
                   <p className="shrink-0 font-mono text-xs tabular-nums text-ink">
-                    {REQUIRED.length - missing.length}/{REQUIRED.length} itens
+                    {checklistDone}/{checklistTotal} itens
                   </p>
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-deep">
                   <div
                     className="h-1.5 rounded-full bg-emerald transition-[width]"
-                    style={{
-                      width: `${((REQUIRED.length - missing.length) / REQUIRED.length) * 100}%`,
-                    }}
+                    style={{ width: `${(checklistDone / checklistTotal) * 100}%` }}
                   />
                 </div>
                 <ul className="mt-4 space-y-2.5">
@@ -390,33 +349,27 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </>
             )}
           </SectionCard>
-        </div>
+          </div>
 
-        <Card className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
-          <div>
-            <p className="text-[12px] font-bold uppercase tracking-wider text-emerald">TRILHA</p>
-            <h2 className="mt-1 font-heading text-xl font-bold">Conteúdos</h2>
-            <p className="mt-1 font-mono text-sm tabular-nums text-muted">
-              {publishedCount ?? 0}/{totalCount ?? 0} disponíveis. As gravações entram depois de cada
-              encontro.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/h/${slug}/content`} className="btn-primary px-5 py-2 text-sm">
-              Ver conteúdos
-            </Link>
-            {hackathon.community_url && (
-              <a
-                href={hackathon.community_url}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-secondary px-5 py-2 text-sm"
-              >
-                Comunidade
-              </a>
+          <aside className="space-y-6">
+            <EditionInfoCard hackathon={hackathon} />
+            {(totalCount ?? 0) > 0 && (
+              <Card sticker className="p-6 sm:p-7">
+                <h2 className="font-heading text-xl font-bold">Conteúdos</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  Explore os conteúdos e materiais disponíveis da edição — gravações, arquivos e
+                  links.
+                </p>
+                <Link
+                  href={`/h/${slug}/content`}
+                  className="btn-primary mt-4 inline-block px-5 py-2 text-sm"
+                >
+                  Ver conteúdos
+                </Link>
+              </Card>
             )}
-          </div>
-        </Card>
+          </aside>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeUrl, sanitizeText, isValidEmail, sanitizeAvatarUrl } from "../security";
+import { sanitizeUrl, sanitizeText, isValidEmail, sanitizeAvatarUrl ,
+  sanitizeRedirect,
+} from "../security";
 
 describe("sanitizeUrl", () => {
   it("returns null for empty/whitespace", () => {
@@ -64,5 +66,38 @@ describe("sanitizeAvatarUrl", () => {
     expect(sanitizeAvatarUrl("https://evil.example/pixel.png")).toBeNull();
     expect(sanitizeAvatarUrl("javascript:alert(1)")).toBeNull();
     expect(sanitizeAvatarUrl("")).toBeNull();
+  });
+});
+
+describe("sanitizeRedirect", () => {
+  it("keeps a same-origin path", () => {
+    expect(sanitizeRedirect("/h/foo/register")).toBe("/h/foo/register");
+    expect(sanitizeRedirect("/h/foo?x=1")).toBe("/h/foo?x=1");
+  });
+
+  it("rejects anything that leaves the origin", () => {
+    expect(sanitizeRedirect("//evil.com")).toBeNull();
+    expect(sanitizeRedirect("/\\evil.com")).toBeNull();
+    expect(sanitizeRedirect("https://evil.com")).toBeNull();
+    expect(sanitizeRedirect(null)).toBeNull();
+  });
+
+  it("rejects control characters a URL parser would strip", () => {
+    // "/\t/evil.com" survived the old prefix checks and then resolved to
+    // https://evil.com once the parser dropped the tab.
+    for (const raw of ["/\t/evil.com", "/\n/evil.com", "/\r/evil.com", "/ /evil.com"]) {
+      expect(sanitizeRedirect(raw)).toBeNull();
+    }
+  });
+
+  it("never resolves off-origin for anything it accepts", () => {
+    const probes = ["/a", "/h/x/register", "/\t/evil.com", "//evil.com", "/\n//evil.com"];
+    for (const probe of probes) {
+      const out = sanitizeRedirect(probe);
+      if (out === null) continue;
+      expect(new URL(out, "https://hack.superteam.com.br").origin).toBe(
+        "https://hack.superteam.com.br",
+      );
+    }
   });
 });

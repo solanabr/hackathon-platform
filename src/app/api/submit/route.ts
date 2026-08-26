@@ -1,6 +1,7 @@
 import { NextResponse, after, type NextRequest } from "next/server";
 import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 
 const RPC_ERRORS: Record<string, { status: number; message: string }> = {
   not_authenticated: { status: 401, message: "Sessão expirada." },
@@ -48,11 +49,13 @@ export async function POST(request: NextRequest) {
   // promise, survives the serverless instance being frozen at flush time.
   after(async () => {
     try {
-      const { data: teamRow } = await supabase
+      const { data: teamRow, error: teamRowError } = await supabase
         .from("teams")
         .select("hackathons(name, slug), submissions(project_name)")
         .eq("id", body.teamId)
         .maybeSingle();
+      // Email context only — the submission already succeeded.
+      if (teamRowError) logQueryError("api.submit.emailContext", teamRowError);
 
       type TeamRow = {
         hackathons:

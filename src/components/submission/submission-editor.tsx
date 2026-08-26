@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { DATE_TIME_NUMERIC } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Input, Textarea, Label } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import type { Submission } from "@/types/db";
 
 type Props = {
   teamId: string;
+  teamName: string;
   isLeader: boolean;
   editable: boolean;
   initial: Submission;
@@ -19,10 +21,10 @@ type Props = {
   dashboardHref: string;
   membersPending: number;
   membersAccepted: number;
+  judgeGithubHandle: string | null;
 };
 
 type FormState = {
-  project_name: string;
   description: string;
   pitch_deck_url: string;
   pitch_video_url: string;
@@ -33,30 +35,12 @@ type FormState = {
   github_access_granted: boolean;
 };
 
-function formatSavedAt(date: Date): string {
-  // Pin to America/Sao_Paulo so SSR (UTC) and client (BRT) format identically.
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatSubmittedAt(date: Date): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
+// Pinned to America/Sao_Paulo so SSR (UTC) and client (BRT) format identically.
+const formatSavedAt = (date: Date) => DATE_TIME_NUMERIC.format(date);
+const formatSubmittedAt = formatSavedAt;
 
 function toForm(s: Submission): FormState {
   return {
-    project_name: s.project_name ?? "",
     description: s.description ?? "",
     pitch_deck_url: s.pitch_deck_url ?? "",
     pitch_video_url: s.pitch_video_url ?? "",
@@ -83,6 +67,7 @@ const SUBMIT_ERRORS: Record<string, string> = {
 
 export function SubmissionEditor({
   teamId,
+  teamName,
   isLeader,
   editable,
   initial,
@@ -90,10 +75,13 @@ export function SubmissionEditor({
   dashboardHref,
   membersPending,
   membersAccepted,
+  judgeGithubHandle,
 }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState<FormState>(toForm(initial));
+  const [name, setName] = useState(teamName);
+  const savedName = useRef(teamName);
   const [imagePath, setImagePath] = useState<string | null>(initial.image_path);
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl);
   const [savedAt, setSavedAt] = useState<Date | null>(initial.updated_at ? new Date(initial.updated_at) : null);
@@ -110,7 +98,6 @@ export function SubmissionEditor({
     setSubmitError(null);
 
     const payload = {
-      project_name: sanitizeText(form.project_name, 120),
       description: sanitizeText(form.description, 4000),
       pitch_deck_url: sanitizeUrl(form.pitch_deck_url),
       pitch_video_url: sanitizeUrl(form.pitch_video_url),
@@ -122,22 +109,68 @@ export function SubmissionEditor({
       github_access_granted: form.github_access_granted,
     };
 
-    const { error } = await supabase.from("submissions").update(payload).eq("team_id", teamId);
+    // Without .select() PostgREST answers 204 even when RLS matched zero rows
+    // (locked team, deadline passed) — the editor would paint "Salvo" over
+    // writes being thrown away.
+    const { data, error } = await supabase
+      .from("submissions")
+      .update(payload)
+      .eq("team_id", teamId)
+      .select("id");
     setSaving(false);
     if (error) {
       setSubmitError("Não foi possível salvar. Tente novamente.");
       return false;
     }
+    if (!data || data.length === 0) {
+      setSubmitError(
+        "Nada foi salvo: o prazo de submissão passou e o time foi travado. Recarregue a página.",
+      );
+      return false;
+    }
+
+    // The name is the team's name — one edit point. The teams trigger is the
+    // only writer of project_name; RLS lets only the unlocked team's leader
+    // through here.
+    const nextName = sanitizeText(name, 80);
+    if (isLeader && nextName && nextName !== savedName.current) {
+      const { data: renamed, error: renameError } = await supabase
+        .from("teams")
+        .update({ name: nextName })
+        .eq("id", teamId)
+        .select("id");
+      if (renameError) {
+        setSubmitError(
+          renameError.code === "23505"
+            ? "Já existe um time com esse nome."
+            : "Não foi possível salvar o nome. Tente novamente.",
+        );
+        return false;
+      }
+      if (!renamed || renamed.length === 0) {
+        setSubmitError("O nome não foi salvo: o time já está travado.");
+        return false;
+      }
+      savedName.current = nextName;
+    }
+
     setSavedAt(new Date());
     router.refresh();
     return true;
   }
 
+  const submitInFlight = useRef(false);
+
   async function submit() {
     if (!editable || !isLeader) return;
+    if (submitInFlight.current || pendingSubmit) return;
+    submitInFlight.current = true;
 
     const saved = await save();
-    if (!saved) return;
+    if (!saved) {
+      submitInFlight.current = false;
+      return;
+    }
 
     startSubmit(async () => {
       setSubmitError(null);
@@ -152,6 +185,7 @@ export function SubmissionEditor({
         setSubmitError(
           (code && SUBMIT_ERRORS[code]) ?? data.error ?? "Não foi possível submeter.",
         );
+        submitInFlight.current = false;
         return;
       }
       router.push(dashboardHref);
@@ -179,10 +213,10 @@ export function SubmissionEditor({
       void saveRef.current();
     }, 800);
     return () => clearTimeout(id);
-  }, [form, pendingSubmit, editable, isDraft]);
+  }, [form, name, pendingSubmit, editable, isDraft]);
 
   const allRequiredFilled =
-    !!form.project_name.trim() &&
+    !!name.trim() &&
     !!form.description.trim() &&
     !!sanitizeUrl(form.pitch_deck_url) &&
     !!sanitizeUrl(form.pitch_video_url) &&
@@ -206,10 +240,11 @@ export function SubmissionEditor({
             <Label htmlFor="project_name">Nome do projeto*</Label>
             <Input
               id="project_name"
-              maxLength={120}
+              maxLength={80}
               placeholder="Ex.: Cerrado Pay"
-              value={form.project_name}
-              onChange={(e) => set("project_name", e.target.value)}
+              value={name}
+              disabled={!isLeader}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="sm:col-span-2">
@@ -256,14 +291,18 @@ export function SubmissionEditor({
             />
             <p className="mt-1.5 text-xs text-muted">
               Se o repositório for privado, adicione{" "}
-              <a
-                href="https://github.com/kauenet"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-ink underline-offset-2 hover:text-emerald hover:underline"
-              >
-                @kauenet
-              </a>{" "}
+              {judgeGithubHandle ? (
+                <a
+                  href={`https://github.com/${judgeGithubHandle}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-ink underline-offset-2 hover:text-emerald hover:underline"
+                >
+                  @{judgeGithubHandle}
+                </a>
+              ) : (
+                <span className="font-medium text-ink">o usuário indicado pela organização</span>
+              )}{" "}
               como colaborador para os juízes terem acesso.
             </p>
           </div>
@@ -277,14 +316,18 @@ export function SubmissionEditor({
               />
               <span className="text-sm text-ink">
                 Confirmo que adicionei{" "}
-                <a
-                  href="https://github.com/kauenet"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium underline-offset-2 hover:text-emerald hover:underline"
-                >
-                  @kauenet
-                </a>{" "}
+                {judgeGithubHandle ? (
+                  <a
+                    href={`https://github.com/${judgeGithubHandle}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium underline-offset-2 hover:text-emerald hover:underline"
+                  >
+                    @{judgeGithubHandle}
+                  </a>
+                ) : (
+                  <span className="font-medium">o usuário indicado pela organização</span>
+                )}{" "}
                 como colaborador do repositório, para os juízes acessarem o código.*
               </span>
             </label>
@@ -322,14 +365,24 @@ export function SubmissionEditor({
               setImagePath(path);
               setImageUrl(url);
               if (!editable) return;
-              const { error } = await supabase
+              setSubmitError(null);
+              const { data, error } = await supabase
                 .from("submissions")
                 .update({ image_path: path })
-                .eq("team_id", teamId);
-              if (!error) {
-                setSavedAt(new Date());
-                router.refresh();
+                .eq("team_id", teamId)
+                .select("id");
+              if (error) {
+                setSubmitError("A imagem subiu, mas não foi salva no projeto. Tente de novo.");
+                return;
               }
+              if (!data || data.length === 0) {
+                setSubmitError(
+                  "A imagem subiu, mas nada foi salvo: o prazo passou e o time foi travado.",
+                );
+                return;
+              }
+              setSavedAt(new Date());
+              router.refresh();
             }}
           />
         </div>

@@ -10,6 +10,7 @@ const ERRORS: Record<string, string> = {
   already_on_team: "Você já está em um time neste hackathon.",
   not_authenticated: "Sessão expirada. Faça login novamente.",
   duplicate_name: "Já existe um time com esse nome.",
+  deadline_passed: "O prazo de submissão já passou. Não dá mais para criar times nesta edição.",
 };
 
 export function NewTeamForm({

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "./supabase/server";
+import { logQueryError } from "./supabase/unwrap";
 import { sanitizeRedirect } from "./security";
 import { editionStage } from "./hackathon";
 import type { Hackathon, User } from "@/types/db";
@@ -29,10 +30,11 @@ async function latestLiveDashboard(
 ): Promise<string | null> {
   if (hackathonIds.length === 0) return null;
 
-  const { data: hackathons } = await supabase
+  const { data: hackathons, error: hackathonsError } = await supabase
     .from("hackathons")
     .select("slug, status, starts_at, submission_deadline_at, presential_at, voting_closes_at")
     .in("id", hackathonIds);
+  if (hackathonsError) logQueryError("userState.latestLiveDashboard", hackathonsError);
 
   const live = ((hackathons as Hackathon[] | null) ?? []).filter(
     (h) => h.status !== "draft" && editionStage(h) !== "finished",
@@ -66,11 +68,12 @@ async function latestLiveDashboard(
 const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const supabase = await createServerSupabaseClient();
 
-  const { data: memberships } = await supabase
+  const { data: memberships, error: membershipsError } = await supabase
     .from("team_members")
     .select("hackathon_id")
     .eq("user_id", userId)
     .eq("status", "accepted");
+  if (membershipsError) logQueryError("userState.liveDashboardPath.memberships", membershipsError);
 
   const membershipIds = Array.from(
     new Set(((memberships as { hackathon_id: string }[] | null) ?? []).map((m) => m.hackathon_id)),
@@ -79,10 +82,12 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const fromMembership = await latestLiveDashboard(supabase, membershipIds);
   if (fromMembership) return fromMembership;
 
-  const { data: registrations } = await supabase
+  const { data: registrations, error: registrationsError } = await supabase
     .from("hackathon_registrations")
     .select("hackathon_id")
     .eq("user_id", userId);
+  if (registrationsError)
+    logQueryError("userState.liveDashboardPath.registrations", registrationsError);
 
   const registrationIds = Array.from(
     new Set(((registrations as { hackathon_id: string }[] | null) ?? []).map((r) => r.hackathon_id)),
@@ -94,18 +99,20 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   return "/";
 });
 
-export async function resolveAuthenticatedUserState(): Promise<AuthenticatedState | null> {
+// Header, gates, and pages all call this per request; one auth+profile read.
+export const resolveAuthenticatedUserState = cache(async (): Promise<AuthenticatedState | null> => {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
+  if (profileError) logQueryError("userState.resolveAuthenticatedUserState.profile", profileError);
 
   const typed = profile as User | null;
   const needsProfile = !typed?.full_name;
@@ -116,7 +123,7 @@ export async function resolveAuthenticatedUserState(): Promise<AuthenticatedStat
     profile: typed,
     redirectPath: needsProfile ? "/account" : await liveDashboardPath(user.id),
   };
-}
+});
 
 /**
  * Gate for gated pages and server actions. Logged-out callers go to `/auth`

@@ -1,12 +1,12 @@
 import type { NextConfig } from "next";
+import { ALLOWED_IMAGE_HOSTS } from "./src/lib/image-hosts";
 
 const config: NextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
-      { protocol: "https", hostname: "lh3.googleusercontent.com" },
-      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      ...ALLOWED_IMAGE_HOSTS.map((hostname) => ({ protocol: "https" as const, hostname })),
     ],
   },
   experimental: {

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import type { RatingRound } from "@/lib/hackathon";
 
 export type AssignResult = { ok: true } | { ok: false; error: string };
@@ -14,10 +14,37 @@ export async function setAssignment(input: {
   round: RatingRound;
   assigned: boolean;
 }): Promise<AssignResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
+
+  // The gate authorizes the slug; without these two checks a scoped admin
+  // could pair another edition's submission with an arbitrary judge.
+  const [{ data: submissionTeam }, { data: judgeRole }] = await Promise.all([
+    supabase
+      .from("submissions")
+      .select("team_id, teams!inner(hackathon_id)")
+      .eq("id", input.submissionId)
+      .maybeSingle(),
+    supabase
+      .from("platform_roles")
+      .select("id")
+      .eq("user_id", input.judgeId)
+      .eq("role", "judge")
+      .eq("hackathon_id", gate.hackathon.id)
+      .maybeSingle(),
+  ]);
+
+  const submissionHackathon = (
+    submissionTeam as { teams: { hackathon_id: string } } | null
+  )?.teams?.hackathon_id;
+  if (submissionHackathon !== gate.hackathon.id) {
+    return { ok: false, error: "Projeto não pertence a esta edição." };
+  }
+  if (!judgeRole) {
+    return { ok: false, error: "Essa pessoa não é jurada desta edição." };
+  }
 
   if (input.assigned) {
     const { error } = await supabase.from("submission_assignments").insert({

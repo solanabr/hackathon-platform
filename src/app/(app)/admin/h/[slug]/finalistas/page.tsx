@@ -1,9 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
+import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { FinalistPicker } from "@/components/admin/finalist-picker";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
 import { finalistCandidates, type FinalistRow } from "@/lib/finalists";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +16,7 @@ export default async function AdminFinalistsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(slug);
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
   const hackathon = await getHackathonBySlug(slug);
@@ -24,24 +26,30 @@ export default async function AdminFinalistsPage({
   // `!left` keeps submitted-but-unrated projects in the picker: filtering an
   // embedded resource would otherwise turn the join into an INNER one and drop
   // rows with no triagem ratings yet.
-  const { data } = await supabase
-    .from("submissions")
-    .select(
-      "id, project_name, teams!inner(id, name, is_finalist, finalist_notified_at, placement), submission_ratings!left(grade)",
-    )
-    .eq("teams.hackathon_id", hackathon.id)
-    .eq("status", "submitted")
-    .eq("submission_ratings.round", "triagem");
+  const data = unwrap(
+    await supabase
+      .from("submissions")
+      .select(
+        "id, project_name, teams!inner(id, name, is_finalist, finalist_notified_at, placement), submission_ratings!left(grade)",
+      )
+      .eq("teams.hackathon_id", hackathon.id)
+      .eq("status", "submitted")
+      .eq("submission_ratings.round", "triagem"),
+    "admin.finalistas.candidates",
+  );
 
-  const candidates = finalistCandidates(data as FinalistRow[] | null);
+  const candidates = finalistCandidates(data as unknown as FinalistRow[] | null);
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl space-y-8">
-        <BackLink href="/admin" label="Administração" />
+      <div className="mx-auto max-w-5xl space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/admin/h/${slug}`} label={hackathon.name} />
+          <AdminEditionNav slug={slug} />
+        </div>
 
         <header>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Banca
           </p>
           <h1 className="mt-1 font-heading text-3xl font-bold">Finalistas</h1>

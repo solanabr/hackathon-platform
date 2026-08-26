@@ -55,7 +55,7 @@ export function AddMemberForm({ teamId }: { teamId: string }) {
           <p className="text-ink">
             <strong>{message.email}</strong>{" "}
             {message.type === "ok-account"
-              ? "foi adicionado ao time."
+              ? "recebeu o convite. Entra no time quando aceitar, pelo painel."
               : "ainda não tem conta. Vai aparecer no time assim que essa pessoa entrar com este e-mail."}
           </p>
           <p className="mt-1 text-muted">

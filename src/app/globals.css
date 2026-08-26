@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
   --color-surface-deep: #efe0ba;
@@ -70,7 +71,7 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-semibold text-[#1b231d] transition-[background-color,transform] duration-200
+           font-semibold text-green-dark transition-[background-color,transform] duration-200
            hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
@@ -80,6 +81,42 @@
            bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-200
            hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+  }
+
+  /* Markdown sections on edition pages, in the LP voice. */
+  .prose-lp {
+    @apply leading-relaxed text-ink/85;
+  }
+  .prose-lp h2 {
+    @apply mt-8 font-heading text-2xl font-black uppercase tracking-tight [font-stretch:118%];
+  }
+  .prose-lp h3 {
+    @apply mt-6 font-heading text-xl font-bold;
+  }
+  .prose-lp p {
+    @apply mt-4;
+  }
+  .prose-lp ul,
+  .prose-lp ol {
+    @apply mt-4 space-y-2 pl-5;
+  }
+  .prose-lp ul {
+    @apply list-disc marker:text-emerald;
+  }
+  .prose-lp ol {
+    @apply list-decimal marker:font-bold marker:text-emerald;
+  }
+  .prose-lp a {
+    @apply font-semibold text-emerald underline underline-offset-4 hover:text-green-dark;
+  }
+  .prose-lp strong {
+    @apply font-bold text-ink;
+  }
+  .prose-lp blockquote {
+    @apply mt-4 border-l-4 border-yellow bg-surface-raised px-5 py-3 italic;
+  }
+  .prose-lp code {
+    @apply rounded bg-green-dark/10 px-1.5 py-0.5 font-mono text-sm;
   }
 
   .card-hover {
@@ -174,18 +211,11 @@
   color: transparent;
 }
 
-@keyframes marqueeX {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-.animate-marquee { animation: marqueeX 30s linear infinite; }
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  .animate-marquee,
   .animate-float-a,
   .animate-float-b,
   .animate-float-c { animation: none; }

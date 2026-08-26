@@ -3,19 +3,17 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { StatusChip } from "@/components/ui/section-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_YEAR, stripPeriods } from "@/lib/dates";
 import { editionStage, ratingRound } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH_YEAR;
 
 const STAGE_LABEL: Record<string, string> = {
   upcoming: "ainda não começou",
@@ -37,15 +35,18 @@ export default async function JudgeIndexPage() {
     .order("starts_at", { ascending: false });
   if (!roles.isAdmin) query = query.in("id", roles.judgeFor);
 
-  const { data } = await query;
-  const editions = (data as Hackathon[] | null) ?? [];
+  const editions =
+    (unwrap(await query, "judge.index.editions") as Hackathon[] | null) ?? [];
 
   const counts = new Map<string, { total: number; rated: number }>();
   for (const edition of editions) {
-    const { data: teams } = await supabase
-      .from("teams")
-      .select("submissions!inner(id, status)")
-      .eq("hackathon_id", edition.id);
+    const teams = unwrap(
+      await supabase
+        .from("teams")
+        .select("submissions!inner(id, status)")
+        .eq("hackathon_id", edition.id),
+      "judge.index.teams",
+    );
 
     let ids = ((teams as Array<{ submissions: { id: string; status: string } | { id: string; status: string }[] }> | null) ?? [])
       .flatMap((t) => (Array.isArray(t.submissions) ? t.submissions : [t.submissions]))
@@ -55,12 +56,15 @@ export default async function JudgeIndexPage() {
     // The denominator has to be what this judge can open, not every submission,
     // or their progress never reaches the total and "done" is unreachable.
     if (!roles.isAdmin && ids.length) {
-      const { data: mine } = await supabase
-        .from("submission_assignments")
-        .select("submission_id")
-        .eq("judge_id", roles.state.userId)
-        .eq("round", ratingRound(edition))
-        .in("submission_id", ids);
+      const mine = unwrap(
+        await supabase
+          .from("submission_assignments")
+          .select("submission_id")
+          .eq("judge_id", roles.state.userId)
+          .eq("round", ratingRound(edition))
+          .in("submission_id", ids),
+        "judge.index.assignments",
+      );
 
       const allowed = new Set(
         ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
@@ -70,7 +74,7 @@ export default async function JudgeIndexPage() {
 
     // A row only counts as rated once it carries a grade — a comment-only save
     // is a draft and must not move the progress bar.
-    const { count } = ids.length
+    const ratedResult = ids.length
       ? await supabase
           .from("submission_ratings")
           .select("submission_id", { count: "exact", head: true })
@@ -78,7 +82,9 @@ export default async function JudgeIndexPage() {
           .eq("judge_id", roles.state.userId)
           .eq("round", ratingRound(edition))
           .not("grade", "is", null)
-      : { count: 0 };
+      : { data: null, error: null, count: 0 };
+    unwrap(ratedResult, "judge.index.ratedCount");
+    const count = ratedResult.count;
 
     counts.set(edition.id, { total: ids.length, rated: count ?? 0 });
   }
@@ -103,9 +109,10 @@ export default async function JudgeIndexPage() {
         </header>
 
         {editions.length === 0 ? (
-          <Card className="p-7">
-            <p className="font-mono text-sm text-muted">Nenhuma edição atribuída a você ainda.</p>
-          </Card>
+          <EmptyState
+            title="Nenhuma edição atribuída"
+            description="Você ainda não foi indicado como jurado de nenhuma edição."
+          />
         ) : (
           <ul className="space-y-4">
             {editions.map((edition) => {
@@ -127,7 +134,7 @@ export default async function JudgeIndexPage() {
                         Pitch Day{" "}
                         <span className="font-mono tabular-nums">
                           {edition.presential_at
-                            ? DAY.format(new Date(edition.presential_at)).replace(/\./g, "")
+                            ? stripPeriods(DAY.format(new Date(edition.presential_at)))
                             : "a definir"}
                         </span>
                         {" · "}
@@ -151,7 +158,7 @@ export default async function JudgeIndexPage() {
                         className={
                           done
                             ? "btn-secondary min-h-11 px-5 py-2 text-sm"
-                            : "btn-primary min-h-11 px-5 py-2 text-sm text-[#1b231d]"
+                            : "btn-primary min-h-11 px-5 py-2 text-sm text-green-dark"
                         }
                       >
                         {done ? "Revisar notas" : "Avaliar projetos"}

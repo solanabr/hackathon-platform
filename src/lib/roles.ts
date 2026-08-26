@@ -1,31 +1,46 @@
+import { cache } from "react";
 import { resolveAuthenticatedUserState, type AuthenticatedState } from "./user-state";
+import { getHackathonBySlug } from "./hackathon";
 import { createServiceRoleClient } from "./supabase/server";
-import type { PlatformRole } from "@/types/db";
+import { unwrap } from "./supabase/unwrap";
+import type { Hackathon, PlatformRole } from "@/types/db";
 
 type RoleCheck =
   | { ok: true; state: AuthenticatedState }
   | { ok: false; reason: "unauthenticated" | "forbidden" };
 
+type EditionCheck =
+  | { ok: true; state: AuthenticatedState; hackathon: Hackathon }
+  | { ok: false; reason: "unauthenticated" | "forbidden" };
+
 export function resolveRoles(
   rows: PlatformRole[],
   email: string | null,
-): { isAdmin: boolean; judgeFor: string[] } {
-  if (!email) return { isAdmin: false, judgeFor: [] };
-  const isAdmin = rows.some((r) => r.role === "admin");
+): { isAdmin: boolean; adminFor: string[]; judgeFor: string[] } {
+  if (!email) return { isAdmin: false, adminFor: [], judgeFor: [] };
+  // A null hackathon_id makes the admin global; a scoped row makes the user
+  // an organizer of that one edition.
+  const isAdmin = rows.some((r) => r.role === "admin" && !r.hackathon_id);
+  const adminFor = rows
+    .filter((r) => r.role === "admin" && r.hackathon_id)
+    .map((r) => r.hackathon_id as string);
   const judgeFor = rows
     .filter((r) => r.role === "judge" && r.hackathon_id)
     .map((r) => r.hackathon_id as string);
-  return { isAdmin, judgeFor };
+  return { isAdmin, adminFor, judgeFor };
 }
 
-async function loadRoles(userId: string): Promise<PlatformRole[]> {
+// Header, page, and gates all resolve roles in the same request; cache()
+// collapses them into one platform_roles read.
+const loadRoles = cache(async (userId: string): Promise<PlatformRole[]> => {
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
+  const result = await supabase
     .from("platform_roles")
     .select("*")
     .eq("user_id", userId);
-  return (data as PlatformRole[] | null) ?? [];
-}
+  // A failed read here would silently demote every admin and judge.
+  return (unwrap(result, "roles.loadRoles") as PlatformRole[] | null) ?? [];
+});
 
 export async function isAdminFor(state: AuthenticatedState): Promise<boolean> {
   const { isAdmin } = resolveRoles(await loadRoles(state.userId), state.email);
@@ -40,6 +55,29 @@ export async function requireAdmin(): Promise<RoleCheck> {
     state.email,
   );
   return isAdmin ? { ok: true, state } : { ok: false, reason: "forbidden" };
+}
+
+/**
+ * Slug-first variant for server actions that only carry the edition slug.
+ * Returns the resolved hackathon so every mutation can scope its writes to
+ * it — a slug-gated action writing by a bare row id would let a scoped
+ * admin of edition A touch edition B's rows.
+ */
+export async function requireEditionAdminBySlug(slug: string): Promise<EditionCheck> {
+  const hackathon = await getHackathonBySlug(slug);
+  if (!hackathon) return { ok: false, reason: "forbidden" };
+  const gate = await requireEditionAdmin(hackathon.id);
+  return gate.ok ? { ok: true, state: gate.state, hackathon } : gate;
+}
+
+/** Global admins pass everywhere; a scoped admin only for their edition. */
+export async function requireEditionAdmin(hackathonId: string): Promise<RoleCheck> {
+  const state = await resolveAuthenticatedUserState();
+  if (!state) return { ok: false, reason: "unauthenticated" };
+  const { isAdmin, adminFor } = resolveRoles(await loadRoles(state.userId), state.email);
+  return isAdmin || adminFor.includes(hackathonId)
+    ? { ok: true, state }
+    : { ok: false, reason: "forbidden" };
 }
 
 export async function requireJudge(hackathonId: string): Promise<RoleCheck> {
@@ -57,6 +95,7 @@ export async function requireJudge(hackathonId: string): Promise<RoleCheck> {
 export type RoleState = {
   state: AuthenticatedState;
   isAdmin: boolean;
+  adminFor: string[];
   judgeFor: string[];
 };
 
@@ -64,6 +103,6 @@ export type RoleState = {
 export async function resolveRoleState(): Promise<RoleState | null> {
   const state = await resolveAuthenticatedUserState();
   if (!state) return null;
-  const { isAdmin, judgeFor } = resolveRoles(await loadRoles(state.userId), state.email);
-  return { state, isAdmin, judgeFor };
+  const { isAdmin, adminFor, judgeFor } = resolveRoles(await loadRoles(state.userId), state.email);
+  return { state, isAdmin, adminFor, judgeFor };
 }

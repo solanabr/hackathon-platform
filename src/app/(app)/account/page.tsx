@@ -8,20 +8,15 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/user-state";
 import { editionStage, isFinalistsVisible } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_YEAR, stripPeriods } from "@/lib/dates";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH_YEAR;
 
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+const clean = stripPeriods;
 
 type Participation = {
   hackathon: Hackathon;
@@ -40,20 +35,26 @@ export default async function AccountPage({
   const profile = state.profile;
   const supabase = await createServerSupabaseClient();
 
-  const { data: regs } = await supabase
-    .from("hackathon_registrations")
-    .select("hackathon_id, registered_at, hackathons(*)")
-    .eq("user_id", state.userId)
-    .order("registered_at", { ascending: false });
+  const regs = unwrap(
+    await supabase
+      .from("hackathon_registrations")
+      .select("hackathon_id, registered_at, hackathons(*)")
+      .eq("user_id", state.userId)
+      .order("registered_at", { ascending: false }),
+    "account.registrations",
+  );
 
   type RegRow = { hackathon_id: string; hackathons: Hackathon | Hackathon[] | null };
-  const rows = (regs as RegRow[] | null) ?? [];
+  const rows = (regs as unknown as RegRow[] | null) ?? [];
 
-  const { data: memberships } = await supabase
-    .from("team_members")
-    .select("team_id, teams(id, name, hackathon_id, is_finalist), submissions:teams(id)")
-    .eq("user_id", state.userId)
-    .eq("status", "accepted");
+  const memberships = unwrap(
+    await supabase
+      .from("team_members")
+      .select("team_id, teams(id, name, hackathon_id, is_finalist)")
+      .eq("user_id", state.userId)
+      .eq("status", "accepted"),
+    "account.memberships",
+  );
 
   type TeamRow = {
     teams:
@@ -65,15 +66,18 @@ export default async function AccountPage({
     string,
     { id: string; name: string; is_finalist: boolean }
   >();
-  for (const m of (memberships as TeamRow[] | null) ?? []) {
+  for (const m of (memberships as unknown as TeamRow[] | null) ?? []) {
     const t = Array.isArray(m.teams) ? m.teams[0] : m.teams;
     if (t) teamByHackathon.set(t.hackathon_id, { id: t.id, name: t.name, is_finalist: t.is_finalist });
   }
 
   const teamIds = [...teamByHackathon.values()].map((t) => t.id);
-  const { data: subs } = teamIds.length
-    ? await supabase.from("submissions").select("team_id, status").in("team_id", teamIds)
-    : { data: [] };
+  const subs = teamIds.length
+    ? unwrap(
+        await supabase.from("submissions").select("team_id, status").in("team_id", teamIds),
+        "account.submissions",
+      )
+    : [];
   const submittedTeams = new Set(
     ((subs as { team_id: string; status: string }[] | null) ?? [])
       .filter((s) => s.status === "submitted")

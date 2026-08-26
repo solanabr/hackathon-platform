@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "./supabase/server";
+import { unwrap } from "./supabase/unwrap";
 import type { HackathonRegistration, User } from "@/types/db";
 
 export async function getRegistration(
@@ -6,13 +7,15 @@ export async function getRegistration(
   hackathonId: string,
 ): Promise<HackathonRegistration | null> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  // isRegistrationComplete(null) gates six redirects — a dropped error here
+  // bounces a registered participant out of their own painel.
+  const result = await supabase
     .from("hackathon_registrations")
     .select("*")
     .eq("user_id", userId)
     .eq("hackathon_id", hackathonId)
     .maybeSingle();
-  return data as HackathonRegistration | null;
+  return unwrap<HackathonRegistration | null>(result, "registration.get");
 }
 
 export function isProfileComplete(profile: User | null): boolean {
@@ -28,11 +31,16 @@ export async function confirmedMemberIds(
 ): Promise<Set<string>> {
   if (memberIds.length === 0) return new Set();
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("hackathon_registrations")
-    .select("user_id, luma_confirmed_at")
-    .eq("hackathon_id", hackathonId)
-    .in("user_id", memberIds);
+  // An empty Set on a failed read would flag every member as unconfirmed and
+  // block the submission for the wrong reason.
+  const data = unwrap(
+    await supabase
+      .from("hackathon_registrations")
+      .select("user_id, luma_confirmed_at")
+      .eq("hackathon_id", hackathonId)
+      .in("user_id", memberIds),
+    "registration.confirmedMemberIds",
+  );
 
   return new Set(
     ((data as { user_id: string; luma_confirmed_at: string | null }[] | null) ?? [])

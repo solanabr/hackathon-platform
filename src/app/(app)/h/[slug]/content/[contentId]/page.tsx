@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ContentEmbed } from "@/components/content/content-embed";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { getContent } from "@/lib/content";
+import { isUploadedFileUrl } from "@/lib/content-fields";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
 
@@ -56,7 +57,7 @@ export default async function ContentPage({
             rel="noreferrer"
             className="btn-secondary mt-8"
           >
-            Abrir material
+            {isUploadedFileUrl(content.external_url) ? "Baixar material" : "Abrir link"}
           </a>
         )}
       </div>

@@ -2,23 +2,32 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { requireAdmin } from "@/lib/roles";
+import { PillLink } from "@/components/ui/pill-link";
+import { EmptyState } from "@/components/ui/empty-state";
+import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const gate = await requireAdmin();
-  if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
+  const roles = await resolveRoleState();
+  if (!roles) redirect("/auth");
+  const scoped = !roles.isAdmin;
+  if (scoped && roles.adminFor.length === 0) redirect("/");
 
   const ready = hasServiceRoleKey();
   const supabase = ready ? await createServiceRoleClient() : null;
 
-  const { data } = supabase
+  const { data, error } = supabase
     ? await supabase.from("hackathons").select("*").order("starts_at", { ascending: false })
-    : { data: null };
-  const hackathons = (data as Hackathon[] | null) ?? [];
+    : { data: null, error: null };
+  if (error) logQueryError("admin.index.hackathons", error);
+  // An edition admin only sees the editions granted to them.
+  const hackathons = ((data as Hackathon[] | null) ?? []).filter(
+    (h) => !scoped || roles.adminFor.includes(h.id),
+  );
 
   const counts = supabase
     ? await Promise.all(
@@ -40,9 +49,9 @@ export default async function AdminPage() {
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         {!ready && (
-          <div className="mb-8 rounded-2xl border border-yellow bg-yellow/15 p-5">
+          <div className="mb-8 rounded-2xl border-2 border-yellow bg-yellow/15 p-5">
             <p className="font-heading font-bold">Falta a chave de service role</p>
             <p className="mt-1 text-sm leading-relaxed text-muted">
               Copie a <strong>service_role</strong> em Supabase, Project Settings, API para{" "}
@@ -57,21 +66,23 @@ export default async function AdminPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Operação
             </p>
             <h1 className="mt-1 font-heading text-3xl font-bold">Administração</h1>
           </div>
-          <Link href="/admin/people" className="btn-secondary min-h-11 px-5 py-2 text-sm">
-            Pessoas
-          </Link>
+          {!scoped && (
+            <Link href="/admin/people" className="btn-secondary min-h-11 px-5 py-2 text-sm">
+              Pessoas
+            </Link>
+          )}
         </div>
 
         <div className="mt-8 grid gap-4">
           {hackathons.map((h) => {
             const c = counts.find((x) => x.id === h.id);
             return (
-              <Card key={h.id} className="p-6">
+              <Card sticker key={h.id} className="p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <Badge tone={h.status === "closed" ? "neutral" : "emerald"}>{h.status}</Badge>
@@ -82,18 +93,23 @@ export default async function AdminPage() {
                     <p className="font-mono text-sm tabular-nums text-muted">
                       {c?.registrations ?? 0} inscritos · {c?.teams ?? 0} times
                     </p>
-                    <Link
+                    <PillLink
                       href={`/admin/h/${h.slug}`}
-                      className="min-h-11 shrink-0 rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/50 hover:bg-green-dark/5"
+                      className="inline-flex min-h-11 shrink-0 items-center"
                     >
                       Editar
-                    </Link>
+                    </PillLink>
                   </div>
                 </div>
               </Card>
             );
           })}
-          {hackathons.length === 0 && <p className="text-muted">Nenhum hackathon criado ainda.</p>}
+          {hackathons.length === 0 && (
+            <EmptyState
+              title="Nenhuma edição ainda"
+              description="Crie a primeira edição direto no banco — o formulário de criação ainda não existe."
+            />
+          )}
         </div>
       </div>
     </div>

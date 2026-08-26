@@ -1,9 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
+import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { AssignmentGrid, type AssignmentProject } from "@/components/admin/assignment-grid";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError, unwrap } from "@/lib/supabase/unwrap";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +15,7 @@ export default async function AdminJudgesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(slug);
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
   const hackathon = await getHackathonBySlug(slug);
@@ -22,11 +24,17 @@ export default async function AdminJudgesPage({
   const supabase = await createServiceRoleClient();
   const round = ratingRound(hackathon);
 
-  const { data: roleRows } = await supabase
+  // platform_roles has two FKs into users (user_id and granted_by); a bare
+  // users(...) embed is ambiguous and PostgREST rejects the whole query.
+  const { data: roleRows, error: rolesError } = await supabase
     .from("platform_roles")
-    .select("user_id, users(full_name, email)")
+    .select("user_id, users!platform_roles_user_id_fkey(full_name, email)")
     .eq("role", "judge")
     .eq("hackathon_id", hackathon.id);
+
+  // "Nenhum jurado" on a failed read sends the organizer to re-grant roles
+  // that already exist — show the failure instead.
+  if (rolesError) logQueryError("admin.judges.roleRows", rolesError);
 
   type RoleRow = { user_id: string; users: { full_name: string | null; email: string } | null };
   const judges = ((roleRows as RoleRow[] | null) ?? []).map((r) => ({
@@ -34,11 +42,14 @@ export default async function AdminJudgesPage({
     name: r.users?.full_name ?? r.users?.email ?? "sem nome",
   }));
 
-  const { data: teamRows } = await supabase
-    .from("teams")
-    .select("id, name, submissions(id, project_name, status)")
-    .eq("hackathon_id", hackathon.id)
-    .order("name", { ascending: true });
+  const teamRows = unwrap(
+    await supabase
+      .from("teams")
+      .select("id, name, submissions(id, project_name, status)")
+      .eq("hackathon_id", hackathon.id)
+      .order("name", { ascending: true }),
+    "admin.judges.teams",
+  );
 
   type TeamRow = {
     id: string;
@@ -49,7 +60,7 @@ export default async function AdminJudgesPage({
       | null;
   };
 
-  const submitted = ((teamRows as TeamRow[] | null) ?? [])
+  const submitted = ((teamRows as unknown as TeamRow[] | null) ?? [])
     .map((t) => {
       const s = Array.isArray(t.submissions) ? t.submissions[0] : t.submissions;
       if (!s || s.status !== "submitted") return null;
@@ -57,16 +68,21 @@ export default async function AdminJudgesPage({
     })
     .filter((p): p is { submissionId: string; projectName: string; teamName: string } => p !== null);
 
-  const { data: assignmentRows } = submitted.length
-    ? await supabase
-        .from("submission_assignments")
-        .select("submission_id, judge_id")
-        .eq("round", round)
-        .in(
-          "submission_id",
-          submitted.map((p) => p.submissionId),
-        )
-    : { data: [] };
+  // A failed read here painted every project as unassigned, inviting the
+  // organizer to redo assignments that already exist.
+  const assignmentRows = submitted.length
+    ? unwrap(
+        await supabase
+          .from("submission_assignments")
+          .select("submission_id, judge_id")
+          .eq("round", round)
+          .in(
+            "submission_id",
+            submitted.map((p) => p.submissionId),
+          ),
+        "admin.judges.assignments",
+      )
+    : [];
 
   const bySubmission = new Map<string, string[]>();
   for (const row of (assignmentRows as Array<{ submission_id: string; judge_id: string }> | null) ??
@@ -86,11 +102,14 @@ export default async function AdminJudgesPage({
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl space-y-8">
-        <BackLink href="/admin" label="Administração" />
+      <div className="mx-auto max-w-5xl space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/admin/h/${slug}`} label={hackathon.name} />
+          <AdminEditionNav slug={slug} />
+        </div>
 
         <header>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Atribuição
           </p>
           <h1 className="mt-1 font-heading text-3xl font-bold">Jurados por projeto</h1>
@@ -103,8 +122,16 @@ export default async function AdminJudgesPage({
           </p>
         </header>
 
-        {judges.length === 0 ? (
-          <p className="rounded-2xl border border-yellow/40 bg-yellow/10 p-5 text-sm leading-relaxed">
+        {rolesError ? (
+          <div className="rounded-2xl border-2 border-red-700/40 bg-red-700/10 p-5">
+            <p className="font-heading font-bold">Não foi possível carregar os jurados.</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">
+              A lista pode existir mesmo assim — não conceda papéis de novo. Recarregue a página e,
+              se persistir, veja o log do servidor.
+            </p>
+          </div>
+        ) : judges.length === 0 ? (
+          <p className="rounded-2xl border-2 border-yellow bg-yellow/10 p-5 text-sm leading-relaxed">
             Nenhum jurado nesta edição ainda. Conceda o papel em{" "}
             <strong>Administração · Pessoas</strong> antes de atribuir projetos. A pessoa precisa
             ter entrado na plataforma pelo menos uma vez.
@@ -114,7 +141,7 @@ export default async function AdminJudgesPage({
         ) : (
           <>
             {short > 0 && (
-              <p className="rounded-2xl border border-yellow/40 bg-yellow/10 p-5 text-sm leading-relaxed">
+              <p className="rounded-2xl border-2 border-yellow bg-yellow/10 p-5 text-sm leading-relaxed">
                 {short} {short === 1 ? "projeto ainda não tem" : "projetos ainda não têm"} dois
                 jurados.
               </p>

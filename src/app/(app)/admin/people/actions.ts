@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireAdmin } from "@/lib/roles";
 
 export async function grantRole(
@@ -18,30 +19,34 @@ export async function grantRole(
 
   const supabase = await createServiceRoleClient();
 
-  const { data: user } = await supabase
+  const { data: user, error: userError } = await supabase
     .from("users")
     .select("id")
     .eq("email", email.trim().toLowerCase())
     .maybeSingle();
+  if (userError) logQueryError("people.grantRole.user", userError);
 
   if (!user) {
     return { error: "Ninguém com esse e-mail entrou na plataforma ainda. Peça para fazer login uma vez." };
   }
 
-  // Admin and judge rows have different keys (admin: user_id+role with a NULL
-  // hackathon_id, judge: user_id+role+hackathon_id), so an upsert cannot
-  // target both. Check-then-insert reads the two shapes honestly.
+  // A NULL hackathon_id makes an admin global; with an id the role is scoped
+  // to that edition (organizer). Judges are always scoped. The two key shapes
+  // mean an upsert cannot target both, so check-then-insert.
+  const scope = role === "judge" ? hackathonId : hackathonId || null;
   let existingQuery = supabase
     .from("platform_roles")
     .select("id")
     .eq("user_id", (user as { id: string }).id)
     .eq("role", role);
   existingQuery =
-    role === "admin"
-      ? existingQuery.is("hackathon_id", null)
-      : existingQuery.eq("hackathon_id", hackathonId);
+    scope === null ? existingQuery.is("hackathon_id", null) : existingQuery.eq("hackathon_id", scope);
 
-  const { data: existing } = await existingQuery.maybeSingle();
+  const { data: existing, error: existingError } = await existingQuery.maybeSingle();
+  if (existingError) {
+    logQueryError("people.grantRole.existing", existingError);
+    return { error: "Não foi possível verificar os papéis. Tente novamente." };
+  }
   if (existing) {
     return { error: "Essa pessoa já tem esse papel." };
   }
@@ -49,7 +54,7 @@ export async function grantRole(
   const { error } = await supabase.from("platform_roles").insert({
     user_id: (user as { id: string }).id,
     role,
-    hackathon_id: role === "admin" ? null : hackathonId,
+    hackathon_id: scope,
     granted_by: gate.state.userId,
   });
 

@@ -2,52 +2,24 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
+import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { Card } from "@/components/ui/card";
 import { EditionForm } from "@/components/admin/edition-form";
 import { CoverUpload } from "@/components/admin/cover-upload";
-import { requireAdmin } from "@/lib/roles";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { LifecycleControl } from "@/components/admin/lifecycle-control";
+import { RegistrationsTable } from "@/components/admin/registrations-table";
+import { TeamsTable } from "@/components/admin/teams-table";
+import { requireEditionAdminBySlug } from "@/lib/roles";
+import { getHackathonBySlug, isSubmissionWindowOpen, ratingRound } from "@/lib/hackathon";
 import {
   listRegistrationsForEdition,
   listTeamsForEdition,
 } from "@/lib/admin";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError, unwrap } from "@/lib/supabase/unwrap";
+import { DATE_TIME_NUMERIC } from "@/lib/dates";
 
-const SUBMITTED_AT = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-function FlagChip({ on }: { on: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
-        on ? "border-emerald/30 bg-emerald/10 text-emerald" : "border-ink/10 text-muted"
-      }`}
-    >
-      {on ? "Sim" : "Não"}
-    </span>
-  );
-}
-
-function TeamStatusChip({ status }: { status: string | null }) {
-  const submitted = status === "submitted";
-  const label = submitted ? "Submetido" : status === "draft" ? "Rascunho" : "Sem submissão";
-  return (
-    <span
-      className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[11px] font-semibold ${
-        submitted
-          ? "border-emerald/30 bg-emerald/10 text-emerald"
-          : "border-ink/10 text-muted"
-      }`}
-    >
-      {label}
-    </span>
-  );
-}
+const SUBMITTED_AT = DATE_TIME_NUMERIC;
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +29,7 @@ export default async function AdminEditionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdminBySlug(slug);
   if (!gate.ok) redirect(gate.reason === "unauthenticated" ? "/auth" : "/");
 
   const hackathon = await getHackathonBySlug(slug);
@@ -75,53 +47,158 @@ export default async function AdminEditionPage({
     listRegistrationsForEdition(hackathon.id),
     listTeamsForEdition(hackathon.id),
   ]);
-  const confirmedRegistrations = registrations.filter(
-    (r) => r.luma_confirmed_at && r.terms_accepted_at,
-  ).length;
   const submittedTeams = teams.filter(
     (t) => t.submission?.status === "submitted",
   ).length;
 
+  const round = ratingRound(hackathon);
+  const submittedRows = unwrap(
+    await supabase
+      .from("submissions")
+      .select("id, teams!inner(hackathon_id)")
+      .eq("teams.hackathon_id", hackathon.id)
+      .eq("status", "submitted"),
+    "admin.overview.submitted",
+  );
+  const submittedIds = ((submittedRows as { id: string }[] | null) ?? []).map((s) => s.id);
+
+  const [judgeRoles, assignmentRows, ratingCount] = await Promise.all([
+    supabase
+      .from("platform_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "judge")
+      .eq("hackathon_id", hackathon.id),
+    submittedIds.length
+      ? supabase
+          .from("submission_assignments")
+          .select("submission_id")
+          .eq("round", round)
+          .in("submission_id", submittedIds)
+      : Promise.resolve({ data: [] as { submission_id: string }[] }),
+    submittedIds.length
+      ? supabase
+          .from("submission_ratings")
+          .select("id", { count: "exact", head: true })
+          .eq("round", round)
+          .in("submission_id", submittedIds)
+      : Promise.resolve({ count: 0 }),
+  ]);
+
+  const judgeCount = judgeRoles.count ?? 0;
+  const perSubmission = new Map<string, number>();
+  for (const row of (assignmentRows.data as { submission_id: string }[] | null) ?? []) {
+    perSubmission.set(row.submission_id, (perSubmission.get(row.submission_id) ?? 0) + 1);
+  }
+  const fullyAssigned = submittedIds.filter((id) => (perSubmission.get(id) ?? 0) >= 2).length;
+  const ratingsIn = ratingCount.count ?? 0;
+
+  const windowOpen = isSubmissionWindowOpen(hackathon);
+  const roundLabel = round === "triagem" ? "triagem" : "banca final";
+
+  const { data: acceptedMembers, error: acceptedMembersError } = await supabase
+    .from("team_members")
+    .select("user_id, teams!inner(name)")
+    .eq("hackathon_id", hackathon.id)
+    .eq("status", "accepted");
+  if (acceptedMembersError) logQueryError("admin.overview.acceptedMembers", acceptedMembersError);
+  const teamNameByUser = new Map<string, string>();
+  for (const m of (acceptedMembers as unknown as Array<{
+    user_id: string | null;
+    teams: { name: string } | { name: string }[] | null;
+  }> | null) ?? []) {
+    const t = Array.isArray(m.teams) ? m.teams[0] : m.teams;
+    if (m.user_id && t) teamNameByUser.set(m.user_id, t.name);
+  }
+
+  const registrationRows = registrations.map((r) => ({
+    userId: r.user_id,
+    name: r.user?.full_name ?? null,
+    email: r.user?.email ?? null,
+    teamName: teamNameByUser.get(r.user_id) ?? null,
+  }));
+  const teamRows = teams.map((t) => ({
+    id: t.id,
+    name: t.name,
+    acceptedMembers: t.acceptedMembers,
+    status: t.submission?.status ?? null,
+    submittedAtLabel: t.submission?.submitted_at
+      ? SUBMITTED_AT.format(new Date(t.submission.submitted_at))
+      : null,
+  }));
+
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl space-y-8">
-        <BackLink href="/admin" label="Administração" />
+      <div className="mx-auto max-w-5xl space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href="/admin" label="Administração" />
+          <AdminEditionNav slug={slug} />
+        </div>
 
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Operação
             </p>
             <h1 className="mt-1 font-heading text-3xl font-bold">{hackathon.name}</h1>
             <p className="mt-1 font-mono text-sm tabular-nums text-muted">/{hackathon.slug}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/admin/h/${hackathon.slug}/content`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Conteúdos
-            </Link>
-            <Link
-              href={`/admin/h/${hackathon.slug}/judges`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Jurados
-            </Link>
-            <Link
-              href={`/admin/h/${hackathon.slug}/finalistas`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Finalistas
-            </Link>
             <Link href={`/h/${hackathon.slug}`} className="btn-secondary px-5 py-2 text-sm">
               Ver página
             </Link>
           </div>
         </header>
 
-        <Card className="p-6 sm:p-7">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Janela de submissão
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold">
+              {windowOpen ? "Aberta" : "Encerrada"}
+            </p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
+              {windowOpen ? "até " : "desde "}
+              {SUBMITTED_AT.format(new Date(hackathon.submission_deadline_at))}
+            </p>
+          </div>
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Times
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold tabular-nums">
+              {submittedTeams} de {teams.length}
+            </p>
+            <p className="mt-0.5 font-mono text-xs text-muted">submetidos</p>
+          </div>
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Jurados · {roundLabel}
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold tabular-nums">{judgeCount}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
+              projetos com dupla completa: {fullyAssigned} de {submittedIds.length}
+            </p>
+          </div>
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Notas · {roundLabel}
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold tabular-nums">{ratingsIn}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
+              de {submittedIds.length * 2} esperadas na rodada
+            </p>
+          </div>
+        </div>
+
+        <LifecycleControl
+          slug={hackathon.slug}
+          status={hackathon.status}
+          finalistsAnnouncedAt={hackathon.finalists_announced_at}
+        />
+
+        <Card sticker className="p-6 sm:p-7">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Identidade
           </p>
           <h2 className="mt-1 font-heading text-lg font-bold">Arte da edição</h2>
@@ -135,65 +212,39 @@ export default async function AdminEditionPage({
                 alt=""
                 width={120}
                 height={120}
-                className="h-28 w-28 rounded-2xl border border-ink/10 object-cover"
+                className="h-28 w-28 rounded-2xl border-2 border-green-dark/15 object-cover"
               />
             )}
             <CoverUpload hackathonId={hackathon.id} slug={hackathon.slug} />
           </div>
         </Card>
 
-        <Card className="p-6 sm:p-7">
+        <EditionForm hackathon={hackathon} />
+
+        <Card sticker className="p-6 sm:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                 Screening
               </p>
               <h2 className="mt-1 font-heading text-lg font-bold">Inscrições</h2>
               <p className="mt-1 text-sm text-muted">
-                <span className="font-mono tabular-nums">{registrations.length}</span> inscritas ·
-                <span className="font-mono tabular-nums"> {confirmedRegistrations}</span>{" "}
-                confirmadas no Luma e com termos aceitos
+                <span className="font-mono tabular-nums">{registrations.length}</span>{" "}
+                {registrations.length === 1 ? "inscrição" : "inscrições"}
               </p>
             </div>
           </div>
           {registrations.length === 0 ? (
             <p className="mt-5 font-mono text-sm text-muted">Nenhuma inscrição ainda.</p>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="font-mono text-[11px] uppercase tracking-widest text-muted">
-                    <th className="py-3 pl-4 pr-4 font-semibold">Nome</th>
-                    <th className="py-3 pr-4 font-semibold">E-mail</th>
-                    <th className="py-3 pr-4 font-semibold">Luma</th>
-                    <th className="py-3 pr-4 font-semibold">Termos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrations.map((r) => (
-                    <tr key={r.user_id} className="odd:bg-surface-deep">
-                      <td className="py-2.5 pl-4 pr-4 font-medium">{r.user?.full_name ?? "—"}</td>
-                      <td className="py-2.5 pr-4 font-mono text-xs text-muted">
-                        {r.user?.email ?? "—"}
-                      </td>
-                      <td className="py-2.5 pr-4">
-                        <FlagChip on={!!r.luma_confirmed_at} />
-                      </td>
-                      <td className="py-2.5 pr-4">
-                        <FlagChip on={!!r.terms_accepted_at} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RegistrationsTable rows={registrationRows} />
           )}
         </Card>
 
-        <Card className="p-6 sm:p-7">
+        <Card sticker className="p-6 sm:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                 Submissões
               </p>
               <h2 className="mt-1 font-heading text-lg font-bold">Times e submissões</h2>
@@ -206,40 +257,10 @@ export default async function AdminEditionPage({
           {teams.length === 0 ? (
             <p className="mt-5 font-mono text-sm text-muted">Nenhum time formado ainda.</p>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="font-mono text-[11px] uppercase tracking-widest text-muted">
-                    <th className="py-3 pl-4 pr-4 font-semibold">Time</th>
-                    <th className="py-3 pr-4 font-semibold">Membros aceitos</th>
-                    <th className="py-3 pr-4 font-semibold">Status</th>
-                    <th className="py-3 pr-4 font-semibold">Submetido em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teams.map((t) => (
-                    <tr key={t.id} className="odd:bg-surface-deep">
-                      <td className="py-2.5 pl-4 pr-4 font-medium">{t.name}</td>
-                      <td className="py-2.5 pr-4 font-mono tabular-nums text-muted">
-                        {t.acceptedMembers}
-                      </td>
-                      <td className="py-2.5 pr-4">
-                        <TeamStatusChip status={t.submission?.status ?? null} />
-                      </td>
-                      <td className="py-2.5 pr-4 font-mono text-xs tabular-nums text-muted">
-                        {t.submission?.submitted_at
-                          ? SUBMITTED_AT.format(new Date(t.submission.submitted_at))
-                          : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <TeamsTable rows={teamRows} />
           )}
         </Card>
 
-        <EditionForm hackathon={hackathon} />
       </div>
     </div>
   );

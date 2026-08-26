@@ -7,19 +7,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar } from "@/components/ui/avatar";
 import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_LONG, stripPeriods } from "@/lib/dates";
 import type { PublicSubmission, PublicTeamMember } from "@/types/public";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  timeZone: "America/Sao_Paulo",
-});
-
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+const DAY = DAY_MONTH_LONG;
+const clean = stripPeriods;
 
 export default async function ProjectsGalleryPage({
   params,
@@ -49,13 +44,14 @@ export default async function ProjectsGalleryPage({
   // Member avatars come from the public_team_members view, keyed by team.
   // A missing view or an empty team degrades to no stack, not a broken card.
   const teamIds = [...new Set(projects.map((p) => p.team_id))];
-  const { data: teamMembers } =
+  const { data: teamMembers, error: membersError } =
     teamIds.length > 0
       ? await supabase
           .from("public_team_members")
           .select("team_id, user_id, full_name, avatar_url")
           .in("team_id", teamIds)
-      : { data: null };
+      : { data: null, error: null };
+  if (membersError) logQueryError("public.gallery.members", membersError);
 
   const membersByTeam = new Map<string, PublicTeamMember[]>();
   for (const m of (teamMembers as PublicTeamMember[] | null) ?? []) {
@@ -71,12 +67,14 @@ export default async function ProjectsGalleryPage({
   const placementByTeam = new Map<string, number>();
   if (isFinalistsVisible(hackathon)) {
     const service = await createServiceRoleClient();
-    const { data: finalists } = await service
+    const { data: finalists, error: placementsError } = await service
       .from("teams")
       .select("id, placement")
       .eq("hackathon_id", hackathon.id)
       .eq("is_finalist", true)
       .not("placement", "is", null);
+    // Winners degrade to an unpinned grid rather than an error banner.
+    if (placementsError) logQueryError("public.gallery.placements", placementsError);
     for (const t of (finalists as Array<{ id: string; placement: number }> | null) ?? []) {
       placementByTeam.set(t.id, t.placement);
     }
@@ -108,6 +106,58 @@ export default async function ProjectsGalleryPage({
             {projects.length} {projects.length === 1 ? "projeto" : "projetos"}
           </p>
         </header>
+
+        {placementByTeam.size > 0 && (
+          <section aria-label="Hall da fama" className="mt-10">
+            <div className="relative overflow-hidden rounded-3xl bg-green-dark px-6 py-10 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-10">
+              <div
+                aria-hidden
+                className="morth absolute -right-20 -top-24 h-72 w-72 bg-emerald/25"
+                style={{
+                  maskImage: "url(/brand/stbr/elements/morth-12.svg)",
+                  WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)",
+                  transform: "rotate(-12deg)",
+                }}
+              />
+              <div className="relative">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-surface/60">
+                  Hall da fama
+                </p>
+                <h2 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight text-surface [font-stretch:118%] sm:text-4xl">
+                  Vencedores
+                </h2>
+                <ol className="mt-7 grid gap-4 sm:grid-cols-3">
+                  {sorted
+                    .filter((p) => placementByTeam.has(p.team_id))
+                    .slice(0, 3)
+                    .map((p) => {
+                      const place = placementByTeam.get(p.team_id) as number;
+                      return (
+                        <li key={p.id}>
+                          <Link
+                            href={`/h/${slug}/projetos/${p.id}`}
+                            className={`block h-full rounded-2xl border-2 p-5 transition-colors duration-200 ${
+                              place === 1
+                                ? "border-yellow bg-yellow/10 hover:bg-yellow/20"
+                                : "border-surface/15 bg-surface/[0.04] hover:border-yellow/50"
+                            }`}
+                          >
+                            <p className="font-heading text-2xl font-black uppercase tracking-tight text-yellow [font-stretch:112%]">
+                              {place}º lugar
+                            </p>
+                            <p className="mt-2 font-heading text-lg font-bold leading-tight text-surface">
+                              {p.project_name}
+                            </p>
+                            <p className="mt-1 text-sm text-surface/70">Time {p.team_name}</p>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                </ol>
+              </div>
+            </div>
+          </section>
+        )}
 
         {error ? (
           <Card className="mt-8 p-8">

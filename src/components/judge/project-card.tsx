@@ -1,3 +1,4 @@
+import { DAY_MONTH_TIME, stripPeriods } from "@/lib/dates";
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -29,13 +30,7 @@ export type JudgeProject = {
   members: JudgeMember[];
 };
 
-const WHEN = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const WHEN = DAY_MONTH_TIME;
 
 export function JudgeProjectCard({
   project,
@@ -61,7 +56,7 @@ export function JudgeProjectCard({
             <p className="mt-1 text-sm text-muted">
               Time {project.teamName}
               {project.submittedAt &&
-                ` · enviado ${WHEN.format(new Date(project.submittedAt)).replace(/\./g, "")}`}
+                ` · enviado ${stripPeriods(WHEN.format(new Date(project.submittedAt)))}`}
             </p>
           </div>
           <span

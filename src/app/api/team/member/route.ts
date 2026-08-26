@@ -1,6 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+const RPC_ERRORS: Record<string, { status: number; message: string }> = {
+  not_authenticated: { status: 401, message: "Não autenticado." },
+  member_not_found: { status: 404, message: "Convite não encontrado." },
+  cannot_remove_leader: { status: 400, message: "Líder não pode se remover." },
+  not_leader: { status: 403, message: "Apenas o líder pode remover." },
+  team_locked: { status: 400, message: "Time já submetido." },
+};
+
+// The remove_team_member RPC re-runs the leader/locked checks under FOR
+// UPDATE, so this route no longer hand-rolls them without the row lock.
 export async function DELETE(request: NextRequest) {
   const body = await request.json().catch(() => null);
   if (!body || typeof body.memberId !== "string") {
@@ -8,32 +18,13 @@ export async function DELETE(request: NextRequest) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
-
-  const { data: member } = await supabase
-    .from("team_members")
-    .select("id, team_id, is_leader, teams!inner(leader_id, locked)")
-    .eq("id", body.memberId)
-    .maybeSingle();
-  if (!member) return NextResponse.json({ error: "Convite não encontrado." }, { status: 404 });
-
-  const team = Array.isArray(member.teams) ? member.teams[0] : member.teams;
-  if (team.leader_id !== user.id) {
-    return NextResponse.json({ error: "Apenas o líder pode remover." }, { status: 403 });
-  }
-  if (team.locked) {
-    return NextResponse.json({ error: "Time já submetido." }, { status: 400 });
-  }
-  if (member.is_leader) {
-    return NextResponse.json({ error: "Líder não pode se remover." }, { status: 400 });
-  }
-
-  const { error } = await supabase.from("team_members").delete().eq("id", body.memberId);
+  const { error } = await supabase.rpc("remove_team_member", { p_member_id: body.memberId });
   if (error) {
-    return NextResponse.json({ error: "Falha ao remover." }, { status: 500 });
+    const mapped = RPC_ERRORS[error.message];
+    return NextResponse.json(
+      { error: mapped?.message ?? "Falha ao remover." },
+      { status: mapped?.status ?? 500 },
+    );
   }
   return NextResponse.json({ ok: true });
 }

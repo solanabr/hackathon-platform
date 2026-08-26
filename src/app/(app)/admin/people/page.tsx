@@ -16,7 +16,9 @@ export default async function PeoplePage() {
     ? await Promise.all([
         supabase
           .from("platform_roles")
-          .select("id, role, hackathon_id, users(email), hackathons(name)")
+          // platform_roles has two FKs to users (user_id, granted_by), so a
+          // bare users(email) embed is ambiguous and PostgREST refuses it.
+          .select("id, role, hackathon_id, users!platform_roles_user_id_fkey(email), hackathons(name)")
           .order("granted_at", { ascending: true }),
         supabase.from("hackathons").select("id, name").order("starts_at", { ascending: false }),
       ])
@@ -42,10 +44,10 @@ export default async function PeoplePage() {
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <BackLink href="/admin" label="Administração" />
 
-        <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
           Operação
         </p>
         <h1 className="mt-1 font-heading text-3xl font-bold">Pessoas</h1>

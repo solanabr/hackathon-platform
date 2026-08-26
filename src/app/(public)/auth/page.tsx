@@ -1,19 +1,29 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
-import { Background } from "@/components/layout/background";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { sanitizeRedirect } from "@/lib/security";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthPage() {
+export default async function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; redirect?: string }>;
+}) {
+  const { next, redirect: redirectParam } = await searchParams;
   const state = await resolveAuthenticatedUserState();
-  if (state) redirect(state.redirectPath);
+  if (state) {
+    // Keep the deep link: someone mid-registration who is already signed in
+    // continues where they were, not on their painel.
+    redirect(
+      sanitizeRedirect(next ?? null) ?? sanitizeRedirect(redirectParam ?? null) ?? state.redirectPath,
+    );
+  }
 
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <Background />
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-12 sm:px-6">
+    <main className="relative bg-surface">
+      <div className="relative z-10 flex justify-center px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28">
         <Suspense fallback={null}>
           <AuthForm />
         </Suspense>

@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from "./supabase/server";
+import { unwrap } from "./supabase/unwrap";
 
 export type RegistrationScreeningRow = {
   user_id: string;
@@ -12,14 +13,18 @@ export async function listRegistrationsForEdition(
   hackathonId: string,
 ): Promise<RegistrationScreeningRow[]> {
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
+  const result = await supabase
     .from("hackathon_registrations")
     .select(
       "user_id, registered_at, luma_confirmed_at, terms_accepted_at, user:users(full_name, email)",
     )
     .eq("hackathon_id", hackathonId)
     .order("registered_at", { ascending: true });
-  return (data as RegistrationScreeningRow[] | null) ?? [];
+  return (
+    (unwrap(result, "admin.listRegistrationsForEdition") as unknown as
+      | RegistrationScreeningRow[]
+      | null) ?? []
+  );
 }
 
 export type TeamOverviewRow = {
@@ -33,7 +38,7 @@ export type TeamOverviewRow = {
 
 export async function listTeamsForEdition(hackathonId: string): Promise<TeamOverviewRow[]> {
   const supabase = await createServiceRoleClient();
-  const [{ data: teams }, { data: members }] = await Promise.all([
+  const [teamsResult, membersResult] = await Promise.all([
     supabase
       .from("teams")
       .select("id, name, leader_id, created_at, submissions(status, submitted_at)")
@@ -45,6 +50,8 @@ export async function listTeamsForEdition(hackathonId: string): Promise<TeamOver
       .eq("hackathon_id", hackathonId)
       .eq("status", "accepted"),
   ]);
+  const teams = unwrap(teamsResult, "admin.listTeamsForEdition.teams");
+  const members = unwrap(membersResult, "admin.listTeamsForEdition.members");
 
   const counts = new Map<string, number>();
   for (const m of (members as { team_id: string }[] | null) ?? []) {
@@ -62,7 +69,7 @@ export async function listTeamsForEdition(hackathonId: string): Promise<TeamOver
       | null;
   };
 
-  return ((teams as TeamRow[] | null) ?? []).map((t) => ({
+  return ((teams as unknown as TeamRow[] | null) ?? []).map((t) => ({
     id: t.id,
     name: t.name,
     leader_id: t.leader_id,

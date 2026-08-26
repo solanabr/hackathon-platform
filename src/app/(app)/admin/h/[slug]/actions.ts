@@ -2,69 +2,129 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/roles";
+import { requireEditionAdmin, requireEditionAdminBySlug } from "@/lib/roles";
 import { sanitizeUrl, sanitizeText } from "@/lib/security";
 import { EDITION_FIELDS, fromLocalInput } from "@/lib/edition-fields";
+import type { HackathonStatus } from "@/types/db";
 
-export type EditionSaveResult = { ok: true; slug: string } | { ok: false; error: string };
+export type EditionSaveResult =
+  | { ok: true; slug: string }
+  | { ok: false; error: string; fields?: Record<string, string> };
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const STATUS_ORDER: HackathonStatus[] = [
+  "draft",
+  "published",
+  "submissions_open",
+  "judging",
+  "closed",
+];
+
+export async function updateEditionStatus(input: {
+  slug: string;
+  status: HackathonStatus;
+}): Promise<EditionSaveResult> {
+  const gate = await requireEditionAdminBySlug(input.slug);
+  if (!gate.ok) return { ok: false, error: "Sem permissão." };
+
+  const from = STATUS_ORDER.indexOf(gate.hackathon.status);
+  const to = STATUS_ORDER.indexOf(input.status);
+  // The lifecycle only walks one step at a time, in either direction; jumping
+  // stages skips the operational checks each transition implies.
+  if (to === -1 || Math.abs(to - from) !== 1) {
+    return { ok: false, error: "Transição de status inválida." };
+  }
+
+  const supabase = await createServiceRoleClient();
+  const { error } = await supabase
+    .from("hackathons")
+    .update({ status: input.status })
+    .eq("id", gate.hackathon.id);
+  if (error) return { ok: false, error: "Não foi possível mudar o status." };
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/h/${input.slug}`);
+  revalidatePath(`/h/${input.slug}`);
+  revalidatePath("/");
+  return { ok: true, slug: input.slug };
+}
 
 export async function updateEdition(
   hackathonId: string,
   currentSlug: string,
   formData: FormData,
 ): Promise<EditionSaveResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdmin(hackathonId);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const patch: Record<string, unknown> = {};
+  const fields: Record<string, string> = {};
 
   for (const field of EDITION_FIELDS) {
-    const raw = formData.get(field.key as string);
+    const key = field.key as string;
+    const raw = formData.get(key);
     if (raw === null) continue;
     const value = String(raw);
 
     switch (field.kind) {
       case "datetime":
-        patch[field.key as string] = fromLocalInput(value);
+        patch[key] = fromLocalInput(value);
         break;
       case "number": {
         if (!value.trim()) {
-          patch[field.key as string] = null;
+          patch[key] = null;
           break;
         }
         const n = Number(value);
-        if (!Number.isFinite(n) || n < 0) return { ok: false, error: `${field.label} inválido.` };
-        patch[field.key as string] = Math.trunc(n);
+        if (!Number.isFinite(n) || n < 0) {
+          fields[key] = "Use um número inteiro maior ou igual a zero.";
+          break;
+        }
+        patch[key] = Math.trunc(n);
         break;
       }
-      case "url":
-        patch[field.key as string] = value.trim() ? sanitizeUrl(value) : null;
+      case "url": {
+        if (!value.trim()) {
+          patch[key] = null;
+          break;
+        }
+        const url = sanitizeUrl(value);
+        if (!url) {
+          fields[key] = "URL inválida. Use um endereço https://... completo.";
+          break;
+        }
+        patch[key] = url;
         break;
+      }
       case "textarea":
-        patch[field.key as string] = sanitizeText(value, 4000);
+        patch[key] = sanitizeText(value, 4000);
         break;
       default:
-        patch[field.key as string] = sanitizeText(value, 300);
+        patch[key] = sanitizeText(value, 300);
     }
   }
 
-  const name = patch.name as string | null;
-  if (!name) return { ok: false, error: "O nome é obrigatório." };
+  if (!patch.name) fields.name = "O nome é obrigatório.";
 
   const slug = (patch.slug as string | null)?.trim().toLowerCase() ?? "";
   if (!SLUG_RE.test(slug)) {
-    return { ok: false, error: "Slug inválido. Use apenas letras minúsculas, números e hífens." };
+    fields.slug = "Use apenas letras minúsculas, números e hífens.";
   }
   patch.slug = slug;
 
-  if (!patch.starts_at) return { ok: false, error: "Informe a data de início." };
+  if (!patch.starts_at) fields.starts_at = "Informe a data de início.";
   if (!patch.submission_deadline_at) {
-    return { ok: false, error: "Informe o prazo de submissão." };
+    fields.submission_deadline_at = "Informe o prazo de submissão.";
+  } else if (
+    patch.starts_at &&
+    new Date(patch.submission_deadline_at as string) <= new Date(patch.starts_at as string)
+  ) {
+    fields.submission_deadline_at = "O prazo de submissão precisa ser depois do início.";
   }
-  if (new Date(patch.submission_deadline_at as string) <= new Date(patch.starts_at as string)) {
-    return { ok: false, error: "O prazo de submissão precisa ser depois do início." };
+
+  if (Object.keys(fields).length > 0) {
+    return { ok: false, error: "Corrija os campos destacados.", fields };
   }
 
   const supabase = await createServiceRoleClient();
@@ -89,7 +149,7 @@ export async function uploadEditionCover(
   slug: string,
   formData: FormData,
 ): Promise<EditionSaveResult> {
-  const gate = await requireAdmin();
+  const gate = await requireEditionAdmin(hackathonId);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const file = formData.get("cover");

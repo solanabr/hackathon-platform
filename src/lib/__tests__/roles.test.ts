@@ -46,6 +46,7 @@ describe("resolveRoles", () => {
 
   it("returns nothing for an anonymous caller", () => {
     expect(resolveRoles([], null)).toEqual({
+      adminFor: [],
       isAdmin: false,
       judgeFor: [],
     });

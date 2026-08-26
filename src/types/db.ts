@@ -43,6 +43,12 @@ export type Hackathon = {
   community_url: string | null;
   prize_summary: string | null;
   rules_url: string | null;
+  page_md: string | null;
+  // The one date meaning "this edition is over" (00041). Optional; code
+  // still reads presential_at until the cutover after 12/09.
+  ends_at: string | null;
+  // GitHub user teams add as collaborator on private repos (00048).
+  judge_github_handle: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -115,8 +121,39 @@ export type HackathonContent = {
   location: string | null;
   scheduled_at: string | null;
   duration_minutes: number | null;
+  thumbnail_url: string | null;
   position: number;
   published: boolean;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SponsorTier = "realizacao" | "apoiador";
+
+export type HackathonSponsor = {
+  id: string;
+  hackathon_id: string;
+  tier: SponsorTier;
+  name: string | null;
+  image_path: string;
+  url: string | null;
+  position: number;
+  created_at: string;
+};
+
+export type SectionKind = "markdown" | "phases" | "schedule" | "deliverables" | "prizes";
+
+export type HackathonSection = {
+  id: string;
+  hackathon_id: string;
+  position: number;
+  kind: SectionKind;
+  title: string | null;
+  subtitle: string | null;
+  body_md: string | null;
+  config: Record<string, unknown>;
+  visible: boolean;
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
