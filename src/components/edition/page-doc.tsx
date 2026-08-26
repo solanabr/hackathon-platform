@@ -94,7 +94,7 @@ function ProseDoc({ md }: { md: string }) {
             );
           },
           p: ({ children }) => (
-            <p className="mt-4 max-w-xl leading-relaxed text-muted">{children}</p>
+            <p className="mt-4 max-w-2xl leading-relaxed text-muted">{children}</p>
           ),
           table: ({ children }) => (
             <div className="mt-6 overflow-x-auto">
@@ -133,7 +133,7 @@ function FinalistsSection({ finalists }: { finalists: Finalist[] }) {
   return (
     <section aria-label="Finalistas">
       <FurnitureHeading id="finalistas">Finalistas</FurnitureHeading>
-      <p className="mt-3 max-w-xl leading-relaxed text-muted">
+      <p className="mt-3 max-w-2xl leading-relaxed text-muted">
         As equipes classificadas para a fase final.
       </p>
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
