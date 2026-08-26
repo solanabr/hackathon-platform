@@ -37,9 +37,10 @@ Keep four operational dates plus one explicit end:
 - `registration_closes_at`
 - `submission_deadline_at`
 - `finalists_announced_at`
-- `ends_at` *(new)* — the one date meaning "this edition is over", which is
-  what `editionStage` actually wants. Backfill from
-  `presential_at ?? voting_closes_at ?? submission_deadline_at`.
+- `ends_at` *(new, optional)* — the one date meaning "this edition is over",
+  which is what `editionStage` actually wants. Optional: an online-only
+  edition ends at the announcement, one with a live final sets it. Backfill
+  from `presential_at ?? voting_closes_at ?? finalists_announced_at`.
 
 Retire from the form:
 

@@ -1,3 +1,8 @@
+> **Superseded.** The block system was scrapped entirely in favour of a
+> pure-markdown document with the live sections rendered as page furniture.
+> Kept for the reasoning about drift between the document and Conteúdos,
+> which is why Programação is furniture rather than hand-written.
+
 Page blocks, second pass — handover
 ===================================
 
