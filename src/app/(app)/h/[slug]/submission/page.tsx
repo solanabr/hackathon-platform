@@ -199,6 +199,7 @@ export default async function SubmissionPage({
               dashboardHref={`/h/${slug}/dashboard`}
               membersPending={membersPending}
               membersAccepted={membersAccepted}
+              judgeGithubHandle={hackathon.judge_github_handle}
             />
           </Card>
         )}

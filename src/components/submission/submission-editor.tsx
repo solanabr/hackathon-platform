@@ -19,6 +19,7 @@ type Props = {
   dashboardHref: string;
   membersPending: number;
   membersAccepted: number;
+  judgeGithubHandle: string | null;
 };
 
 type FormState = {
@@ -90,6 +91,7 @@ export function SubmissionEditor({
   dashboardHref,
   membersPending,
   membersAccepted,
+  judgeGithubHandle,
 }: Props) {
   const router = useRouter();
   const supabase = createClient();
@@ -277,14 +279,18 @@ export function SubmissionEditor({
             />
             <p className="mt-1.5 text-xs text-muted">
               Se o repositório for privado, adicione{" "}
-              <a
-                href="https://github.com/kauenet"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-ink underline-offset-2 hover:text-emerald hover:underline"
-              >
-                @kauenet
-              </a>{" "}
+              {judgeGithubHandle ? (
+                <a
+                  href={`https://github.com/${judgeGithubHandle}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-ink underline-offset-2 hover:text-emerald hover:underline"
+                >
+                  @{judgeGithubHandle}
+                </a>
+              ) : (
+                <span className="font-medium text-ink">o usuário indicado pela organização</span>
+              )}{" "}
               como colaborador para os juízes terem acesso.
             </p>
           </div>
@@ -298,14 +304,18 @@ export function SubmissionEditor({
               />
               <span className="text-sm text-ink">
                 Confirmo que adicionei{" "}
-                <a
-                  href="https://github.com/kauenet"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium underline-offset-2 hover:text-emerald hover:underline"
-                >
-                  @kauenet
-                </a>{" "}
+                {judgeGithubHandle ? (
+                  <a
+                    href={`https://github.com/${judgeGithubHandle}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium underline-offset-2 hover:text-emerald hover:underline"
+                  >
+                    @{judgeGithubHandle}
+                  </a>
+                ) : (
+                  <span className="font-medium">o usuário indicado pela organização</span>
+                )}{" "}
                 como colaborador do repositório, para os juízes acessarem o código.*
               </span>
             </label>

@@ -68,6 +68,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "community_url", label: "Comunidade", kind: "url", group: "Local e links" },
   { key: "rules_url", label: "Regulamento", kind: "url", group: "Local e links" },
   {
+    key: "judge_github_handle",
+    label: "GitHub dos jurados",
+    kind: "text",
+    group: "Local e links",
+    help: "Usuário que os times adicionam como colaborador em repositório privado, sem @.",
+  },
+  {
     key: "prize_summary",
     label: "Prêmios (resumo)",
     kind: "text",

@@ -47,6 +47,8 @@ export type Hackathon = {
   // The one date meaning "this edition is over" (00041). Optional; code
   // still reads presential_at until the cutover after 12/09.
   ends_at: string | null;
+  // GitHub user teams add as collaborator on private repos (00048).
+  judge_github_handle: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
