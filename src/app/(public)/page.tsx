@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { publicStorageUrl } from "@/lib/storage";
 import Image from "next/image";
 import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackathon";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
@@ -90,8 +90,9 @@ export default async function HomePage({
   const { f } = await searchParams;
   const filter = f === "running" || f === "upcoming" || f === "finished" ? f : "todos";
 
-  const hackathons = await listHackathons();
-  const supabase = await createServerSupabaseClient();
+  // An empty gallery on a transient read failure beats the error boundary;
+  // the throw inside the cached read only keeps the failure out of the cache.
+  const hackathons = await listHackathons().catch(() => []);
 
   const dbEditions: CardData[] = hackathons.map((h: Hackathon) => {
     const start = new Date(h.starts_at);
@@ -100,9 +101,7 @@ export default async function HomePage({
       slug: h.slug,
       name: h.name,
       coverUrl: h.cover_image_path
-        ? h.cover_image_path.startsWith("/")
-          ? h.cover_image_path
-          : supabase.storage.from("hackathon-covers").getPublicUrl(h.cover_image_path).data.publicUrl
+        ? publicStorageUrl("hackathon-covers", h.cover_image_path)
         : null,
       stage: editionStage(h),
       registrationOpen: isRegistrationOpen(h) && editionStage(h) !== "finished",

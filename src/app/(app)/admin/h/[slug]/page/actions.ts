@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { HACKATHONS_TAG, hackathonTag } from "@/lib/cache-tags";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 
@@ -28,6 +29,8 @@ export async function savePageMd(input: {
     .eq("id", gate.hackathon.id);
   if (error) return { ok: false, error: "Não foi possível salvar." };
 
+  revalidateTag(hackathonTag(input.slug), "max");
+  revalidateTag(HACKATHONS_TAG, "max");
   revalidatePath(`/h/${input.slug}`);
   revalidatePath(`/admin/h/${input.slug}/page`);
   return { ok: true };

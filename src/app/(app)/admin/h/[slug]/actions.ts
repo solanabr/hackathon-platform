@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { HACKATHONS_TAG, hackathonTag } from "@/lib/cache-tags";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireEditionAdmin, requireEditionAdminBySlug } from "@/lib/roles";
 import { sanitizeUrl, sanitizeText } from "@/lib/security";
@@ -48,6 +49,8 @@ export async function updateEditionStatus(input: {
     .eq("id", gate.hackathon.id);
   if (error) return { ok: false, error: "Não foi possível mudar o status." };
 
+  revalidateTag(hackathonTag(input.slug), "max");
+  revalidateTag(HACKATHONS_TAG, "max");
   revalidatePath("/admin");
   revalidatePath(`/admin/h/${input.slug}`);
   revalidatePath(`/h/${input.slug}`);
@@ -140,6 +143,9 @@ export async function updateEdition(
     return { ok: false, error: "Não foi possível salvar." };
   }
 
+  revalidateTag(hackathonTag(slug), "max");
+  if (slug !== currentSlug) revalidateTag(hackathonTag(currentSlug), "max");
+  revalidateTag(HACKATHONS_TAG, "max");
   revalidatePath("/admin");
   revalidatePath(`/admin/h/${slug}`);
   revalidatePath(`/h/${slug}`);
@@ -179,6 +185,8 @@ export async function uploadEditionCover(
 
   if (error) return { ok: false, error: "Imagem enviada, mas não foi possível salvar." };
 
+  revalidateTag(hackathonTag(slug), "max");
+  revalidateTag(HACKATHONS_TAG, "max");
   revalidatePath(`/admin/h/${slug}`);
   revalidatePath(`/h/${slug}`);
   revalidatePath("/");

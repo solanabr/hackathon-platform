@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { publicStorageUrl } from "@/lib/storage";
 import { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -128,8 +129,7 @@ export default async function BuilderProfilePage({ params }: Props) {
             <ul className="mt-4 grid gap-6 sm:grid-cols-2">
               {projects.map((p) => {
                 const imageUrl = p.image_path
-                  ? supabase.storage.from("project-images").getPublicUrl(p.image_path).data
-                      .publicUrl
+                  ? publicStorageUrl("project-images", p.image_path)
                   : null;
                 return (
                   <li key={p.id}>

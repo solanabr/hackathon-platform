@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { publicStorageUrl } from "@/lib/storage";
 import { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -34,9 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!submission) return {};
 
   const title = submission.project_name ?? submission.team_name;
-  const supabase = await createServerSupabaseClient();
   const ogImage = submission.image_path
-    ? supabase.storage.from("project-images").getPublicUrl(submission.image_path).data.publicUrl
+    ? publicStorageUrl("project-images", submission.image_path)
     : undefined;
 
   return {
@@ -76,7 +76,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   const supabase = await createServerSupabaseClient();
   const imageUrl = submission.image_path
-    ? supabase.storage.from("project-images").getPublicUrl(submission.image_path).data.publicUrl
+    ? publicStorageUrl("project-images", submission.image_path)
     : null;
 
   const { data: membersData, error: membersError } = await supabase

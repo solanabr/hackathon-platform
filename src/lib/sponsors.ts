@@ -1,5 +1,8 @@
 import { cache } from "react";
-import { createServerSupabaseClient } from "./supabase/server";
+import { unstable_cache } from "next/cache";
+import { publicStorageUrl } from "@/lib/storage";
+import { createAnonClient } from "./supabase/anon";
+import { sponsorsTag } from "./cache-tags";
 import { logQueryError } from "./supabase/unwrap";
 import type { HackathonSponsor, SponsorTier } from "@/types/db";
 
@@ -20,31 +23,39 @@ export const TIER_LABEL: Record<SponsorTier, string> = {
  * image_path is either a '/'-prefixed path to a file shipped in /public or a
  * key in the sponsor-logos bucket, matching how cover_image_path works.
  */
-export async function resolveSponsors(rows: HackathonSponsor[]): Promise<SponsorLogo[]> {
-  const supabase = await createServerSupabaseClient();
+export function resolveSponsors(rows: HackathonSponsor[]): SponsorLogo[] {
   return rows.map((r) => ({
     id: r.id,
     tier: r.tier,
     name: r.name,
     url: r.url,
-    src: r.image_path.startsWith("/")
-      ? r.image_path
-      : supabase.storage.from("sponsor-logos").getPublicUrl(r.image_path).data.publicUrl,
+    src: publicStorageUrl("sponsor-logos", r.image_path),
   }));
 }
 
-export const listSponsors = cache(async (hackathonId: string): Promise<SponsorLogo[]> => {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("hackathon_sponsors")
-    .select("*")
-    .eq("hackathon_id", hackathonId)
-    .order("tier", { ascending: true })
-    .order("position", { ascending: true });
-  // Public band: degrade to no logos, not an error banner.
-  if (error) logQueryError("sponsors.listSponsors", error);
-  return resolveSponsors((data as HackathonSponsor[] | null) ?? []);
-});
+// Viewer-independent public data — shared cache, anon client, tag-invalidated
+// by the sponsors admin actions. Errors throw so a transient failure is never
+// cached as an empty band.
+export const listSponsors = cache((hackathonId: string): Promise<SponsorLogo[]> =>
+  unstable_cache(
+    async () => {
+      const supabase = createAnonClient();
+      const { data, error } = await supabase
+        .from("hackathon_sponsors")
+        .select("*")
+        .eq("hackathon_id", hackathonId)
+        .order("tier", { ascending: true })
+        .order("position", { ascending: true });
+      if (error) {
+        logQueryError("sponsors.listSponsors", error);
+        throw new Error("sponsors.listSponsors failed");
+      }
+      return resolveSponsors((data as HackathonSponsor[] | null) ?? []);
+    },
+    ["sponsors", hackathonId],
+    { tags: [sponsorsTag(hackathonId)], revalidate: 300 },
+  )(),
+);
 
 export function groupByTier(sponsors: SponsorLogo[]): Record<SponsorTier, SponsorLogo[]> {
   return {

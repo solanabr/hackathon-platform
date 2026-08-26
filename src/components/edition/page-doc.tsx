@@ -156,8 +156,19 @@ function FinalistsSection({ finalists }: { finalists: Finalist[] }) {
 }
 
 function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className: string }) {
+  // Width/height reserve the box so the band doesn't reflow as logos land.
   // eslint-disable-next-line @next/next/no-img-element
-  const img = <img src={sponsor.src} alt={sponsor.name ?? ""} loading="lazy" className={className} />;
+  const img = (
+    <img
+      src={sponsor.src}
+      alt={sponsor.name ?? ""}
+      loading="lazy"
+      decoding="async"
+      width={190}
+      height={64}
+      className={`h-auto w-auto object-contain ${className}`}
+    />
+  );
   return sponsor.url ? (
     <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
       {img}

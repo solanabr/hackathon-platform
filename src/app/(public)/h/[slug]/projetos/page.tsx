@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { publicStorageUrl } from "@/lib/storage";
 import Link from "next/link";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
@@ -182,7 +183,7 @@ export default async function ProjectsGalleryPage({
           <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sorted.map((p) => {
               const imageUrl = p.image_path
-                ? supabase.storage.from("project-images").getPublicUrl(p.image_path).data.publicUrl
+                ? publicStorageUrl("project-images", p.image_path)
                 : null;
               const placement = placementByTeam.get(p.team_id);
               const members = [...(membersByTeam.get(p.team_id) ?? [])].sort((a, b) => {

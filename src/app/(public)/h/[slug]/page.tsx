@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { publicStorageUrl } from "@/lib/storage";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -9,7 +10,7 @@ import {
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
-import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { DAY_MONTH, TIME_HM, stripPeriods } from "@/lib/dates";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
@@ -35,9 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       ...(hackathon.cover_image_path
         ? {
             images: [
-              hackathon.cover_image_path.startsWith("/")
-                ? hackathon.cover_image_path
-                : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/hackathon-covers/${hackathon.cover_image_path}`,
+              publicStorageUrl("hackathon-covers", hackathon.cover_image_path),
             ],
           }
         : {}),
@@ -55,7 +54,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
 
-  const supabase = await createServerSupabaseClient();
   const open = isRegistrationOpen(hackathon);
   const now = Date.now();
   const prizePool = hackathon.prize_summary;
@@ -65,7 +63,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const [viewerRegistration, roles, sponsorRows] = await Promise.all([
     viewer ? getRegistration(viewer.userId, hackathon.id) : Promise.resolve(null),
     viewer ? resolveRoleState() : Promise.resolve(null),
-    listSponsors(hackathon.id),
+    // The band degrades to no logos on a read failure; the throw exists only
+    // so unstable_cache never stores the transient error.
+    listSponsors(hackathon.id).catch(() => []),
   ]);
   const registered = viewer !== null && isRegistrationComplete(viewerRegistration);
   const canEdit =
@@ -74,10 +74,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const sponsors = groupByTier(sponsorRows);
 
   const coverUrl = hackathon.cover_image_path
-    ? hackathon.cover_image_path.startsWith("/")
-      ? hackathon.cover_image_path
-      : supabase.storage.from("hackathon-covers").getPublicUrl(hackathon.cover_image_path).data
-          .publicUrl
+    ? publicStorageUrl("hackathon-covers", hackathon.cover_image_path)
     : null;
 
   // teams has no anon select policy, so the public results list goes through
