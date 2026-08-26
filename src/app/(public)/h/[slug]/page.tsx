@@ -8,14 +8,13 @@ import {
   prizePoolLabel,
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
-import { buildPhases } from "@/lib/phase-copy";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
 
-import { EditionPageDoc, type ScheduleRow } from "@/components/edition/page-doc";
+import { EditionPageDoc } from "@/components/edition/page-doc";
 import { Countdown } from "@/components/ui/countdown";
 import { BackLink } from "@/components/ui/back-link";
 
@@ -43,13 +42,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("public_schedule")
-    .select("id, kind, title, speaker, description, scheduled_at, location, position")
-    .eq("hackathon_id", hackathon.id)
-    .order("position", { ascending: true });
-  const schedule = (data as ScheduleRow[] | null) ?? [];
-
   const open = isRegistrationOpen(hackathon);
   const now = Date.now();
   const prizePool = prizePoolLabel(hackathon.prize_summary);
@@ -87,8 +79,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
     finalists = ((rows as Array<{ id: string; name: string; placement: number | null }> | null) ??
       []).map((r) => ({ teamId: r.id, teamName: r.name, placement: r.placement }));
   }
-
-  const phases = buildPhases(hackathon);
 
   // The hero counts down to whatever comes next in the edition's life:
   // inscriptions, then submissions, then Pitch Day. Null once it is all over.
@@ -250,10 +240,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           <EditionPageDoc
             doc={hackathon.page_md}
             ctx={{
-              hackathon,
-              phases,
-              now,
-              schedule,
               sponsors,
               finalists,
               finalistsVisible: isFinalistsVisible(hackathon),

@@ -1,77 +1,28 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { PhaseTimeline, type Phase } from "@/components/edition/phase-timeline";
-import {
-  parsePageDoc,
-  extractOutline,
-  slugifyHeading,
-  type MarkerName,
-  type OutlineEntry,
-} from "@/lib/page-doc";
+import { extractOutline, slugifyHeading, type OutlineEntry } from "@/lib/page-doc";
 import type { SponsorLogo } from "@/lib/sponsors";
-import type { Hackathon, HackathonContent, SponsorTier } from "@/types/db";
-
-const WEEKDAY = new Intl.DateTimeFormat("pt-BR", {
-  weekday: "short",
-  timeZone: "America/Sao_Paulo",
-});
-
-const TIME = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-const DAY_NUM = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-const KIND_LABEL: Record<string, string> = {
-  aula: "Aula",
-  workshop: "Workshop",
-  mentoria: "Mentoria",
-  material: "Material",
-  link: "Link",
-  evento: "Evento",
-};
-
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+import type { SponsorTier } from "@/types/db";
 
 const H2 =
   "text-balance font-heading text-3xl font-black uppercase leading-tight tracking-tight [font-stretch:118%] sm:text-4xl";
 
-export type ScheduleRow = Pick<
-  HackathonContent,
-  "id" | "kind" | "title" | "speaker" | "description" | "scheduled_at" | "location" | "position"
->;
-
 export type Finalist = { teamId: string; teamName: string; placement: number | null };
 
 export type DocContext = {
-  hackathon: Hackathon;
-  phases: Phase[];
-  now: number;
-  schedule: ScheduleRow[];
   sponsors: Record<SponsorTier, SponsorLogo[]>;
   finalists: Finalist[];
   finalistsVisible: boolean;
 };
 
 /**
- * The page body is the edition's markdown document. Prose (headings, lists,
- * tables) renders as written; a marker line (```phases``` or
- * ```schedule```) drops the matching live visual in place, with its heading
- * and copy coming from the document above it. Finalists (date-gated) and
- * the sponsor band are not part of the document — they always render after
- * it so they can never be forgotten, and Programação updates when a
- * recording is published without anyone opening the editor.
+ * The page body is the edition's markdown document — headings, paragraphs,
+ * lists and tables, all hand-written in the page editor. Only two things
+ * are not the document's to write: the finalists grid (appears once the
+ * announcement date passes) and the sponsor band from Marcas, rendered
+ * after it so they can never be forgotten or mistyped.
  */
 export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
-  const segments = parsePageDoc(doc);
-  const schedule = ctx.schedule.filter((s) => s.kind !== "evento");
   const showFinalists = ctx.finalistsVisible && ctx.finalists.length > 0;
   const showPartners =
     ctx.sponsors.realizacao.length > 0 || ctx.sponsors.apoiador.length > 0;
@@ -92,38 +43,13 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
         {withNav && <OutlineNav outline={outline} />}
 
         <div className="min-w-0 space-y-14">
-          {segments.map((seg, i) =>
-            seg.type === "prose" ? (
-              <ProseDoc key={i} md={seg.md} />
-            ) : (
-              <MarkerVisual key={i} name={seg.name} ctx={ctx} schedule={schedule} />
-            ),
-          )}
+          {doc.trim() !== "" && <ProseDoc md={doc} />}
           {showFinalists && <FinalistsSection finalists={ctx.finalists} />}
           {showPartners && <PartnersSection sponsors={ctx.sponsors} />}
         </div>
       </div>
     </div>
   );
-}
-
-function MarkerVisual({
-  name,
-  ctx,
-  schedule,
-}: {
-  name: MarkerName;
-  ctx: DocContext;
-  schedule: ScheduleRow[];
-}) {
-  switch (name) {
-    case "phases":
-      return ctx.phases.length > 0 ? <PhaseTimeline phases={ctx.phases} now={ctx.now} /> : null;
-    case "schedule":
-      return schedule.length > 0 ? <ScheduleGrid items={schedule} /> : null;
-    default:
-      return null;
-  }
 }
 
 function OutlineNav({ outline }: { outline: OutlineEntry[] }) {
@@ -200,51 +126,6 @@ function FurnitureHeading({ id, children }: { id: string; children: React.ReactN
     <h2 id={id} className={`${H2} scroll-mt-28`}>
       {children}
     </h2>
-  );
-}
-
-function ScheduleGrid({ items }: { items: ScheduleRow[] }) {
-  return (
-      <ul className="grid gap-4 md:grid-cols-2">
-        {items.map((item) => {
-          const at = item.scheduled_at ? new Date(item.scheduled_at) : null;
-          return (
-            <li
-              key={item.id}
-              className="flex gap-5 rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-5"
-            >
-              <div className="w-16 shrink-0 text-center">
-                {at ? (
-                  <>
-                    <p className="font-heading text-2xl font-bold leading-none">
-                      {DAY_NUM.format(at)}
-                    </p>
-                    <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-emerald">
-                      {clean(WEEKDAY.format(at))}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted">{TIME.format(at)}</p>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted">a definir</p>
-                )}
-              </div>
-
-              <div className="min-w-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted">
-                  {KIND_LABEL[item.kind] ?? item.kind}
-                </span>
-                <h3 className="mt-1 font-heading text-lg font-bold leading-tight">{item.title}</h3>
-                {item.speaker && (
-                  <p className="mt-0.5 text-sm font-semibold text-emerald">{item.speaker}</p>
-                )}
-                {item.description && (
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
   );
 }
 

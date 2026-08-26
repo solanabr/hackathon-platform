@@ -1,19 +1,25 @@
-/** Starting document for an edition that has no page_md yet. Markdown plus
- *  section markers: a line reading ```phases``` or ```schedule``` drops the
- *  matching live visual there — headings and copy around it belong to the
- *  document. Finalists and the sponsor band render after the document on
- *  their own. */
+/** Starting document for an edition that has no page_md yet. Everything is
+ *  hand-written markdown — headings, paragraphs, lists and tables. Only the
+ *  finalists grid (date-gated) and the sponsor band from Marcas render
+ *  outside the document. */
 export const DEFAULT_PAGE_MD = `## Como o hackathon acontece
 
 Duas fases. A primeira online, a segunda presencial.
 
-\`\`\`phases\`\`\`
+| Fase | Quando | O que acontece |
+| --- | --- | --- |
+| Fase 1 · capacitação | ... | ... |
+| Desenvolvimento e submissão | ... | ... |
+| Seleção | ... | ... |
+| Fase 2 · presencial | ... | ... |
 
 ## Programação
 
 As gravações ficam disponíveis na plataforma depois de cada encontro.
 
-\`\`\`schedule\`\`\`
+| Data | Encontro |
+| --- | --- |
+| ... | ... |
 
 ## O que seu time entrega
 

@@ -1,15 +1,11 @@
 # Edition page template
 
 Starting point for a new edition's `page_md`, edited at `/admin/h/<slug>/page`.
-The document is markdown — headings (`##` become outline anchors), paragraphs,
-lists and tables — plus two section markers: a line reading ```` ```phases``` ````
-or ```` ```schedule``` ```` drops the live phase timeline or the published
-agenda at that spot. Headings and copy around a marker belong to the document.
-
-Not in the document: **Finalistas** (renders after the document once the
-announcement date passes) and the **Realização/Apoiadores** band (from the
-Marcas admin, always last). Prizes are plain markdown — write them where you
-want them.
+The document is pure hand-written markdown — headings (`##` become outline
+anchors), paragraphs, lists and tables. Everything on the page is edited here,
+except **Finalistas** (renders after the document once the announcement date
+passes) and the **Realização/Apoiadores** band (from the Marcas admin, always
+last).
 
 ---
 
@@ -17,13 +13,20 @@ want them.
 
 Duas fases. A primeira online, a segunda presencial.
 
-```phases```
+| Fase | Quando | O que acontece |
+| --- | --- | --- |
+| Fase 1 · capacitação | ... | ... |
+| Desenvolvimento e submissão | ... | ... |
+| Seleção | ... | ... |
+| Fase 2 · presencial | ... | ... |
 
 ## Programação
 
 As gravações ficam disponíveis na plataforma depois de cada encontro.
 
-```schedule```
+| Data | Encontro |
+| --- | --- |
+| ... | ... |
 
 ## O que seu time entrega
 

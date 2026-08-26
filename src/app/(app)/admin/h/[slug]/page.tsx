@@ -221,6 +221,8 @@ export default async function AdminEditionPage({
           </div>
         </Card>
 
+        <EditionForm hackathon={hackathon} />
+
         <Card sticker className="p-6 sm:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -261,7 +263,6 @@ export default async function AdminEditionPage({
           )}
         </Card>
 
-        <EditionForm hackathon={hackathon} />
       </div>
     </div>
   );

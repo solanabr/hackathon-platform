@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePageDoc, extractOutline, slugifyHeading } from "../page-doc";
+import { extractOutline, slugifyHeading } from "../page-doc";
 
 describe("slugifyHeading", () => {
   it("strips accents and punctuation", () => {
@@ -10,53 +10,12 @@ describe("slugifyHeading", () => {
   });
 });
 
-describe("parsePageDoc", () => {
-  it("splits prose and markers preserving order", () => {
-    const doc = [
-      "## Como acontece",
-      "Duas fases.",
-      "",
-      "```phases```",
-      "",
-      "## Programação",
-      "```schedule```",
-    ].join("\n");
-    expect(parsePageDoc(doc)).toEqual([
-      { type: "prose", md: "## Como acontece\nDuas fases." },
-      { type: "marker", name: "phases" },
-      { type: "prose", md: "## Programação" },
-      { type: "marker", name: "schedule" },
-    ]);
-  });
-
-  it("a bare open fence also counts as a marker, body ignored", () => {
-    const doc = ["```phases", "ignored", "```", "depois"].join("\n");
-    expect(parsePageDoc(doc)).toEqual([
-      { type: "marker", name: "phases" },
-      { type: "prose", md: "depois" },
-    ]);
-  });
-
-  it("unknown fences stay inside prose", () => {
-    const doc = ["Texto.", "```js", "const x = 1;", "```"].join("\n");
-    expect(parsePageDoc(doc)).toEqual([
-      { type: "prose", md: "Texto.\n```js\nconst x = 1;\n```" },
-    ]);
-  });
-
-  it("empty document yields no segments", () => {
-    expect(parsePageDoc("")).toEqual([]);
-    expect(parsePageDoc("\n\n")).toEqual([]);
-  });
-});
-
 describe("extractOutline", () => {
   it("collects ## headings in order with slug ids", () => {
     const doc = [
       "# Título grande",
       "## Programação da Fase 1",
       "corpo",
-      "```schedule```",
       "## Premiação",
       "### sub",
     ].join("\n");
@@ -72,5 +31,17 @@ describe("extractOutline", () => {
       { id: "real", text: "Real" },
       { id: "tambem-real", text: "Também real" },
     ]);
+  });
+
+  it("a one-line fence toggles nothing", () => {
+    const doc = ["## Antes", "```txt```", "## Depois"].join("\n");
+    expect(extractOutline(doc)).toEqual([
+      { id: "antes", text: "Antes" },
+      { id: "depois", text: "Depois" },
+    ]);
+  });
+
+  it("empty document yields no entries", () => {
+    expect(extractOutline("")).toEqual([]);
   });
 });
