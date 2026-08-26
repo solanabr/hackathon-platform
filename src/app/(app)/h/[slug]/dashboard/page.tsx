@@ -95,6 +95,14 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       })
     : REQUIRED;
 
+  // The checklist shows the team conditions too, so the count covers them.
+  const checklistTotal = REQUIRED.length + 2;
+  const checklistDone =
+    REQUIRED.length -
+    missing.length +
+    (acceptedMembers >= 2 ? 1 : 0) +
+    (pendingMembers.length === 0 ? 1 : 0);
+
   // The hero counts down to whichever milestone comes next: the submission
   // deadline while the window is open, then the finalists, then Pitch Day.
   const finalistsAt = hackathon.finalists_announced_at
@@ -110,7 +118,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       return {
         target: hackathon.submission_deadline_at,
         label: "Submissão fecha em",
-        badge: "Inscrições abertas",
+        badge: "Janela aberta",
         tone: "yellow" as const,
       };
     }
@@ -319,10 +327,10 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               <>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm text-muted">
-                    {missing.length === 0 && pendingMembers.length === 0 && acceptedMembers >= 2
+                    {checklistDone === checklistTotal
                       ? "Tudo pronto. O líder pode enviar."
                       : missing.length > 0
-                        ? `Faltam ${missing.length} de ${REQUIRED.length} itens.`
+                        ? `Faltam ${checklistTotal - checklistDone} de ${checklistTotal} itens.`
                         : acceptedMembers < 2
                           ? "O time precisa de pelo menos 2 integrantes."
                           : `Falta a inscrição de ${pendingMembers.length} ${
@@ -330,15 +338,13 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                             }.`}
                   </p>
                   <p className="shrink-0 font-mono text-xs tabular-nums text-ink">
-                    {REQUIRED.length - missing.length}/{REQUIRED.length} itens
+                    {checklistDone}/{checklistTotal} itens
                   </p>
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-deep">
                   <div
                     className="h-1.5 rounded-full bg-emerald transition-[width]"
-                    style={{
-                      width: `${((REQUIRED.length - missing.length) / REQUIRED.length) * 100}%`,
-                    }}
+                    style={{ width: `${(checklistDone / checklistTotal) * 100}%` }}
                   />
                 </div>
                 <ul className="mt-4 space-y-2.5">
