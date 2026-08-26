@@ -88,7 +88,7 @@ export function FinalistPicker({
       {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
       {notice && <p className="text-sm font-semibold text-emerald">{notice}</p>}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/10 bg-surface-raised p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-green-dark/15 bg-surface-raised p-5">
         <p className="font-mono text-sm tabular-nums text-muted">
           {marked.length} de {candidates.length} marcado(s) · {pendingNotify} por notificar.
         </p>
@@ -108,8 +108,8 @@ export function FinalistPicker({
           return (
             <li
               key={c.submissionId}
-              className={`rounded-xl border bg-surface-raised p-5 transition-colors ${
-                on ? "border-yellow/40 bg-yellow/5" : "border-ink/10"
+              className={`rounded-xl border-2 bg-surface-raised p-5 transition-colors ${
+                on ? "border-yellow/40 bg-yellow/5" : "border-green-dark/15"
               }`}
             >
               <label className="flex flex-wrap items-center justify-between gap-3">
@@ -152,7 +152,7 @@ export function FinalistPicker({
                       disabled={pending}
                       placeholder="—"
                       onChange={(e) => updatePlacement(c, e.target.value)}
-                      className="h-9 w-14 rounded-lg border border-ink/10 bg-surface-deep px-2 text-center font-mono text-base font-semibold tabular-nums text-ink outline-none transition-colors focus:border-emerald"
+                      className="h-9 w-14 rounded-lg border border-green-dark/15 bg-surface-deep px-2 text-center font-mono text-base font-semibold tabular-nums text-ink outline-none transition-colors focus:border-emerald"
                     />
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted">
                       colocação

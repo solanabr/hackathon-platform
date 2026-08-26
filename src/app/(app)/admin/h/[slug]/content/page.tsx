@@ -63,14 +63,14 @@ export default async function AdminContentPage({
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl space-y-8">
+      <div className="mx-auto max-w-5xl space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <BackLink href={`/admin/h/${slug}`} label={hackathon.name} />
           <AdminEditionNav slug={slug} />
         </div>
 
         <header>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Conteúdo da edição
           </p>
           <h1 className="mt-1 font-heading text-3xl font-bold">Conteúdos</h1>

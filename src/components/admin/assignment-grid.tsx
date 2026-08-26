@@ -75,7 +75,7 @@ export function AssignmentGrid({
           return (
             <li
               key={project.submissionId}
-              className="rounded-xl border border-ink/10 bg-surface-raised p-5"
+              className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -106,7 +106,7 @@ export function AssignmentGrid({
                       className={`min-h-11 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
                         on
                           ? "border-emerald bg-emerald text-white"
-                          : "border-ink/10 text-muted hover:border-emerald/50 hover:text-ink"
+                          : "border-green-dark/20 text-muted hover:border-emerald/50 hover:text-ink"
                       }`}
                     >
                       {judge.name}

@@ -17,7 +17,7 @@ export function RemovedContent({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-green/15 bg-surface-raised/60 p-5">
+    <section className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised/60 p-5">
       <h2 className="font-heading text-lg font-bold text-muted">Removidos</h2>
       <p className="mt-1 text-sm text-muted">
         Não aparecem para os participantes. Restaurar traz de volta como rascunho.

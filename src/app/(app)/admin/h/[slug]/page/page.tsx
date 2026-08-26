@@ -29,7 +29,7 @@ export default async function AdminPageEditorPage({
         </div>
 
         <header>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Página pública
           </p>
           <h1 className="mt-1 font-heading text-3xl font-bold">Editor da página</h1>

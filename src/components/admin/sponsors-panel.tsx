@@ -63,7 +63,7 @@ export function SponsorTierPanel({
           {sponsors.map((s, i) => (
             <li
               key={s.id}
-              className="flex items-center gap-4 rounded-xl border border-ink/10 bg-surface-deep px-4 py-3"
+              className="flex items-center gap-4 rounded-xl border-2 border-green-dark/15 bg-surface-deep px-4 py-3"
             >
               <span className="flex h-12 w-32 shrink-0 items-center justify-center rounded-lg bg-green-dark px-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -80,7 +80,7 @@ export function SponsorTierPanel({
                   onClick={() =>
                     run(() => moveSponsor({ slug, sponsorId: s.id, direction: "up" }))
                   }
-                  className="rounded-lg border border-ink/10 px-2 py-1 font-mono text-xs disabled:opacity-30"
+                  className="rounded-lg border border-green-dark/20 px-2 py-1 font-mono text-xs disabled:opacity-30"
                 >
                   ↑
                 </button>
@@ -91,7 +91,7 @@ export function SponsorTierPanel({
                   onClick={() =>
                     run(() => moveSponsor({ slug, sponsorId: s.id, direction: "down" }))
                   }
-                  className="rounded-lg border border-ink/10 px-2 py-1 font-mono text-xs disabled:opacity-30"
+                  className="rounded-lg border border-green-dark/20 px-2 py-1 font-mono text-xs disabled:opacity-30"
                 >
                   ↓
                 </button>
@@ -109,7 +109,7 @@ export function SponsorTierPanel({
                   className={`ml-1 rounded-lg border px-2.5 py-1 font-mono text-xs font-semibold ${
                     confirming === s.id
                       ? "border-red-700/40 bg-red-700/10 text-red-700"
-                      : "border-ink/10 text-muted"
+                      : "border-green-dark/20 text-muted"
                   }`}
                 >
                   {confirming === s.id ? "Confirmar?" : "Remover"}
@@ -130,7 +130,7 @@ export function SponsorTierPanel({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Solana"
-            className="mt-1 w-full rounded-xl border border-ink/15 bg-surface px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-xl border border-green-dark/15 bg-surface px-3 py-2 text-sm"
           />
         </label>
         <label className="flex-1 basis-52">
@@ -142,7 +142,7 @@ export function SponsorTierPanel({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
-            className="mt-1 w-full rounded-xl border border-ink/15 bg-surface px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-xl border border-green-dark/15 bg-surface px-3 py-2 text-sm"
           />
         </label>
         <input

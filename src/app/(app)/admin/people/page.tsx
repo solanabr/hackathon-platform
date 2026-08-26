@@ -42,10 +42,10 @@ export default async function PeoplePage() {
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <BackLink href="/admin" label="Administração" />
 
-        <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
           Operação
         </p>
         <h1 className="mt-1 font-heading text-3xl font-bold">Pessoas</h1>

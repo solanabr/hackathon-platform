@@ -26,7 +26,7 @@ function FlagChip({ on }: { on: boolean }) {
   return (
     <span
       className={`inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
-        on ? "border-emerald/30 bg-emerald/10 text-emerald" : "border-ink/10 text-muted"
+        on ? "border-emerald/30 bg-emerald/10 text-emerald" : "border-green-dark/20 text-muted"
       }`}
     >
       {on ? "Sim" : "Não"}
@@ -42,7 +42,7 @@ function TeamStatusChip({ status }: { status: string | null }) {
       className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[11px] font-semibold ${
         submitted
           ? "border-emerald/30 bg-emerald/10 text-emerald"
-          : "border-ink/10 text-muted"
+          : "border-green-dark/20 text-muted"
       }`}
     >
       {label}
@@ -85,7 +85,7 @@ export default async function AdminEditionPage({
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl space-y-8">
+      <div className="mx-auto max-w-5xl space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <BackLink href="/admin" label="Administração" />
           <AdminEditionNav slug={slug} />
@@ -93,7 +93,7 @@ export default async function AdminEditionPage({
 
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Operação
             </p>
             <h1 className="mt-1 font-heading text-3xl font-bold">{hackathon.name}</h1>
@@ -106,8 +106,8 @@ export default async function AdminEditionPage({
           </div>
         </header>
 
-        <Card className="p-6 sm:p-7">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+        <Card sticker className="p-6 sm:p-7">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Identidade
           </p>
           <h2 className="mt-1 font-heading text-lg font-bold">Arte da edição</h2>
@@ -121,17 +121,17 @@ export default async function AdminEditionPage({
                 alt=""
                 width={120}
                 height={120}
-                className="h-28 w-28 rounded-2xl border border-ink/10 object-cover"
+                className="h-28 w-28 rounded-2xl border-2 border-green-dark/15 object-cover"
               />
             )}
             <CoverUpload hackathonId={hackathon.id} slug={hackathon.slug} />
           </div>
         </Card>
 
-        <Card className="p-6 sm:p-7">
+        <Card sticker className="p-6 sm:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                 Screening
               </p>
               <h2 className="mt-1 font-heading text-lg font-bold">Inscrições</h2>
@@ -176,10 +176,10 @@ export default async function AdminEditionPage({
           )}
         </Card>
 
-        <Card className="p-6 sm:p-7">
+        <Card sticker className="p-6 sm:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                 Submissões
               </p>
               <h2 className="mt-1 font-heading text-lg font-bold">Times e submissões</h2>

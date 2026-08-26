@@ -40,7 +40,7 @@ export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
         if (fields.length === 0) return null;
 
         return (
-          <Card key={group} className="p-6 sm:p-7">
+          <Card sticker key={group} className="p-6 sm:p-7">
             <h2 className="font-heading text-lg font-bold">{group}</h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               {fields.map((field) => {

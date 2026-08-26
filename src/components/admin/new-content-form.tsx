@@ -34,7 +34,7 @@ export function NewContentForm({ hackathonId, slug }: { hackathonId: string; slu
   }
 
   return (
-    <div className="rounded-2xl border border-green/15 bg-surface-raised p-5">
+    <div className="rounded-2xl border-2 border-green-dark/15 bg-surface-raised p-5">
       <h2 className="font-heading text-lg font-bold">Novo conteúdo</h2>
       <p className="mt-1 text-sm text-muted">
         Entra como rascunho no fim da lista. O vídeo ou arquivo você anexa depois.

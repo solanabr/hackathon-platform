@@ -45,9 +45,9 @@ export default async function AdminPage() {
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         {!ready && (
-          <div className="mb-8 rounded-2xl border border-yellow bg-yellow/15 p-5">
+          <div className="mb-8 rounded-2xl border-2 border-yellow bg-yellow/15 p-5">
             <p className="font-heading font-bold">Falta a chave de service role</p>
             <p className="mt-1 text-sm leading-relaxed text-muted">
               Copie a <strong>service_role</strong> em Supabase, Project Settings, API para{" "}
@@ -62,7 +62,7 @@ export default async function AdminPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Operação
             </p>
             <h1 className="mt-1 font-heading text-3xl font-bold">Administração</h1>
@@ -78,7 +78,7 @@ export default async function AdminPage() {
           {hackathons.map((h) => {
             const c = counts.find((x) => x.id === h.id);
             return (
-              <Card key={h.id} className="p-6">
+              <Card sticker key={h.id} className="p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <Badge tone={h.status === "closed" ? "neutral" : "emerald"}>{h.status}</Badge>
@@ -91,7 +91,7 @@ export default async function AdminPage() {
                     </p>
                     <Link
                       href={`/admin/h/${h.slug}`}
-                      className="min-h-11 shrink-0 rounded-full border border-ink/10 px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/50 hover:bg-green-dark/5"
+                      className="min-h-11 shrink-0 rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold text-ink transition-colors hover:bg-green-dark/10"
                     >
                       Editar
                     </Link>

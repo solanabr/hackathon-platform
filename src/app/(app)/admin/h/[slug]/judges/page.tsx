@@ -87,14 +87,14 @@ export default async function AdminJudgesPage({
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl space-y-8">
+      <div className="mx-auto max-w-5xl space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <BackLink href={`/admin/h/${slug}`} label={hackathon.name} />
           <AdminEditionNav slug={slug} />
         </div>
 
         <header>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
             Atribuição
           </p>
           <h1 className="mt-1 font-heading text-3xl font-bold">Jurados por projeto</h1>
@@ -108,7 +108,7 @@ export default async function AdminJudgesPage({
         </header>
 
         {judges.length === 0 ? (
-          <p className="rounded-2xl border border-yellow/40 bg-yellow/10 p-5 text-sm leading-relaxed">
+          <p className="rounded-2xl border-2 border-yellow bg-yellow/10 p-5 text-sm leading-relaxed">
             Nenhum jurado nesta edição ainda. Conceda o papel em{" "}
             <strong>Administração · Pessoas</strong> antes de atribuir projetos. A pessoa precisa
             ter entrado na plataforma pelo menos uma vez.
@@ -118,7 +118,7 @@ export default async function AdminJudgesPage({
         ) : (
           <>
             {short > 0 && (
-              <p className="rounded-2xl border border-yellow/40 bg-yellow/10 p-5 text-sm leading-relaxed">
+              <p className="rounded-2xl border-2 border-yellow bg-yellow/10 p-5 text-sm leading-relaxed">
                 {short} {short === 1 ? "projeto ainda não tem" : "projetos ainda não têm"} dois
                 jurados.
               </p>
