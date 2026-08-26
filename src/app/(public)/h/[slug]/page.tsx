@@ -171,6 +171,17 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 </button>
               )}
 
+              {hackathon.rules_url && (
+                <a
+                  href={hackathon.rules_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border-2 border-green-dark bg-surface-raised px-6 py-3.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:text-base"
+                >
+                  Regulamento
+                </a>
+              )}
+
             {countdownTarget && (
               <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-sticker">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald">
