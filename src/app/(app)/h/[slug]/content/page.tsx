@@ -165,8 +165,8 @@ export default async function ContentsPage({
                       : "border-green-dark/20 opacity-75"
                   }`}
                 >
-                  <div className="relative aspect-video overflow-hidden border-b-2 border-green-dark/15 bg-green-dark">
-                    {thumb ? (
+                  {thumb && (
+                    <div className="relative aspect-video overflow-hidden border-b-2 border-green-dark/15 bg-green-dark">
                       <Image
                         src={thumb}
                         alt=""
@@ -174,33 +174,26 @@ export default async function ContentsPage({
                         sizes="(max-width: 640px) 100vw, 50vw"
                         className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       />
-                    ) : (
-                      <div className="flex h-full flex-col items-center justify-center gap-2">
-                        <span className="font-heading text-3xl font-black uppercase text-surface/25 [font-stretch:118%]">
-                          {KIND_LABELS[item.kind] ?? item.kind}
+                      {row?.youtube_id && (
+                        <span
+                          aria-hidden
+                          className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-green-dark/85 pl-1 text-xl text-surface transition-transform duration-200 group-hover:scale-110"
+                        >
+                          ▶
                         </span>
-                        {domain && (
-                          <span className="font-mono text-xs text-surface/50">{domain}</span>
-                        )}
-                      </div>
-                    )}
-                    {row?.youtube_id && (
-                      <span
-                        aria-hidden
-                        className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-green-dark/85 pl-1 text-xl text-surface transition-transform duration-200 group-hover:scale-110"
-                      >
-                        ▶
+                      )}
+                      <span className="absolute left-3 top-3 rounded-full bg-yellow px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-dark">
+                        {KIND_LABELS[item.kind] ?? item.kind}
                       </span>
-                    )}
-                    <span className="absolute left-3 top-3 rounded-full bg-yellow px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-dark">
-                      {KIND_LABELS[item.kind] ?? item.kind}
-                    </span>
-                  </div>
+                    </div>
+                  )}
 
                   <div className="flex flex-1 flex-col p-5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                        {!thumb && `${KIND_LABELS[item.kind] ?? item.kind} · `}
                         {when ?? "sem data"}
+                        {!thumb && domain && ` · ${domain}`}
                       </p>
                       <StatusChip tone={ready ? "ok" : "muted"}>
                         {ready ? "disponível" : "em breve"}
