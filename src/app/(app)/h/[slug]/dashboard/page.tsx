@@ -10,6 +10,7 @@ import { SectionCard, StatusChip, CheckRow } from "@/components/ui/section-card"
 import { EditionInfoCard } from "@/components/edition/info-card";
 import { Avatar } from "@/components/ui/avatar";
 import { PainelNav } from "@/components/edition/painel-nav";
+import { buildMilestones } from "@/lib/milestones";
 import {
   getHackathonBySlug,
   isSubmissionWindowOpen,
@@ -106,6 +107,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     : null;
   const pitchAt = hackathon.presential_at ? new Date(hackathon.presential_at).getTime() : null;
 
+  const milestones = buildMilestones(hackathon);
+  const closingLabel = milestones.find((m) => m.key === "ends")?.label ?? "Encerramento";
+
   const hero = (() => {
     if (open) {
       return {
@@ -126,8 +130,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
     if (pitchAt !== null && now < pitchAt) {
       return {
         target: hackathon.presential_at as string,
-        label: "Pitch Day em",
-        badge: "Pitch Day em",
+        label: `${closingLabel} em`,
+        badge: closingLabel,
         tone: "emerald" as const,
       };
     }
@@ -296,7 +300,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                   )}
                   {hackathon.presential_at && (
                     <>
-                      O Pitch Day é em{" "}
+                      {closingLabel} é em{" "}
                       <strong className="text-emerald">
                         {clean(DAY.format(new Date(hackathon.presential_at)))}
                       </strong>
