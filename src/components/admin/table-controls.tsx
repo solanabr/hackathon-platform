@@ -1,5 +1,7 @@
 "use client";
 
+import { segmentedContainer } from "@/components/ui/segmented";
+
 export function FilterPills<T extends string>({
   label,
   value,
@@ -12,7 +14,7 @@ export function FilterPills<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex flex-wrap items-center gap-1.5">
+    <div role="group" aria-label={label} className={segmentedContainer}>
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -21,10 +23,8 @@ export function FilterPills<T extends string>({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(o.value)}
-            className={`rounded-full border-2 px-3 py-1 text-xs font-bold transition-colors ${
-              active
-                ? "border-green-dark bg-green-dark text-surface"
-                : "border-green-dark/20 text-muted hover:border-green-dark hover:text-ink"
+            className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
+              active ? "bg-green-dark text-surface" : "text-ink hover:bg-green-dark/10"
             }`}
           >
             {o.label}

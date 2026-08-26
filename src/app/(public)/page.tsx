@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
+import { SegmentedNav } from "@/components/ui/segmented";
 
 export const dynamic = "force-dynamic";
 
@@ -181,28 +182,28 @@ export default async function HomePage({
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
               Edições
             </h2>
-            <nav
-              aria-label="Filtrar edições"
-              className="flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible sm:pb-0"
-            >
-              {FILTERS.map((opt) => {
+            <SegmentedNav
+              label="Filtrar edições"
+              items={FILTERS.map((opt) => {
                 const active = filter === opt.key;
                 const count = counts[opt.key] ?? 0;
-                return (
-                  <Link
-                    key={opt.key}
-                    href={opt.key === "todos" ? "/" : `/?f=${opt.key}`}
-                    aria-current={active ? "page" : undefined}
-                    className={`whitespace-nowrap rounded-full border-2 border-[#1b231d] px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb] ${
-                      active ? "bg-[#1b231d] text-[#f7eacb]" : "text-green-dark hover:bg-[#1b231d]/10"
-                    }`}
-                  >
-                    {opt.label}
-                    <span className={`ml-1.5 tabular-nums ${active ? "text-[#ffd23f]" : "text-green-dark/50"}`}>{count}</span>
-                  </Link>
-                );
+                return {
+                  key: opt.key,
+                  href: opt.key === "todos" ? "/" : `/?f=${opt.key}`,
+                  active,
+                  label: (
+                    <>
+                      {opt.label}
+                      <span
+                        className={`ml-1.5 tabular-nums ${active ? "text-yellow" : "text-green-dark/50"}`}
+                      >
+                        {count}
+                      </span>
+                    </>
+                  ),
+                };
               })}
-            </nav>
+            />
           </div>
 
           {filtered.length === 0 ? (

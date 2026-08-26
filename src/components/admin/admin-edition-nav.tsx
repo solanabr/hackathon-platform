@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { PillLink } from "@/components/ui/pill-link";
+import { SegmentedNav } from "@/components/ui/segmented";
 
 const TABS = [
   { path: "", label: "Visão geral" },
@@ -12,26 +12,26 @@ const TABS = [
   { path: "/finalistas", label: "Finalistas" },
 ] as const;
 
-/** Edition admin section tabs, mirroring PainelNav's pill language. */
+/** Edition admin section tabs, mirroring PainelNav's segmented control. */
 export function AdminEditionNav({ slug }: { slug: string }) {
   const pathname = usePathname();
   const base = `/admin/h/${slug}`;
 
   return (
-    <nav
-      aria-label="Seções da administração"
-      className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
-    >
-      {TABS.map((tab) => {
+    <SegmentedNav
+      label="Seções da administração"
+      items={TABS.map((tab) => {
         const href = `${base}${tab.path}`;
-        const active =
-          tab.path === "" ? pathname === base : pathname === href || pathname.startsWith(`${href}/`);
-        return (
-          <PillLink key={tab.path} href={href} active={active}>
-            {tab.label}
-          </PillLink>
-        );
+        return {
+          key: tab.path || "overview",
+          href,
+          label: tab.label,
+          active:
+            tab.path === ""
+              ? pathname === base
+              : pathname === href || pathname.startsWith(`${href}/`),
+        };
       })}
-    </nav>
+    />
   );
 }

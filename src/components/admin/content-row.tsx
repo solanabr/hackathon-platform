@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusChip } from "@/components/ui/section-card";
+import { segmentedContainer } from "@/components/ui/segmented";
 import {
   attachmentTypeOf,
   draftFrom,
@@ -237,7 +238,7 @@ export function ContentRow({
           <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
             Anexo
           </p>
-          <div role="group" aria-label="Tipo de anexo" className="flex gap-1.5">
+          <div role="group" aria-label="Tipo de anexo" className={segmentedContainer}>
             {ATTACHMENT_OPTIONS.map((o) => {
               const active = attachType === o.value;
               return (
@@ -246,10 +247,8 @@ export function ContentRow({
                   type="button"
                   aria-pressed={active}
                   onClick={() => setAttachType(o.value)}
-                  className={`rounded-full border-2 px-3 py-1 text-xs font-bold transition-colors ${
-                    active
-                      ? "border-green-dark bg-green-dark text-surface"
-                      : "border-green-dark/20 text-muted hover:border-green-dark hover:text-ink"
+                  className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
+                    active ? "bg-green-dark text-surface" : "text-ink hover:bg-green-dark/10"
                   }`}
                 >
                   {o.label}

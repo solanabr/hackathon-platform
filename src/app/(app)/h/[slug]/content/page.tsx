@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
 import { PainelNav } from "@/components/edition/painel-nav";
-import { PillLink } from "@/components/ui/pill-link";
+import { SegmentedNav } from "@/components/ui/segmented";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { renderableThumbnail, youtubeThumbnail } from "@/lib/content";
@@ -106,20 +106,15 @@ export default async function ContentsPage({
             </p>
           </div>
 
-          <nav
-            aria-label="Filtrar conteúdos"
-            className="flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {FILTERS.map((opt) => (
-              <PillLink
-                key={opt.key}
-                href={opt.key === "todos" ? `/h/${slug}/content` : `/h/${slug}/content?f=${opt.key}`}
-                active={filter.key === opt.key}
-              >
-                {opt.label}
-              </PillLink>
-            ))}
-          </nav>
+          <SegmentedNav
+            label="Filtrar conteúdos"
+            items={FILTERS.map((opt) => ({
+              key: opt.key,
+              href: opt.key === "todos" ? `/h/${slug}/content` : `/h/${slug}/content?f=${opt.key}`,
+              label: opt.label,
+              active: filter.key === opt.key,
+            }))}
+          />
         </div>
 
         {filtered.length === 0 ? (
