@@ -55,10 +55,12 @@ Registration is self-attested (`hackathon_registrations.luma_confirmed_at`); cro
 
 Apply `supabase/migrations/` in order (CLI or SQL editor). See CLAUDE.md's gotchas — notably the restored default grants (00009/00010) and the pre-existing-users backfill.
 
+Docs that survive in `docs/`: [`templates/edition-page.md`](docs/templates/edition-page.md) (the starting document for a new edition's page) and [`EDITION-DATES.md`](docs/EDITION-DATES.md) (the post-event date-model cutover still to execute).
+
 ## Conventions
 
 - UI copy in **pt-BR**; code, routes and everything in git in **English**.
 - `.maybeSingle()` over `.single()`; every `(app)/` page exports `dynamic = "force-dynamic"`.
 - Query errors are never swallowed: `unwrap()`/`logQueryError()` from `src/lib/supabase/unwrap.ts`.
 - No code comments by default; when needed, explain WHY.
-- Design language: cream/ink/emerald/yellow LP tokens in `globals.css`, sticker cards (`border-2 border-green-dark` + `shadow-sticker`), pill navs via `PillLink`.
+- Design language: cream/ink/emerald/yellow LP tokens in `globals.css`, sticker cards (`border-2 border-green-dark` + `shadow-sticker`), option rows as one segmented capsule (`SegmentedNav`), standalone pill CTAs via `PillLink`.
