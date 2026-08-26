@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createServerSupabaseClient } from "./supabase/server";
+import { logQueryError } from "./supabase/unwrap";
 import type { HackathonSponsor, SponsorTier } from "@/types/db";
 
 export type SponsorLogo = {
@@ -34,12 +35,14 @@ export async function resolveSponsors(rows: HackathonSponsor[]): Promise<Sponsor
 
 export const listSponsors = cache(async (hackathonId: string): Promise<SponsorLogo[]> => {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("hackathon_sponsors")
     .select("*")
     .eq("hackathon_id", hackathonId)
     .order("tier", { ascending: true })
     .order("position", { ascending: true });
+  // Public band: degrade to no logos, not an error banner.
+  if (error) logQueryError("sponsors.listSponsors", error);
   return resolveSponsors((data as HackathonSponsor[] | null) ?? []);
 });
 

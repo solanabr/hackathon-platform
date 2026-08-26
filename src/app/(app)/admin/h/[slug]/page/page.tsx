@@ -6,6 +6,7 @@ import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
 import { DEFAULT_PAGE_MD } from "@/lib/page-template";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +25,14 @@ export default async function AdminPageEditorPage({
   let finalists: Array<{ teamId: string; teamName: string; placement: number | null }> = [];
   if (isFinalistsVisible(hackathon)) {
     const sr = await createServiceRoleClient();
-    const { data: rows } = await sr
+    const { data: rows, error: finalistsError } = await sr
       .from("teams")
       .select("id, name, placement")
       .eq("hackathon_id", hackathon.id)
       .eq("is_finalist", true)
       .order("placement", { ascending: true, nullsFirst: false });
+    // Editor preview: a failed read degrades to no finalists, like the public page.
+    if (finalistsError) logQueryError("admin.pageEditor.finalists", finalistsError);
     finalists = ((rows as Array<{ id: string; name: string; placement: number | null }> | null) ?? [])
       .map((r) => ({ teamId: r.id, teamName: r.name, placement: r.placement }));
   }

@@ -1,20 +1,10 @@
 import { SectionCard } from "@/components/ui/section-card";
 import { buildMilestones } from "@/lib/milestones";
+import { DAY_MONTH, stripPeriods } from "@/lib/dates";
 import type { Hackathon } from "@/types/db";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
-const TIME = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
 function d(iso: string): string {
-  return DAY.format(new Date(iso)).replace(/\./g, "");
+  return stripPeriods(DAY_MONTH.format(new Date(iso)));
 }
 
 /**

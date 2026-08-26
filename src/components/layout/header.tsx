@@ -25,7 +25,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-3 z-50 px-3 sm:top-4 sm:px-6">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-[6px_6px_0_rgba(27,35,29,0.25)] sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-sticker sm:px-6">
         <Link
           href="/"
           className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"

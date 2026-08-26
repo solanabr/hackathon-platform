@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
 import { PainelNav } from "@/components/edition/painel-nav";
+import { PillLink } from "@/components/ui/pill-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { renderableThumbnail, youtubeThumbnail } from "@/lib/content";
@@ -10,17 +11,12 @@ import { KIND_LABELS } from "@/lib/content-fields";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { DAY_MONTH_TIME, stripPeriods } from "@/lib/dates";
 import type { HackathonContent } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-const WHEN = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const WHEN = DAY_MONTH_TIME;
 
 const FILTERS: Array<{ key: string; label: string; kinds: string[] }> = [
   { key: "todos", label: "Tudo", kinds: [] },
@@ -115,18 +111,13 @@ export default async function ContentsPage({
             className="flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {FILTERS.map((opt) => (
-              <Link
+              <PillLink
                 key={opt.key}
                 href={opt.key === "todos" ? `/h/${slug}/content` : `/h/${slug}/content?f=${opt.key}`}
-                aria-current={filter.key === opt.key ? "page" : undefined}
-                className={`whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
-                  filter.key === opt.key
-                    ? "bg-green-dark text-surface"
-                    : "text-ink hover:bg-green-dark/10"
-                }`}
+                active={filter.key === opt.key}
               >
                 {opt.label}
-              </Link>
+              </PillLink>
             ))}
           </nav>
         </div>
@@ -142,7 +133,7 @@ export default async function ContentsPage({
             {filtered.map((item) => {
               const row = available.get(item.id);
               const when = item.scheduled_at
-                ? WHEN.format(new Date(item.scheduled_at)).replace(/\./g, "")
+                ? stripPeriods(WHEN.format(new Date(item.scheduled_at)))
                 : null;
               const thumb = renderableThumbnail(row?.thumbnail_url)
                 ? (row?.thumbnail_url as string)
@@ -154,7 +145,7 @@ export default async function ContentsPage({
               const domain = external ? domainOf(external) : null;
 
               const card = (
-                <article className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-[6px_6px_0_rgba(27,35,29,0.18)] transition-transform duration-200 hover:-translate-y-0.5">
+                <article className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker transition-transform duration-200 hover:-translate-y-0.5">
                   {thumb && (
                     <div className="relative aspect-video overflow-hidden border-b-2 border-green-dark/15 bg-green-dark">
                       <Image

@@ -16,15 +16,10 @@ import {
   listTeamsForEdition,
 } from "@/lib/admin";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { logQueryError } from "@/lib/supabase/unwrap";
+import { logQueryError, unwrap } from "@/lib/supabase/unwrap";
+import { DATE_TIME_NUMERIC } from "@/lib/dates";
 
-const SUBMITTED_AT = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const SUBMITTED_AT = DATE_TIME_NUMERIC;
 
 export const dynamic = "force-dynamic";
 
@@ -57,11 +52,14 @@ export default async function AdminEditionPage({
   ).length;
 
   const round = ratingRound(hackathon);
-  const { data: submittedRows } = await supabase
-    .from("submissions")
-    .select("id, teams!inner(hackathon_id)")
-    .eq("teams.hackathon_id", hackathon.id)
-    .eq("status", "submitted");
+  const submittedRows = unwrap(
+    await supabase
+      .from("submissions")
+      .select("id, teams!inner(hackathon_id)")
+      .eq("teams.hackathon_id", hackathon.id)
+      .eq("status", "submitted"),
+    "admin.overview.submitted",
+  );
   const submittedIds = ((submittedRows as { id: string }[] | null) ?? []).map((s) => s.id);
 
   const [judgeRoles, assignmentRows, ratingCount] = await Promise.all([

@@ -183,7 +183,7 @@ export function RatingForm({
           type="button"
           disabled={pending || !dirty}
           onClick={save}
-          className="min-h-11 bg-yellow px-5 py-2 text-sm text-[#1b231d] hover:bg-yellow-strong"
+          className="min-h-11 bg-yellow px-5 py-2 text-sm text-green-dark hover:bg-yellow-strong"
         >
           {pending ? "Salvando..." : rated ? "Atualizar nota" : "Salvar nota"}
         </Button>

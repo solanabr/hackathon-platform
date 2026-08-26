@@ -11,6 +11,7 @@ import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
+import { DAY_MONTH, TIME_HM, stripPeriods } from "@/lib/dates";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
 
 import { EditionPageDoc } from "@/components/edition/page-doc";
@@ -44,21 +45,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH;
+const TIME = TIME_HM;
 
-const TIME = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+const clean = stripPeriods;
 
 export default async function EditionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -160,14 +150,14 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               {registered ? (
                 <Link
                   href={`/h/${hackathon.slug}/dashboard`}
-                  className="btn-primary px-10 py-4 text-lg shadow-[6px_6px_0_#1b231d]"
+                  className="btn-primary px-10 py-4 text-lg shadow-sticker"
                 >
                   Acessar painel
                 </Link>
               ) : open ? (
                 <Link
                   href={`/h/${hackathon.slug}/register`}
-                  className="btn-primary px-10 py-4 text-lg shadow-[6px_6px_0_#1b231d]"
+                  className="btn-primary px-10 py-4 text-lg shadow-sticker"
                 >
                   Fazer inscrição
                 </Link>
@@ -182,7 +172,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               )}
 
             {countdownTarget && (
-              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-[6px_6px_0_#1b231d]">
+              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-sticker">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald">
                   {countdownTarget.label}
                 </p>

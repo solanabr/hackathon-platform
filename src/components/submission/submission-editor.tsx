@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { DATE_TIME_NUMERIC } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Input, Textarea, Label } from "@/components/ui/input";
@@ -34,26 +35,9 @@ type FormState = {
   github_access_granted: boolean;
 };
 
-function formatSavedAt(date: Date): string {
-  // Pin to America/Sao_Paulo so SSR (UTC) and client (BRT) format identically.
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatSubmittedAt(date: Date): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
+// Pinned to America/Sao_Paulo so SSR (UTC) and client (BRT) format identically.
+const formatSavedAt = (date: Date) => DATE_TIME_NUMERIC.format(date);
+const formatSubmittedAt = formatSavedAt;
 
 function toForm(s: Submission): FormState {
   return {

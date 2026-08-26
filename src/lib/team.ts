@@ -32,9 +32,12 @@ export async function getPendingTeamForHackathon(
   hackathonId: string,
 ): Promise<PendingTeamSnapshot | null> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase.rpc("pending_membership_for_edition", {
-    p_hackathon_id: hackathonId,
-  });
+  const data = unwrap(
+    await supabase.rpc("pending_membership_for_edition", {
+      p_hackathon_id: hackathonId,
+    }),
+    "team.pendingMembership",
+  );
   return (data as PendingTeamSnapshot[] | null)?.[0] ?? null;
 }
 

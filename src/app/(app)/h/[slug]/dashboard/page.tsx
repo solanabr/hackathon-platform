@@ -1,3 +1,4 @@
+import { DAY_MONTH, DAY_MONTH_LONG_TIME, TIME_HM, stripPeriods } from "@/lib/dates";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,29 +28,13 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH;
 
-const FULL = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const FULL = DAY_MONTH_LONG_TIME;
 
-const TIME = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
+const TIME = TIME_HM;
 
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+const clean = stripPeriods;
 
 const REQUIRED: Array<{ key: string; label: string }> = [
   { key: "project_name", label: "Nome do projeto" },
@@ -157,7 +142,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           <PainelNav slug={slug} />
         </div>
 
-        <header className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-[8px_8px_0_rgba(27,35,29,0.18)] sm:p-8">
+        <header className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
             <Image
               src="/brand/stbr/elements/morth-05.svg"

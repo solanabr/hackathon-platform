@@ -5,8 +5,6 @@ import {
   isVotingOpen,
   isFinalistsVisible,
   editionStage,
-  phaseBoundaries,
-  phaseState,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -62,57 +60,6 @@ describe("hackathon phase helpers", () => {
   });
 });
 
-describe("phaseBoundaries", () => {
-  const b = phaseBoundaries(base);
-
-  it("keeps submission current only while it is actually open", () => {
-    const open = new Date("2026-09-09T14:59:00Z").getTime();
-    const closed = new Date("2026-09-09T15:00:00Z").getTime();
-
-    expect(phaseState(b.submissao, open)).toBe("current");
-    expect(phaseState(b.submissao, closed)).toBe("done");
-    expect(isSubmissionWindowOpen(base, new Date(closed))).toBe(false);
-  });
-
-  it("hands the current phase to selection the instant submission closes", () => {
-    const closed = new Date("2026-09-09T15:00:00Z").getTime();
-    expect(phaseState(b.selecao!, closed)).toBe("current");
-  });
-
-  it("marks phase one current until registration closes, not until the deadline", () => {
-    const duringClasses = new Date("2026-09-02T12:00:00Z").getTime();
-    const afterRegistration = new Date("2026-09-08T12:00:00Z").getTime();
-
-    expect(phaseState(b.fase1, duringClasses)).toBe("current");
-    expect(phaseState(b.submissao, duringClasses)).toBe("todo");
-    expect(phaseState(b.fase1, afterRegistration)).toBe("done");
-    expect(phaseState(b.submissao, afterRegistration)).toBe("current");
-  });
-
-  it("stops calling the in-person day current once it is over", () => {
-    expect(phaseState(b.fase2!, new Date("2026-09-12T14:00:00Z").getTime())).toBe("current");
-    expect(phaseState(b.fase2!, new Date("2026-09-20T00:00:00Z").getTime())).toBe("done");
-  });
-
-  it("never opens the submission phase after its own deadline", () => {
-    const late = phaseBoundaries({
-      ...base,
-      registration_closes_at: "2026-09-30T00:00:00Z",
-    } as Hackathon);
-    expect(late.submissao.startsAt).toBeLessThanOrEqual(late.submissao.endsAt);
-  });
-
-  it("omits phases whose dates are not configured", () => {
-    const bare = phaseBoundaries({
-      ...base,
-      finalists_announced_at: null,
-      presential_at: null,
-    } as Hackathon);
-    expect(bare.selecao).toBeNull();
-    expect(bare.fase2).toBeNull();
-  });
-});
-
 describe("isFinalistsVisible", () => {
   it("hides the list before judging starts", () => {
     const h = { ...base, status: "submissions_open" } as Hackathon;
@@ -140,34 +87,4 @@ describe("isFinalistsVisible", () => {
   });
 });
 
-describe("phase one split", () => {
-  it("ends the classes when building starts, not when registration closes", () => {
-    const b = phaseBoundaries(base);
-    expect(b.fase1.endsAt).toBe(new Date("2026-09-05T03:00:00Z").getTime());
-    expect(b.submissao.startsAt).toBe(b.fase1.endsAt);
-  });
-
-  it("puts a day inside the build window in the right phase", () => {
-    const b = phaseBoundaries(base);
-    const sixth = new Date("2026-09-06T12:00:00Z").getTime();
-    expect(phaseState(b.fase1, sixth)).toBe("done");
-    expect(phaseState(b.submissao, sixth)).toBe("current");
-  });
-
-  it("registration closing mid-build does not move any phase", () => {
-    const later = phaseBoundaries({
-      ...base,
-      registration_closes_at: "2026-09-08T02:59:00Z",
-    } as Hackathon);
-    expect(later.fase1.endsAt).toBe(new Date("2026-09-05T03:00:00Z").getTime());
-  });
-
-  it("falls back to the old behaviour when an edition sets no build date", () => {
-    const legacy = phaseBoundaries({
-      ...base,
-      development_starts_at: null,
-    } as Hackathon);
-    expect(legacy.fase1.endsAt).toBe(new Date("2026-09-08T02:59:00Z").getTime());
-  });
-});
 

@@ -1,19 +1,8 @@
+import { DAY_MONTH, TIME_HM, stripPeriods } from "./dates";
 import type { Hackathon } from "@/types/db";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
-
-const TIME = new Intl.DateTimeFormat("pt-BR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
 function d(iso: string): string {
-  return DAY.format(new Date(iso)).replace(/\./g, "");
+  return stripPeriods(DAY_MONTH.format(new Date(iso)));
 }
 
 export type Milestone = { key: string; label: string; at: string; detail: string };
@@ -38,7 +27,7 @@ export function buildMilestones(h: Hackathon): Milestone[] {
       key: "submission",
       label: "Submissão até",
       at: h.submission_deadline_at,
-      detail: `${d(h.submission_deadline_at)}, ${TIME.format(new Date(h.submission_deadline_at))}`,
+      detail: `${d(h.submission_deadline_at)}, ${TIME_HM.format(new Date(h.submission_deadline_at))}`,
     },
     h.finalists_announced_at && {
       key: "finalists",

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { sanitizeText, sanitizeUrl } from "@/lib/security";
 import type { SponsorTier } from "@/types/db";
@@ -50,7 +51,7 @@ export async function uploadSponsor(input: {
     .upload(path, file, { contentType: file.type, upsert: false });
   if (uploadError) return { ok: false, error: "Não foi possível enviar a imagem." };
 
-  const { data: last } = await supabase
+  const { data: last, error: lastError } = await supabase
     .from("hackathon_sponsors")
     .select("position")
     .eq("hackathon_id", gate.hackathon.id)
@@ -58,6 +59,10 @@ export async function uploadSponsor(input: {
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (lastError) {
+    logQueryError("admin.sponsors.lastPosition", lastError);
+    return { ok: false, error: "Não foi possível salvar. Tente novamente." };
+  }
 
   const position = ((last as { position: number } | null)?.position ?? -1) + 1;
 
@@ -83,12 +88,16 @@ export async function deleteSponsor(input: {
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
-  const { data: row } = await supabase
+  const { data: row, error: rowError } = await supabase
     .from("hackathon_sponsors")
     .select("image_path")
     .eq("id", input.sponsorId)
     .eq("hackathon_id", gate.hackathon.id)
     .maybeSingle();
+  if (rowError) {
+    logQueryError("admin.sponsors.deletePreflight", rowError);
+    return { ok: false, error: "Não foi possível remover. Tente novamente." };
+  }
 
   const { error } = await supabase
     .from("hackathon_sponsors")
@@ -116,21 +125,29 @@ export async function moveSponsor(input: {
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
-  const { data: me } = await supabase
+  const { data: me, error: meError } = await supabase
     .from("hackathon_sponsors")
     .select("id, tier, position")
     .eq("id", input.sponsorId)
     .eq("hackathon_id", gate.hackathon.id)
     .maybeSingle();
+  if (meError) {
+    logQueryError("admin.sponsors.moveSelf", meError);
+    return { ok: false, error: "Não foi possível reordenar. Tente novamente." };
+  }
   if (!me) return { ok: false, error: "Logo não encontrado." };
 
   const row = me as { id: string; tier: string; position: number };
-  const { data } = await supabase
+  const { data, error: siblingsError } = await supabase
     .from("hackathon_sponsors")
     .select("id, position")
     .eq("hackathon_id", gate.hackathon.id)
     .eq("tier", row.tier)
     .order("position", { ascending: true });
+  if (siblingsError) {
+    logQueryError("admin.sponsors.moveSiblings", siblingsError);
+    return { ok: false, error: "Não foi possível reordenar. Tente novamente." };
+  }
 
   const siblings = (data as Array<{ id: string; position: number }> | null) ?? [];
   const idx = siblings.findIndex((s) => s.id === row.id);

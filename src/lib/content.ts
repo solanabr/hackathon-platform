@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "./supabase/server";
+import { unwrap } from "./supabase/unwrap";
 import type { HackathonContent } from "@/types/db";
 
 const ID = /^[A-Za-z0-9_-]{11}$/;
@@ -32,43 +33,26 @@ export function extractYouTubeId(input: string | null): string | null {
   return null;
 }
 
-export async function listContents(hackathonId: string): Promise<HackathonContent[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("hackathon_contents")
-    .select("*")
-    .eq("hackathon_id", hackathonId)
-    .order("position", { ascending: true });
-  return (data as HackathonContent[] | null) ?? [];
-}
-
 export async function getContent(
   id: string,
   hackathonId: string,
 ): Promise<HackathonContent | null> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("hackathon_contents")
-    .select("*")
-    .eq("id", id)
-    .eq("hackathon_id", hackathonId)
-    .maybeSingle();
+  // null means "not published for you" (RLS) and renders 404; a failed query
+  // must not wear the same face.
+  const data = unwrap(
+    await supabase
+      .from("hackathon_contents")
+      .select("*")
+      .eq("id", id)
+      .eq("hackathon_id", hackathonId)
+      .maybeSingle(),
+    "content.getContent",
+  );
   return data as HackathonContent | null;
 }
 export function youtubeThumbnail(id: string): string {
   return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 }
 
-const THUMB_HOSTS = ["i.ytimg.com"];
-
-/** next/image throws at render on a host outside remotePatterns, so an
- *  unexpected thumbnail host must degrade to the kind tile, not 500 the page. */
-export function renderableThumbnail(src: string | null | undefined): src is string {
-  if (!src) return false;
-  try {
-    const { hostname } = new URL(src);
-    return hostname.endsWith(".supabase.co") || THUMB_HOSTS.includes(hostname);
-  } catch {
-    return false;
-  }
-}
+export { isAllowedImageHost as renderableThumbnail } from "./image-hosts";

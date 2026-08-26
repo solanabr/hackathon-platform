@@ -108,12 +108,16 @@ export async function setContentPublished(input: {
   const supabase = await createServiceRoleClient();
 
   if (input.published) {
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabase
       .from("hackathon_contents")
       .select("youtube_id, external_url")
       .eq("id", input.contentId)
       .eq("hackathon_id", gate.hackathon.id)
       .maybeSingle();
+    if (existingError) {
+      logQueryError("admin.content.publishGuard", existingError);
+      return { ok: false, error: "Não foi possível verificar o conteúdo. Tente novamente." };
+    }
     const row = existing as { youtube_id: string | null; external_url: string | null } | null;
     if (!row?.youtube_id && !row?.external_url) {
       return { ok: false, error: "Adicione um vídeo, arquivo ou link antes de publicar." };

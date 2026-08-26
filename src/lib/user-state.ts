@@ -30,10 +30,11 @@ async function latestLiveDashboard(
 ): Promise<string | null> {
   if (hackathonIds.length === 0) return null;
 
-  const { data: hackathons } = await supabase
+  const { data: hackathons, error: hackathonsError } = await supabase
     .from("hackathons")
     .select("slug, status, starts_at, submission_deadline_at, presential_at, voting_closes_at")
     .in("id", hackathonIds);
+  if (hackathonsError) logQueryError("userState.latestLiveDashboard", hackathonsError);
 
   const live = ((hackathons as Hackathon[] | null) ?? []).filter(
     (h) => h.status !== "draft" && editionStage(h) !== "finished",
@@ -81,10 +82,12 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   const fromMembership = await latestLiveDashboard(supabase, membershipIds);
   if (fromMembership) return fromMembership;
 
-  const { data: registrations } = await supabase
+  const { data: registrations, error: registrationsError } = await supabase
     .from("hackathon_registrations")
     .select("hackathon_id")
     .eq("user_id", userId);
+  if (registrationsError)
+    logQueryError("userState.liveDashboardPath.registrations", registrationsError);
 
   const registrationIds = Array.from(
     new Set(((registrations as { hackathon_id: string }[] | null) ?? []).map((r) => r.hackathon_id)),

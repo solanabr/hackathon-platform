@@ -7,6 +7,7 @@ import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { resolveSponsors, groupByTier } from "@/lib/sponsors";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
 import type { HackathonSponsor } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +27,15 @@ export default async function AdminSponsorsPage({
   // Service role: RLS hides sponsor rows of draft editions, but their admin
   // still needs to compose the page before publishing.
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
-    .from("hackathon_sponsors")
-    .select("*")
-    .eq("hackathon_id", hackathon.id)
-    .order("tier", { ascending: true })
-    .order("position", { ascending: true });
+  const data = unwrap(
+    await supabase
+      .from("hackathon_sponsors")
+      .select("*")
+      .eq("hackathon_id", hackathon.id)
+      .order("tier", { ascending: true })
+      .order("position", { ascending: true }),
+    "admin.sponsors.list",
+  );
   const grouped = groupByTier(await resolveSponsors((data as HackathonSponsor[] | null) ?? []));
 
   return (

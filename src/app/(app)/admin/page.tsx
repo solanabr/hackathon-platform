@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PillLink } from "@/components/ui/pill-link";
+import { EmptyState } from "@/components/ui/empty-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient, hasServiceRoleKey } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
@@ -91,18 +93,23 @@ export default async function AdminPage() {
                     <p className="font-mono text-sm tabular-nums text-muted">
                       {c?.registrations ?? 0} inscritos · {c?.teams ?? 0} times
                     </p>
-                    <Link
+                    <PillLink
                       href={`/admin/h/${h.slug}`}
-                      className="min-h-11 shrink-0 rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold text-ink transition-colors hover:bg-green-dark/10"
+                      className="inline-flex min-h-11 shrink-0 items-center"
                     >
                       Editar
-                    </Link>
+                    </PillLink>
                   </div>
                 </div>
               </Card>
             );
           })}
-          {hackathons.length === 0 && <p className="text-muted">Nenhum hackathon criado ainda.</p>}
+          {hackathons.length === 0 && (
+            <EmptyState
+              title="Nenhuma edição ainda"
+              description="Crie a primeira edição direto no banco — o formulário de criação ainda não existe."
+            />
+          )}
         </div>
       </div>
     </div>

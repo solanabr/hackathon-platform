@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { getHackathonBySlug } from "@/lib/hackathon";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { notifyFinalists as notifyFinalistsByEmail } from "@/lib/email";
 
@@ -12,33 +11,33 @@ export type NotifyResult =
   | { ok: true; sent: number; failed: number }
   | { ok: false; error: string };
 
-/**
- * Confirms the team belongs to the edition the slug names before letting an
- * admin action touch it, so a stray teamId can never mutate another edition.
- */
-async function requireTeamInEdition(
+// Every write filters on the gated hackathon as well as the row id, so a
+// scoped admin of one edition can never touch another's teams.
+
+async function updateTeam(
   slug: string,
   teamId: string,
-): Promise<
-  | { ok: true; supabase: Awaited<ReturnType<typeof createServiceRoleClient>> }
-  | { ok: false; error: string }
-> {
+  patch: { is_finalist: boolean } | { placement: number },
+): Promise<FinalistActionResult> {
+  const gate = await requireEditionAdminBySlug(slug);
+  if (!gate.ok) return { ok: false, error: "Sem permissão." };
+
   const supabase = await createServiceRoleClient();
-  const { data: team } = await supabase
+  const { data, error } = await supabase
     .from("teams")
-    .select("hackathon_id")
+    .update(patch)
     .eq("id", teamId)
-    .maybeSingle();
+    .eq("hackathon_id", gate.hackathon.id)
+    .select("id");
 
-  if (!team) return { ok: false, error: "Time não encontrado." };
-
-  const hackathon = await getHackathonBySlug(slug);
-  if (!hackathon) return { ok: false, error: "Edição não encontrada." };
-  if (team.hackathon_id !== hackathon.id) {
-    return { ok: false, error: "Time fora desta edição." };
+  if (error) return { ok: false, error: "Não foi possível salvar." };
+  if (!data || data.length === 0) {
+    return { ok: false, error: "Time não encontrado nesta edição." };
   }
 
-  return { ok: true, supabase };
+  revalidatePath(`/admin/h/${slug}/finalistas`);
+  revalidatePath(`/h/${slug}`);
+  return { ok: true };
 }
 
 export async function setFinalist(input: {
@@ -46,22 +45,7 @@ export async function setFinalist(input: {
   teamId: string;
   isFinalist: boolean;
 }): Promise<FinalistActionResult> {
-  const gate = await requireEditionAdminBySlug(input.slug);
-  if (!gate.ok) return { ok: false, error: "Sem permissão." };
-
-  const edition = await requireTeamInEdition(input.slug, input.teamId);
-  if (!edition.ok) return edition;
-
-  const { error } = await edition.supabase
-    .from("teams")
-    .update({ is_finalist: input.isFinalist })
-    .eq("id", input.teamId);
-
-  if (error) return { ok: false, error: "Não foi possível salvar." };
-
-  revalidatePath(`/admin/h/${input.slug}/finalistas`);
-  revalidatePath(`/h/${input.slug}`);
-  return { ok: true };
+  return updateTeam(input.slug, input.teamId, { is_finalist: input.isFinalist });
 }
 
 export async function setPlacement(input: {
@@ -69,26 +53,10 @@ export async function setPlacement(input: {
   teamId: string;
   placement: number;
 }): Promise<FinalistActionResult> {
-  const gate = await requireEditionAdminBySlug(input.slug);
-  if (!gate.ok) return { ok: false, error: "Sem permissão." };
-
   if (!Number.isInteger(input.placement) || input.placement < 1) {
     return { ok: false, error: "Colocação inválida." };
   }
-
-  const edition = await requireTeamInEdition(input.slug, input.teamId);
-  if (!edition.ok) return edition;
-
-  const { error } = await edition.supabase
-    .from("teams")
-    .update({ placement: input.placement })
-    .eq("id", input.teamId);
-
-  if (error) return { ok: false, error: "Não foi possível salvar." };
-
-  revalidatePath(`/admin/h/${input.slug}/finalistas`);
-  revalidatePath(`/h/${input.slug}`);
-  return { ok: true };
+  return updateTeam(input.slug, input.teamId, { placement: input.placement });
 }
 
 export async function notifyFinalists(input: {
@@ -98,14 +66,12 @@ export async function notifyFinalists(input: {
   const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
-  // Same posture as the other actions here: the slug decides the edition,
-  // the client-supplied id only has to agree with it.
-  const hackathon = await getHackathonBySlug(input.slug);
-  if (!hackathon || hackathon.id !== input.hackathonId) {
+  // The slug decides the edition; the client-supplied id only has to agree.
+  if (gate.hackathon.id !== input.hackathonId) {
     return { ok: false, error: "Edição não confere." };
   }
 
-  const result = await notifyFinalistsByEmail(hackathon.id);
+  const result = await notifyFinalistsByEmail(gate.hackathon.id);
   if (!result.ok) return result;
 
   revalidatePath(`/admin/h/${input.slug}/finalistas`);

@@ -18,26 +18,13 @@ import {
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  DAY_MONTH as DAY,
+  DAY_MONTH_LONG_TIME as FULL,
+  stripPeriods as clean,
+} from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
-
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  timeZone: "America/Sao_Paulo",
-});
-
-const FULL = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
-
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
 
 export default async function SubmissionPage({
   params,

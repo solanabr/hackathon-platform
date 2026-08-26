@@ -5,7 +5,7 @@ import { AssignmentGrid, type AssignmentProject } from "@/components/admin/assig
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { logQueryError } from "@/lib/supabase/unwrap";
+import { logQueryError, unwrap } from "@/lib/supabase/unwrap";
 
 export const dynamic = "force-dynamic";
 
@@ -42,11 +42,14 @@ export default async function AdminJudgesPage({
     name: r.users?.full_name ?? r.users?.email ?? "sem nome",
   }));
 
-  const { data: teamRows } = await supabase
-    .from("teams")
-    .select("id, name, submissions(id, project_name, status)")
-    .eq("hackathon_id", hackathon.id)
-    .order("name", { ascending: true });
+  const teamRows = unwrap(
+    await supabase
+      .from("teams")
+      .select("id, name, submissions(id, project_name, status)")
+      .eq("hackathon_id", hackathon.id)
+      .order("name", { ascending: true }),
+    "admin.judges.teams",
+  );
 
   type TeamRow = {
     id: string;
@@ -57,7 +60,7 @@ export default async function AdminJudgesPage({
       | null;
   };
 
-  const submitted = ((teamRows as TeamRow[] | null) ?? [])
+  const submitted = ((teamRows as unknown as TeamRow[] | null) ?? [])
     .map((t) => {
       const s = Array.isArray(t.submissions) ? t.submissions[0] : t.submissions;
       if (!s || s.status !== "submitted") return null;
@@ -65,16 +68,21 @@ export default async function AdminJudgesPage({
     })
     .filter((p): p is { submissionId: string; projectName: string; teamName: string } => p !== null);
 
-  const { data: assignmentRows } = submitted.length
-    ? await supabase
-        .from("submission_assignments")
-        .select("submission_id, judge_id")
-        .eq("round", round)
-        .in(
-          "submission_id",
-          submitted.map((p) => p.submissionId),
-        )
-    : { data: [] };
+  // A failed read here painted every project as unassigned, inviting the
+  // organizer to redo assignments that already exist.
+  const assignmentRows = submitted.length
+    ? unwrap(
+        await supabase
+          .from("submission_assignments")
+          .select("submission_id, judge_id")
+          .eq("round", round)
+          .in(
+            "submission_id",
+            submitted.map((p) => p.submissionId),
+          ),
+        "admin.judges.assignments",
+      )
+    : [];
 
   const bySubmission = new Map<string, string[]>();
   for (const row of (assignmentRows as Array<{ submission_id: string; judge_id: string }> | null) ??

@@ -19,12 +19,16 @@ async function gate(hackathonId: string, submissionId: string, round: RatingRoun
   if (!check.ok) return { ok: false as const, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
+  const { data, error: submissionError } = await supabase
     .from("submissions")
     .select("id, status, teams!inner(hackathon_id)")
     .eq("id", submissionId)
     .maybeSingle();
 
+  if (submissionError) {
+    logQueryError("judge.gate.submission", submissionError);
+    return { ok: false as const, error: "Não foi possível verificar o projeto. Tente novamente." };
+  }
   const row = data as { status: string; teams: { hackathon_id: string } | { hackathon_id: string }[] } | null;
   if (!row) return { ok: false as const, error: "Projeto não encontrado." };
 

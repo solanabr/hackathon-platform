@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
   --color-surface-deep: #efe0ba;
@@ -70,7 +71,7 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-semibold text-[#1b231d] transition-[background-color,transform] duration-200
+           font-semibold text-green-dark transition-[background-color,transform] duration-200
            hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }

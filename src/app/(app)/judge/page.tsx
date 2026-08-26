@@ -3,20 +3,17 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { StatusChip } from "@/components/ui/section-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_YEAR, stripPeriods } from "@/lib/dates";
 import { editionStage, ratingRound } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH_YEAR;
 
 const STAGE_LABEL: Record<string, string> = {
   upcoming: "ainda não começou",
@@ -112,9 +109,10 @@ export default async function JudgeIndexPage() {
         </header>
 
         {editions.length === 0 ? (
-          <Card className="p-7">
-            <p className="font-mono text-sm text-muted">Nenhuma edição atribuída a você ainda.</p>
-          </Card>
+          <EmptyState
+            title="Nenhuma edição atribuída"
+            description="Você ainda não foi indicado como jurado de nenhuma edição."
+          />
         ) : (
           <ul className="space-y-4">
             {editions.map((edition) => {
@@ -136,7 +134,7 @@ export default async function JudgeIndexPage() {
                         Pitch Day{" "}
                         <span className="font-mono tabular-nums">
                           {edition.presential_at
-                            ? DAY.format(new Date(edition.presential_at)).replace(/\./g, "")
+                            ? stripPeriods(DAY.format(new Date(edition.presential_at)))
                             : "a definir"}
                         </span>
                         {" · "}
@@ -160,7 +158,7 @@ export default async function JudgeIndexPage() {
                         className={
                           done
                             ? "btn-secondary min-h-11 px-5 py-2 text-sm"
-                            : "btn-primary min-h-11 px-5 py-2 text-sm text-[#1b231d]"
+                            : "btn-primary min-h-11 px-5 py-2 text-sm text-green-dark"
                         }
                       >
                         {done ? "Revisar notas" : "Avaliar projetos"}

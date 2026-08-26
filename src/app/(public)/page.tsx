@@ -4,18 +4,14 @@ import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackatho
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
+import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
-const RANGE = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
-const CLOSES = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" });
-const TICKER_DAY = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
-const TICKER_TIME = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
-
 function clean(s: string): string {
-  return s.replace(/\./g, "").toUpperCase();
+  return stripPeriods(s).toUpperCase();
 }
 
 type CardData = {
@@ -81,10 +77,10 @@ export default async function HomePage({
       startDay: Number(new Intl.DateTimeFormat("pt-BR", { day: "numeric", timeZone: "America/Sao_Paulo" }).format(start)),
       startMonth:
         MONTHS[Number(new Intl.DateTimeFormat("en-US", { month: "numeric", timeZone: "America/Sao_Paulo" }).format(start)) - 1],
-      dateRange: `${clean(RANGE.format(start))} A ${clean(RANGE.format(end))}`,
+      dateRange: `${clean(DAY_MONTH.format(start))} A ${clean(DAY_MONTH.format(end))}`,
       locationCity: h.location_city,
       prizeSummary: h.prize_summary,
-      registrationClosesLabel: h.registration_closes_at ? CLOSES.format(new Date(h.registration_closes_at)) : null,
+      registrationClosesLabel: h.registration_closes_at ? DAY_NUMERIC.format(new Date(h.registration_closes_at)) : null,
     };
   });
 
@@ -198,11 +194,11 @@ export default async function HomePage({
                     href={opt.key === "todos" ? "/" : `/?f=${opt.key}`}
                     aria-current={active ? "page" : undefined}
                     className={`whitespace-nowrap rounded-full border-2 border-[#1b231d] px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb] ${
-                      active ? "bg-[#1b231d] text-[#f7eacb]" : "text-[#1b231d] hover:bg-[#1b231d]/10"
+                      active ? "bg-[#1b231d] text-[#f7eacb]" : "text-green-dark hover:bg-[#1b231d]/10"
                     }`}
                   >
                     {opt.label}
-                    <span className={`ml-1.5 tabular-nums ${active ? "text-[#ffd23f]" : "text-[#1b231d]/50"}`}>{count}</span>
+                    <span className={`ml-1.5 tabular-nums ${active ? "text-[#ffd23f]" : "text-green-dark/50"}`}>{count}</span>
                   </Link>
                 );
               })}
@@ -210,7 +206,7 @@ export default async function HomePage({
           </div>
 
           {filtered.length === 0 ? (
-            <p className="mt-10 rounded-2xl border-2 border-dashed border-[#1b231d]/30 p-10 text-center text-[#1b231d]/60">
+            <p className="mt-10 rounded-2xl border-2 border-dashed border-[#1b231d]/30 p-10 text-center text-green-dark/60">
               Nenhuma edição aqui ainda.
             </p>
           ) : (
@@ -219,7 +215,7 @@ export default async function HomePage({
                 <li key={e.slug} className="w-[85%] min-w-0 shrink-0 snap-center sm:w-auto sm:shrink">
                   <Link
                     href={`/h/${e.slug}`}
-                    className="group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-[6px_6px_0_#1b231d] transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[9px_9px_0_#1b231d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
+                    className="group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-sticker transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-sticker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]"
                   >
                     <div className="relative aspect-video overflow-hidden border-b-2 border-[#1b231d] bg-[#1b231d]">
                       {e.coverUrl ? (
@@ -239,7 +235,7 @@ export default async function HomePage({
                         />
                       )}
                       {e.registrationOpen && (
-                        <span className="absolute right-4 top-4 rounded-full bg-[#ffd23f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#1b231d]">
+                        <span className="absolute right-4 top-4 rounded-full bg-[#ffd23f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-green-dark">
                           Inscrições abertas
                         </span>
                       )}
@@ -254,7 +250,7 @@ export default async function HomePage({
                       </div>
                       <div className="min-w-0 flex-1 border-l-2 border-[#1b231d]/10 pl-4">
                         <h3 className="truncate font-heading text-base font-bold">{e.name}</h3>
-                        <p className="mt-0.5 truncate text-xs font-semibold text-[#1b231d]/60">
+                        <p className="mt-0.5 truncate text-xs font-semibold text-green-dark/60">
                           {e.dateRange}
                           {e.locationCity ? ` · ${e.locationCity}` : ""}
                         </p>
@@ -283,7 +279,7 @@ export default async function HomePage({
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
               Como funciona
             </h2>
-            <p className="mt-4 max-w-sm text-pretty leading-relaxed text-[#1b231d]/70">
+            <p className="mt-4 max-w-sm text-pretty leading-relaxed text-green-dark/70">
               Três passos entre o cadastro e o palco. Todo o resto acontece na plataforma.
             </p>
           </div>
@@ -301,7 +297,7 @@ export default async function HomePage({
                 </span>
                 <div className="min-w-0 pt-1">
                   <h3 className="font-heading text-2xl font-bold">{step.title}</h3>
-                  <p className="mt-2 max-w-lg text-pretty leading-relaxed text-[#1b231d]/70">{step.body}</p>
+                  <p className="mt-2 max-w-lg text-pretty leading-relaxed text-green-dark/70">{step.body}</p>
                 </div>
               </li>
             ))}
@@ -341,7 +337,7 @@ export default async function HomePage({
             <div className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
               <a
                 href="#edicoes"
-                className="rounded-full bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-[6px_6px_0_rgba(0,0,0,0.35)] transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+                className="rounded-full bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
               >
                 Garantir minha vaga
               </a>

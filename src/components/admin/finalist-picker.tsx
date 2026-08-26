@@ -96,7 +96,7 @@ export function FinalistPicker({
           type="button"
           disabled={pending || pendingNotify === 0}
           onClick={notify}
-          className="btn-primary min-h-11 px-5 py-2 text-sm text-[#1b231d] disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-primary min-h-11 px-5 py-2 text-sm text-green-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "Notificando..." : "Notificar finalistas"}
         </button>

@@ -59,13 +59,17 @@ export async function addMemberByEmail(input: {
 
   const admin = await createServiceRoleClient();
 
-  const { data: leaderCheck } = await admin
+  const { data: leaderCheck, error: leaderError } = await admin
     .from("team_members")
     .select("is_leader, status, hackathon_id, team:teams(locked)")
     .eq("team_id", input.teamId)
     .eq("user_id", state.userId)
     .maybeSingle();
 
+  if (leaderError) {
+    logQueryError("team.addMemberByEmail.leaderCheck", leaderError);
+    return { ok: false, error: "Não foi possível validar o time. Tente novamente." };
+  }
   if (!leaderCheck?.is_leader || leaderCheck.status !== "accepted") {
     return { ok: false, error: "Apenas o líder pode adicionar integrantes." };
   }
@@ -159,11 +163,14 @@ export async function addMemberByEmail(input: {
   // The invite is only useful if the person knows it happened, and the ghost row
   // only resolves when they sign up with this exact address. A failed send must
   // not undo the membership, so it is reported, not thrown.
-  const { data: context } = await admin
+  const { data: context, error: contextError } = await admin
     .from("teams")
     .select("name, hackathons(name, slug)")
     .eq("id", input.teamId)
     .maybeSingle();
+  // Email context only: the membership already exists, so a failed read just
+  // skips the notification (emailSent: false says so).
+  if (contextError) logQueryError("team.addMemberByEmail.emailContext", contextError);
 
   const teamRow = context as
     | { name: string; hackathons: { name: string; slug: string } | { name: string; slug: string }[] | null }

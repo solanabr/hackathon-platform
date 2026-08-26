@@ -37,7 +37,7 @@ Cursor + Apollo.
 
 ## Database
 
-Head **00035**; repo and DB in step; every migration live-verified.
+Head was **00035** at this snapshot (now 00047 — invite consent, validated auto-lock, row-lock races); repo and DB in step; every migration live-verified.
 Since the last handoff: 00025 (status-guard trigger + handle_new_user guards),
 00026 (search_path pin), 00027 (avatars bucket), 00028 (regulamento prizes,
 nullable finalists_count), 00029 (two-member minimum in submit_team),
@@ -89,5 +89,5 @@ before `grantRole` can find them. Names: Cokinha, Marcelo, Apollo, Ronaldo
   shapes actually overflow.
 - Tailwind `text-muted`/`text-ink` on dark fills are theme-relative: after a
   flip, audit every dark card for dark-on-dark.
-- `prize_summary` splits on `·` — double separators create empty entries;
-  always `.filter(Boolean)`.
+- (retired) `prize_summary` parsing is gone — prizes are plain markdown in
+  `page_md`; the column only feeds the hero prize chip as literal text.

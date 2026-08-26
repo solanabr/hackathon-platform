@@ -8,19 +8,13 @@ import { Avatar } from "@/components/ui/avatar";
 import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_LONG, stripPeriods } from "@/lib/dates";
 import type { PublicSubmission, PublicTeamMember } from "@/types/public";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  timeZone: "America/Sao_Paulo",
-});
-
-function clean(s: string): string {
-  return s.replace(/\./g, "");
-}
+const DAY = DAY_MONTH_LONG;
+const clean = stripPeriods;
 
 export default async function ProjectsGalleryPage({
   params,
@@ -50,13 +44,14 @@ export default async function ProjectsGalleryPage({
   // Member avatars come from the public_team_members view, keyed by team.
   // A missing view or an empty team degrades to no stack, not a broken card.
   const teamIds = [...new Set(projects.map((p) => p.team_id))];
-  const { data: teamMembers } =
+  const { data: teamMembers, error: membersError } =
     teamIds.length > 0
       ? await supabase
           .from("public_team_members")
           .select("team_id, user_id, full_name, avatar_url")
           .in("team_id", teamIds)
-      : { data: null };
+      : { data: null, error: null };
+  if (membersError) logQueryError("public.gallery.members", membersError);
 
   const membersByTeam = new Map<string, PublicTeamMember[]>();
   for (const m of (teamMembers as PublicTeamMember[] | null) ?? []) {

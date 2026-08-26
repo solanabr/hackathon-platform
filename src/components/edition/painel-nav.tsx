@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PillLink } from "@/components/ui/pill-link";
 
 const TABS = [
   { path: "dashboard", label: "Visão geral" },
@@ -23,16 +23,9 @@ export function PainelNav({ slug }: { slug: string }) {
         const href = `/h/${slug}/${tab.path}`;
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
-          <Link
-            key={tab.path}
-            href={href}
-            aria-current={active ? "page" : undefined}
-            className={`whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
-              active ? "bg-green-dark text-surface" : "text-ink hover:bg-green-dark/10"
-            }`}
-          >
+          <PillLink key={tab.path} href={href} active={active}>
             {tab.label}
-          </Link>
+          </PillLink>
         );
       })}
     </nav>

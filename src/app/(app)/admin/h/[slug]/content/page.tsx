@@ -1,11 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { ContentRow, type AdminContentItem } from "@/components/admin/content-row";
 import { NewContentForm } from "@/components/admin/new-content-form";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
 import type { HackathonContent } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -23,11 +25,14 @@ export default async function AdminContentPage({
   if (!hackathon) notFound();
 
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
-    .from("hackathon_contents")
-    .select("*")
-    .eq("hackathon_id", hackathon.id)
-    .order("position", { ascending: true });
+  const data = unwrap(
+    await supabase
+      .from("hackathon_contents")
+      .select("*")
+      .eq("hackathon_id", hackathon.id)
+      .order("position", { ascending: true }),
+    "admin.content.list",
+  );
 
   const all = (data as HackathonContent[] | null) ?? [];
   const contents = all.filter((c) => !c.deleted_at);
@@ -70,7 +75,10 @@ export default async function AdminContentPage({
         <NewContentForm hackathonId={hackathon.id} slug={slug} />
 
         {items.length === 0 ? (
-          <p className="font-mono text-sm text-muted">Nenhum conteúdo cadastrado para esta edição.</p>
+          <EmptyState
+            title="Nenhum conteúdo ainda"
+            description="Adicione o primeiro item da trilha desta edição."
+          />
         ) : (
           <ul className="space-y-4">
             {items.map((item, i) => (

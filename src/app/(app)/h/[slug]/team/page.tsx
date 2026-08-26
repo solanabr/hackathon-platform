@@ -66,7 +66,7 @@ export default async function TeamPage({
     }
     return (
       <div className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="relative mx-auto max-w-xl overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-10 text-center shadow-[6px_6px_0_rgba(27,35,29,0.18)]">
+        <div className="relative mx-auto max-w-xl overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-10 text-center shadow-sticker">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 opacity-[0.12]">
             <Image
               src="/brand/stbr/elements/morth-12.svg"
@@ -107,7 +107,7 @@ export default async function TeamPage({
           <PainelNav slug={slug} />
         </div>
 
-        <header className="rounded-3xl border-2 border-green-dark bg-surface-raised p-7 shadow-[6px_6px_0_rgba(27,35,29,0.18)]">
+        <header className="rounded-3xl border-2 border-green-dark bg-surface-raised p-7 shadow-sticker">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
@@ -164,7 +164,7 @@ export default async function TeamPage({
         </Card>
 
         {pendingMembers.length > 0 && (
-          <div className="rounded-2xl border-2 border-green-dark bg-emerald/10 p-6 shadow-[6px_6px_0_rgba(27,35,29,0.18)]">
+          <div className="rounded-2xl border-2 border-green-dark bg-emerald/10 p-6 shadow-sticker">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Convites pendentes
             </p>

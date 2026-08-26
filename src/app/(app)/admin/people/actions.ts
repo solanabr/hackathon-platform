@@ -42,7 +42,11 @@ export async function grantRole(
   existingQuery =
     scope === null ? existingQuery.is("hackathon_id", null) : existingQuery.eq("hackathon_id", scope);
 
-  const { data: existing } = await existingQuery.maybeSingle();
+  const { data: existing, error: existingError } = await existingQuery.maybeSingle();
+  if (existingError) {
+    logQueryError("people.grantRole.existing", existingError);
+    return { error: "Não foi possível verificar os papéis. Tente novamente." };
+  }
   if (existing) {
     return { error: "Essa pessoa já tem esse papel." };
   }

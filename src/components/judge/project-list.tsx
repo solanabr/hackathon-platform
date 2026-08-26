@@ -74,7 +74,7 @@ export function JudgeProjectList({
               aria-pressed={filter === key}
               className={`min-h-11 rounded-full px-4 text-sm font-semibold transition-colors ${
                 filter === key
-                  ? "bg-yellow text-[#1b231d]"
+                  ? "bg-yellow text-green-dark"
                   : "text-muted hover:bg-green-dark/10 hover:text-ink"
               }`}
             >

@@ -6,15 +6,11 @@ import { requireJudge, resolveRoleState } from "@/lib/roles";
 import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
+import { DAY_MONTH_YEAR, stripPeriods } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
-const DAY = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Sao_Paulo",
-});
+const DAY = DAY_MONTH_YEAR;
 
 type TeamRow = {
   id: string;
@@ -206,7 +202,7 @@ export default async function JudgeEditionPage({
             <p className="mt-1 text-sm text-muted">
               Avaliações até{" "}
               <span className="font-mono tabular-nums">
-                {DAY.format(new Date(roundDeadline)).replace(/\./g, "")}
+                {stripPeriods(DAY.format(new Date(roundDeadline)))}
               </span>
               .
             </p>
