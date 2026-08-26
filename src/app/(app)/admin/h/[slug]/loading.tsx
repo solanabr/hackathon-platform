@@ -1,5 +1,5 @@
-import { SectionSkeleton } from "@/components/ui/section-skeleton";
+import Loading from "@/components/ui/loading";
 
 export default function AdminSectionLoading() {
-  return <SectionSkeleton />;
+  return <Loading className="min-h-[70vh]" />;
 }
