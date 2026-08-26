@@ -4,11 +4,30 @@ import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { extractYouTubeId } from "@/lib/content";
-import { sanitizeText } from "@/lib/security";
+import { sanitizeText, sanitizeUrl } from "@/lib/security";
 import { CONTENT_KINDS } from "@/lib/content-fields";
 import { fromLocalInput } from "@/lib/edition-fields";
 
 export type ContentActionResult = { ok: true } | { ok: false; error: string };
+
+export type ContentAttachmentInput = { type: "video" | "link"; url: string };
+
+function attachmentPatch(
+  attachment: ContentAttachmentInput,
+): { ok: true; patch: { youtube_id: string | null; external_url: string | null } } | { ok: false; error: string } {
+  const raw = attachment.url.trim();
+  if (!raw) return { ok: true, patch: { youtube_id: null, external_url: null } };
+
+  if (attachment.type === "video") {
+    const youtubeId = extractYouTubeId(raw);
+    if (!youtubeId) return { ok: false, error: "Link do YouTube inválido." };
+    return { ok: true, patch: { youtube_id: youtubeId, external_url: null } };
+  }
+
+  const url = sanitizeUrl(raw);
+  if (!url) return { ok: false, error: "Link inválido. Use um endereço https://... completo." };
+  return { ok: true, patch: { youtube_id: null, external_url: url } };
+}
 
 export async function uploadContentFile(input: {
   contentId: string;
@@ -36,9 +55,10 @@ export async function uploadContentFile(input: {
 
   const { data } = supabase.storage.from("hackathon-files").getPublicUrl(path);
 
+  // One attachment per item: a file replaces whatever video was there.
   const { error } = await supabase
     .from("hackathon_contents")
-    .update({ external_url: data.publicUrl })
+    .update({ external_url: data.publicUrl, youtube_id: null })
     .eq("id", input.contentId)
     .eq("hackathon_id", gate.hackathon.id);
 
@@ -49,40 +69,61 @@ export async function uploadContentFile(input: {
   return { ok: true };
 }
 
-export async function updateContent(input: {
+export async function updateContentAttachment(input: {
   contentId: string;
   slug: string;
-  videoUrl: string;
+  attachment: ContentAttachmentInput;
+}): Promise<ContentActionResult> {
+  const gate = await requireEditionAdminBySlug(input.slug);
+  if (!gate.ok) return { ok: false, error: "Sem permissão." };
+
+  const parsed = attachmentPatch(input.attachment);
+  if (!parsed.ok) return { ok: false, error: parsed.error };
+
+  // Removing the only attachment unpublishes: the participant card would
+  // otherwise open onto nothing.
+  const cleared = !parsed.patch.youtube_id && !parsed.patch.external_url;
+
+  const supabase = await createServiceRoleClient();
+  const { error } = await supabase
+    .from("hackathon_contents")
+    .update(cleared ? { ...parsed.patch, published: false } : parsed.patch)
+    .eq("id", input.contentId)
+    .eq("hackathon_id", gate.hackathon.id);
+
+  if (error) return { ok: false, error: "Não foi possível salvar." };
+
+  revalidatePath(`/admin/h/${input.slug}/content`);
+  revalidatePath(`/h/${input.slug}/content`);
+  return { ok: true };
+}
+
+export async function setContentPublished(input: {
+  contentId: string;
+  slug: string;
   published: boolean;
 }): Promise<ContentActionResult> {
   const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
-  const raw = input.videoUrl.trim();
-  const youtubeId = raw ? extractYouTubeId(raw) : null;
-
-  if (raw && !youtubeId) {
-    return { ok: false, error: "Link do YouTube inválido." };
-  }
-
-  const supabaseCheck = await createServiceRoleClient();
-  const { data: existing } = await supabaseCheck
-    .from("hackathon_contents")
-    .select("external_url")
-    .eq("id", input.contentId)
-    .eq("hackathon_id", gate.hackathon.id)
-    .maybeSingle();
-
-  const hasFile = Boolean((existing as { external_url: string | null } | null)?.external_url);
-
-  if (input.published && !youtubeId && !hasFile) {
-    return { ok: false, error: "Adicione um vídeo ou um arquivo antes de publicar." };
-  }
-
   const supabase = await createServiceRoleClient();
+
+  if (input.published) {
+    const { data: existing } = await supabase
+      .from("hackathon_contents")
+      .select("youtube_id, external_url")
+      .eq("id", input.contentId)
+      .eq("hackathon_id", gate.hackathon.id)
+      .maybeSingle();
+    const row = existing as { youtube_id: string | null; external_url: string | null } | null;
+    if (!row?.youtube_id && !row?.external_url) {
+      return { ok: false, error: "Adicione um vídeo, arquivo ou link antes de publicar." };
+    }
+  }
+
   const { error } = await supabase
     .from("hackathon_contents")
-    .update({ youtube_id: youtubeId, published: input.published })
+    .update({ published: input.published })
     .eq("id", input.contentId)
     .eq("hackathon_id", gate.hackathon.id);
 
@@ -148,12 +189,18 @@ export async function createContent(input: {
   hackathonId: string;
   slug: string;
   details: DetailsInput;
-}): Promise<ContentActionResult> {
+  attachment?: ContentAttachmentInput;
+}): Promise<{ ok: true; contentId: string } | { ok: false; error: string }> {
   const gate = await requireEditionAdminBySlug(input.slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const parsed = toRow(input.details);
   if (!parsed.ok) return { ok: false, error: parsed.error };
+
+  const attachment = input.attachment
+    ? attachmentPatch(input.attachment)
+    : ({ ok: true, patch: {} } as const);
+  if (!attachment.ok) return { ok: false, error: attachment.error };
 
   const supabase = await createServiceRoleClient();
   const { data: last } = await supabase
@@ -167,15 +214,22 @@ export async function createContent(input: {
 
   const nextPosition = ((last as { position: number } | null)?.position ?? -1) + 1;
 
-  const { error } = await supabase
+  const { data: created, error } = await supabase
     .from("hackathon_contents")
-    .insert({ ...parsed.row, hackathon_id: gate.hackathon.id, position: nextPosition });
+    .insert({
+      ...parsed.row,
+      ...attachment.patch,
+      hackathon_id: gate.hackathon.id,
+      position: nextPosition,
+    })
+    .select("id")
+    .single();
 
-  if (error) return { ok: false, error: "Não foi possível criar." };
+  if (error || !created) return { ok: false, error: "Não foi possível criar." };
 
   revalidatePath(`/admin/h/${input.slug}/content`);
   revalidatePath(`/h/${input.slug}/content`);
-  return { ok: true };
+  return { ok: true, contentId: (created as { id: string }).id };
 }
 
 export async function updateContentDetails(input: {

@@ -34,6 +34,33 @@ export const CONTENT_FIELDS: ContentField[] = [
   { key: "description", label: "Descrição", kind: "textarea" },
 ];
 
+export type AttachmentType = "video" | "file" | "link";
+
+/** Uploaded files land in the hackathon-files bucket; anything else in
+ *  external_url is a plain link the organizer pasted. */
+export function isUploadedFileUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return u.hostname.endsWith(".supabase.co") && u.pathname.includes("/hackathon-files/");
+  } catch {
+    return false;
+  }
+}
+
+export function attachmentTypeOf(row: {
+  youtube_id?: string | null;
+  youtubeId?: string | null;
+  external_url?: string | null;
+  fileUrl?: string | null;
+}): AttachmentType | null {
+  const youtube = row.youtube_id ?? row.youtubeId ?? null;
+  const external = row.external_url ?? row.fileUrl ?? null;
+  if (youtube) return "video";
+  if (external) return isUploadedFileUrl(external) ? "file" : "link";
+  return null;
+}
+
 export type ContentDraft = {
   kind: string;
   title: string;

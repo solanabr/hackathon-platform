@@ -5,14 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusChip } from "@/components/ui/section-card";
 import { ContentFieldsForm } from "@/components/admin/content-fields-form";
-import { draftFrom, type ContentDraft } from "@/lib/content-fields";
 import {
-  updateContent,
+  attachmentTypeOf,
+  draftFrom,
+  type AttachmentType,
+  type ContentDraft,
+} from "@/lib/content-fields";
+import {
+  updateContentAttachment,
+  setContentPublished,
   updateContentDetails,
   deleteContent,
   moveContent,
   uploadContentFile,
 } from "@/app/(app)/admin/h/[slug]/content/actions";
+
+export const ATTACHMENT_OPTIONS: Array<{ value: AttachmentType; label: string }> = [
+  { value: "video", label: "Vídeo" },
+  { value: "file", label: "Arquivo" },
+  { value: "link", label: "Link" },
+];
 
 export type AdminContentItem = {
   id: string;
@@ -42,8 +54,14 @@ export function ContentRow({
   isFirst: boolean;
   isLast: boolean;
 }) {
+  const [attachType, setAttachType] = useState<AttachmentType>(
+    () => attachmentTypeOf(item) ?? "video",
+  );
   const [videoUrl, setVideoUrl] = useState(
     item.youtubeId ? `https://youtu.be/${item.youtubeId}` : "",
+  );
+  const [linkUrl, setLinkUrl] = useState(
+    item.fileUrl && attachmentTypeOf(item) === "link" ? item.fileUrl : "",
   );
   const [published, setPublished] = useState(item.published);
   const [error, setError] = useState<string | null>(null);
@@ -96,18 +114,32 @@ export function ContentRow({
     });
   }
 
-  function save(nextPublished: boolean) {
+  function saveAttachment() {
     setError(null);
     setSaved(false);
     startTransition(async () => {
-      const result = await updateContent({
+      const result = await updateContentAttachment({
         contentId: item.id,
         slug,
-        videoUrl,
-        published: nextPublished,
+        attachment:
+          attachType === "video" ? { type: "video", url: videoUrl } : { type: "link", url: linkUrl },
+      });
+      if (result.ok) setSaved(true);
+      else setError(result.error);
+    });
+  }
+
+  function togglePublished() {
+    setError(null);
+    setSaved(false);
+    startTransition(async () => {
+      const result = await setContentPublished({
+        contentId: item.id,
+        slug,
+        published: !published,
       });
       if (result.ok) {
-        setPublished(nextPublished);
+        setPublished(!published);
         setSaved(true);
       } else {
         setError(result.error);
@@ -196,80 +228,145 @@ export function ContentRow({
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap items-end gap-3">
-        <div className="min-w-0 flex-1">
-          <label
-            htmlFor={`video-${item.id}`}
-            className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
-          >
-            Link do YouTube
-          </label>
-          <Input
-            id={`video-${item.id}`}
-            value={videoUrl}
-            spellCheck={false}
-            placeholder="https://youtu.be/..."
-            onChange={(e) => {
-              setVideoUrl(e.target.value);
-              setSaved(false);
-            }}
-          />
+      <div className="mt-4 border-t-2 border-green-dark/10 pt-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+            Anexo
+          </p>
+          <div role="group" aria-label="Tipo de anexo" className="flex gap-1.5">
+            {ATTACHMENT_OPTIONS.map((o) => {
+              const active = attachType === o.value;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setAttachType(o.value)}
+                  className={`rounded-full border-2 px-3 py-1 text-xs font-bold transition-colors ${
+                    active
+                      ? "border-green-dark bg-green-dark text-surface"
+                      : "border-green-dark/20 text-muted hover:border-green-dark hover:text-ink"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={pending}
-          onClick={() => save(published)}
-          className="px-5 py-2 text-sm"
-        >
-          {pending ? "Salvando..." : "Salvar"}
-        </Button>
-
-        <Button
-          type="button"
-          variant={published ? "ghost" : "primary"}
-          disabled={pending}
-          onClick={() => save(!published)}
-          className="px-5 py-2 text-sm"
-        >
-          {published ? "Despublicar" : "Publicar"}
-        </Button>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3 border-t-2 border-green-dark/10 pt-4">
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) upload(file);
-            e.target.value = "";
-          }}
-        />
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={pending}
-          onClick={() => fileRef.current?.click()}
-          className="px-5 py-2 text-sm"
-        >
-          {item.fileUrl ? "Trocar arquivo" : "Enviar arquivo"}
-        </Button>
-        {item.fileUrl ? (
-          <a
-            href={item.fileUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-semibold text-emerald underline-offset-4 hover:underline"
-          >
-            Ver arquivo atual
-          </a>
-        ) : (
-          <p className="text-xs text-muted">PDF, imagem, PPTX ou DOCX, até 25 MB.</p>
+        {attachType === "video" && (
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="min-w-0 flex-1">
+              <label
+                htmlFor={`video-${item.id}`}
+                className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
+              >
+                Link do YouTube
+              </label>
+              <Input
+                id={`video-${item.id}`}
+                value={videoUrl}
+                spellCheck={false}
+                placeholder="https://youtu.be/..."
+                onChange={(e) => {
+                  setVideoUrl(e.target.value);
+                  setSaved(false);
+                }}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending}
+              onClick={saveAttachment}
+              className="px-5 py-2 text-sm"
+            >
+              {pending ? "Salvando..." : "Salvar vídeo"}
+            </Button>
+          </div>
         )}
+
+        {attachType === "file" && (
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) upload(file);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending}
+              onClick={() => fileRef.current?.click()}
+              className="px-5 py-2 text-sm"
+            >
+              {item.fileUrl ? "Trocar arquivo" : "Enviar arquivo"}
+            </Button>
+            {item.fileUrl ? (
+              <a
+                href={item.fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-semibold text-emerald underline-offset-4 hover:underline"
+              >
+                Ver arquivo atual
+              </a>
+            ) : (
+              <p className="text-xs text-muted">PDF, imagem, PPTX ou DOCX, até 25 MB.</p>
+            )}
+          </div>
+        )}
+
+        {attachType === "link" && (
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="min-w-0 flex-1">
+              <label
+                htmlFor={`link-${item.id}`}
+                className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
+              >
+                Link externo
+              </label>
+              <Input
+                id={`link-${item.id}`}
+                value={linkUrl}
+                spellCheck={false}
+                placeholder="https://drive.google.com/..."
+                onChange={(e) => {
+                  setLinkUrl(e.target.value);
+                  setSaved(false);
+                }}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending}
+              onClick={saveAttachment}
+              className="px-5 py-2 text-sm"
+            >
+              {pending ? "Salvando..." : "Salvar link"}
+            </Button>
+          </div>
+        )}
+
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant={published ? "ghost" : "primary"}
+            disabled={pending}
+            onClick={togglePublished}
+            className="px-5 py-2 text-sm"
+          >
+            {published ? "Despublicar" : "Publicar"}
+          </Button>
+        </div>
       </div>
 
       {error && <p className="mt-3 text-sm font-semibold text-red-400">{error}</p>}
