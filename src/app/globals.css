@@ -210,18 +210,11 @@
   color: transparent;
 }
 
-@keyframes marqueeX {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-.animate-marquee { animation: marqueeX 30s linear infinite; }
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  .animate-marquee,
   .animate-float-a,
   .animate-float-b,
   .animate-float-c { animation: none; }

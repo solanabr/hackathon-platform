@@ -3,7 +3,6 @@ import Image from "next/image";
 import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Hackathon } from "@/types/db";
-import { TickerStrip } from "@/components/layout/ticker-strip";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 
 export const dynamic = "force-dynamic";
@@ -95,15 +94,6 @@ export default async function HomePage({
   for (const e of editions) counts[e.stage] = (counts[e.stage] ?? 0) + 1;
   const filtered = filter === "todos" ? editions : editions.filter((e) => e.stage === filter);
 
-  // The hub lists every edition, so the strip stays platform-level: no team
-  // sizes or Pitch Day, which are one regulamento's rules.
-  const tickerItems = [
-    "Construa no ecossistema Solana",
-    live ? "Inscrições abertas" : "Novas edições em breve",
-    "Do primeiro commit ao demo",
-    "Projetos reais, prêmios reais",
-  ];
-
   const deck: DeckCard[] = editions.slice(0, 3).map((e) => ({
     key: e.slug,
     href: `/h/${e.slug}`,
@@ -185,8 +175,6 @@ export default async function HomePage({
             <HeroDeck cards={deck} />
           </div>
         </div>
-
-        <TickerStrip items={tickerItems} />
       </section>
 
 
