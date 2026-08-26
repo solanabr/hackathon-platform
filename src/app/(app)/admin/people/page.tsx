@@ -18,16 +18,19 @@ export default async function PeoplePage() {
           .from("platform_roles")
           // platform_roles has two FKs to users (user_id, granted_by), so a
           // bare users(email) embed is ambiguous and PostgREST refuses it.
-          .select("id, role, hackathon_id, users!platform_roles_user_id_fkey(email), hackathons(name)")
+          .select(
+            "id, role, hackathon_id, users!platform_roles_user_id_fkey(email, full_name, avatar_url), hackathons(name)",
+          )
           .order("granted_at", { ascending: true }),
         supabase.from("hackathons").select("id, name").order("starts_at", { ascending: false }),
       ])
     : [{ data: null }, { data: null }];
 
+  type JoinedUser = { email: string; full_name: string | null; avatar_url: string | null };
   type Joined = {
     id: string;
     role: "admin" | "judge";
-    users: { email: string } | { email: string }[] | null;
+    users: JoinedUser | JoinedUser[] | null;
     hackathons: { name: string } | { name: string }[] | null;
   };
 
@@ -38,6 +41,8 @@ export default async function PeoplePage() {
       id: r.id,
       role: r.role,
       email: user?.email ?? "-",
+      name: user?.full_name ?? null,
+      avatarUrl: user?.avatar_url ?? null,
       hackathonName: hackathon?.name ?? null,
     };
   });
