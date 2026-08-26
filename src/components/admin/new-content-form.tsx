@@ -3,7 +3,6 @@
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ContentFieldsForm } from "@/components/admin/content-fields-form";
 import { ATTACHMENT_OPTIONS } from "@/components/admin/content-row";
 import { emptyDraft, type AttachmentType, type ContentDraft } from "@/lib/content-fields";
 import { createContent, uploadContentFile } from "@/app/(app)/admin/h/[slug]/content/actions";
@@ -72,8 +71,36 @@ export function NewContentForm({ hackathonId, slug }: { hackathonId: string; slu
         Entra como rascunho no fim da lista. Cada item leva um anexo: vídeo, arquivo ou link.
       </p>
 
-      <div className="mt-5">
-        <ContentFieldsForm draft={draft} onChange={setDraft} idPrefix="new" />
+      <div className="mt-5 space-y-4">
+        <div>
+          <label
+            htmlFor="new-title"
+            className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
+          >
+            Título
+          </label>
+          <Input
+            id="new-title"
+            value={draft.title}
+            placeholder="Ex.: Abertura do hackathon"
+            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="new-description"
+            className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
+          >
+            Descrição
+          </label>
+          <textarea
+            id="new-description"
+            value={draft.description}
+            rows={3}
+            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            className="mt-1 w-full rounded-xl border border-green-dark/15 bg-surface px-3 py-2 text-sm"
+          />
+        </div>
       </div>
 
       <div className="mt-5 border-t-2 border-green-dark/10 pt-4">

@@ -4,7 +4,6 @@ import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusChip } from "@/components/ui/section-card";
-import { ContentFieldsForm } from "@/components/admin/content-fields-form";
 import {
   attachmentTypeOf,
   draftFrom,
@@ -28,14 +27,8 @@ export const ATTACHMENT_OPTIONS: Array<{ value: AttachmentType; label: string }>
 
 export type AdminContentItem = {
   id: string;
-  kind: string;
   title: string;
-  speaker: string | null;
   description: string | null;
-  location: string | null;
-  duration_minutes: number | null;
-  scheduledAtLocal: string;
-  scheduledLabel: string;
   youtubeId: string | null;
   fileUrl: string | null;
   published: boolean;
@@ -85,8 +78,14 @@ export function ContentRow({
     });
   }
 
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+
   function remove() {
-    if (!confirm(`Remover "${item.title}"? Some para os participantes; dá para restaurar depois.`)) return;
+    if (!confirmingRemove) {
+      setConfirmingRemove(true);
+      return;
+    }
+    setConfirmingRemove(false);
     setError(null);
     startTransition(async () => {
       const result = await deleteContent({ contentId: item.id, slug });
@@ -151,11 +150,10 @@ export function ContentRow({
     <li className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
-            {item.scheduledLabel} · {item.kind}
-          </p>
-          <h3 className="mt-1 font-heading text-lg font-bold">{item.title}</h3>
-          {item.speaker && <p className="text-sm text-muted">{item.speaker}</p>}
+          <h3 className="font-heading text-lg font-bold">{item.title}</h3>
+          {item.description && (
+            <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <StatusChip tone={published ? "ok" : "muted"}>
@@ -196,15 +194,55 @@ export function ContentRow({
           type="button"
           onClick={remove}
           disabled={pending}
-          className="text-muted underline-offset-4 hover:text-red-400 hover:underline disabled:opacity-50"
+          className={`underline-offset-4 hover:underline disabled:opacity-50 ${
+            confirmingRemove ? "font-bold text-red-700" : "text-muted hover:text-red-400"
+          }`}
         >
-          Remover
+          {confirmingRemove ? "Confirmar remoção?" : "Remover"}
         </button>
+        {confirmingRemove && (
+          <button
+            type="button"
+            onClick={() => setConfirmingRemove(false)}
+            className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
+          >
+            Cancelar
+          </button>
+        )}
       </div>
 
       {editing && (
         <div className="mt-4 rounded-xl border-2 border-green-dark/15 bg-surface-deep p-5">
-          <ContentFieldsForm draft={draft} onChange={setDraft} idPrefix={item.id} />
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor={`title-${item.id}`}
+                className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
+              >
+                Título
+              </label>
+              <Input
+                id={`title-${item.id}`}
+                value={draft.title}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor={`description-${item.id}`}
+                className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
+              >
+                Descrição
+              </label>
+              <textarea
+                id={`description-${item.id}`}
+                value={draft.description}
+                rows={3}
+                onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-green-dark/15 bg-surface px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
           <div className="mt-4 flex items-center gap-3">
             <Button
               type="button"

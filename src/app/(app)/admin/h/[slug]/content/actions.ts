@@ -5,8 +5,6 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { extractYouTubeId } from "@/lib/content";
 import { sanitizeText, sanitizeUrl } from "@/lib/security";
-import { CONTENT_KINDS } from "@/lib/content-fields";
-import { fromLocalInput } from "@/lib/edition-fields";
 
 export type ContentActionResult = { ok: true } | { ok: false; error: string };
 
@@ -135,22 +133,12 @@ export async function setContentPublished(input: {
 }
 
 type DetailsInput = {
-  kind: string;
   title: string;
-  speaker: string;
-  scheduled_at: string;
-  duration_minutes: string;
-  location: string;
   description: string;
 };
 
 type ContentRowValues = {
-  kind: string;
   title: string;
-  speaker: string | null;
-  scheduled_at: string | null;
-  duration_minutes: number | null;
-  location: string | null;
   description: string | null;
 };
 
@@ -160,26 +148,10 @@ function toRow(input: DetailsInput): ParsedRow {
   const title = sanitizeText(input.title, 160);
   if (!title) return { ok: false, error: "O título é obrigatório." };
 
-  if (!CONTENT_KINDS.some((k) => k.value === input.kind)) {
-    return { ok: false, error: "Tipo inválido." };
-  }
-
-  const duration = input.duration_minutes.trim()
-    ? Number.parseInt(input.duration_minutes, 10)
-    : null;
-  if (duration !== null && (Number.isNaN(duration) || duration < 0)) {
-    return { ok: false, error: "Duração inválida." };
-  }
-
   return {
     ok: true,
     row: {
-      kind: input.kind,
       title,
-      speaker: sanitizeText(input.speaker, 120),
-      scheduled_at: fromLocalInput(input.scheduled_at),
-      duration_minutes: duration,
-      location: sanitizeText(input.location, 120),
       description: sanitizeText(input.description, 2000),
     },
   };
@@ -219,6 +191,7 @@ export async function createContent(input: {
     .insert({
       ...parsed.row,
       ...attachment.patch,
+      kind: "material",
       hackathon_id: gate.hackathon.id,
       position: nextPosition,
     })
@@ -327,23 +300,3 @@ export async function moveContent(input: {
   return { ok: true };
 }
 
-export async function restoreContent(input: {
-  contentId: string;
-  slug: string;
-}): Promise<ContentActionResult> {
-  const gate = await requireEditionAdminBySlug(input.slug);
-  if (!gate.ok) return { ok: false, error: "Sem permissão." };
-
-  const supabase = await createServiceRoleClient();
-  const { error } = await supabase
-    .from("hackathon_contents")
-    .update({ deleted_at: null })
-    .eq("id", input.contentId)
-    .eq("hackathon_id", gate.hackathon.id);
-
-  if (error) return { ok: false, error: "Não foi possível restaurar." };
-
-  revalidatePath(`/admin/h/${input.slug}/content`);
-  revalidatePath(`/h/${input.slug}/content`);
-  return { ok: true };
-}

@@ -3,22 +3,12 @@ import { BackLink } from "@/components/ui/back-link";
 import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { ContentRow, type AdminContentItem } from "@/components/admin/content-row";
 import { NewContentForm } from "@/components/admin/new-content-form";
-import { RemovedContent } from "@/components/admin/removed-content";
-import { toLocalInput } from "@/lib/edition-fields";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { HackathonContent } from "@/types/db";
 
 export const dynamic = "force-dynamic";
-
-const WHEN = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "America/Sao_Paulo",
-});
 
 export default async function AdminContentPage({
   params,
@@ -41,21 +31,12 @@ export default async function AdminContentPage({
 
   const all = (data as HackathonContent[] | null) ?? [];
   const contents = all.filter((c) => !c.deleted_at);
-  const removed = all.filter((c) => c.deleted_at);
   const publishedCount = contents.filter((c) => c.published).length;
 
   const items: AdminContentItem[] = contents.map((c) => ({
     id: c.id,
-    kind: c.kind,
     title: c.title,
-    speaker: c.speaker,
     description: c.description,
-    location: c.location,
-    duration_minutes: c.duration_minutes,
-    scheduledAtLocal: toLocalInput(c.scheduled_at),
-    scheduledLabel: c.scheduled_at
-      ? WHEN.format(new Date(c.scheduled_at)).replace(/\./g, "")
-      : "sem data",
     youtubeId: c.youtube_id,
     fileUrl: c.external_url,
     published: c.published,
@@ -81,8 +62,8 @@ export default async function AdminContentPage({
             </span>
           </p>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-            A data e o título aparecem na página pública desde já. O vídeo só fica visível para
-            participantes inscritos depois de publicar.
+            Cada conteúdo é um título, uma descrição e um anexo — vídeo, arquivo ou link. Só
+            aparece para participantes inscritos depois de publicar.
           </p>
         </header>
 
@@ -104,10 +85,6 @@ export default async function AdminContentPage({
             ))}
           </ul>
         )}
-        <RemovedContent
-          slug={slug}
-          items={removed.map((c) => ({ id: c.id, title: c.title, kind: c.kind }))}
-        />
       </div>
     </div>
   );
