@@ -353,33 +353,46 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </>
             )}
           </SectionCard>
-          <Card sticker className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
-            <div>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
-                Trilha
-              </p>
-              <h2 className="mt-1 font-heading text-xl font-bold">Conteúdos</h2>
-              <p className="mt-1 font-mono text-sm tabular-nums text-muted">
-                {publishedCount ?? 0}/{totalCount ?? 0} disponíveis. As gravações entram depois de
-                cada encontro.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href={`/h/${slug}/content`} className="btn-primary px-5 py-2 text-sm">
-                Ver conteúdos
-              </Link>
-              {hackathon.community_url && (
-                <a
-                  href={hackathon.community_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-secondary px-5 py-2 text-sm"
-                >
-                  Comunidade
-                </a>
-              )}
-            </div>
-          </Card>
+          {/* An edition with no content trail should not advertise an empty
+              one, and the community link stands on its own without it. */}
+          {((totalCount ?? 0) > 0 || hackathon.community_url) && (
+            <Card sticker className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-7">
+              <div>
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                  Trilha
+                </p>
+                <h2 className="mt-1 font-heading text-xl font-bold">
+                  {(totalCount ?? 0) > 0 ? "Conteúdos" : "Comunidade"}
+                </h2>
+                {(totalCount ?? 0) > 0 ? (
+                  <p className="mt-1 font-mono text-sm tabular-nums text-muted">
+                    {publishedCount ?? 0}/{totalCount} disponíveis.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm text-muted">
+                    Mentores e organização respondem no grupo durante todo o evento.
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {(totalCount ?? 0) > 0 && (
+                  <Link href={`/h/${slug}/content`} className="btn-primary px-5 py-2 text-sm">
+                    Ver conteúdos
+                  </Link>
+                )}
+                {hackathon.community_url && (
+                  <a
+                    href={hackathon.community_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-secondary px-5 py-2 text-sm"
+                  >
+                    Comunidade
+                  </a>
+                )}
+              </div>
+            </Card>
+          )}
           </div>
 
           <aside className="space-y-6">
