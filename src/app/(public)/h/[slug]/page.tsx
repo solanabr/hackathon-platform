@@ -25,6 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") return {};
+  // External editions redirect out — their LP owns the preview card, not us.
+  if (hackathon.external_url) return {};
 
   const description = hackathon.description ?? hackathon.tagline ?? undefined;
   return {
@@ -173,19 +175,19 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 </button>
               )}
 
-            {countdownTarget && (
-              <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-sticker">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald">
-                  {countdownTarget.label}
-                </p>
-                <Countdown
-                  deadlineIso={countdownTarget.iso}
-                  variant="segments"
-                  size="md"
-                  className="mt-1.5 !justify-start !gap-3"
-                />
-              </div>
-            )}
+              {countdownTarget && (
+                <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-sticker">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald">
+                    {countdownTarget.label}
+                  </p>
+                  <Countdown
+                    deadlineIso={countdownTarget.iso}
+                    variant="segments"
+                    size="md"
+                    className="mt-1.5 !justify-start !gap-3"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
