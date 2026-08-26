@@ -148,9 +148,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">{hackathon.tagline}</p>
             )}
 
-            {/* CTA column (painel + regulamento) with the countdown at its side. */}
-            <div className="mt-8 flex flex-wrap items-start gap-x-6 gap-y-4">
-              <div className="flex flex-col items-stretch gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
               {registered ? (
                 <Link
                   href={`/h/${hackathon.slug}/dashboard`}
@@ -174,18 +172,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                   Inscrições encerradas
                 </button>
               )}
-
-              {hackathon.rules_url && (
-                <a
-                  href={hackathon.rules_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border-2 border-green-dark bg-surface-raised px-6 py-3 text-center text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                >
-                  Regulamento
-                </a>
-              )}
-              </div>
 
             {countdownTarget && (
               <div className="inline-block rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-3 shadow-sticker">
