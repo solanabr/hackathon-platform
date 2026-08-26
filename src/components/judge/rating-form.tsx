@@ -116,7 +116,7 @@ export function RatingForm({
   }
 
   return (
-    <div className="rounded-xl border border-ink/10 bg-surface-deep p-5">
+    <div className="rounded-2xl border-2 border-green-dark/10 bg-surface p-5">
       <div className="flex items-baseline justify-between">
         <label
           htmlFor={`grade-${submissionId}`}
@@ -175,7 +175,7 @@ export function RatingForm({
           setSaved(false);
           scheduleAutosave();
         }}
-        className="mt-1.5 w-full rounded-xl border border-ink/10 bg-surface-deep px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
+        className="mt-1.5 w-full rounded-xl border-2 border-green-dark/15 bg-surface-raised px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
       />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -198,7 +198,7 @@ export function RatingForm({
           </button>
         )}
         <span aria-live="polite" className="text-sm">
-          {error && <span className="font-semibold text-red-400">{error}</span>}
+          {error && <span className="font-semibold text-red-700">{error}</span>}
           {saved && !error && <span className="text-emerald">Salvo.</span>}
         </span>
       </div>

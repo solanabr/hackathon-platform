@@ -53,7 +53,7 @@ export default async function JudgeEditionPage({
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h1 className="font-heading text-3xl font-bold sm:text-4xl">{hackathon.name}</h1>
-            <span className="rounded-full border border-yellow/40 bg-yellow/10 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-widest text-yellow">
+            <span className="rounded-full border-2 border-green-dark bg-yellow px-3 py-1 font-mono text-xs font-bold uppercase tracking-widest text-green-dark">
               {roundLabel}
             </span>
           </div>
@@ -85,13 +85,13 @@ export default async function JudgeEditionPage({
           <>
             <section
               aria-label="Seu progresso na rodada"
-              className="rounded-xl border border-ink/10 bg-surface-raised p-4 sm:p-5"
+              className="rounded-2xl border-2 border-green-dark bg-surface-raised p-4 shadow-sticker sm:p-5"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
                   Seu progresso
                 </p>
-                <p className="font-mono text-sm font-semibold tabular-nums text-yellow">
+                <p className="font-mono text-sm font-bold tabular-nums text-emerald">
                   {ratedCount}/{projects.length} avaliados
                 </p>
               </div>
@@ -102,7 +102,7 @@ export default async function JudgeEditionPage({
                 aria-valuemax={projects.length}
                 className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-deep"
               >
-                <div className="h-full rounded-full bg-yellow" style={{ width: `${progressPct}%` }} />
+                <div className="h-full rounded-full bg-emerald" style={{ width: `${progressPct}%` }} />
               </div>
             </section>
             <JudgeProjectList projects={projects} slug={slug} />

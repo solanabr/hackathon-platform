@@ -47,7 +47,7 @@ export default async function JudgeProjectPage({
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h1 className="font-heading text-3xl font-bold sm:text-4xl">{project.projectName}</h1>
-            <span className="rounded-full border border-yellow/40 bg-yellow/10 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-widest text-yellow">
+            <span className="rounded-full border-2 border-green-dark bg-yellow px-3 py-1 font-mono text-xs font-bold uppercase tracking-widest text-green-dark">
               {roundLabel}
             </span>
           </div>

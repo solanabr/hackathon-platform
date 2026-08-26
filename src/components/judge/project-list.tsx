@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { segmentedContainer, segmentClass } from "@/components/ui/segmented";
 import type { JudgeProject } from "@/components/judge/project-card";
 
 type RatedProject = JudgeProject & { rating: { grade: number | null; comment: string } };
@@ -52,22 +53,14 @@ export function JudgeProjectList({ projects, slug }: { projects: RatedProject[];
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          className="inline-flex flex-wrap rounded-full border border-ink/10 bg-surface-deep p-1"
-          role="group"
-          aria-label="Filtrar projetos"
-        >
+        <div className={segmentedContainer} role="group" aria-label="Filtrar projetos">
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
               type="button"
               onClick={() => setFilter(key)}
               aria-pressed={filter === key}
-              className={`min-h-11 rounded-full px-4 text-sm font-semibold transition-colors ${
-                filter === key
-                  ? "bg-yellow text-green-dark"
-                  : "text-muted hover:bg-green-dark/10 hover:text-ink"
-              }`}
+              className={segmentClass(filter === key)}
             >
               {label}
             </button>
@@ -76,7 +69,7 @@ export function JudgeProjectList({ projects, slug }: { projects: RatedProject[];
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="min-h-11 rounded-full border border-ink/10 bg-surface-deep px-4 text-sm font-semibold text-muted outline-none transition-colors hover:border-emerald/50 focus:border-emerald"
+          className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-raised px-4 text-sm font-bold text-ink outline-none transition-colors hover:border-green-dark focus:border-emerald"
         >
           {SORTS.map(({ key, label }) => (
             <option key={key} value={key}>
@@ -113,22 +106,17 @@ export function JudgeProjectList({ projects, slug }: { projects: RatedProject[];
                         className="h-36 w-full border-b-2 border-green-dark object-cover"
                       />
                     ) : (
-                      <div className="flex h-36 w-full items-center justify-center border-b-2 border-green-dark bg-surface-deep">
-                        <span className="font-heading text-3xl font-bold text-green-dark/20">
+                      <div className="flex h-36 w-full items-center justify-center border-b-2 border-green-dark bg-emerald/10">
+                        <span className="font-heading text-3xl font-bold text-emerald/40">
                           {project.projectName.slice(0, 2).toUpperCase()}
                         </span>
                       </div>
                     )}
                     <div className="flex flex-1 flex-col p-5">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h2 className="font-heading text-lg font-bold leading-snug group-hover:text-emerald">
-                            {project.projectName}
-                          </h2>
-                          <p className="mt-0.5 truncate text-sm text-muted">
-                            Time {project.teamName}
-                          </p>
-                        </div>
+                        <h2 className="min-w-0 font-heading text-lg font-bold leading-snug group-hover:text-emerald">
+                          {project.projectName}
+                        </h2>
                         <span
                           className={`inline-flex shrink-0 items-center rounded-lg border-2 px-2.5 py-1 font-mono text-sm font-bold tabular-nums ${
                             graded

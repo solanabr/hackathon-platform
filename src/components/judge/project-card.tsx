@@ -48,25 +48,20 @@ export function JudgeProjectCard({
   const graded = rating.grade !== null;
 
   return (
-    <Card className="overflow-hidden p-0 transition-colors hover:border-emerald/40">
+    <Card sticker className="overflow-hidden p-0">
       <div className="p-6 sm:p-7">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="font-heading text-xl font-bold">Time {project.teamName}</h2>
-            {project.submittedAt && (
-              <p className="mt-1 text-sm text-muted">
-                enviado {stripPeriods(WHEN.format(new Date(project.submittedAt)))}
-              </p>
-            )}
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+            {project.submittedAt
+              ? `Enviado ${stripPeriods(WHEN.format(new Date(project.submittedAt)))}`
+              : "Projeto"}
+          </p>
           <span
-            className={`inline-flex shrink-0 items-center rounded-lg border px-3 py-1.5 font-mono text-lg font-semibold tabular-nums ${
-              graded
-                ? "border-yellow-strong/60 bg-yellow/40 text-green-dark"
-                : "border-ink/10 text-muted"
+            className={`inline-flex shrink-0 items-center rounded-lg border-2 px-3 py-1.5 font-mono text-lg font-bold tabular-nums ${
+              graded ? "border-green-dark bg-yellow text-green-dark" : "border-ink/10 text-muted"
             }`}
           >
-            {graded ? `Nota ${rating.grade}` : "-"}
+            {graded ? `Nota ${rating.grade}` : "—"}
           </span>
         </div>
 
