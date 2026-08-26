@@ -1,30 +1,55 @@
 import { cache } from "react";
-import { createServerSupabaseClient } from "./supabase/server";
+import { unstable_cache } from "next/cache";
+import { createAnonClient } from "./supabase/anon";
+import { HACKATHONS_TAG, hackathonTag } from "./cache-tags";
 import { logQueryError } from "./supabase/unwrap";
 import type { Hackathon } from "@/types/db";
 
-// Gate and page resolve the same slug in one request; dedupe the read.
-export const getHackathonBySlug = cache(async (slug: string): Promise<Hackathon | null> => {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("hackathons")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) logQueryError("hackathon.getHackathonBySlug", error);
-  return data as Hackathon | null;
-});
+// Edition rows are viewer-independent, so they live in the shared data cache
+// (anon client, no cookies). Admin actions revalidate the tags on write; the
+// 5-minute revalidate is the backstop. Errors throw instead of returning
+// null/[]: unstable_cache would otherwise store the transient failure and
+// serve a phantom 404/empty gallery for the whole window.
+// The react cache() wrapper still dedupes gate + page within one request.
+export const getHackathonBySlug = cache((slug: string): Promise<Hackathon | null> =>
+  unstable_cache(
+    async () => {
+      const supabase = createAnonClient();
+      const { data, error } = await supabase
+        .from("hackathons")
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (error) {
+        logQueryError("hackathon.getHackathonBySlug", error);
+        throw new Error("hackathon.getHackathonBySlug failed");
+      }
+      return (data as Hackathon | null) ?? null;
+    },
+    ["hackathon-by-slug", slug],
+    { tags: [hackathonTag(slug), HACKATHONS_TAG], revalidate: 300 },
+  )(),
+);
 
-export async function listHackathons(): Promise<Hackathon[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("hackathons")
-    .select("*")
-    .neq("status", "draft")
-    .order("starts_at", { ascending: false });
-  if (error) logQueryError("hackathon.listHackathons", error);
-  return (data as Hackathon[] | null) ?? [];
-}
+export const listHackathons = cache((): Promise<Hackathon[]> =>
+  unstable_cache(
+    async () => {
+      const supabase = createAnonClient();
+      const { data, error } = await supabase
+        .from("hackathons")
+        .select("*")
+        .neq("status", "draft")
+        .order("starts_at", { ascending: false });
+      if (error) {
+        logQueryError("hackathon.listHackathons", error);
+        throw new Error("hackathon.listHackathons failed");
+      }
+      return (data as Hackathon[] | null) ?? [];
+    },
+    ["hackathons-list"],
+    { tags: [HACKATHONS_TAG], revalidate: 300 },
+  )(),
+);
 
 export function isRegistrationOpen(h: Hackathon, now: Date = new Date()): boolean {
   if (!h.registration_closes_at) return true;

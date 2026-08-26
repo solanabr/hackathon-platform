@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { sponsorsTag } from "@/lib/cache-tags";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireEditionAdminBySlug } from "@/lib/roles";
@@ -12,7 +13,8 @@ export type SponsorActionResult = { ok: true } | { ok: false; error: string };
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 5 * 1024 * 1024;
 
-function revalidate(slug: string) {
+function revalidate(slug: string, hackathonId: string) {
+  revalidateTag(sponsorsTag(hackathonId), "max");
   revalidatePath(`/admin/h/${slug}`);
   revalidatePath(`/h/${slug}`);
 }
@@ -76,7 +78,7 @@ export async function uploadSponsor(input: {
   });
   if (error) return { ok: false, error: "Imagem enviada, mas não foi possível salvar." };
 
-  revalidate(input.slug);
+  revalidate(input.slug, gate.hackathon.id);
   return { ok: true };
 }
 
@@ -112,7 +114,7 @@ export async function deleteSponsor(input: {
     await supabase.storage.from("sponsor-logos").remove([path]);
   }
 
-  revalidate(input.slug);
+  revalidate(input.slug, gate.hackathon.id);
   return { ok: true };
 }
 
@@ -174,6 +176,6 @@ export async function moveSponsor(input: {
   ]);
   if (a.error || b.error) return { ok: false, error: "Não foi possível reordenar." };
 
-  revalidate(input.slug);
+  revalidate(input.slug, gate.hackathon.id);
   return { ok: true };
 }
