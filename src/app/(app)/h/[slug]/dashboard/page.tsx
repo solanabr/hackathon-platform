@@ -118,7 +118,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       return {
         target: hackathon.submission_deadline_at,
         label: "Submissão fecha em",
-        badge: "Janela aberta",
+        badge: null,
         tone: "yellow" as const,
       };
     }
@@ -184,7 +184,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                 <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
                   {hero.label}
                 </p>
-                <Badge tone={hero.tone}>{hero.badge}</Badge>
+                {hero.badge && <Badge tone={hero.tone}>{hero.badge}</Badge>}
               </div>
               <Countdown
                 deadlineIso={hero.target}

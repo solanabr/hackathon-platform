@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { extractYouTubeId } from "@/lib/content";
 import { sanitizeText, sanitizeUrl } from "@/lib/security";
@@ -175,7 +176,9 @@ export async function createContent(input: {
   if (!attachment.ok) return { ok: false, error: attachment.error };
 
   const supabase = await createServiceRoleClient();
-  const { data: last } = await supabase
+  // A dropped error here would yield position 0 colliding with an existing
+  // row — and a tie can never be reordered by a plain swap.
+  const { data: last, error: lastError } = await supabase
     .from("hackathon_contents")
     .select("position")
     .eq("hackathon_id", gate.hackathon.id)
@@ -183,6 +186,10 @@ export async function createContent(input: {
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (lastError) {
+    logQueryError("content.create.lastPosition", lastError);
+    return { ok: false, error: "Não foi possível criar. Tente novamente." };
+  }
 
   const nextPosition = ((last as { position: number } | null)?.position ?? -1) + 1;
 
@@ -267,12 +274,16 @@ export async function moveContent(input: {
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
 
   const supabase = await createServiceRoleClient();
-  const { data } = await supabase
+  const { data, error: listError } = await supabase
     .from("hackathon_contents")
     .select("id, position")
     .eq("hackathon_id", gate.hackathon.id)
     .is("deleted_at", null)
     .order("position", { ascending: true });
+  if (listError) {
+    logQueryError("content.move.list", listError);
+    return { ok: false, error: "Não foi possível reordenar. Tente novamente." };
+  }
 
   const rows = (data as Array<{ id: string; position: number }> | null) ?? [];
   const index = rows.findIndex((r) => r.id === input.contentId);
@@ -281,15 +292,21 @@ export async function moveContent(input: {
   const target = input.direction === "up" ? index - 1 : index + 1;
   if (target < 0 || target >= rows.length) return { ok: true };
 
+  // Explicit renumber (moveSponsor's pattern) so tied positions still separate.
+  const lower = Math.min(rows[index].position, rows[target].position);
+  const higher = lower === rows[index].position ? lower + 1 : Math.max(rows[index].position, rows[target].position);
+  const mine = input.direction === "up" ? lower : higher;
+  const theirs = input.direction === "up" ? higher : lower;
+
   const [a, b] = await Promise.all([
     supabase
       .from("hackathon_contents")
-      .update({ position: rows[target].position })
+      .update({ position: mine })
       .eq("id", rows[index].id)
       .eq("hackathon_id", gate.hackathon.id),
     supabase
       .from("hackathon_contents")
-      .update({ position: rows[index].position })
+      .update({ position: theirs })
       .eq("id", rows[target].id)
       .eq("hackathon_id", gate.hackathon.id),
   ]);

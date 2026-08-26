@@ -96,11 +96,18 @@ export async function addMemberByEmail(input: {
     return { ok: false, error: "Esse e-mail já está no time." };
   }
 
-  const { data: existingUser } = await admin
+  // A failed lookup here would skip the cross-team check below AND insert a
+  // ghost row for someone who has an account — which only the signup trigger
+  // links, so an existing user would stay invited-but-invisible forever.
+  const { data: existingUser, error: userLookupError } = await admin
     .from("users")
     .select("id")
     .eq("email", email)
     .maybeSingle();
+  if (userLookupError) {
+    logQueryError("team.addMemberByEmail.userLookup", userLookupError);
+    return { ok: false, error: "Não foi possível validar o convite. Tente novamente." };
+  }
 
   if (existingUser) {
     // Plain select, not maybeSingle: someone already on two accepted teams

@@ -7,13 +7,15 @@ export async function getRegistration(
   hackathonId: string,
 ): Promise<HackathonRegistration | null> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  // isRegistrationComplete(null) gates six redirects — a dropped error here
+  // bounces a registered participant out of their own painel.
+  const result = await supabase
     .from("hackathon_registrations")
     .select("*")
     .eq("user_id", userId)
     .eq("hackathon_id", hackathonId)
     .maybeSingle();
-  return data as HackathonRegistration | null;
+  return unwrap<HackathonRegistration | null>(result, "registration.get");
 }
 
 export function isProfileComplete(profile: User | null): boolean {
