@@ -18,6 +18,8 @@ export default async function RegistrationPage({
   const state = await requireUser();
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") notFound();
+  // External editions register on their own site, never here.
+  if (hackathon.external_url) redirect(hackathon.external_url);
   if (!isRegistrationOpen(hackathon)) redirect(`/h/${slug}`);
 
   if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/register`);

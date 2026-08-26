@@ -74,6 +74,12 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "community_url", label: "Comunidade", kind: "url", group: "Local e links" },
   { key: "rules_url", label: "Regulamento", kind: "url", group: "Local e links" },
   {
+    key: "external_url",
+    label: "URL externa (edição fora da plataforma; cards levam para lá)",
+    kind: "url",
+    group: "Local e links",
+  },
+  {
     key: "judge_github_handle",
     label: "GitHub dos jurados",
     kind: "text",

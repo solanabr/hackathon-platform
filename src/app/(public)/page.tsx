@@ -37,31 +37,7 @@ type CardData = {
   prizeSummary: string | null;
   registrationClosesLabel: string | null;
   externalUrl?: string;
-  // The deck crops covers square; a wide OG image loses its text there.
-  deckCoverUrl?: string;
 };
-
-// Editions that live outside the platform still get a card on the hub; the
-// click goes straight to their own LP. Dates are hard-coded so the card
-// ages out of "Acontecendo" on its own.
-function uniEdition(now = new Date()): CardData {
-  const deadline = new Date("2026-09-08T02:59:59Z");
-  return {
-    slug: "hackathon-universitario",
-    name: "Hackathon Universitário",
-    coverUrl: "/brand/uni-cover.png",
-    stage: now.getTime() < deadline.getTime() ? "running" : "finished",
-    registrationOpen: now.getTime() < deadline.getTime(),
-    startDay: 17,
-    startMonth: "AGO",
-    dateRange: "17 DE AGO A 7 DE SET",
-    locationCity: "Online",
-    prizeSummary: null,
-    registrationClosesLabel: "07/09",
-    externalUrl: "https://uni.superteam.com.br/",
-    deckCoverUrl: "/brand/uni-cover-square.png",
-  };
-}
 
 const FILTERS = [
   { key: "todos", label: "Todas" },
@@ -97,7 +73,7 @@ export default async function HomePage({
   // the throw inside the cached read only keeps the failure out of the cache.
   const hackathons = await listHackathons().catch(() => []);
 
-  const dbEditions: CardData[] = hackathons.map((h: Hackathon) => {
+  const editions: CardData[] = hackathons.map((h: Hackathon) => {
     const start = new Date(h.starts_at);
     const end = new Date(h.presential_at ?? h.submission_deadline_at);
     return {
@@ -114,10 +90,10 @@ export default async function HomePage({
       locationCity: h.location_city,
       prizeSummary: h.prize_summary,
       registrationClosesLabel: h.registration_closes_at ? DAY_NUMERIC.format(new Date(h.registration_closes_at)) : null,
+      externalUrl: h.external_url ?? undefined,
     };
   });
 
-  const editions: CardData[] = [...dbEditions, uniEdition()];
 
   const live = hackathons.find((h) => isRegistrationOpen(h) && editionStage(h) !== "finished") ?? null;
 
@@ -136,7 +112,7 @@ export default async function HomePage({
       href: e.externalUrl ?? `/h/${e.slug}`,
       label: e.name,
       meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
-      coverUrl: e.deckCoverUrl ?? e.coverUrl,
+      coverUrl: e.coverUrl,
     }));
   while (deck.length < 3) {
     deck.push({

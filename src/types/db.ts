@@ -49,6 +49,8 @@ export type Hackathon = {
   ends_at: string | null;
   // GitHub user teams add as collaborator on private repos (00048).
   judge_github_handle: string | null;
+  // Set = the edition lives elsewhere: cards link out, /h/[slug] forwards (00050).
+  external_url: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
