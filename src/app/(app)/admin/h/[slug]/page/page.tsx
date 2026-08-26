@@ -27,14 +27,12 @@ export default async function AdminPageEditorPage({
   // The preview renders the real blocks, so it needs the same context the
   // public page assembles — a preview that fakes them teaches nothing.
   const supabase = await createServerSupabaseClient();
-  const [{ data: scheduleData }, sponsorRows] = await Promise.all([
-    supabase
-      .from("public_schedule")
-      .select("id, kind, title, speaker, description, scheduled_at, location, position")
-      .eq("hackathon_id", hackathon.id)
-      .order("position", { ascending: true }),
-    listSponsors(hackathon.id),
-  ]);
+  const sponsorRows = await listSponsors(hackathon.id);
+  const { data: scheduleData } = await supabase
+    .from("public_schedule")
+    .select("id, kind, title, speaker, description, scheduled_at, location, position")
+    .eq("hackathon_id", hackathon.id)
+    .order("position", { ascending: true });
 
   let finalists: Array<{ teamId: string; teamName: string; placement: number | null }> = [];
   if (isFinalistsVisible(hackathon)) {
