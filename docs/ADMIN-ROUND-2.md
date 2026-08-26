@@ -1,5 +1,9 @@
 # Admin round 2 — handover
 
+> Items 1, 2, 3 and 5 closed at `9ce6489` (lifecycle control with one-step
+> gated transitions, operational status band, fixture tagging, form defects).
+> Item 4 (prizes jsonb) deliberately held until after the event.
+
 Round 1 (nav, sticker restyle, widths) is closed. This is what the admin
 surface still gets wrong, found by using the pages rather than reading them.
 Ordered by what costs an organizer most during the event.
