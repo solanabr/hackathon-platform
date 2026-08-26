@@ -122,13 +122,19 @@ export default async function HomePage({
   for (const e of editions) counts[e.stage] = (counts[e.stage] ?? 0) + 1;
   const filtered = filter === "todos" ? editions : editions.filter((e) => e.stage === filter);
 
-  const deck: DeckCard[] = dbEditions.slice(0, 3).map((e) => ({
-    key: e.slug,
-    href: `/h/${e.slug}`,
-    label: e.name,
-    meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
-    coverUrl: e.coverUrl,
-  }));
+  // The deck leads with what's happening now, then what's coming — external
+  // editions (like the Universitário) included.
+  const STAGE_ORDER = { running: 0, upcoming: 1, finished: 2 } as const;
+  const deck: DeckCard[] = [...editions]
+    .sort((a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage])
+    .slice(0, 3)
+    .map((e) => ({
+      key: e.slug,
+      href: e.externalUrl ?? `/h/${e.slug}`,
+      label: e.name,
+      meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
+      coverUrl: e.coverUrl,
+    }));
   while (deck.length < 3) {
     deck.push({
       key: `brand-${deck.length}`,
