@@ -16,7 +16,9 @@ export default async function PeoplePage() {
     ? await Promise.all([
         supabase
           .from("platform_roles")
-          .select("id, role, hackathon_id, users(email), hackathons(name)")
+          // platform_roles has two FKs to users (user_id, granted_by), so a
+          // bare users(email) embed is ambiguous and PostgREST refuses it.
+          .select("id, role, hackathon_id, users!platform_roles_user_id_fkey(email), hackathons(name)")
           .order("granted_at", { ascending: true }),
         supabase.from("hackathons").select("id, name").order("starts_at", { ascending: false }),
       ])
