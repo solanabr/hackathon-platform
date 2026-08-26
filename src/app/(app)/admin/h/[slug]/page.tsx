@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
+import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { Card } from "@/components/ui/card";
 import { EditionForm } from "@/components/admin/edition-form";
 import { CoverUpload } from "@/components/admin/cover-upload";
@@ -85,7 +86,10 @@ export default async function AdminEditionPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-8">
-        <BackLink href="/admin" label="Administração" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href="/admin" label="Administração" />
+          <AdminEditionNav slug={slug} />
+        </div>
 
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -97,40 +101,10 @@ export default async function AdminEditionPage({
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              href={`/admin/h/${hackathon.slug}/page`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Página
-            </Link>
-            <Link
               href={`/admin/h/${hackathon.slug}/sections`}
               className="btn-secondary px-5 py-2 text-sm"
             >
               Seções
-            </Link>
-            <Link
-              href={`/admin/h/${hackathon.slug}/content`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Conteúdos
-            </Link>
-            <Link
-              href={`/admin/h/${hackathon.slug}/sponsors`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Marcas
-            </Link>
-            <Link
-              href={`/admin/h/${hackathon.slug}/judges`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Jurados
-            </Link>
-            <Link
-              href={`/admin/h/${hackathon.slug}/finalistas`}
-              className="btn-secondary px-5 py-2 text-sm"
-            >
-              Finalistas
             </Link>
             <Link href={`/h/${hackathon.slug}`} className="btn-secondary px-5 py-2 text-sm">
               Ver página

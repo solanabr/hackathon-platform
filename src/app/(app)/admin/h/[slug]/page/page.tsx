@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
+import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { PageEditor } from "@/components/admin/page-editor";
 import { requireEditionAdminBySlug } from "@/lib/roles";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -21,7 +22,10 @@ export default async function AdminPageEditorPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <BackLink href={`/admin/h/${hackathon.slug}`} label={hackathon.name} />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackLink href={`/admin/h/${hackathon.slug}`} label={hackathon.name} />
+          <AdminEditionNav slug={slug} />
+        </div>
 
         <header>
           <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
