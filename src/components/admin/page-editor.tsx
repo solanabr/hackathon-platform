@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
+import { EditionPageDoc, type DocContext } from "@/components/edition/page-doc";
 import { savePageMd } from "@/app/(app)/admin/h/[slug]/page/actions";
 import { parsePageDoc, parseBlockBody, type BlockName } from "@/lib/page-doc";
 
@@ -20,9 +20,11 @@ export function PageEditor({
   slug,
   initialDoc,
   savedDoc,
+  ctx,
 }: {
   slug: string;
   initialDoc: string;
+  ctx: DocContext;
   // What the DB currently holds — differs from initialDoc when the editor
   // pre-fills the template for an edition that has no document yet.
   savedDoc?: string;
@@ -33,6 +35,14 @@ export function PageEditor({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const segments = useMemo(() => parsePageDoc(doc), [doc]);
+  // The renderer drops a malformed block silently, so surface it here.
+  const badBlocks = useMemo(
+    () =>
+      segments
+        .filter((s) => s.type === "block" && s.body.trim() !== "" && parseBlockBody(s.body) === null)
+        .map((s) => (s as { name: BlockName }).name),
+    [segments],
+  );
   const dirty = doc !== saved;
 
   function onSave() {
@@ -71,21 +81,27 @@ export function PageEditor({
           aria-label="Documento da página"
         />
 
-        <div className="h-[70vh] overflow-y-auto rounded-2xl border-2 border-green-dark/15 bg-surface p-5">
-          {segments.length === 0 && (
-            <p className="font-mono text-sm text-muted">Página em branco.</p>
+        <div className="h-[70vh] overflow-y-auto rounded-2xl border-2 border-green-dark/15 bg-surface">
+          {segments.length === 0 ? (
+            <p className="p-5 font-mono text-sm text-muted">Página em branco.</p>
+          ) : (
+            <>
+              {badBlocks.length > 0 && (
+                <ul className="m-5 mb-0 space-y-1 rounded-xl border-2 border-red-700/30 bg-red-600/10 p-4">
+                  {badBlocks.map((name) => (
+                    <li key={name} className="text-xs font-semibold text-red-800">
+                      {`\`\`\`${name}`}: JSON inválido — o bloco não vai renderizar.
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {/* Scaled down so the full-width page composition is readable
+                  inside the pane without a horizontal scrollbar. */}
+              <div className="w-[200%] origin-top-left scale-50">
+                <EditionPageDoc doc={doc} ctx={ctx} />
+              </div>
+            </>
           )}
-          <div className="space-y-6">
-            {segments.map((seg, i) =>
-              seg.type === "prose" ? (
-                <div key={i} className="prose-lp text-sm">
-                  <ReactMarkdown>{seg.md}</ReactMarkdown>
-                </div>
-              ) : (
-                <BlockPlaceholder key={i} name={seg.name} body={seg.body} />
-              ),
-            )}
-          </div>
         </div>
       </div>
 
@@ -109,24 +125,6 @@ export function PageEditor({
           edição — datas, agenda, prêmios, finalistas e marcas são editados nas telas deles.
         </p>
       </details>
-    </div>
-  );
-}
-
-function BlockPlaceholder({ name, body }: { name: BlockName; body: string }) {
-  const info = BLOCK_INFO[name];
-  const badJson = name === "deliverables" && body.trim() !== "" && parseBlockBody(body) === null;
-  return (
-    <div className="rounded-xl border-2 border-dashed border-emerald/40 bg-emerald/5 px-4 py-3">
-      <p className="font-mono text-xs font-bold uppercase tracking-widest text-emerald">
-        {info.label}
-      </p>
-      <p className="mt-0.5 text-xs text-muted">{info.detail}</p>
-      {badJson && (
-        <p className="mt-1 text-xs font-semibold text-red-700">
-          JSON inválido — o bloco não vai renderizar.
-        </p>
-      )}
     </div>
   );
 }

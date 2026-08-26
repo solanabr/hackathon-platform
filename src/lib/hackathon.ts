@@ -1,4 +1,5 @@
 import { cache } from "react";
+import type { PhaseBounds } from "./phases";
 import { createServerSupabaseClient } from "./supabase/server";
 import type { Hackathon } from "@/types/db";
 
@@ -51,9 +52,8 @@ export function editionStage(
   return new Date(endsAt).getTime() > t ? "running" : "finished";
 }
 
-export type PhaseBounds = { startsAt: number; endsAt: number };
-
-export type PhaseState = "todo" | "current" | "done";
+export { phaseState } from "./phases";
+export type { PhaseBounds, PhaseState } from "./phases";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -92,12 +92,6 @@ export function phaseBoundaries(h: Hackathon): {
     selecao: announced ? { startsAt: deadline, endsAt: presential ?? announced } : null,
     fase2: presential ? { startsAt: presential, endsAt: presential + DAY_MS } : null,
   };
-}
-
-export function phaseState(bounds: PhaseBounds, now: number): PhaseState {
-  if (now < bounds.startsAt) return "todo";
-  if (now < bounds.endsAt) return "current";
-  return "done";
 }
 
 export type RatingRound = "triagem" | "final";

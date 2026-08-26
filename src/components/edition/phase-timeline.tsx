@@ -1,4 +1,4 @@
-import { phaseState, type PhaseBounds } from "@/lib/hackathon";
+import { phaseState, type PhaseBounds } from "@/lib/phases";
 
 export type Phase = PhaseBounds & {
   key: string;
