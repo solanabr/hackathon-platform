@@ -26,7 +26,10 @@ export function FinalistPicker({
   );
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  // Toggles and placements are optimistic and revert on error, so they never
+  // lock the page; only the notify button carries its own busy state.
+  const [, startSave] = useTransition();
+  const [notifying, startNotify] = useTransition();
 
   function currentFor(c: FinalistCandidate): boolean {
     return checked[c.submissionId] ?? c.isFinalist;
@@ -38,7 +41,7 @@ export function FinalistPicker({
     setError(null);
     setNotice(null);
 
-    start(async () => {
+    startSave(async () => {
       const result = await setFinalist({ slug, teamId: c.teamId, isFinalist: on });
       if (!result.ok) {
         setError(result.error);
@@ -48,12 +51,12 @@ export function FinalistPicker({
   }
 
   function updatePlacement(c: FinalistCandidate, raw: string) {
-    const n = Number(raw);
-    if (!Number.isInteger(n) || n < 1) return;
+    const n = raw.trim() === "" ? null : Number(raw);
+    if (n !== null && (!Number.isInteger(n) || n < 1)) return;
     setError(null);
     setNotice(null);
     setPlacementValue((prev) => ({ ...prev, [c.submissionId]: n }));
-    start(async () => {
+    startSave(async () => {
       const result = await setPlacement({ slug, teamId: c.teamId, placement: n });
       if (!result.ok) {
         setError(result.error);
@@ -66,7 +69,7 @@ export function FinalistPicker({
     setError(null);
     setNotice(null);
 
-    start(async () => {
+    startNotify(async () => {
       const result = await runNotifyFinalists({ slug, hackathonId });
       if (!result.ok) {
         setError(result.error);
@@ -95,11 +98,11 @@ export function FinalistPicker({
         </p>
         <button
           type="button"
-          disabled={pending || pendingNotify === 0}
+          disabled={notifying || pendingNotify === 0}
           onClick={notify}
           className="btn-primary min-h-11 px-5 py-2 text-sm text-green-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Notificando..." : "Notificar finalistas"}
+          {notifying ? "Notificando..." : "Notificar finalistas"}
         </button>
       </div>
 
@@ -118,7 +121,6 @@ export function FinalistPicker({
                   <input
                     type="checkbox"
                     checked={on}
-                    disabled={pending}
                     onChange={() => toggle(c)}
                     className="h-5 w-5 shrink-0 accent-emerald"
                   />
@@ -149,13 +151,12 @@ export function FinalistPicker({
                       min={1}
                       step={1}
                       value={placement[c.submissionId] ?? ""}
-                      disabled={pending}
                       placeholder="—"
                       onChange={(e) => updatePlacement(c, e.target.value)}
                       className="h-9 w-14 rounded-lg border-2 border-green-dark/15 bg-surface-raised px-2 text-center font-mono text-base font-bold tabular-nums text-ink outline-none transition-colors hover:border-green-dark focus:border-emerald"
                     />
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted">
-                      colocação
+                      colocação · opcional
                     </span>
                   </label>
                   <div className="text-right">

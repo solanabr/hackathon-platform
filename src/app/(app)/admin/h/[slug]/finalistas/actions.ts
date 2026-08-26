@@ -17,7 +17,7 @@ export type NotifyResult =
 async function updateTeam(
   slug: string,
   teamId: string,
-  patch: { is_finalist: boolean } | { placement: number },
+  patch: { is_finalist: boolean } | { placement: number | null },
 ): Promise<FinalistActionResult> {
   const gate = await requireEditionAdminBySlug(slug);
   if (!gate.ok) return { ok: false, error: "Sem permissão." };
@@ -48,12 +48,14 @@ export async function setFinalist(input: {
   return updateTeam(input.slug, input.teamId, { is_finalist: input.isFinalist });
 }
 
+// Placement is optional — an edition with 20 finalists and no podium just
+// leaves it blank. Null clears a previously set position.
 export async function setPlacement(input: {
   slug: string;
   teamId: string;
-  placement: number;
+  placement: number | null;
 }): Promise<FinalistActionResult> {
-  if (!Number.isInteger(input.placement) || input.placement < 1) {
+  if (input.placement !== null && (!Number.isInteger(input.placement) || input.placement < 1)) {
     return { ok: false, error: "Colocação inválida." };
   }
   return updateTeam(input.slug, input.teamId, { placement: input.placement });
