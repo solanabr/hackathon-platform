@@ -19,7 +19,7 @@ export async function Header() {
   const menuLinks = state
     ? [
         { href: "/account", label: "Minha conta" },
-        ...(judge ? [{ href: "/judge", label: "Avaliação" }] : []),
+        ...(judge ? [{ href: "/judge", label: "Avaliar" }] : []),
         ...(admin ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [];

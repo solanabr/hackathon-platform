@@ -52,12 +52,12 @@ export function JudgeProjectCard({
       <div className="p-6 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="font-heading text-xl font-bold">{project.projectName}</h2>
-            <p className="mt-1 text-sm text-muted">
-              Time {project.teamName}
-              {project.submittedAt &&
-                ` · enviado ${stripPeriods(WHEN.format(new Date(project.submittedAt)))}`}
-            </p>
+            <h2 className="font-heading text-xl font-bold">Time {project.teamName}</h2>
+            {project.submittedAt && (
+              <p className="mt-1 text-sm text-muted">
+                enviado {stripPeriods(WHEN.format(new Date(project.submittedAt)))}
+              </p>
+            )}
           </div>
           <span
             className={`inline-flex shrink-0 items-center rounded-lg border px-3 py-1.5 font-mono text-lg font-semibold tabular-nums ${

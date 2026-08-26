@@ -1,14 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { JudgeProjectCard, type JudgeProject } from "@/components/judge/project-card";
+import Image from "next/image";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import type { RatingRound } from "@/lib/hackathon";
+import type { JudgeProject } from "@/components/judge/project-card";
 
 type RatedProject = JudgeProject & { rating: { grade: number | null; comment: string } };
 
 const FILTERS = [
-  { key: "all", label: "Todas" },
+  { key: "all", label: "Todos" },
   { key: "unrated", label: "Sem nota" },
   { key: "rated", label: "Com nota" },
 ] as const;
@@ -30,17 +31,7 @@ function compare(a: number | null, b: number | null, unratedFirst: boolean, desc
   return desc ? b - a : a - b;
 }
 
-export function JudgeProjectList({
-  projects,
-  hackathonId,
-  slug,
-  round,
-}: {
-  projects: RatedProject[];
-  hackathonId: string;
-  slug: string;
-  round: RatingRound;
-}) {
+export function JudgeProjectList({ projects, slug }: { projects: RatedProject[]; slug: string }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("default");
 
@@ -100,18 +91,68 @@ export function JudgeProjectList({
           <p className="font-mono text-sm text-muted">Nenhum projeto neste filtro.</p>
         </Card>
       ) : (
-        <ul className="space-y-6">
-          {shown.map((project) => (
-            <li key={project.submissionId}>
-              <JudgeProjectCard
-                project={project}
-                hackathonId={hackathonId}
-                slug={slug}
-                round={round}
-                rating={project.rating}
-              />
-            </li>
-          ))}
+        <ul className="grid gap-5 sm:grid-cols-2">
+          {shown.map((project) => {
+            const graded = project.rating.grade !== null;
+            return (
+              <li key={project.submissionId}>
+                <Link
+                  href={`/judge/h/${slug}/${project.submissionId}`}
+                  className="group block h-full focus-visible:outline-none"
+                >
+                  <Card
+                    sticker
+                    className="flex h-full flex-col overflow-hidden p-0 transition-transform duration-200 group-hover:-translate-y-1 group-focus-visible:ring-2 group-focus-visible:ring-emerald"
+                  >
+                    {project.imageUrl ? (
+                      <Image
+                        src={project.imageUrl}
+                        alt=""
+                        width={640}
+                        height={256}
+                        className="h-36 w-full border-b-2 border-green-dark object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-36 w-full items-center justify-center border-b-2 border-green-dark bg-surface-deep">
+                        <span className="font-heading text-3xl font-bold text-green-dark/20">
+                          {project.projectName.slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h2 className="font-heading text-lg font-bold leading-snug group-hover:text-emerald">
+                            {project.projectName}
+                          </h2>
+                          <p className="mt-0.5 truncate text-sm text-muted">
+                            Time {project.teamName}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-lg border-2 px-2.5 py-1 font-mono text-sm font-bold tabular-nums ${
+                            graded
+                              ? "border-green-dark bg-yellow text-green-dark"
+                              : "border-ink/10 text-muted"
+                          }`}
+                        >
+                          {graded ? project.rating.grade : "—"}
+                        </span>
+                      </div>
+                      {project.description && (
+                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
+                          {project.description}
+                        </p>
+                      )}
+                      <p className="mt-auto pt-4 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                        {graded ? "Rever avaliação →" : "Avaliar projeto →"}
+                      </p>
+                    </div>
+                  </Card>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

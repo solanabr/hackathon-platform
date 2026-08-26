@@ -1,40 +1,14 @@
 import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { JudgeProjectList } from "@/components/judge/project-list";
-import type { JudgeProject } from "@/components/judge/project-card";
 import { requireJudge, resolveRoleState } from "@/lib/roles";
-import { getHackathonBySlug, ratingRound } from "@/lib/hackathon";
-import { createServiceRoleClient } from "@/lib/supabase/server";
-import { unwrap } from "@/lib/supabase/unwrap";
+import { getHackathonBySlug } from "@/lib/hackathon";
+import { loadJudgeProjects } from "@/lib/judge-projects";
 import { DAY_MONTH_YEAR, stripPeriods } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 const DAY = DAY_MONTH_YEAR;
-
-type TeamRow = {
-  id: string;
-  name: string;
-  submissions:
-    | Record<string, unknown>
-    | Record<string, unknown>[]
-    | null;
-  team_members: Array<{
-    is_leader: boolean;
-    status: string;
-    invited_email: string;
-    users: {
-      id: string;
-      full_name: string | null;
-      email: string;
-      avatar_url: string | null;
-      headline: string | null;
-      github_url: string | null;
-      linkedin_url: string | null;
-      telegram_handle: string | null;
-    } | null;
-  }> | null;
-};
 
 export default async function JudgeEditionPage({
   params,
@@ -51,114 +25,16 @@ export default async function JudgeEditionPage({
     notFound();
   }
 
-  const supabase = await createServiceRoleClient();
-  const data = unwrap(
-    await supabase
-      .from("teams")
-      .select(
-        `id, name,
-       submissions(id, project_name, description, pitch_deck_url, pitch_video_url, demo_video_url, github_url, website_url, twitter_url, image_path, status, submitted_at),
-       team_members(is_leader, status, invited_email, users(id, full_name, email, avatar_url, headline, github_url, linkedin_url, telegram_handle))`,
-      )
-      .eq("hackathon_id", hackathon.id)
-      .order("name", { ascending: true }),
-    "judge.edition.teams",
-  );
-
-  let projects: JudgeProject[] = ((data as unknown as TeamRow[] | null) ?? [])
-    .map((team) => {
-      const s = (Array.isArray(team.submissions) ? team.submissions[0] : team.submissions) as
-        | Record<string, unknown>
-        | null;
-      if (!s || s.status !== "submitted") return null;
-
-      const members = (team.team_members ?? [])
-        .filter((m) => m.status === "accepted")
-        .map((m) => ({
-          id: m.users?.id ?? null,
-          name: m.users?.full_name ?? m.users?.email ?? m.invited_email,
-          isLeader: m.is_leader,
-          headline: m.users?.headline ?? null,
-          avatarUrl: m.users?.avatar_url ?? null,
-          email: m.users?.email ?? null,
-          githubUrl: m.users?.github_url ?? null,
-          linkedinUrl: m.users?.linkedin_url ?? null,
-          telegramHandle: m.users?.telegram_handle ?? null,
-        }));
-
-      const imagePath = s.image_path as string | null;
-      const imageUrl = imagePath
-        ? supabase.storage.from("project-images").getPublicUrl(imagePath).data.publicUrl
-        : null;
-
-      return {
-        submissionId: s.id as string,
-        teamName: team.name,
-        projectName: (s.project_name as string | null) ?? team.name,
-        description: (s.description as string | null) ?? "",
-        imageUrl,
-        submittedAt: s.submitted_at as string | null,
-        links: [
-          { label: "Pitch deck", href: s.pitch_deck_url as string | null },
-          { label: "Vídeo", href: s.pitch_video_url as string | null },
-          { label: "Demo", href: s.demo_video_url as string | null },
-          { label: "Repositório", href: s.github_url as string | null },
-          { label: "Site", href: s.website_url as string | null },
-          { label: "X", href: s.twitter_url as string | null },
-        ].filter((l): l is { label: string; href: string } => Boolean(l.href)),
-        members,
-      } satisfies JudgeProject;
-    })
-    .filter((p): p is JudgeProject => p !== null);
-
-  const round = ratingRound(hackathon);
-
-  // A judge only sees what an admin gave them (regulamento 7.1: two per project).
-  // Admins see everything, so they can spot-check without being assigned.
   const roles = await resolveRoleState();
-  if (!roles?.isAdmin) {
-    const mine = unwrap(
-      await supabase
-        .from("submission_assignments")
-        .select("submission_id")
-        .eq("judge_id", gate.state.userId)
-        .eq("round", round),
-      "judge.edition.assignments",
-    );
-
-    const allowed = new Set(
-      ((mine as Array<{ submission_id: string }> | null) ?? []).map((r) => r.submission_id),
-    );
-    projects = projects.filter((p) => allowed.has(p.submissionId));
-  }
-
-  const ratingRows = projects.length
-    ? unwrap(
-        await supabase
-          .from("submission_ratings")
-          .select("submission_id, grade, comment")
-          .in(
-            "submission_id",
-            projects.map((p) => p.submissionId),
-          )
-          .eq("judge_id", gate.state.userId)
-          .eq("round", round),
-        "judge.edition.ratings",
-      )
-    : [];
-
-  const mine = new Map(
-    ((ratingRows as Array<{ submission_id: string; grade: number | null; comment: string | null }> | null) ?? []).map(
-      (r) => [r.submission_id, { grade: r.grade, comment: r.comment ?? "" }],
-    ),
+  const { projects, round } = await loadJudgeProjects(
+    hackathon,
+    gate.state.userId,
+    roles?.isAdmin ?? false,
   );
 
   // Only a row with a grade counts as rated — a comment-only save is a draft.
-  const ratedCount = projects.filter((p) => mine.get(p.submissionId)?.grade != null).length;
-
-  const progressPct = projects.length
-    ? Math.round((ratedCount / projects.length) * 100)
-    : 0;
+  const ratedCount = projects.filter((p) => p.rating.grade != null).length;
+  const progressPct = projects.length ? Math.round((ratedCount / projects.length) * 100) : 0;
 
   const roundLabel = round === "triagem" ? "Triagem" : "Final";
   const roundDeadline =
@@ -166,15 +42,10 @@ export default async function JudgeEditionPage({
       ? hackathon.finalists_announced_at
       : (hackathon.presential_at ?? hackathon.voting_closes_at);
 
-  const projectsWithRatings = projects.map((project) => ({
-    ...project,
-    rating: mine.get(project.submissionId) ?? { grade: null, comment: "" },
-  }));
-
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        <BackLink href="/judge" label="Avaliação" />
+        <BackLink href="/judge" label="Avaliar" />
 
         <header>
           <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
@@ -194,7 +65,8 @@ export default async function JudgeEditionPage({
                 <span className="font-mono tabular-nums">
                   {ratedCount} de {projects.length}
                 </span>{" "}
-                avaliados por você. A nota de cada jurado é privada.
+                avaliados por você. A nota final de cada projeto é a média das notas dos jurados;
+                sua nota é privada.
               </>
             )}
           </p>
@@ -230,18 +102,10 @@ export default async function JudgeEditionPage({
                 aria-valuemax={projects.length}
                 className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-deep"
               >
-                <div
-                  className="h-full rounded-full bg-yellow"
-                  style={{ width: `${progressPct}%` }}
-                />
+                <div className="h-full rounded-full bg-yellow" style={{ width: `${progressPct}%` }} />
               </div>
             </section>
-            <JudgeProjectList
-              projects={projectsWithRatings}
-              hackathonId={hackathon.id}
-              slug={slug}
-              round={round}
-            />
+            <JudgeProjectList projects={projects} slug={slug} />
           </>
         )}
       </div>

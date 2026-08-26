@@ -98,7 +98,7 @@ export default async function JudgeIndexPage() {
           <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">
             Painel do jurado
           </p>
-          <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Avaliação</h1>
+          <h1 className="mt-1 font-heading text-3xl font-bold sm:text-4xl">Avaliar</h1>
           <p className="mt-2 text-muted">
             {roles.isAdmin
               ? "Como admin você avalia qualquer edição."
