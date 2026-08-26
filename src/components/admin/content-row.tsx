@@ -60,9 +60,11 @@ export function ContentRow({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<ContentDraft>(() => draftFrom(item));
+  const [savedDraft, setSavedDraft] = useState<ContentDraft>(() => draftFrom(item));
   const fileRef = useRef<HTMLInputElement>(null);
+  const detailsDirty =
+    draft.title !== savedDraft.title || draft.description !== savedDraft.description;
 
   function saveDetails() {
     setError(null);
@@ -70,8 +72,8 @@ export function ContentRow({
     startTransition(async () => {
       const result = await updateContentDetails({ contentId: item.id, slug, details: draft });
       if (result.ok) {
+        setSavedDraft(draft);
         setSaved(true);
-        setEditing(false);
       } else {
         setError(result.error);
       }
@@ -149,10 +151,39 @@ export function ContentRow({
   return (
     <li className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="font-heading text-lg font-bold">{item.title}</h3>
-          {item.description && (
-            <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p>
+        <div className="min-w-0 flex-1 space-y-3">
+          <Input
+            aria-label="Título"
+            value={draft.title}
+            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            className="max-w-xl font-heading text-lg font-bold"
+          />
+          <textarea
+            aria-label="Descrição"
+            value={draft.description}
+            rows={2}
+            placeholder="Descrição"
+            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            className="w-full max-w-xl rounded-xl border border-green-dark/15 bg-surface px-3 py-2 text-sm"
+          />
+          {detailsDirty && (
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                disabled={pending}
+                onClick={saveDetails}
+                className="px-4 py-1.5 text-sm"
+              >
+                {pending ? "Salvando..." : "Salvar"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setDraft(savedDraft)}
+                className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
+              >
+                Desfazer
+              </button>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -179,92 +210,27 @@ export function ContentRow({
               ↓
             </button>
           </div>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          className="font-semibold text-emerald underline-offset-4 hover:underline"
-        >
-          {editing ? "Fechar detalhes" : "Editar detalhes"}
-        </button>
-        <button
-          type="button"
-          onClick={remove}
-          disabled={pending}
-          className={`underline-offset-4 hover:underline disabled:opacity-50 ${
-            confirmingRemove ? "font-bold text-red-700" : "text-muted hover:text-red-400"
-          }`}
-        >
-          {confirmingRemove ? "Confirmar remoção?" : "Remover"}
-        </button>
-        {confirmingRemove && (
           <button
             type="button"
-            onClick={() => setConfirmingRemove(false)}
-            className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
+            onClick={remove}
+            disabled={pending}
+            className={`text-sm underline-offset-4 hover:underline disabled:opacity-50 ${
+              confirmingRemove ? "font-bold text-red-700" : "text-muted hover:text-red-400"
+            }`}
           >
-            Cancelar
+            {confirmingRemove ? "Confirmar?" : "Remover"}
           </button>
-        )}
-      </div>
-
-      {editing && (
-        <div className="mt-4 rounded-xl border-2 border-green-dark/15 bg-surface-deep p-5">
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor={`title-${item.id}`}
-                className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
-              >
-                Título
-              </label>
-              <Input
-                id={`title-${item.id}`}
-                value={draft.title}
-                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor={`description-${item.id}`}
-                className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted"
-              >
-                Descrição
-              </label>
-              <textarea
-                id={`description-${item.id}`}
-                value={draft.description}
-                rows={3}
-                onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-green-dark/15 bg-surface px-3 py-2 text-sm"
-              />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-3">
-            <Button
-              type="button"
-              disabled={pending}
-              onClick={saveDetails}
-              className="min-h-11 bg-yellow px-5 py-2 text-sm text-[#1b231d] hover:bg-yellow-strong"
-            >
-              {pending ? "Salvando..." : "Salvar detalhes"}
-            </Button>
+          {confirmingRemove && (
             <button
               type="button"
-              onClick={() => {
-                setDraft(draftFrom(item));
-                setEditing(false);
-              }}
+              onClick={() => setConfirmingRemove(false)}
               className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
             >
               Cancelar
             </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="mt-4 border-t-2 border-green-dark/10 pt-4">
         <div className="flex flex-wrap items-center gap-3">

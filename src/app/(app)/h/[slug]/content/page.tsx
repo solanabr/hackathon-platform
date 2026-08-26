@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { BackLink } from "@/components/ui/back-link";
 import { PainelNav } from "@/components/edition/painel-nav";
-import { StatusChip } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { renderableThumbnail, youtubeThumbnail } from "@/lib/content";
@@ -66,8 +65,8 @@ export default async function ContentsPage({
 
   const supabase = await createServerSupabaseClient();
 
-  // Every scheduled item is listed; RLS keeps the unpublished ones out of the
-  // second query, which is what marks an item as available.
+  // Only published items are listed — RLS keeps the unpublished ones out of
+  // the second query, and anything absent from it stays off the page.
   const [{ data: scheduleData }, { data: availableData }] = await Promise.all([
     supabase
       .from("public_schedule")
@@ -80,12 +79,11 @@ export default async function ContentsPage({
       .eq("hackathon_id", hackathon.id),
   ]);
 
-  const schedule = ((scheduleData as ScheduleRow[] | null) ?? []).filter(
-    (s) => s.kind !== "evento",
-  );
   const availableRows = (availableData as AvailableRow[] | null) ?? [];
   const available = new Map(availableRows.map((c) => [c.id, c] as const));
-  const availableCount = availableRows.filter((c) => c.kind !== "evento").length;
+  const schedule = ((scheduleData as ScheduleRow[] | null) ?? []).filter(
+    (s) => s.kind !== "evento" && available.has(s.id),
+  );
 
   const filter = FILTERS.find((x) => x.key === f) ?? FILTERS[0];
   const filtered =
@@ -107,9 +105,8 @@ export default async function ContentsPage({
             <h1 className="mt-1 font-heading text-3xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-4xl">
               Conteúdos
             </h1>
-            <p className="mt-2 font-mono text-sm tabular-nums text-muted">
-              {availableCount}/{schedule.length} disponíveis. As gravações entram depois de cada
-              encontro.
+            <p className="mt-2 text-sm text-muted">
+              As gravações entram depois de cada encontro.
             </p>
           </div>
 
@@ -144,7 +141,6 @@ export default async function ContentsPage({
           <ul className="mt-8 grid gap-5 sm:grid-cols-2">
             {filtered.map((item) => {
               const row = available.get(item.id);
-              const ready = row !== undefined;
               const when = item.scheduled_at
                 ? WHEN.format(new Date(item.scheduled_at)).replace(/\./g, "")
                 : null;
@@ -154,17 +150,11 @@ export default async function ContentsPage({
                   ? youtubeThumbnail(row.youtube_id)
                   : null;
               const external =
-                ready && !row?.youtube_id && row?.external_url ? row.external_url : null;
+                !row?.youtube_id && row?.external_url ? row.external_url : null;
               const domain = external ? domainOf(external) : null;
 
               const card = (
-                <article
-                  className={`group flex h-full flex-col overflow-hidden rounded-2xl border-2 bg-surface-raised transition-transform duration-200 ${
-                    ready
-                      ? "border-green-dark shadow-[6px_6px_0_rgba(27,35,29,0.18)] hover:-translate-y-0.5"
-                      : "border-green-dark/20 opacity-75"
-                  }`}
-                >
+                <article className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-[6px_6px_0_rgba(27,35,29,0.18)] transition-transform duration-200 hover:-translate-y-0.5">
                   {thumb && (
                     <div className="relative aspect-video overflow-hidden border-b-2 border-green-dark/15 bg-green-dark">
                       <Image
@@ -195,9 +185,6 @@ export default async function ContentsPage({
                         {when ?? "sem data"}
                         {!thumb && domain && ` · ${domain}`}
                       </p>
-                      <StatusChip tone={ready ? "ok" : "muted"}>
-                        {ready ? "disponível" : "em breve"}
-                      </StatusChip>
                     </div>
                     <h2 className="mt-2 font-heading text-lg font-bold leading-tight">
                       {item.title}
@@ -220,12 +207,10 @@ export default async function ContentsPage({
                     <a href={external} target="_blank" rel="noreferrer" className="block h-full">
                       {card}
                     </a>
-                  ) : ready ? (
+                  ) : (
                     <Link href={`/h/${slug}/content/${item.id}`} className="block h-full">
                       {card}
                     </Link>
-                  ) : (
-                    card
                   )}
                 </li>
               );
