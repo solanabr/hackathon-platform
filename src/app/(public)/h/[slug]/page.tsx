@@ -25,6 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") return {};
+  // External editions redirect out — their LP owns the preview card, not us.
+  if (hackathon.external_url) return {};
 
   const description = hackathon.description ?? hackathon.tagline ?? undefined;
   return {
