@@ -20,9 +20,18 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Hackathons · Superteam Brasil",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://hackathon.superteam.com.br"),
+  title: {
+    default: "Hackathons · Superteam Brasil",
+    template: "%s · Superteam Brasil",
+  },
   description:
     "Plataforma de hackathons da Superteam Brasil. Participe, monte seu time e submeta seu projeto.",
+  openGraph: {
+    siteName: "Superteam Brasil",
+    type: "website",
+    locale: "pt_BR",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
