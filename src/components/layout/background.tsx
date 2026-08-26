@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 const shapes = [
   { src: "/brand/stbr/elements/morth-05.svg", className: "left-[-8%] top-[6%] w-72 animate-float-a" },
   { src: "/brand/stbr/elements/morth-21.svg", className: "right-[-6%] top-[38%] w-96 animate-float-b" },
@@ -12,12 +10,16 @@ export function Background() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {shapes.map((shape) => (
-        <Image
+        // Decorative SVGs gain nothing from next/image (it passes SVG through)
+        // — a plain img skips the loader indirection.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           key={shape.src}
           src={shape.src}
           alt=""
           width={400}
           height={400}
+          loading="lazy"
           className={`absolute opacity-[0.07] ${shape.className}`}
         />
       ))}

@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { publicStorageUrl } from "@/lib/storage";
 import { createServerSupabaseClient } from "./supabase/server";
 import { logQueryError } from "./supabase/unwrap";
 import type { HackathonSponsor, SponsorTier } from "@/types/db";
@@ -27,9 +28,7 @@ export async function resolveSponsors(rows: HackathonSponsor[]): Promise<Sponsor
     tier: r.tier,
     name: r.name,
     url: r.url,
-    src: r.image_path.startsWith("/")
-      ? r.image_path
-      : supabase.storage.from("sponsor-logos").getPublicUrl(r.image_path).data.publicUrl,
+    src: publicStorageUrl("sponsor-logos", r.image_path),
   }));
 }
 

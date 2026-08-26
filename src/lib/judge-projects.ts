@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from "./supabase/server";
+import { publicStorageUrl } from "@/lib/storage";
 import { unwrap } from "./supabase/unwrap";
 import { ratingRound, type RatingRound } from "./hackathon";
 import type { Hackathon } from "@/types/db";
@@ -85,9 +86,7 @@ export async function loadJudgeProjects(
         }));
 
       const imagePath = s.image_path as string | null;
-      const imageUrl = imagePath
-        ? supabase.storage.from("project-images").getPublicUrl(imagePath).data.publicUrl
-        : null;
+      const imageUrl = imagePath ? publicStorageUrl("project-images", imagePath) : null;
 
       return {
         submissionId: s.id as string,
