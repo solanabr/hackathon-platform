@@ -31,8 +31,12 @@ export function isValidEmail(email: string): boolean {
 export function sanitizeRedirect(input: string | null): string | null {
   if (!input) return null;
   if (!input.startsWith("/")) return null;
+  // URL parsers strip tabs, newlines and other control characters *before*
+  // resolving, so "/\t/evil.com" survives a prefix check and then resolves
+  // cross-origin. Reject the whole class rather than enumerate it; a real
+  // path carries these percent-encoded, never raw.
+  if (/[\u0000-\u0020\\]/.test(input)) return null;
   if (input.startsWith("//")) return null;
-  if (input.startsWith("/\\")) return null;
   return input;
 }
 
