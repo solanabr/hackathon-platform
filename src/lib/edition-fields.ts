@@ -67,6 +67,13 @@ export const EDITION_FIELDS: EditionField[] = [
   { key: "luma_url", label: "Luma", kind: "url", group: "Local e links" },
   { key: "community_url", label: "Comunidade", kind: "url", group: "Local e links" },
   { key: "rules_url", label: "Regulamento", kind: "url", group: "Local e links" },
+  {
+    key: "prize_summary",
+    label: "Prêmios (resumo)",
+    kind: "text",
+    group: "Local e links",
+    help: "Texto curto do topo da página pública, ex.: US$ 3.000 em prêmios.",
+  },
 
 ];
 

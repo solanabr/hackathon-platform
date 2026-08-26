@@ -5,7 +5,6 @@ import {
   getHackathonBySlug,
   isRegistrationOpen,
   isFinalistsVisible,
-  prizePoolLabel,
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
@@ -44,7 +43,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const supabase = await createServerSupabaseClient();
   const open = isRegistrationOpen(hackathon);
   const now = Date.now();
-  const prizePool = prizePoolLabel(hackathon.prize_summary);
+  const prizePool = hackathon.prize_summary;
 
   const viewer = await resolveAuthenticatedUserState();
   const registered =
