@@ -165,29 +165,34 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             />
           </div>
 
-          <div className="relative">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
-              Painel
-            </p>
-            <h1 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-4xl">
-              Olá, {state.profile?.full_name?.split(" ")[0]}.
-            </h1>
-            <p className="mt-1.5 font-semibold text-muted">{hackathon.name}</p>
-          </div>
-
-          <div className="relative mt-6 overflow-hidden rounded-2xl border-2 border-green-dark bg-yellow/20 px-6 py-6 sm:px-8">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-                {hero.label}
+          <div className="relative flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                Painel
               </p>
-              <Badge tone={hero.tone}>{hero.badge}</Badge>
+              <h1 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-4xl">
+                Olá, {state.profile?.full_name?.split(" ")[0]}.
+              </h1>
+              <p className="mt-1.5 font-semibold text-muted">{hackathon.name}</p>
             </div>
-            <p className="mt-3 font-mono text-5xl font-bold tabular-nums tracking-tight text-ink">
-              <Countdown deadlineIso={hero.target} placeholder="—" />
-            </p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">
-              {FULL.format(new Date(hero.target))}
-            </p>
+
+            <div className="rounded-2xl border-2 border-green-dark bg-yellow/20 px-5 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
+                  {hero.label}
+                </p>
+                <Badge tone={hero.tone}>{hero.badge}</Badge>
+              </div>
+              <Countdown
+                deadlineIso={hero.target}
+                variant="segments"
+                size="md"
+                className="mt-2 !justify-start !gap-3"
+              />
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                {FULL.format(new Date(hero.target))}
+              </p>
+            </div>
           </div>
         </header>
 
