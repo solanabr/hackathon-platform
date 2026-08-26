@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { resolveRoleState } from "@/lib/roles";
 import { UserMenu } from "./user-menu";
+import { EntrarLink } from "./entrar-link";
 
 /**
  * Floating dark dock instead of a hairline bar: the cream page keeps its
@@ -49,12 +50,7 @@ export async function Header() {
               links={menuLinks}
             />
           ) : (
-            <Link
-              href="/auth"
-              className="rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
-            >
-              Entrar
-            </Link>
+            <EntrarLink className="rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark" />
           )}
         </nav>
       </div>
