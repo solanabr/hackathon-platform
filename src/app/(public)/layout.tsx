@@ -17,7 +17,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       </a>
       <div className="relative z-10 flex min-h-screen flex-col">
         <Header />
-        <div id="conteudo" className="flex-1">{children}</div>
+        {/* Short pages may show the footer's link block at the fold, never the
+            wordmark below it — that part is only reachable by scrolling. */}
+        <div id="conteudo" className="min-h-[calc(100dvh-24rem)] flex-1">{children}</div>
         <Footer />
       </div>
     </main>
