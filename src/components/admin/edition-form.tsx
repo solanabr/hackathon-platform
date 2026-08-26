@@ -15,16 +15,19 @@ const inputClass =
 export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(formData: FormData) {
     setError(null);
+    setFieldErrors({});
     setSaved(false);
     startTransition(async () => {
       const result = await updateEdition(hackathon.id, hackathon.slug, formData);
       if (!result.ok) {
         setError(result.error);
+        setFieldErrors(result.fields ?? {});
         return;
       }
       setSaved(true);
@@ -36,7 +39,8 @@ export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
   return (
     <form action={onSubmit} className="space-y-6">
       {EDITION_GROUPS.map((group) => {
-        const fields = EDITION_FIELDS.filter((f) => f.group === group);
+        // Status changes only through the lifecycle control on the overview.
+        const fields = EDITION_FIELDS.filter((f) => f.group === group && f.key !== "status");
         if (fields.length === 0) return null;
 
         return (
@@ -87,12 +91,22 @@ export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
                         type={field.kind === "number" ? "number" : "text"}
                         inputMode={field.kind === "number" ? "numeric" : undefined}
                         spellCheck={field.kind === "url" ? false : undefined}
+                        placeholder={field.kind === "url" ? "https://..." : undefined}
                         defaultValue={
-                          value === null || value === undefined ? "" : String(value)
+                          value === null ||
+                          value === undefined ||
+                          (field.kind === "number" && value === 0)
+                            ? ""
+                            : String(value)
                         }
                       />
                     )}
 
+                    {fieldErrors[String(field.key)] && (
+                      <p className="mt-1 text-xs font-semibold text-red-700">
+                        {fieldErrors[String(field.key)]}
+                      </p>
+                    )}
                     {field.help && <p className="mt-1 text-xs text-muted">{field.help}</p>}
                   </div>
                 );

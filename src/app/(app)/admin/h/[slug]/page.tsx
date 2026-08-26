@@ -6,8 +6,9 @@ import { AdminEditionNav } from "@/components/admin/admin-edition-nav";
 import { Card } from "@/components/ui/card";
 import { EditionForm } from "@/components/admin/edition-form";
 import { CoverUpload } from "@/components/admin/cover-upload";
+import { LifecycleControl } from "@/components/admin/lifecycle-control";
 import { requireEditionAdminBySlug } from "@/lib/roles";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { getHackathonBySlug, isSubmissionWindowOpen, ratingRound } from "@/lib/hackathon";
 import {
   listRegistrationsForEdition,
   listTeamsForEdition,
@@ -76,12 +77,56 @@ export default async function AdminEditionPage({
     listRegistrationsForEdition(hackathon.id),
     listTeamsForEdition(hackathon.id),
   ]);
-  const confirmedRegistrations = registrations.filter(
+  const isMock = (email: string | null | undefined) => !!email?.endsWith("@mock.test");
+  const realRegistrations = registrations.filter((r) => !isMock(r.user?.email));
+  const mockRegistrations = registrations.length - realRegistrations.length;
+  const confirmedRegistrations = realRegistrations.filter(
     (r) => r.luma_confirmed_at && r.terms_accepted_at,
   ).length;
   const submittedTeams = teams.filter(
     (t) => t.submission?.status === "submitted",
   ).length;
+
+  const round = ratingRound(hackathon);
+  const { data: submittedRows } = await supabase
+    .from("submissions")
+    .select("id, teams!inner(hackathon_id)")
+    .eq("teams.hackathon_id", hackathon.id)
+    .eq("status", "submitted");
+  const submittedIds = ((submittedRows as { id: string }[] | null) ?? []).map((s) => s.id);
+
+  const [judgeRoles, assignmentRows, ratingCount] = await Promise.all([
+    supabase
+      .from("platform_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "judge")
+      .eq("hackathon_id", hackathon.id),
+    submittedIds.length
+      ? supabase
+          .from("submission_assignments")
+          .select("submission_id")
+          .eq("round", round)
+          .in("submission_id", submittedIds)
+      : Promise.resolve({ data: [] as { submission_id: string }[] }),
+    submittedIds.length
+      ? supabase
+          .from("submission_ratings")
+          .select("id", { count: "exact", head: true })
+          .eq("round", round)
+          .in("submission_id", submittedIds)
+      : Promise.resolve({ count: 0 }),
+  ]);
+
+  const judgeCount = judgeRoles.count ?? 0;
+  const perSubmission = new Map<string, number>();
+  for (const row of (assignmentRows.data as { submission_id: string }[] | null) ?? []) {
+    perSubmission.set(row.submission_id, (perSubmission.get(row.submission_id) ?? 0) + 1);
+  }
+  const fullyAssigned = submittedIds.filter((id) => (perSubmission.get(id) ?? 0) >= 2).length;
+  const ratingsIn = ratingCount.count ?? 0;
+
+  const windowOpen = isSubmissionWindowOpen(hackathon);
+  const roundLabel = round === "triagem" ? "triagem" : "banca final";
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
@@ -105,6 +150,54 @@ export default async function AdminEditionPage({
             </Link>
           </div>
         </header>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Janela de submissão
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold">
+              {windowOpen ? "Aberta" : "Encerrada"}
+            </p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
+              {windowOpen ? "até " : "desde "}
+              {SUBMITTED_AT.format(new Date(hackathon.submission_deadline_at))}
+            </p>
+          </div>
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Times
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold tabular-nums">
+              {submittedTeams} de {teams.length}
+            </p>
+            <p className="mt-0.5 font-mono text-xs text-muted">submetidos</p>
+          </div>
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Jurados · {roundLabel}
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold tabular-nums">{judgeCount}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
+              {fullyAssigned} de {submittedIds.length} projetos com 2 jurados
+            </p>
+          </div>
+          <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+              Notas · {roundLabel}
+            </p>
+            <p className="mt-1 font-heading text-xl font-bold tabular-nums">{ratingsIn}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
+              de {submittedIds.length * 2} esperadas na rodada
+            </p>
+          </div>
+        </div>
+
+        <LifecycleControl
+          slug={hackathon.slug}
+          status={hackathon.status}
+          finalistsAnnouncedAt={hackathon.finalists_announced_at}
+        />
 
         <Card sticker className="p-6 sm:p-7">
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
@@ -136,8 +229,9 @@ export default async function AdminEditionPage({
               </p>
               <h2 className="mt-1 font-heading text-lg font-bold">Inscrições</h2>
               <p className="mt-1 text-sm text-muted">
-                <span className="font-mono tabular-nums">{registrations.length}</span> inscritas ·
-                <span className="font-mono tabular-nums"> {confirmedRegistrations}</span>{" "}
+                <span className="font-mono tabular-nums">{realRegistrations.length}</span> inscrições
+                reais ·<span className="font-mono tabular-nums"> {mockRegistrations}</span> de teste
+                ·<span className="font-mono tabular-nums"> {confirmedRegistrations}</span> reais
                 confirmadas no Luma e com termos aceitos
               </p>
             </div>
@@ -158,7 +252,14 @@ export default async function AdminEditionPage({
                 <tbody>
                   {registrations.map((r) => (
                     <tr key={r.user_id} className="odd:bg-surface-deep">
-                      <td className="py-2.5 pl-4 pr-4 font-medium">{r.user?.full_name ?? "—"}</td>
+                      <td className="py-2.5 pl-4 pr-4 font-medium">
+                        {r.user?.full_name ?? "—"}
+                        {isMock(r.user?.email) && (
+                          <span className="ml-2 inline-flex items-center rounded border border-yellow-strong/60 bg-yellow/40 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-green-dark">
+                            teste
+                          </span>
+                        )}
+                      </td>
                       <td className="py-2.5 pr-4 font-mono text-xs text-muted">
                         {r.user?.email ?? "—"}
                       </td>

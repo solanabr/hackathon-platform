@@ -73,8 +73,8 @@ export default async function AdminPageEditorPage({
           </p>
           <h1 className="mt-1 font-heading text-3xl font-bold">Editor da página</h1>
           <p className="mt-1 text-sm text-muted">
-            Um documento em markdown. Títulos com ## viram âncoras; os blocos cercados puxam os
-            dados da edição.
+            Um documento em markdown puro. Títulos com ## viram âncoras; as seções ao vivo
+            entram sozinhas depois do texto.
           </p>
         </header>
 

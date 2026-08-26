@@ -43,8 +43,10 @@ export type Hackathon = {
   community_url: string | null;
   prize_summary: string | null;
   rules_url: string | null;
-  // null until migration 00039 runs; the page then falls back to sections.
   page_md: string | null;
+  // The one date meaning "this edition is over" (00041). Optional; code
+  // still reads presential_at until the cutover after 12/09.
+  ends_at: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
