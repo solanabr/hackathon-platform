@@ -110,21 +110,23 @@ export async function defaultAuthRedirect(state: AuthenticatedState): Promise<st
 // Header, gates, and pages all call this per request; one auth+profile read.
 export const resolveAuthenticatedUserState = cache(async (): Promise<AuthenticatedState | null> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // Local JWT verification against the cached JWKS — no Auth API round-trip.
+  const { data } = await supabase.auth.getClaims();
+  // email stays asserted like the old user.email! — gating on it would turn a
+  // valid session with no email claim into a silent logout.
+  const claims = data?.claims;
+  if (!claims?.sub) return null;
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", claims.sub)
     .maybeSingle();
   if (profileError) logQueryError("userState.resolveAuthenticatedUserState.profile", profileError);
 
   return {
-    userId: user.id,
-    email: user.email!,
+    userId: claims.sub,
+    email: claims.email as string,
     profile: profile as User | null,
   };
 });

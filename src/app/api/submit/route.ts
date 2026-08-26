@@ -30,10 +30,11 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const leaderEmail = (claimsData?.claims?.email as string | undefined) ?? null;
+  if (!claimsData?.claims) {
+    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  }
 
   const { error: rpcError } = await supabase.rpc("submit_team", { p_team_id: body.teamId });
   if (rpcError) {
@@ -70,9 +71,9 @@ export async function POST(request: NextRequest) {
         ? row?.submissions[0]
         : row?.submissions;
 
-      if (user.email && edition?.slug) {
+      if (leaderEmail && edition?.slug) {
         const result = await sendSubmissionReceived({
-          to: user.email,
+          to: leaderEmail,
           projectName: submission?.project_name ?? "Seu projeto",
           editionName: edition.name ?? "",
           editionUrl: `${siteUrl()}/h/${edition.slug}`,
