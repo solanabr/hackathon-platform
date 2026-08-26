@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     siteName: "Superteam Brasil",
     type: "website",
     locale: "pt_BR",
+    images: [{ url: "/brand/og-hub.png", width: 2400, height: 1260 }],
   },
 };
 
