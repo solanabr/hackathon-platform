@@ -20,6 +20,11 @@ const H2 =
 
 const EYEBROW = "font-mono text-[11px] font-bold uppercase tracking-[0.2em]";
 
+// Every section after the first opens with a hairline. The space around it is
+// roughly double the largest gap inside a section, so the rule confirms a
+// boundary the spacing has already made.
+const SECTION_GAP = "mt-14 border-t border-green-dark/15 pt-12";
+
 const TH =
   "border-b-2 border-green-dark/15 py-3 pr-6 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald";
 const TD = "border-b border-green-dark/10 py-3 pr-6 align-top leading-relaxed";
@@ -67,23 +72,31 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
       >
         {withNav && <OutlineNav outline={outline} />}
 
-        <div className="min-w-0 space-y-14">
+        <div className="min-w-0">
           {sections.map((section, i) => (
             <section
               key={section.id || `sem-titulo-${i}`}
               aria-labelledby={section.heading ? section.id : undefined}
+              className={i > 0 ? SECTION_GAP : undefined}
             >
               {section.heading && (
                 <h2 id={section.id} className={`${H2} scroll-mt-28`}>
                   <Inline md={section.heading} />
                 </h2>
               )}
-              {section.blocks.map((block, j) => (
-                <Block key={j} block={block} startsAt={ctx.startsAt} />
-              ))}
+              {/* The heading and what follows it are one unit; the blocks
+                  under them breathe. That difference is what tells a reader
+                  where a section starts. */}
+              <div className="mt-3 space-y-7">
+                {section.blocks.map((block, j) => (
+                  <Block key={j} block={block} startsAt={ctx.startsAt} />
+                ))}
+              </div>
             </section>
           ))}
-          {showFinalists && <FinalistsSection finalists={ctx.finalists} />}
+          {showFinalists && (
+            <FinalistsSection finalists={ctx.finalists} divided={sections.length > 0} />
+          )}
           {showPartners && <PartnersSection sponsors={ctx.sponsors} />}
         </div>
       </div>
@@ -143,7 +156,7 @@ function Inline({ md }: { md: string }) {
  */
 function CalloutBlock({ md }: { md: string }) {
   return (
-    <p className="mt-6 w-fit max-w-3xl rounded-2xl bg-green-dark px-6 py-4 font-heading text-lg font-bold leading-snug text-surface shadow-sticker">
+    <p className="w-fit max-w-3xl rounded-2xl bg-green-dark px-6 py-4 font-heading text-lg font-bold leading-snug text-surface shadow-sticker">
       <Inline md={md} />
     </p>
   );
@@ -159,7 +172,7 @@ function PodiumBlock({ rows }: { rows: string[][] }) {
   const step = Math.min(15, 45 / Math.max(rows.length - 1, 1));
 
   return (
-    <ol className="mt-7 space-y-3">
+    <ol className="space-y-3">
       {rows.map((row, i) => {
         const lead = i === 0;
         return (
@@ -205,7 +218,7 @@ function TimelineBlock({ rows, startsAt }: { rows: string[][]; startsAt: string 
   );
 
   return (
-    <div className="mt-7 rounded-3xl bg-green-dark px-6 py-10 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-10">
+    <div className="rounded-3xl bg-green-dark px-6 py-10 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-10">
       <ol className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map((row, i) => {
           const isNext = i === next;
@@ -253,7 +266,7 @@ function TimelineBlock({ rows, startsAt }: { rows: string[][]; startsAt: string 
  */
 function ScheduleBlock({ rows, startsAt }: { rows: string[][]; startsAt: string }) {
   return (
-    <ul className="mt-7 grid gap-4 lg:grid-cols-2">
+    <ul className="grid gap-4 lg:grid-cols-2">
       {rows.map((row, i) => {
         const at = resolveDocDate(row[0] ?? "", startsAt);
         return (
@@ -314,7 +327,7 @@ function ScheduleBlock({ rows, startsAt }: { rows: string[][]; startsAt: string 
 
 function AgendaBlock({ rows }: { rows: string[][] }) {
   return (
-    <ul className="mt-7 space-y-3">
+    <ul className="space-y-3">
       {rows.map((row, i) => (
         <li
           key={i}
@@ -334,7 +347,7 @@ function AgendaBlock({ rows }: { rows: string[][] }) {
 
 function CardsBlock({ rows }: { rows: string[][] }) {
   return (
-    <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {rows.map((row, i) => (
         <li
           key={i}
@@ -361,7 +374,7 @@ function CardsBlock({ rows }: { rows: string[][] }) {
 
 function DataTable({ table }: { table: TableBlock }) {
   return (
-    <div className="mt-7 overflow-x-auto">
+    <div className="overflow-x-auto">
       <table className="w-full max-w-3xl border-collapse text-left text-sm">
         <thead>
           <tr>
@@ -412,7 +425,7 @@ function OutlineNav({ outline }: { outline: OutlineEntry[] }) {
 
 function ProseDoc({ md }: { md: string }) {
   return (
-    <div className="prose-lp max-w-3xl">
+    <div className="prose-lp max-w-3xl [&>:first-child]:mt-0">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -444,14 +457,20 @@ function FurnitureHeading({ id, children }: { id: string; children: React.ReactN
   );
 }
 
-function FinalistsSection({ finalists }: { finalists: Finalist[] }) {
+function FinalistsSection({
+  finalists,
+  divided,
+}: {
+  finalists: Finalist[];
+  divided: boolean;
+}) {
   return (
-    <section aria-label="Finalistas">
+    <section aria-label="Finalistas" className={divided ? SECTION_GAP : undefined}>
       <FurnitureHeading id="finalistas">Finalistas</FurnitureHeading>
       <p className="mt-3 max-w-2xl leading-relaxed text-muted">
         As equipes classificadas para a fase final.
       </p>
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {finalists.map((f) => (
           <li
             key={f.teamId}
@@ -495,8 +514,10 @@ function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className:
 
 function PartnersSection({ sponsors }: { sponsors: Record<SponsorTier, SponsorLogo[]> }) {
   const { realizacao, apoiador } = sponsors;
+  // The band is its own object on the page, so it takes the section's
+  // breathing room without the rule — a dark block is already a boundary.
   return (
-    <section aria-label="Realização e apoiadores">
+    <section aria-label="Realização e apoiadores" className="mt-14">
       <div className="rounded-3xl bg-green-dark px-8 py-12 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-12">
         {realizacao.length > 0 && (
           <>
