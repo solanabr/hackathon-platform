@@ -94,6 +94,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
   // The hero counts down to whatever comes next in the edition's life:
   // inscriptions, then submissions, then Pitch Day. Null once it is all over.
+  // Server component, one render per request — "now" is a request input.
+  // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
   const countdownTarget =
     hackathon.registration_closes_at && new Date(hackathon.registration_closes_at).getTime() > nowMs

@@ -1,4 +1,4 @@
-import { DAY_MONTH, DAY_MONTH_LONG_TIME, TIME_HM, stripPeriods } from "@/lib/dates";
+import { DAY_MONTH, DAY_MONTH_LONG_TIME, stripPeriods } from "@/lib/dates";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -32,8 +32,6 @@ export const dynamic = "force-dynamic";
 const DAY = DAY_MONTH;
 
 const FULL = DAY_MONTH_LONG_TIME;
-
-const TIME = TIME_HM;
 
 const clean = stripPeriods;
 
@@ -71,6 +69,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const totalCount = scheduleResult.count;
 
   const open = isSubmissionWindowOpen(hackathon);
+  // Server component, one render per request — "now" is a request input.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const submitted = snapshot?.submission.status === "submitted";
 

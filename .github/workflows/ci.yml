@@ -5,21 +5,35 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+# Superseded PR pushes cancel their older run; post-merge main runs never do.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       - run: npm ci
 
+      - run: npm run lint
+
       - run: npm test
 
+      # Placeholders, not secrets: the CI build is a compile/type gate, and it
+      # must keep proving the app builds without real credentials.
       - run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co

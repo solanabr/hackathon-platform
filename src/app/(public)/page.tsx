@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { publicStorageUrl } from "@/lib/storage";
-import Image from "next/image";
 import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
