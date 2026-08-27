@@ -13,7 +13,8 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    // Same rule as error.tsx: digest-bearing errors were captured server-side.
+    if (!error.digest) Sentry.captureException(error);
   }, [error]);
 
   return (

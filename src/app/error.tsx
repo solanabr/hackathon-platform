@@ -5,10 +5,18 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 // Next intercepts errors caught by this boundary, so the SDK never sees them
-// on its own — the capture here is the only report.
-export default function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
+// on its own. Server-thrown errors arrive redacted to a digest and were
+// already captured server-side — reporting them here would only add an
+// information-free duplicate, so the capture is for client-side errors only.
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   useEffect(() => {
-    Sentry.captureException(error);
+    if (!error.digest) Sentry.captureException(error);
   }, [error]);
 
   return (

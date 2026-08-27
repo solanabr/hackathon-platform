@@ -5,4 +5,5 @@ Sentry.init({
   tracesSampleRate: 0,
   sendDefaultPii: false,
   enableLogs: false,
+  ignoreErrors: [/^query failed: /],
 });

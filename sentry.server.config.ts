@@ -5,4 +5,8 @@ Sentry.init({
   tracesSampleRate: 0,
   sendDefaultPii: false,
   enableLogs: false,
+  // unwrap() already reported the query failure with full context before
+  // rethrowing this generic wrapper — capturing it again would make every DB
+  // error a second, information-free issue.
+  ignoreErrors: [/^query failed: /],
 });
