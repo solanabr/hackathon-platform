@@ -43,6 +43,7 @@ export default async function AdminPageEditorPage({
     sponsors: { realizacao: [], apoiador: [] },
     finalists,
     finalistsVisible: isFinalistsVisible(hackathon),
+    startsAt: hackathon.starts_at,
   };
 
   return (
