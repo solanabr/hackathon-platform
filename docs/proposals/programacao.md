@@ -40,18 +40,21 @@ As gravações ficam disponíveis na plataforma depois de cada encontro.
 
 # Highlighted lines (callout)
 
-Any line written as a blockquote renders as a yellow card, the same yellow the
-winning place uses. It is the document's way of saying "this is the one thing
-in this section you must not miss", and it works in every section.
+A line written as a blockquote renders as a dark card: the one thing in its
+section a reader must not miss. Yellow on this page means reward, so a
+deadline or a limit is deliberately not yellow.
 
-For the deliverables deadline, prefix the existing line with `> `:
+It renders where it sits in the document, so put it above the table to frame
+what follows, or below to close the section:
 
 ```markdown
 ## O que seu time entrega
 
-> Entrega até 9 de setembro às 12:00.
-
 | Entregável | Limite | Observação |
+| --- | --- | --- |
+| Pitch deck | 10 slides | ... |
+
+> Entrega até 9 de setembro às 12:00.
 ```
 
 Without the `>` it stays an ordinary paragraph, so nothing breaks if it is

@@ -84,10 +84,15 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
                   <Inline md={section.heading} />
                 </h2>
               )}
-              {/* The heading and what follows it are one unit; the blocks
-                  under them breathe. That difference is what tells a reader
-                  where a section starts. */}
-              <div className="mt-3 space-y-7">
+              {/* A heading and the sentence under it are one unit, so they sit
+                  close. A heading that opens straight onto cards is not — that
+                  gap has to look like the one between blocks, or the cards read
+                  as if they were still part of the title. */}
+              <div
+                className={`space-y-7 ${
+                  section.blocks[0]?.kind === "markdown" ? "mt-3" : "mt-7"
+                }`}
+              >
                 {section.blocks.map((block, j) => (
                   <Block key={j} block={block} startsAt={ctx.startsAt} />
                 ))}
