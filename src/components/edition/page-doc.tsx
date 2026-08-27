@@ -69,7 +69,10 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
 
         <div className="min-w-0 space-y-14">
           {sections.map((section, i) => (
-            <section key={section.id || `sem-titulo-${i}`}>
+            <section
+              key={section.id || `sem-titulo-${i}`}
+              aria-labelledby={section.heading ? section.id : undefined}
+            >
               {section.heading && (
                 <h2 id={section.id} className={`${H2} scroll-mt-28`}>
                   <Inline md={section.heading} />
@@ -109,8 +112,20 @@ function Block({ block, startsAt }: { block: DocBlock; startsAt: string }) {
   }
 }
 
-/** Cell and heading text keep their inline markdown — bold, links, code. */
+// Anything that could mean something to markdown inline: emphasis, code,
+// links, strikethrough, entities, raw HTML, escapes, GFM autolinks.
+const HAS_MARKUP = /[*_`~[\]<>\\&]|https?:\/\//;
+
+/**
+ * Cell and heading text keep their inline markdown — bold, links, code.
+ *
+ * The plain-text shortcut is not a micro-optimisation: this component renders
+ * once per cell, and the page editor re-renders the whole document on every
+ * keystroke. Spinning up a remark pipeline sixty times for strings like
+ * "10 slides" pushed a keystroke past the frame budget on its own.
+ */
 function Inline({ md }: { md: string }) {
+  if (!HAS_MARKUP.test(md)) return <>{md}</>;
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}

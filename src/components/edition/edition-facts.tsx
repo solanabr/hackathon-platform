@@ -118,7 +118,13 @@ export function EditionFacts({ hackathon }: { hackathon: Hackathon }) {
           <p className="mt-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">
             {fact.label}
           </p>
-          <p className="mt-1.5 text-balance font-heading text-2xl font-black leading-tight">
+          {/* A prize column with no amount in it puts its whole sentence here,
+              so the headline steps down rather than filling the card. */}
+          <p
+            className={`mt-1.5 text-balance font-heading font-black leading-tight ${
+              fact.value.length > 26 ? "text-lg" : "text-2xl"
+            }`}
+          >
             {fact.value}
           </p>
           {fact.detail && (
