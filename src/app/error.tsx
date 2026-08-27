@@ -1,8 +1,24 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
 import Link from "next/link";
 
-export default function GlobalError({ reset }: { error: Error; reset: () => void }) {
+// Next intercepts errors caught by this boundary, so the SDK never sees them
+// on its own. Server-thrown errors arrive redacted to a digest and were
+// already captured server-side — reporting them here would only add an
+// information-free duplicate, so the capture is for client-side errors only.
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    if (!error.digest) Sentry.captureException(error);
+  }, [error]);
+
   return (
     <main className="flex min-h-[70vh] items-center justify-center bg-surface px-4 py-16">
       <div className="w-full max-w-md rounded-3xl border-2 border-green-dark bg-surface-raised p-10 text-center shadow-sticker">

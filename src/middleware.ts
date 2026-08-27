@@ -7,6 +7,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|brand/|opengraph-image|twitter-image|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // sentry-tunnel must stay excluded: under Turbopack the SDK does not skip
+    // the tunnel route by itself, and auth middleware would eat the POSTs.
+    "/((?!_next/static|_next/image|favicon.ico|brand/|sentry-tunnel|opengraph-image|twitter-image|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
