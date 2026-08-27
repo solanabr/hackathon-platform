@@ -24,3 +24,8 @@ export const TIME_HM = fmt({ hour: "2-digit", minute: "2-digit" });
 export function stripPeriods(s: string): string {
   return s.replace(/\./g, "");
 }
+
+/** "31" — the day alone, for schedule cards that stack day over weekday. */
+export const DAY_ONLY = fmt({ day: "2-digit" });
+/** "seg." — layouts uppercase it and drop the period. */
+export const WEEKDAY_SHORT = fmt({ weekday: "short" });

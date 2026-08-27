@@ -41,3 +41,6 @@ next-env.d.ts
 
 # brand source (kept locally, served from public/brand)
 branding/
+
+# supabase cli scratch
+supabase/.temp/

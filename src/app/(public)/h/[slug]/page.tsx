@@ -12,10 +12,10 @@ import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
-import { DAY_MONTH, TIME_HM, stripPeriods } from "@/lib/dates";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
 
 import { EditionPageDoc } from "@/components/edition/page-doc";
+import { EditionFacts } from "@/components/edition/edition-facts";
 import { Countdown } from "@/components/ui/countdown";
 import { BackLink } from "@/components/ui/back-link";
 
@@ -46,10 +46,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-const DAY = DAY_MONTH;
-const TIME = TIME_HM;
-
-const clean = stripPeriods;
 
 export default async function EditionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -59,8 +55,6 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   if (hackathon.external_url) redirect(hackathon.external_url);
 
   const open = isRegistrationOpen(hackathon);
-  const now = Date.now();
-  const prizePool = hackathon.prize_summary;
 
   const viewer = await resolveAuthenticatedUserState();
   // Registration, roles and sponsors are mutually independent — one batch.
@@ -215,29 +209,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
 
       <section className="px-4 pb-8 pt-16 sm:px-6 lg:px-8" aria-label="Informações da edição">
         <div className="mx-auto max-w-6xl">
-          <dl className="flex flex-wrap gap-x-12 gap-y-4 border-t-2 border-green-dark/10 pt-8">
-            <div>
-              <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Quando</dt>
-              <dd className="mt-1 font-heading text-lg font-bold">
-                {clean(DAY.format(new Date(hackathon.starts_at)))} a{" "}
-                {clean(
-                  DAY.format(new Date(hackathon.presential_at ?? hackathon.submission_deadline_at)),
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Onde</dt>
-              <dd className="mt-1 font-heading text-lg font-bold">
-                {hackathon.location_city ?? "Online"}
-              </dd>
-            </div>
-            {prizePool && (
-              <div>
-                <dt className="text-xs font-bold uppercase tracking-widest text-emerald">Prêmios</dt>
-                <dd className="mt-1 font-heading text-lg font-bold text-emerald">{prizePool}</dd>
-              </div>
-            )}
-          </dl>
+          <EditionFacts hackathon={hackathon} />
         </div>
       </section>
 
@@ -261,6 +233,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               sponsors,
               finalists,
               finalistsVisible: isFinalistsVisible(hackathon),
+              startsAt: hackathon.starts_at,
             }}
           />
         </div>
