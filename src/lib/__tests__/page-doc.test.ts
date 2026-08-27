@@ -194,6 +194,33 @@ describe("classifyTable", () => {
     expect(classifyTable(table(["Só uma"], [["coluna"]]))).toBe("table");
     expect(classifyTable(table(["A", "B"], []))).toBe("table");
   });
+
+  it("a numbered FAQ is not a podium — the ordinal marker is what makes a rank", () => {
+    expect(
+      classifyTable(
+        table(
+          ["#", "Pergunta"],
+          [
+            ["1", "Qual é o prazo?"],
+            ["2", "É presencial?"],
+            ["3", "Quantas pessoas por time?"],
+          ],
+        ),
+      ),
+    ).toBe("table");
+    expect(
+      classifyTable(
+        table(
+          ["Colocação", "Prêmio"],
+          [
+            ["1º Lugar", "US$ 1.500"],
+            ["2º Lugar", "US$ 900"],
+            ["Menção Honrosa", "US$ 150"],
+          ],
+        ),
+      ),
+    ).toBe("podium");
+  });
 });
 
 describe("resolveDocDate", () => {
@@ -220,6 +247,12 @@ describe("resolveDocDate", () => {
     expect(resolveDocDate("em breve", anchor)).toBeNull();
     expect(resolveDocDate("45/13", anchor)).toBeNull();
     expect(resolveDocDate("31/08", "nao é data")).toBeNull();
+  });
+
+  it("rejects an impossible day instead of letting the engine roll it over", () => {
+    expect(resolveDocDate("31/02", anchor)).toBeNull();
+    expect(resolveDocDate("31/09", anchor)).toBeNull();
+    expect(resolveDocDate("29/02", "2027-01-10T09:00:00-03:00")).toBeNull();
   });
 });
 

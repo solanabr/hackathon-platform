@@ -138,7 +138,9 @@ export type TableLayout =
   | "cards"
   | "table";
 
-const RANK = /^\d+\s*[º°o]?(\s|$)|^men[çc][ãa]o/i;
+// The ordinal marker is mandatory: "1º" is a placement, a bare "1" is just a
+// numbered row (an FAQ, an agenda item) and must never render as a podium.
+const RANK = /^\d+(\s*[º°]|o)(\s|\.|$)|^men[çc][ãa]o/i;
 const DATE = /^\d{1,2}\s*\/\s*\d{1,2}/;
 
 const ratio = (cells: string[], re: RegExp) =>
@@ -202,7 +204,21 @@ export function resolveDocDate(cell: string, anchorIso: string): Date | null {
   const resolved = new Date(
     `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00-03:00`,
   );
-  return Number.isNaN(resolved.getTime()) ? null : resolved;
+  if (Number.isNaN(resolved.getTime())) return null;
+
+  // V8 rolls an impossible day over instead of failing ("31/02" becomes
+  // March 3rd). Round-trip the resolved date and refuse anything that no
+  // longer matches what the organizer typed — null, never a guess.
+  const roundTrip = new Intl.DateTimeFormat("en", {
+    timeZone: "America/Sao_Paulo",
+    day: "numeric",
+    month: "numeric",
+  }).formatToParts(resolved);
+  const rtDay = Number(roundTrip.find((p) => p.type === "day")?.value);
+  const rtMonth = Number(roundTrip.find((p) => p.type === "month")?.value);
+  if (rtDay !== day || rtMonth !== month) return null;
+
+  return resolved;
 }
 
 /**
