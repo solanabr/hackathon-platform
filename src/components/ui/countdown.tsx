@@ -49,7 +49,9 @@ export function Countdown({
   size?: "md" | "lg";
 }) {
   const deadlineMs = new Date(deadlineIso).getTime();
-  const [seg, setSeg] = useState<Segments | null>(null);
+  // undefined = no client tick yet (SSR and first paint), null = expired.
+  // Collapsing the two would show the placeholder forever past the deadline.
+  const [seg, setSeg] = useState<Segments | null | undefined>(undefined);
 
   useEffect(() => {
     const tick = () => setSeg(diffSegments(deadlineMs, Date.now()));
@@ -83,7 +85,7 @@ export function Countdown({
                 }`}
                 suppressHydrationWarning
               >
-                {seg ? pad(tile.value) : "00"}
+                {seg !== undefined ? pad(tile.value) : "00"}
               </p>
               <p className={`font-mono uppercase tracking-wider text-muted ${size === "md" ? "mt-1 text-[10px]" : "mt-2 text-[11px]"}`}>
                 {tile.label}
@@ -96,6 +98,6 @@ export function Countdown({
   }
 
   return (
-    <span className={className}>{seg ? formatCompact(seg) : placeholder}</span>
+    <span className={className}>{seg !== undefined ? formatCompact(seg) : placeholder}</span>
   );
 }
