@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { resolveRoleState } from "@/lib/roles";
+import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
 import { EntrarLink } from "./entrar-link";
 
@@ -26,6 +27,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-3 z-50 px-3 sm:top-4 sm:px-6">
+      {state && <PostHogIdentify userId={state.userId} />}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-sticker sm:px-6">
         <Link
           href="/"

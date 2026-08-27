@@ -13,6 +13,19 @@ const config: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "10mb" },
   },
+  async rewrites() {
+    return [
+      {
+        source: "/relay-hx9/static/:path*",
+        destination: "https://eu-assets.i.posthog.com/static/:path*",
+      },
+      { source: "/relay-hx9/:path*", destination: "https://eu.i.posthog.com/:path*" },
+    ];
+  },
+  // PostHog ingest endpoints end in a slash; the default 308 to the slashless
+  // path would kill every event. Page URLs keep their canonical redirect via
+  // the middleware instead.
+  skipTrailingSlashRedirect: true,
 };
 
 export default withSentryConfig(config, {
