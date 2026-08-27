@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 type QueryError = {
   code?: string;
   message?: string;
@@ -11,6 +13,12 @@ export function logQueryError(site: string, error: QueryError): void {
     message: error.message,
     details: error.details,
     hint: error.hint,
+  });
+  // PostgREST errors are plain objects and serialize badly — wrap in a real
+  // Error so Sentry gets a stack and a stable grouping per call site.
+  Sentry.captureException(new Error(`${site}: ${error.message ?? "query failed"}`), {
+    tags: { source: "supabase", site },
+    extra: { code: error.code, details: error.details, hint: error.hint },
   });
 }
 
