@@ -496,8 +496,8 @@ function FinalistsSection({
 
 function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className: string }) {
   // Width/height reserve the box so the band doesn't reflow as logos land.
-  // eslint-disable-next-line @next/next/no-img-element
   const img = (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={sponsor.src}
       alt={sponsor.name ?? ""}

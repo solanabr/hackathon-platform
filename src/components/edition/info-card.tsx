@@ -1,11 +1,6 @@
 import { SectionCard } from "@/components/ui/section-card";
 import { buildMilestones } from "@/lib/milestones";
-import { DAY_MONTH, stripPeriods } from "@/lib/dates";
 import type { Hackathon } from "@/types/db";
-
-function d(iso: string): string {
-  return stripPeriods(DAY_MONTH.format(new Date(iso)));
-}
 
 /**
  * The DoraHacks-style event panel, in the painel where the operational view
@@ -13,6 +8,8 @@ function d(iso: string): string {
  * community group for questions. Reads only columns every edition has.
  */
 export function EditionInfoCard({ hackathon }: { hackathon: Hackathon }) {
+  // Server component, one render per request — "now" is a request input.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const rows = buildMilestones(hackathon);
 

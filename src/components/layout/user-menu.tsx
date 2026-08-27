@@ -23,9 +23,13 @@ export function UserMenu({
   const rootRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  useEffect(() => {
+  // Close on navigation, as the docs' adjust-during-render pattern — an
+  // effect would flash the open menu on the new page for a frame first.
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     if (!open) return;
