@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import posthog from "posthog-js";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
@@ -79,7 +80,15 @@ export function UserMenu({
 
           <div className="my-1 border-t border-green-dark/15" />
 
-          <form action="/api/auth/signout" method="post">
+          {/* reset() before the POST navigates away — without it the next
+              person on a shared device inherits this profile. */}
+          <form
+            action="/api/auth/signout"
+            method="post"
+            onSubmit={() => {
+              if (posthog.__loaded) posthog.reset();
+            }}
+          >
             <button type="submit" role="menuitem" className={`${itemClass} w-full text-left`}>
               Sair
             </button>

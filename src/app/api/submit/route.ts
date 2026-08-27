@@ -1,4 +1,5 @@
 import { NextResponse, after, type NextRequest } from "next/server";
+import { createPostHogServer } from "@/lib/posthog-server";
 import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
@@ -70,6 +71,20 @@ export async function POST(request: NextRequest) {
       const submission = Array.isArray(row?.submissions)
         ? row?.submissions[0]
         : row?.submissions;
+
+      // The event the client can't see reliably: the moment a team's project
+      // actually lands. Same distinct id the browser identifies with.
+      const ph = createPostHogServer();
+      const leaderId = claimsData.claims.sub as string | undefined;
+      if (ph && leaderId) {
+        await ph
+          .captureImmediate({
+            distinctId: leaderId,
+            event: "team_submitted",
+            properties: { team_id: body.teamId, edition: edition?.slug ?? null },
+          })
+          .catch((err) => console.error("posthog team_submitted failed:", err));
+      }
 
       if (leaderEmail && edition?.slug) {
         const result = await sendSubmissionReceived({
