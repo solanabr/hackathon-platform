@@ -17,9 +17,9 @@ const config: NextConfig = {
     return [
       {
         source: "/relay-hx9/static/:path*",
-        destination: "https://eu-assets.i.posthog.com/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
       },
-      { source: "/relay-hx9/:path*", destination: "https://eu.i.posthog.com/:path*" },
+      { source: "/relay-hx9/:path*", destination: "https://us.i.posthog.com/:path*" },
     ];
   },
   // PostHog ingest endpoints end in a slash; the default 308 to the slashless

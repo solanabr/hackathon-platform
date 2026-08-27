@@ -8,7 +8,10 @@ export async function middleware(request: NextRequest) {
   if (pathname !== "/" && pathname.endsWith("/")) {
     // A plain URL, not nextUrl.clone(): NextURL re-applies the incoming
     // trailing slash on serialize, which turns this into a redirect loop.
-    const url = new URL(pathname.replace(/\/+$/, "") + request.nextUrl.search, request.url);
+    // The "/" fallback matters too — a pure-slash path ("//") strips to
+    // nothing, and resolving "" against the request URL loops the same way.
+    const stripped = pathname.replace(/\/+$/, "") || "/";
+    const url = new URL(stripped + request.nextUrl.search, request.url);
     return NextResponse.redirect(url, 308);
   }
   return updateSession(request);

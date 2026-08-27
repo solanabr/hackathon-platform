@@ -11,7 +11,7 @@ export function createPostHogServer(): PostHog | null {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!key) return null;
   return new PostHog(key, {
-    host: "https://eu.i.posthog.com",
+    host: "https://us.i.posthog.com",
     flushAt: 1,
     flushInterval: 0,
   });
