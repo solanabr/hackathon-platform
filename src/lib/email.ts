@@ -95,6 +95,38 @@ export async function sendSubmissionReceived(input: {
   );
 }
 
+export async function sendApplicationReceived(input: {
+  to: string;
+  applicantName: string;
+  teamName: string;
+  roles: string[];
+  message: string | null;
+  slug: string;
+}): Promise<SendResult> {
+  const url = `${siteUrl()}/h/${input.slug}/team`;
+  return send(
+    input.to,
+    `Nova candidatura para o time ${input.teamName}`,
+    layout(`
+      <h1 style="margin:0 0 16px;font-size:22px;color:#1b231d">Nova candidatura</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#1b231d">
+        <strong>${escapeHtml(input.applicantName)}</strong> quer entrar no time
+        <strong>${escapeHtml(input.teamName)}</strong>${
+          input.roles.length ? ` como ${escapeHtml(input.roles.join(", "))}` : ""
+        }.
+      </p>
+      ${
+        input.message
+          ? `<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#1b231d;border-left:3px solid #ffd23f;padding-left:12px">${escapeHtml(input.message)}</p>`
+          : ""
+      }
+      <a href="${url}" style="display:inline-block;background:#ffd23f;color:#1b231d;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:999px">
+        Responder no painel do time
+      </a>
+    `),
+  );
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
