@@ -6,6 +6,7 @@ import { SegmentedNav } from "@/components/ui/segmented";
 const TABS = [
   { path: "dashboard", label: "Visão geral" },
   { path: "team", label: "Time" },
+  { path: "team-up", label: "Encontrar time" },
   { path: "submission", label: "Submissão" },
   { path: "content", label: "Conteúdos" },
 ] as const;

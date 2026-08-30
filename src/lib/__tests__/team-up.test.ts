@@ -1,0 +1,78 @@
+import { describe, it, expect } from "vitest";
+import {
+  TEAM_UP_ROLES,
+  roleLabel,
+  sanitizeRoles,
+  isProfileCompleteForTeamUp,
+  telegramUrl,
+  telegramLabel,
+} from "../team-up";
+
+describe("sanitizeRoles", () => {
+  it("accepts valid keys and dedupes", () => {
+    expect(sanitizeRoles(["frontend", "frontend", "design"])).toEqual([
+      "frontend",
+      "design",
+    ]);
+  });
+  it("rejects unknown keys", () => {
+    expect(sanitizeRoles(["frontend", "wizard"])).toBeNull();
+  });
+  it("rejects empty and oversized selections", () => {
+    expect(sanitizeRoles([])).toBeNull();
+    expect(sanitizeRoles(TEAM_UP_ROLES.map((r) => r.key))).toBeNull(); // 8 > 6
+  });
+  it("rejects non-arrays", () => {
+    expect(sanitizeRoles("frontend")).toBeNull();
+    expect(sanitizeRoles(null)).toBeNull();
+  });
+});
+
+describe("roleLabel", () => {
+  it("maps keys to pt-BR labels", () => {
+    expect(roleLabel("contracts")).toBe("Smart Contracts / Solana");
+  });
+  it("falls back to the key for unknown values", () => {
+    expect(roleLabel("wizard")).toBe("wizard");
+  });
+});
+
+describe("isProfileCompleteForTeamUp", () => {
+  const base = { full_name: "Ana", headline: "Dev", telegram_handle: "@ana" };
+  it("requires name, headline and telegram", () => {
+    expect(isProfileCompleteForTeamUp(base)).toBe(true);
+    expect(isProfileCompleteForTeamUp({ ...base, headline: null })).toBe(false);
+    expect(isProfileCompleteForTeamUp({ ...base, telegram_handle: " " })).toBe(false);
+    expect(isProfileCompleteForTeamUp(null)).toBe(false);
+  });
+});
+
+describe("telegramUrl", () => {
+  it("builds a t.me url from a bare handle", () => {
+    expect(telegramUrl("ana")).toBe("https://t.me/ana");
+  });
+  it("strips a leading @", () => {
+    expect(telegramUrl("@ana")).toBe("https://t.me/ana");
+  });
+  it("strips a pasted t.me url", () => {
+    expect(telegramUrl("t.me/ana")).toBe("https://t.me/ana");
+    expect(telegramUrl("https://t.me/ana")).toBe("https://t.me/ana");
+    expect(telegramUrl("http://t.me/ana")).toBe("https://t.me/ana");
+  });
+  it("trims whitespace", () => {
+    expect(telegramUrl("  ana  ")).toBe("https://t.me/ana");
+  });
+});
+
+describe("telegramLabel", () => {
+  it("renders the handle with a leading @", () => {
+    expect(telegramLabel("ana")).toBe("@ana");
+  });
+  it("normalizes an @-prefixed handle", () => {
+    expect(telegramLabel("@ana")).toBe("@ana");
+  });
+  it("normalizes a pasted t.me url", () => {
+    expect(telegramLabel("https://t.me/ana")).toBe("@ana");
+    expect(telegramLabel("t.me/ana")).toBe("@ana");
+  });
+});

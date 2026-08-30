@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Archivo } from "next/font/google";
+import { CookieBanner } from "@/components/consent/cookie-banner";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -38,7 +39,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${archivo.variable} ${inter.variable}`}>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   );
 }
