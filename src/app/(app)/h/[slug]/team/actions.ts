@@ -4,7 +4,6 @@ import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { addMemberToTeam, type AddMemberResult } from "@/lib/team-invite";
 
-export type { AddMemberResult };
 
 export type InviteActionResult = { ok: true } | { ok: false; error: string };
 
