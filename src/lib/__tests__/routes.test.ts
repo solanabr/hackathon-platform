@@ -21,6 +21,15 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/auth/callback")).toBe(true);
   });
 
+  it("keeps the legal pages public", () => {
+    expect(isPublicRoute("/privacidade")).toBe(true);
+    expect(isPublicRoute("/termos")).toBe(true);
+  });
+
+  it("gates the team-up board", () => {
+    expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/team-up")).toBe(false);
+  });
+
   it("gates everything else", () => {
     expect(isPublicRoute("/")).toBe(true);
     expect(isPublicRoute("/admin")).toBe(false);

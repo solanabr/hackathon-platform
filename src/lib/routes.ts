@@ -2,6 +2,8 @@ const PUBLIC_ROUTES = [
   "/",
   "/auth",
   "/auth/callback",
+  "/privacidade",
+  "/termos",
 ];
 
 const PUBLIC_EDITION_LANDING = /^\/h\/[^/]+$/;
