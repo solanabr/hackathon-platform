@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { segmentedContainer, segmentClass } from "@/components/ui/segmented";
 import {
+  TEAM_UP_ROLES,
   roleLabel,
   telegramUrl,
   type TeamUpBoard as TeamUpBoardData,
@@ -48,10 +49,23 @@ export function TeamUpBoard({
   applications: Application[];
 }) {
   const [tab, setTab] = useState<"teams" | "seekers">("teams");
+  const [roleFilter, setRoleFilter] = useState<string[]>([]);
 
   const applicationByTeam = new Map(
     applications.filter((a) => a.status === "pending").map((a) => [a.team_id, a]),
   );
+
+  function toggleFilter(key: string) {
+    setRoleFilter((current) =>
+      current.includes(key) ? current.filter((k) => k !== key) : [...current, key],
+    );
+  }
+
+  const matchesFilter = (roles: string[]) =>
+    roleFilter.length === 0 || roles.some((r) => roleFilter.includes(r));
+
+  const teams = board.teams.filter((t) => matchesFilter(t.roles));
+  const seekers = board.seekers.filter((s) => matchesFilter(s.roles));
 
   const topStrip = viewer.hasTeam ? (
     viewer.isLeader ? (
@@ -86,14 +100,51 @@ export function TeamUpBoard({
         </button>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por função">
+        <span className="text-xs font-bold uppercase tracking-widest text-muted">Filtrar:</span>
+        {TEAM_UP_ROLES.map((r) => {
+          const on = roleFilter.includes(r.key);
+          return (
+            <button
+              key={r.key}
+              type="button"
+              aria-pressed={on}
+              onClick={() => toggleFilter(r.key)}
+              className={`rounded-full border-2 px-3 py-1 text-xs font-bold transition-colors ${
+                on
+                  ? "border-green-dark bg-yellow text-green-dark"
+                  : "border-green-dark/30 text-ink hover:border-green-dark"
+              }`}
+            >
+              {r.label}
+            </button>
+          );
+        })}
+        {roleFilter.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setRoleFilter([])}
+            className="text-xs font-semibold text-muted underline"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className={tab === "teams" ? "space-y-4" : "hidden lg:block lg:space-y-4"}>
           <h2 className="font-heading text-xl font-bold">Times recrutando</h2>
-          {board.teams.length === 0 ? (
-            <EmptyState title="Nenhum time recrutando ainda." />
+          {teams.length === 0 ? (
+            <EmptyState
+              title={
+                board.teams.length === 0
+                  ? "Nenhum time recrutando ainda."
+                  : "Nenhum time procura essas funções."
+              }
+            />
           ) : (
             <div className="space-y-4">
-              {board.teams.map((team) => (
+              {teams.map((team) => (
                 <TeamCard
                   key={team.team_id}
                   team={team}
@@ -107,11 +158,17 @@ export function TeamUpBoard({
 
         <section className={tab === "seekers" ? "space-y-4" : "hidden lg:block lg:space-y-4"}>
           <h2 className="font-heading text-xl font-bold">Quem está disponível</h2>
-          {board.seekers.length === 0 ? (
-            <EmptyState title="Ninguém disponível ainda." />
+          {seekers.length === 0 ? (
+            <EmptyState
+              title={
+                board.seekers.length === 0
+                  ? "Ninguém disponível ainda."
+                  : "Ninguém disponível com essas funções."
+              }
+            />
           ) : (
             <div className="space-y-4">
-              {board.seekers.map((seeker) => (
+              {seekers.map((seeker) => (
                 <SeekerCard key={seeker.user_id} seeker={seeker} viewer={viewer} />
               ))}
             </div>
@@ -171,7 +228,9 @@ function TeamCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-heading text-lg font-bold">{team.name}</p>
-          {team.description && <p className="mt-1 text-sm text-muted">{team.description}</p>}
+          {team.description && team.description.trim() !== team.name.trim() && (
+            <p className="mt-1 text-sm text-muted">{team.description}</p>
+          )}
         </div>
         <p className="shrink-0 font-mono text-xs tabular-nums text-muted">{team.accepted_count}/4</p>
       </div>
