@@ -29,10 +29,18 @@ async function send(to: string, subject: string, html: string): Promise<SendResu
 }
 
 function layout(body: string): string {
-  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f7eacb;padding:32px">
-  <div style="max-width:520px;margin:0 auto;background:#fffdf6;border:1px solid rgba(47,107,63,.15);border-radius:16px;padding:32px">
-    ${body}
-    <p style="margin:32px 0 0;font-size:12px;color:#2f6b3f">Superteam Brasil</p>
+  // PNG, not SVG: Gmail strips SVG. Hosted from the deployed site, so local
+  // sends show a broken logo — the links break the same way, acceptable.
+  const logo = `${siteUrl()}/brand/stbr/logo/horizontal-email.png`;
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f7eacb;padding:32px 16px">
+  <div style="max-width:520px;margin:0 auto">
+    <img src="${logo}" alt="Superteam Brasil" width="176" style="display:block;margin:0 auto 20px" />
+    <div style="background:#fffdf6;border:2px solid #1b231d;border-radius:16px;padding:32px">
+      ${body}
+    </div>
+    <p style="margin:20px 0 0;text-align:center;font-size:12px;color:#2f6b3f">
+      Superteam Brasil · <a href="${siteUrl()}" style="color:#2f6b3f">hackathon.superteam.com.br</a>
+    </p>
   </div>
 </div>`;
 }

@@ -67,8 +67,8 @@ export function RecruitingCard({
           }`}
         >
           <span
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-green-dark transition-transform ${
-              active ? "translate-x-5" : "translate-x-0.5"
+            className={`absolute left-0 top-0.5 h-4 w-4 rounded-full bg-green-dark transition-transform ${
+              active ? "translate-x-[22px]" : "translate-x-0.5"
             }`}
           />
         </button>
