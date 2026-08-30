@@ -7,7 +7,7 @@ import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { logQueryError } from "@/lib/supabase/unwrap";
+import { unwrap } from "@/lib/supabase/unwrap";
 import { isProfileCompleteForTeamUp } from "@/lib/team-up";
 import { getTeamUpBoard } from "@/lib/team-up-server";
 import { TeamUpBoard } from "./board";
@@ -62,21 +62,20 @@ export default async function TeamUpPage({ params }: { params: Promise<{ slug: s
       .eq("user_id", state.userId)
       .order("created_at", { ascending: false }),
   ]);
-  if (seekerResult.error) logQueryError("teamUp.page.seeker", seekerResult.error);
-  if (applicationsResult.error) logQueryError("teamUp.page.applications", applicationsResult.error);
+  const seekerRow = unwrap<{ roles: string[]; note: string | null; active: boolean } | null>(
+    seekerResult,
+    "teamUp.page.seeker",
+  );
+  const applications = unwrap<Array<{ id: string; team_id: string; status: string }>>(
+    applicationsResult,
+    "teamUp.page.applications",
+  );
 
   const acceptedCount = snapshot?.members.filter((m) => m.status === "accepted").length ?? 0;
   const pendingCount = snapshot?.members.filter((m) => m.status === "pending").length ?? 0;
   const isLeader = Boolean(
     snapshot?.isLeader && !snapshot.team.locked && acceptedCount + pendingCount < 4,
   );
-
-  const seekerRow = seekerResult.data as { roles: string[]; note: string | null; active: boolean } | null;
-  const applications = (applicationsResult.data ?? []) as Array<{
-    id: string;
-    team_id: string;
-    status: string;
-  }>;
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
