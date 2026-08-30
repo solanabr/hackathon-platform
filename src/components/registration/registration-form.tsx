@@ -94,7 +94,18 @@ export function RegistrationForm({
 
       <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
         <input type="checkbox" name="terms_accepted" className="mt-0.5 h-4 w-4 accent-emerald" />
-        <span className="text-sm text-ink">Li e aceito as regras do hackathon.</span>
+        <span className="text-sm text-ink">
+          Li e aceito as regras do hackathon e a{" "}
+          <a
+            href="/privacidade"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold underline"
+          >
+            Política de Privacidade
+          </a>
+          .
+        </span>
       </label>
 
       {error && <p className="text-sm font-medium text-red-300">{error}</p>}

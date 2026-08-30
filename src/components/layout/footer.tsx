@@ -8,6 +8,8 @@ const COLUMNS = [
       { label: "Edições", href: "/#edicoes" },
       { label: "Como funciona", href: "/#como-funciona" },
       { label: "Entrar", href: "/auth" },
+      { label: "Privacidade", href: "/privacidade" },
+      { label: "Termos", href: "/termos" },
     ],
   },
   {
