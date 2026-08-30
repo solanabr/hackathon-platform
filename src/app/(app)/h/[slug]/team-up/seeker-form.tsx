@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { TEAM_UP_ROLES } from "@/lib/team-up";
 import { saveSeekerPost } from "./actions";
 
 type SeekerPost = { roles: string[]; note: string | null; active: boolean };
@@ -22,12 +23,10 @@ export function SeekerForm({
   hackathonId,
   profileComplete,
   initial,
-  roles: roleOptions,
 }: {
   hackathonId: string;
   profileComplete: boolean;
   initial: SeekerPost | null;
-  roles: ReadonlyArray<{ key: string; label: string }>;
 }) {
   const router = useRouter();
   const [roles, setRoles] = useState<string[]>(initial?.roles ?? []);
@@ -95,7 +94,7 @@ export function SeekerForm({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {roleOptions.map((r) => (
+        {TEAM_UP_ROLES.map((r) => (
           <button
             key={r.key}
             type="button"

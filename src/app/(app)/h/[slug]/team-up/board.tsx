@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { segmentedContainer, segmentClass } from "@/components/ui/segmented";
-import type { TeamUpBoard as TeamUpBoardData, BoardTeam, BoardSeeker } from "@/lib/team-up";
+import { roleLabel, type TeamUpBoard as TeamUpBoardData, type BoardTeam, type BoardSeeker } from "@/lib/team-up";
 import { SeekerForm } from "./seeker-form";
 import { applyToTeam, withdrawApplication, inviteSeeker } from "./actions";
 
@@ -33,7 +33,6 @@ export function TeamUpBoard({
   viewer,
   seekerPost,
   applications,
-  roles,
 }: {
   slug: string;
   hackathonId: string;
@@ -41,12 +40,10 @@ export function TeamUpBoard({
   viewer: Viewer;
   seekerPost: { roles: string[]; note: string | null; active: boolean } | null;
   applications: Application[];
-  roles: ReadonlyArray<{ key: string; label: string }>;
 }) {
   const [tab, setTab] = useState<"teams" | "seekers">("teams");
 
   const applicationByTeam = new Map(applications.map((a) => [a.team_id, a]));
-  const roleLabelOf = (key: string) => roles.find((r) => r.key === key)?.label ?? key;
 
   const topStrip = viewer.hasTeam ? (
     viewer.isLeader ? (
@@ -61,12 +58,7 @@ export function TeamUpBoard({
       </Card>
     ) : null
   ) : (
-    <SeekerForm
-      hackathonId={hackathonId}
-      profileComplete={viewer.profileComplete}
-      initial={seekerPost}
-      roles={roles}
-    />
+    <SeekerForm hackathonId={hackathonId} profileComplete={viewer.profileComplete} initial={seekerPost} />
   );
 
   return (
@@ -99,7 +91,6 @@ export function TeamUpBoard({
                   team={team}
                   viewer={viewer}
                   application={applicationByTeam.get(team.team_id) ?? null}
-                  roleLabelOf={roleLabelOf}
                 />
               ))}
             </div>
@@ -113,7 +104,7 @@ export function TeamUpBoard({
           ) : (
             <div className="space-y-4">
               {board.seekers.map((seeker) => (
-                <SeekerCard key={seeker.user_id} seeker={seeker} viewer={viewer} roleLabelOf={roleLabelOf} />
+                <SeekerCard key={seeker.user_id} seeker={seeker} viewer={viewer} />
               ))}
             </div>
           )}
@@ -127,12 +118,10 @@ function TeamCard({
   team,
   viewer,
   application,
-  roleLabelOf,
 }: {
   team: BoardTeam;
   viewer: Viewer;
   application: Application | null;
-  roleLabelOf: (key: string) => string;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -182,7 +171,7 @@ function TeamCard({
       <div className="mt-3 flex flex-wrap gap-2">
         {team.roles.map((r) => (
           <Badge key={r} tone="emerald">
-            {roleLabelOf(r)}
+            {roleLabel(r)}
           </Badge>
         ))}
       </div>
@@ -245,15 +234,7 @@ function TeamCard({
   );
 }
 
-function SeekerCard({
-  seeker,
-  viewer,
-  roleLabelOf,
-}: {
-  seeker: BoardSeeker;
-  viewer: Viewer;
-  roleLabelOf: (key: string) => string;
-}) {
+function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -286,7 +267,7 @@ function SeekerCard({
       <div className="mt-3 flex flex-wrap gap-2">
         {seeker.roles.map((r) => (
           <Badge key={r} tone="emerald">
-            {roleLabelOf(r)}
+            {roleLabel(r)}
           </Badge>
         ))}
       </div>

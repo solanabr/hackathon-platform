@@ -8,7 +8,8 @@ import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
-import { getTeamUpBoard, isProfileCompleteForTeamUp, TEAM_UP_ROLES } from "@/lib/team-up";
+import { isProfileCompleteForTeamUp } from "@/lib/team-up";
+import { getTeamUpBoard } from "@/lib/team-up-server";
 import { TeamUpBoard } from "./board";
 
 export const dynamic = "force-dynamic";
@@ -108,7 +109,6 @@ export default async function TeamUpPage({ params }: { params: Promise<{ slug: s
               : null
           }
           applications={applications}
-          roles={TEAM_UP_ROLES}
         />
       </div>
     </div>
