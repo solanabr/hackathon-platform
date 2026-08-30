@@ -1,4 +1,3 @@
-import { createServerSupabaseClient } from "./supabase/server";
 import { unwrap } from "./supabase/unwrap";
 import type { User } from "@/types/db";
 
@@ -72,6 +71,7 @@ export type BoardSeeker = {
 export type TeamUpBoard = { teams: BoardTeam[]; seekers: BoardSeeker[] };
 
 export async function getTeamUpBoard(hackathonId: string): Promise<TeamUpBoard> {
+  const { createServerSupabaseClient } = await import("./supabase/server");
   const supabase = await createServerSupabaseClient();
   const data = unwrap(
     await supabase.rpc("team_up_board", { p_hackathon_id: hackathonId }),

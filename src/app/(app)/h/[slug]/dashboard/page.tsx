@@ -266,6 +266,15 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                 <Link href={`/h/${slug}/team/new`} className="btn-primary mt-5 px-5 py-2 text-sm">
                   Criar time
                 </Link>
+                <p className="mt-3 text-sm text-muted">
+                  Ainda sem time?{" "}
+                  <Link
+                    href={`/h/${slug}/team-up`}
+                    className="font-semibold text-emerald underline-offset-4 hover:underline"
+                  >
+                    Encontre um time ou chame alguém
+                  </Link>
+                </p>
               </div>
             )}
           </SectionCard>
