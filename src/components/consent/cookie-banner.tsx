@@ -1,10 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 
 export const CONSENT_KEY = "stbr-consent";
+
+function subscribe() {
+  return () => {};
+}
+
+function readConsent(): string | null {
+  try {
+    return localStorage.getItem(CONSENT_KEY);
+  } catch {
+    // Storage blocked: no way to remember a choice, so don't nag.
+    return "blocked";
+  }
+}
 
 /**
  * LGPD consent for analytics. PostHog boots opted-out (see
@@ -12,15 +25,10 @@ export const CONSENT_KEY = "stbr-consent";
  * out. Auth/session cookies are essential and don't gate on this.
  */
 export function CookieBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(CONSENT_KEY)) setVisible(true);
-    } catch {
-      // Storage blocked: no way to remember a choice, so don't nag.
-    }
-  }, []);
+  // Server snapshot "server" keeps the banner out of SSR/hydration; the
+  // client snapshot decides on first client render without an effect.
+  const stored = useSyncExternalStore(subscribe, readConsent, () => "server");
+  const [dismissed, setDismissed] = useState(false);
 
   function choose(value: "all" | "essential") {
     try {
@@ -32,10 +40,10 @@ export function CookieBanner() {
       if (value === "all") posthog.opt_in_capturing();
       else posthog.opt_out_capturing();
     }
-    setVisible(false);
+    setDismissed(true);
   }
 
-  if (!visible) return null;
+  if (dismissed || stored !== null) return null;
 
   return (
     <div className="fixed inset-x-3 bottom-3 z-50 sm:inset-x-auto sm:right-6 sm:max-w-sm">
