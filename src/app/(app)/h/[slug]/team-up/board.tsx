@@ -43,7 +43,9 @@ export function TeamUpBoard({
 }) {
   const [tab, setTab] = useState<"teams" | "seekers">("teams");
 
-  const applicationByTeam = new Map(applications.map((a) => [a.team_id, a]));
+  const applicationByTeam = new Map(
+    applications.filter((a) => a.status === "pending").map((a) => [a.team_id, a]),
+  );
 
   const topStrip = viewer.hasTeam ? (
     viewer.isLeader ? (

@@ -190,15 +190,35 @@ export async function inviteSeeker(input: {
 }): Promise<AddMemberResult> {
   const state = await requireUser();
   const admin = await createServiceRoleClient();
+
+  const { data: team, error: teamError } = await admin
+    .from("teams")
+    .select("hackathon_id")
+    .eq("id", input.teamId)
+    .maybeSingle();
+  if (teamError) {
+    logQueryError("teamUp.inviteSeeker.team", teamError);
+    return { ok: false, error: "Não foi possível convidar. Tente novamente." };
+  }
+  if (!team) return { ok: false, error: "Time não encontrado." };
+
+  // Only resolve the email of someone actively seeking a team in this same
+  // edition — an arbitrary user id must not turn into an email lookup.
   const { data: seeker, error } = await admin
-    .from("users")
-    .select("email")
-    .eq("id", input.userId)
+    .from("team_seekers")
+    .select("users(email)")
+    .eq("user_id", input.userId)
+    .eq("hackathon_id", team.hackathon_id)
+    .eq("active", true)
     .maybeSingle();
   if (error) {
     logQueryError("teamUp.inviteSeeker.lookup", error);
     return { ok: false, error: "Não foi possível convidar. Tente novamente." };
   }
-  if (!seeker?.email) return { ok: false, error: "Perfil não encontrado." };
-  return addMemberToTeam(state, input.teamId, seeker.email);
+  const seekerUser = Array.isArray(seeker?.users) ? seeker.users[0] : seeker?.users;
+  if (!seekerUser?.email) return { ok: false, error: "Perfil não está disponível nesta edição." };
+
+  const result = await addMemberToTeam(state, input.teamId, seekerUser.email);
+  // Don't leak the address back through this path — the client only needs ok/error.
+  return result.ok ? { ...result, email: "" } : result;
 }
