@@ -10,10 +10,14 @@ import { AddMemberForm } from "@/components/team/add-member-form";
 import { PendingInviteActions } from "@/components/team/pending-invite-actions";
 import { TeamDangerZone } from "@/components/team/team-danger-zone";
 import { MemberRow } from "@/components/team/member-row";
+import { RecruitingCard } from "./recruiting-card";
+import { ApplicationsCard, type PendingApplication } from "./applications-card";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
+import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { unwrap } from "@/lib/supabase/unwrap";
 
 export const dynamic = "force-dynamic";
 
@@ -98,6 +102,28 @@ export default async function TeamPage({
   const pendingMembers = members.filter((m) => m.status === "pending");
   const acceptedCount = acceptedMembers.length;
   const canInvite = isLeader && !team.locked && acceptedCount + pendingMembers.length < 4;
+  const canRecruit = isLeader && !team.locked;
+
+  let opening: { roles: string[]; note: string | null; active: boolean } | null = null;
+  let applications: PendingApplication[] = [];
+  if (canRecruit) {
+    const supabase = await createServerSupabaseClient();
+    const admin = await createServiceRoleClient();
+    const [openingResult, applicationsResult] = await Promise.all([
+      supabase.from("team_openings").select("roles, note, active").eq("team_id", team.id).maybeSingle(),
+      admin
+        .from("team_applications")
+        .select(
+          "id, message, created_at, applicant:users!team_applications_user_id_fkey(id, full_name, avatar_url, headline, github_url, telegram_handle)",
+        )
+        .eq("team_id", team.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true }),
+    ]);
+    opening = unwrap(openingResult, "team.page.opening");
+    applications = (unwrap(applicationsResult, "team.page.applications") as unknown as PendingApplication[]) ?? [];
+  }
+  const showApplicationsCard = canRecruit && (applications.length > 0 || Boolean(opening?.active));
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
@@ -230,6 +256,20 @@ export default async function TeamPage({
             </div>
           </Card>
         )}
+
+        {canRecruit &&
+          (acceptedCount >= 4 ? (
+            <Card sticker className="p-6">
+              <p className="font-heading text-lg font-bold">Recrutamento</p>
+              <p className="mt-2 text-sm text-muted">
+                Time completo — não é possível anunciar vagas com 4 integrantes.
+              </p>
+            </Card>
+          ) : (
+            <RecruitingCard slug={slug} teamId={team.id} initial={opening} />
+          ))}
+
+        {showApplicationsCard && <ApplicationsCard applications={applications} />}
       </div>
     </div>
   );
