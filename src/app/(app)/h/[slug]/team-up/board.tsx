@@ -10,7 +10,13 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { segmentedContainer, segmentClass } from "@/components/ui/segmented";
-import { roleLabel, type TeamUpBoard as TeamUpBoardData, type BoardTeam, type BoardSeeker } from "@/lib/team-up";
+import {
+  roleLabel,
+  telegramUrl,
+  type TeamUpBoard as TeamUpBoardData,
+  type BoardTeam,
+  type BoardSeeker,
+} from "@/lib/team-up";
 import { SeekerForm } from "./seeker-form";
 import { applyToTeam, withdrawApplication, inviteSeeker } from "./actions";
 
@@ -259,9 +265,7 @@ function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer })
       <div className="flex items-start gap-3">
         <Avatar src={seeker.avatar_url} name={seeker.full_name} size="md" />
         <div className="min-w-0 flex-1">
-          <Link href={`/u/${seeker.user_id}`} className="font-heading text-lg font-bold hover:underline">
-            {seeker.full_name ?? "Participante"}
-          </Link>
+          <p className="font-heading text-lg font-bold">{seeker.full_name ?? "Participante"}</p>
           {seeker.headline && <p className="text-sm text-muted">{seeker.headline}</p>}
         </div>
       </div>
@@ -279,7 +283,7 @@ function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer })
       <div className="mt-3 flex flex-wrap gap-3 text-sm">
         {seeker.telegram_handle && (
           <a
-            href={`https://t.me/${seeker.telegram_handle.replace(/^@/, "")}`}
+            href={telegramUrl(seeker.telegram_handle)}
             target="_blank"
             rel="noreferrer"
             className="font-semibold text-emerald hover:underline"

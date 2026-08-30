@@ -4,11 +4,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { telegramUrl } from "@/lib/team-up";
 import type { User } from "@/types/db";
-
-function telegramHref(handle: string): string {
-  return `https://t.me/${handle.replace(/^@/, "")}`;
-}
 
 export function ProfileCard({
   userId,
@@ -28,7 +25,7 @@ export function ProfileCard({
     { href: profile?.github_url, label: "GitHub" },
     { href: profile?.twitter_url, label: "X" },
     { href: profile?.linkedin_url, label: "LinkedIn" },
-    { href: profile?.telegram_handle ? telegramHref(profile.telegram_handle) : null, label: "Telegram" },
+    { href: profile?.telegram_handle ? telegramUrl(profile.telegram_handle) : null, label: "Telegram" },
   ].filter((s): s is { href: string; label: string } => !!s.href);
 
   return (

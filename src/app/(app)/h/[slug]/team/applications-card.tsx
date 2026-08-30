@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { ConfirmButton } from "@/components/ui/confirm-button";
+import { telegramUrl } from "@/lib/team-up";
 import { respondToApplication } from "../team-up/actions";
 
 export type PendingApplication = {
@@ -67,15 +67,13 @@ function ApplicationRow({ application }: { application: PendingApplication }) {
       <div className="flex items-start gap-3">
         <Avatar src={applicant.avatar_url} name={applicant.full_name} size="sm" />
         <div className="min-w-0 flex-1">
-          <Link href={`/u/${applicant.id}`} className="font-heading text-base font-bold hover:underline">
-            {applicant.full_name ?? "Participante"}
-          </Link>
+          <p className="font-heading text-base font-bold">{applicant.full_name ?? "Participante"}</p>
           {applicant.headline && <p className="text-sm text-muted">{applicant.headline}</p>}
 
           <div className="mt-1 flex flex-wrap gap-3 text-sm">
             {applicant.telegram_handle && (
               <a
-                href={`https://t.me/${applicant.telegram_handle.replace(/^@/, "")}`}
+                href={telegramUrl(applicant.telegram_handle)}
                 target="_blank"
                 rel="noreferrer"
                 className="font-semibold text-emerald hover:underline"

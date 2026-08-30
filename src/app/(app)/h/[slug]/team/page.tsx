@@ -258,7 +258,7 @@ export default async function TeamPage({
         )}
 
         {canRecruit &&
-          (acceptedCount >= 4 ? (
+          (acceptedCount >= 4 && !opening?.active ? (
             <Card sticker className="p-6">
               <p className="font-heading text-lg font-bold">Recrutamento</p>
               <p className="mt-2 text-sm text-muted">

@@ -42,6 +42,22 @@ export function isProfileCompleteForTeamUp(
   );
 }
 
+function normalizeTelegramHandle(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^https?:\/\/t\.me\//i, "")
+    .replace(/^t\.me\//i, "")
+    .replace(/^@/, "");
+}
+
+export function telegramUrl(handle: string): string {
+  return `https://t.me/${normalizeTelegramHandle(handle)}`;
+}
+
+export function telegramLabel(handle: string): string {
+  return `@${normalizeTelegramHandle(handle)}`;
+}
+
 export type BoardTeam = {
   team_id: string;
   name: string;

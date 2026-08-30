@@ -114,6 +114,20 @@ export async function applyToTeam(input: {
 
   after(async () => {
     const admin = await createServiceRoleClient();
+
+    // apply -> withdraw -> apply must not re-notify the leader: only the
+    // first-ever application to this team sends an email.
+    const { count, error: countError } = await admin
+      .from("team_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("team_id", input.teamId)
+      .eq("user_id", state.userId);
+    if (countError) {
+      logQueryError("teamUp.applyEmail.count", countError);
+      return;
+    }
+    if (count !== 1) return;
+
     const { data, error: ctxError } = await admin
       .from("teams")
       .select("name, hackathon_id, users(email), hackathons(slug)")
