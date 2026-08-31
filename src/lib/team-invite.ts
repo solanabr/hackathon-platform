@@ -1,6 +1,7 @@
 import { createServiceRoleClient } from "./supabase/server";
 import { logQueryError } from "./supabase/unwrap";
 import { sendTeamInvite } from "./email";
+import { track } from "./analytics-server";
 import type { AuthenticatedState } from "./user-state";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -13,6 +14,7 @@ export async function addMemberToTeam(
   state: AuthenticatedState,
   teamId: string,
   rawEmail: string,
+  via: "email" | "board" = "email",
 ): Promise<AddMemberResult> {
   const email = rawEmail.trim().toLowerCase();
   if (!EMAIL_REGEX.test(email)) {
@@ -150,6 +152,12 @@ export async function addMemberToTeam(
     });
     emailSent = result.ok;
   }
+
+  track(state.userId, "member_invited", {
+    team_id: teamId,
+    via,
+    has_account: !!existingUser,
+  });
 
   return { ok: true, hasAccount: !!existingUser, email, emailSent };
 }

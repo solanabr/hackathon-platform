@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { segmentedContainer, segmentClass } from "@/components/ui/segmented";
 import { ContactIcons } from "@/components/ui/contact-icons";
+import { trackClient } from "@/lib/analytics-browser";
 import {
   TEAM_UP_ROLES,
   roleLabel,
@@ -57,9 +58,11 @@ export function TeamUpBoard({
   );
 
   function toggleFilter(key: string) {
-    setRoleFilter((current) =>
-      current.includes(key) ? current.filter((k) => k !== key) : [...current, key],
-    );
+    const next = roleFilter.includes(key)
+      ? roleFilter.filter((k) => k !== key)
+      : [...roleFilter, key];
+    if (next.length > 0) trackClient("role_filter_used", { roles: next });
+    setRoleFilter(next);
   }
 
   const matchesFilter = (roles: string[]) =>

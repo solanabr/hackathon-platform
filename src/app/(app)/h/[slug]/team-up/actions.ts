@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { sanitizeText } from "@/lib/security";
+import { track } from "@/lib/analytics-server";
 import { sanitizeRoles, roleLabel, isProfileCompleteForTeamUp } from "@/lib/team-up";
 import { addMemberToTeam, type AddMemberResult } from "@/lib/team-invite";
 import { sendApplicationReceived } from "@/lib/email";
@@ -64,6 +65,11 @@ export async function saveOpening(input: {
     logQueryError("teamUp.saveOpening.upsert", upsertError);
     return { ok: false, error: "Não foi possível salvar. Tente novamente." };
   }
+  track(state.userId, "opening_saved", {
+    team_id: team.id,
+    active: input.active,
+    roles_count: roles.length,
+  });
   return { ok: true };
 }
 
@@ -96,6 +102,11 @@ export async function saveSeekerPost(input: {
     logQueryError("teamUp.saveSeekerPost", error);
     return { ok: false, error: "Não foi possível salvar. Tente novamente." };
   }
+  track(state.userId, "seeker_post_saved", {
+    hackathon_id: input.hackathonId,
+    active: input.active,
+    roles_count: roles.length,
+  });
   return { ok: true };
 }
 
@@ -169,6 +180,10 @@ export async function applyToTeam(input: {
     if (!result.ok) console.error("teamUp.applyEmail.send", result.error);
   });
 
+  track(state.userId, "application_sent", {
+    team_id: input.teamId,
+    has_message: message.length > 0,
+  });
   return { ok: true };
 }
 
@@ -188,13 +203,14 @@ export async function respondToApplication(input: {
   applicationId: string;
   accept: boolean;
 }): Promise<TeamUpActionResult> {
-  await requireUser();
+  const state = await requireUser();
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("respond_to_application", {
     p_application_id: input.applicationId,
     p_accept: input.accept,
   });
   if (error) return mapRpcError(error.message);
+  track(state.userId, "application_responded", { accepted: input.accept });
   return { ok: true };
 }
 
@@ -232,7 +248,7 @@ export async function inviteSeeker(input: {
   const seekerUser = Array.isArray(seeker?.users) ? seeker.users[0] : seeker?.users;
   if (!seekerUser?.email) return { ok: false, error: "Perfil não está disponível nesta edição." };
 
-  const result = await addMemberToTeam(state, input.teamId, seekerUser.email);
+  const result = await addMemberToTeam(state, input.teamId, seekerUser.email, "board");
   // Don't leak the address back through this path — the client only needs ok/error.
   return result.ok ? { ...result, email: "" } : result;
 }
