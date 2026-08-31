@@ -192,7 +192,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
         </header>
 
         {pendingTeam && (
-          <div className="rounded-2xl border-2 border-green-dark bg-yellow/20 p-5 shadow-sticker sm:p-6">
+          <Card sticker className="p-5 sm:p-6">
             <p className="font-heading text-lg font-bold">
               Você foi adicionado ao time {pendingTeam.teamName}
             </p>
@@ -203,7 +203,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             <Link href={`/h/${slug}/team`} className="btn-primary mt-4 inline-block px-5 py-2 text-sm">
               Entrar no time
             </Link>
-          </div>
+          </Card>
         )}
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">

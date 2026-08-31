@@ -123,7 +123,7 @@ export default async function TeamPage({
       admin
         .from("team_applications")
         .select(
-          "id, message, created_at, applicant:users!team_applications_user_id_fkey(id, full_name, avatar_url, headline, github_url, telegram_handle)",
+          "id, message, created_at, applicant:users!team_applications_user_id_fkey(id, full_name, avatar_url, headline, github_url, twitter_url, linkedin_url, telegram_handle)",
         )
         .eq("team_id", team.id)
         .eq("status", "pending")

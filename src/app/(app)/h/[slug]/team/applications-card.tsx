@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { ConfirmButton } from "@/components/ui/confirm-button";
-import { telegramUrl } from "@/lib/team-up";
+import { ContactIcons } from "@/components/ui/contact-icons";
 import { respondToApplication } from "../team-up/actions";
 
 export type PendingApplication = {
@@ -18,6 +18,8 @@ export type PendingApplication = {
     avatar_url: string | null;
     headline: string | null;
     github_url: string | null;
+    twitter_url: string | null;
+    linkedin_url: string | null;
     telegram_handle: string | null;
   };
 };
@@ -70,27 +72,8 @@ function ApplicationRow({ application }: { application: PendingApplication }) {
           <p className="font-heading text-base font-bold">{applicant.full_name ?? "Participante"}</p>
           {applicant.headline && <p className="text-sm text-muted">{applicant.headline}</p>}
 
-          <div className="mt-1 flex flex-wrap gap-3 text-sm">
-            {applicant.telegram_handle && (
-              <a
-                href={telegramUrl(applicant.telegram_handle)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-emerald hover:underline"
-              >
-                Telegram
-              </a>
-            )}
-            {applicant.github_url && (
-              <a
-                href={applicant.github_url}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-emerald hover:underline"
-              >
-                GitHub
-              </a>
-            )}
+          <div className="mt-1.5">
+            <ContactIcons contacts={applicant} size={18} />
           </div>
 
           {application.message && (
