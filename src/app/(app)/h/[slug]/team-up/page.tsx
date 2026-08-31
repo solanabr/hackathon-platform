@@ -101,6 +101,10 @@ export default async function TeamUpPage({ params }: { params: Promise<{ slug: s
             teamId: snapshot?.team.id ?? null,
             hasTeam: Boolean(snapshot),
             profileComplete: isProfileCompleteForTeamUp(state.profile),
+            invitedUserIds:
+              snapshot?.members
+                .filter((m) => m.status === "pending" && m.user_id)
+                .map((m) => m.user_id as string) ?? [],
           }}
           seekerPost={
             seekerRow

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { LabeledSwitch } from "@/components/ui/labeled-switch";
 import { TEAM_UP_ROLES } from "@/lib/team-up";
 import { saveSeekerPost } from "./actions";
 
@@ -74,23 +75,18 @@ export function SeekerForm({
   return (
     <Card sticker className="p-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-heading text-lg font-bold">Estou disponível</p>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={active}
-          onClick={() => handleSubmit(!active)}
+        <div>
+          <p className="font-heading text-lg font-bold">Estou disponível</p>
+          <p className="mt-0.5 text-sm text-muted">
+            Ative para aparecer no mural com seu perfil e contatos para os times desta edição.
+          </p>
+        </div>
+        <LabeledSwitch
+          active={active}
+          ariaLabel="Aparecer no mural"
           disabled={pending}
-          className={`relative h-6 w-11 shrink-0 rounded-full border-2 border-green-dark transition-colors disabled:opacity-50 ${
-            active ? "bg-yellow" : "bg-surface-deep"
-          }`}
-        >
-          <span
-            className={`absolute left-0 top-0.5 h-4 w-4 rounded-full bg-green-dark transition-transform ${
-              active ? "translate-x-[22px]" : "translate-x-0.5"
-            }`}
-          />
-        </button>
+          onToggle={(next) => handleSubmit(next)}
+        />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">

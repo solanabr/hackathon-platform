@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { segmentedContainer, segmentClass } from "@/components/ui/segmented";
+import { ContactIcons } from "@/components/ui/contact-icons";
 import {
   TEAM_UP_ROLES,
   roleLabel,
-  telegramUrl,
   type TeamUpBoard as TeamUpBoardData,
   type BoardTeam,
   type BoardSeeker,
@@ -29,6 +29,7 @@ type Viewer = {
   teamId: string | null;
   hasTeam: boolean;
   profileComplete: boolean;
+  invitedUserIds: string[];
 };
 
 type Application = { id: string; team_id: string; status: string };
@@ -167,7 +168,7 @@ export function TeamUpBoard({
               }
             />
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               {seekers.map((seeker) => (
                 <SeekerCard key={seeker.user_id} seeker={seeker} viewer={viewer} />
               ))}
@@ -304,7 +305,10 @@ function TeamCard({
 function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  const invited = sent || viewer.invitedUserIds.includes(seeker.user_id);
 
   function invite() {
     if (!viewer.teamId) return;
@@ -315,21 +319,24 @@ function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer })
         setError(res.error);
         return;
       }
+      setSent(true);
       router.refresh();
     });
   }
 
   return (
-    <Card sticker className="p-6">
-      <div className="flex items-start gap-3">
-        <Avatar src={seeker.avatar_url} name={seeker.full_name} size="md" />
+    <Card sticker className="p-4">
+      <div className="flex items-start gap-2.5">
+        <Avatar src={seeker.avatar_url} name={seeker.full_name} size="sm" />
         <div className="min-w-0 flex-1">
-          <p className="font-heading text-lg font-bold">{seeker.full_name ?? "Participante"}</p>
-          {seeker.headline && <p className="text-sm text-muted">{seeker.headline}</p>}
+          <p className="truncate font-heading text-base font-bold">
+            {seeker.full_name ?? "Participante"}
+          </p>
+          {seeker.headline && <p className="truncate text-sm text-muted">{seeker.headline}</p>}
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         {seeker.roles.map((r) => (
           <Badge key={r} tone="emerald">
             {roleLabel(r)}
@@ -337,54 +344,21 @@ function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer })
         ))}
       </div>
 
-      {seeker.note && <p className="mt-3 text-sm leading-relaxed text-ink">{seeker.note}</p>}
+      {seeker.note && <p className="mt-2.5 text-sm leading-relaxed text-ink">{seeker.note}</p>}
 
-      <div className="mt-3 flex flex-wrap gap-3 text-sm">
-        {seeker.telegram_handle && (
-          <a
-            href={telegramUrl(seeker.telegram_handle)}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-emerald hover:underline"
-          >
-            Telegram
-          </a>
-        )}
-        {seeker.github_url && (
-          <a
-            href={seeker.github_url}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-emerald hover:underline"
-          >
-            GitHub
-          </a>
-        )}
-        {seeker.twitter_url && (
-          <a
-            href={seeker.twitter_url}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-emerald hover:underline"
-          >
-            Twitter
-          </a>
-        )}
-        {seeker.linkedin_url && (
-          <a
-            href={seeker.linkedin_url}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-emerald hover:underline"
-          >
-            LinkedIn
-          </a>
-        )}
+      <div className="mt-3">
+        <ContactIcons contacts={seeker} />
       </div>
 
       {viewer.isLeader && (
-        <div className="mt-4">
-          <ConfirmButton label="Convidar" variant="primary" disabled={pending} onConfirm={invite} />
+        <div className="mt-3">
+          {invited ? (
+            <span className="inline-block rounded-full border-2 border-emerald/40 px-4 py-1.5 text-sm font-bold text-emerald">
+              Convite enviado
+            </span>
+          ) : (
+            <ConfirmButton label="Convidar" variant="primary" disabled={pending} onConfirm={invite} />
+          )}
         </div>
       )}
 

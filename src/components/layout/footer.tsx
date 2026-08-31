@@ -43,8 +43,7 @@ export function Footer() {
               className="h-8 w-auto"
             />
             <p className="mt-5 max-w-xs text-pretty leading-relaxed text-surface/70">
-              A plataforma de hackathons da Superteam Brasil. Construa no ecossistema Solana, do
-              primeiro commit ao Pitch Day.
+              A plataforma de hackathons da Superteam Brasil. Feito por builders, para builders.
             </p>
           </div>
 
@@ -78,10 +77,6 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-surface/15 py-6 text-sm text-surface/50">
-          <p>Superteam Brasil</p>
-          <p>Feito por builders, para builders.</p>
-        </div>
       </div>
 
       <svg
