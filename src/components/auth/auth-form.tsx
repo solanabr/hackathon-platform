@@ -22,7 +22,7 @@ const CALLBACK_ERRORS: Record<string, string> = {
     "Não foi possível concluir o login. Abra o link no mesmo navegador em que pediu o código, ou peça um novo.",
 };
 
-export function AuthForm() {
+export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
   const searchParams = useSearchParams();
   const callbackError = searchParams.get("error");
   const [loading, setLoading] = useState<Provider | null>(null);
@@ -36,7 +36,9 @@ export function AuthForm() {
   // `next` carries the page the user came from (requireUser/middleware);
   // `redirect` is kept as a legacy alias for invite links that still use it.
   const postLoginPath =
-    sanitizeRedirect(searchParams.get("next")) ?? sanitizeRedirect(searchParams.get("redirect"));
+    sanitizeRedirect(searchParams.get("next")) ??
+    sanitizeRedirect(searchParams.get("redirect")) ??
+    sanitizeRedirect(defaultNext ?? null);
 
   async function signIn(provider: Provider) {
     trackClient("auth_provider_clicked", { provider });

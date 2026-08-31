@@ -5,11 +5,9 @@ const COLUMNS = [
   {
     title: "Plataforma",
     links: [
-      { label: "Edições", href: "/#edicoes" },
-      { label: "Como funciona", href: "/#como-funciona" },
+      { label: "Hackathons", href: "/h" },
+      { label: "Pré-cadastro", href: "/pre-registro" },
       { label: "Entrar", href: "/auth" },
-      { label: "Privacidade", href: "/privacidade" },
-      { label: "Termos", href: "/termos" },
     ],
   },
   {
@@ -77,6 +75,14 @@ export function Footer() {
           ))}
         </div>
 
+        <div className="flex gap-6 border-t border-surface/15 py-5 text-sm text-surface/50">
+          <Link href="/privacidade" className="transition-colors hover:text-surface">
+            Privacidade
+          </Link>
+          <Link href="/termos" className="transition-colors hover:text-surface">
+            Termos
+          </Link>
+        </div>
       </div>
 
       <svg

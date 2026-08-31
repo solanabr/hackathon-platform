@@ -132,7 +132,7 @@ export default async function JudgeIndexPage() {
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        <BackLink href="/" label="Hackathons" />
+        <BackLink href="/h" label="Hackathons" />
 
         <header>
           <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-muted">

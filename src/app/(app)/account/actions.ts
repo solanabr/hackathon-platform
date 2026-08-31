@@ -26,6 +26,7 @@ export async function updateProfile(
       twitter_url: sanitizeUrl(String(formData.get("twitter_url") ?? "")),
       linkedin_url: sanitizeUrl(String(formData.get("linkedin_url") ?? "")),
       telegram_handle: sanitizeText(String(formData.get("telegram_handle") ?? "")),
+      whatsapp: sanitizeText(String(formData.get("whatsapp") ?? "")),
     })
     .eq("id", state.userId);
 

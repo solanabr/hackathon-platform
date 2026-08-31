@@ -113,7 +113,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         aria-label={hackathon.name}
       >
         <div className="relative mx-auto mb-8 max-w-6xl">
-          <BackLink href="/" label="Hackathons" />
+          <BackLink href="/h" label="Hackathons" />
         </div>
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16">

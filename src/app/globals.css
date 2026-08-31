@@ -159,8 +159,8 @@
   .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
   .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
   .animate-float-a { animation: floatA 6s ease-in-out infinite; }
-  .animate-float-b { animation: floatB 7s ease-in-out infinite; }
-  .animate-float-c { animation: floatC 8s ease-in-out infinite; }
+  .animate-float-b { animation: floatA 6s ease-in-out -2s infinite; }
+  .animate-float-c { animation: floatA 6s ease-in-out -4s infinite; }
 }
 
 @keyframes fadeIn {
@@ -176,16 +176,6 @@
 @keyframes floatA {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
-}
-
-@keyframes floatB {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-14px); }
-}
-
-@keyframes floatC {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -211,14 +201,11 @@
   color: transparent;
 }
 
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-
-  .animate-float-a,
-  .animate-float-b,
-  .animate-float-c { animation: none; }
 }
 
 /* Brand loader: the symbol colors itself in from the bottom, then resets. */

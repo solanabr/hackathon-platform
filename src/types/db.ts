@@ -6,6 +6,8 @@ export type User = {
   twitter_url: string | null;
   linkedin_url: string | null;
   telegram_handle: string | null;
+  // Contact channel for the Colosseum campaign follow-up (00054).
+  whatsapp: string | null;
   avatar_url: string | null;
   headline: string | null;
   bio: string | null;

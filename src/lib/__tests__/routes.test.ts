@@ -53,6 +53,15 @@ describe("public project gallery is public", () => {
     expect(isPublicRoute("/h/solana-cursor-passo-fundo-2026/content")).toBe(false);
   });
 });
+describe("the /h hub and pre-registro are public", () => {
+  it("lets anon into the bare /h hub", () => {
+    expect(isPublicRoute("/h")).toBe(true);
+  });
+
+  it("lets anon into pre-registro", () => {
+    expect(isPublicRoute("/pre-registro")).toBe(true);
+  });
+});
 describe("builder profiles are public", () => {
   it("lets anon into a profile by id", () => {
     expect(isPublicRoute("/u/123e4567-e89b-12d3-a456-426614174000")).toBe(true);

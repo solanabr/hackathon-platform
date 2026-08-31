@@ -108,7 +108,7 @@ export default async function AccountPage({
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
-        <BackLink href="/" label="Hackathons" />
+        <BackLink href="/h" label="Hackathons" />
 
         <ProfileCard userId={state.userId} email={state.email} profile={profile} next={next} />
 
