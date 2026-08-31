@@ -41,7 +41,9 @@ export default async function TeamPage({
   if (!snapshot) {
     if (pendingTeam) {
       return (
-        <div className="px-4 py-16 sm:px-6 lg:px-8">
+        <div className="px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl space-y-6">
+          <PainelNav slug={slug} />
           <Card sticker className="mx-auto max-w-xl p-8 text-center">
             <h1 className="font-heading text-2xl font-bold">
               Você foi adicionado ao time {pendingTeam.teamName}
@@ -65,11 +67,14 @@ export default async function TeamPage({
               </Link>
             </div>
           </Card>
+          </div>
         </div>
       );
     }
     return (
-      <div className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl space-y-6">
+        <PainelNav slug={slug} />
         <div className="relative mx-auto max-w-xl overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-10 text-center shadow-sticker">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 opacity-[0.12]">
             <Image
@@ -83,15 +88,19 @@ export default async function TeamPage({
           <div className="relative">
             <h1 className="font-heading text-2xl font-bold">Você não está em um time</h1>
             <p className="mx-auto mt-2 max-w-sm text-muted">
-              Crie um time como líder, ou peça ao líder para te adicionar pelo e-mail que você usa
-              aqui.
+              Crie um time como líder, encontre um time no mural, ou peça ao líder para te
+              adicionar pelo e-mail que você usa aqui.
             </p>
-            <div className="mt-6">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Link href={`/h/${slug}/team/new`}>
                 <Button variant="primary">Criar time</Button>
               </Link>
+              <Link href={`/h/${slug}/team-up`}>
+                <Button variant="secondary">Encontrar time</Button>
+              </Link>
             </div>
           </div>
+        </div>
         </div>
       </div>
     );
