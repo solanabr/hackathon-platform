@@ -167,20 +167,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 pb-8 pt-2 sm:px-6" aria-label="Números da campanha">
-        <dl className="mx-auto grid max-w-6xl grid-cols-1 gap-8 py-6 sm:grid-cols-3 lg:px-2">
-          {STATS.map((stat, i) => (
+      <section className="px-4 pb-10 pt-2 sm:px-6" aria-label="Números da campanha">
+        <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 py-6 sm:grid-cols-3 lg:grid-cols-5 lg:px-2">
+          {STATS.map((stat) => (
             <div key={stat.label} className="min-w-0">
-              <dd
-                className={`inline-block whitespace-nowrap px-3 py-1 font-heading text-4xl font-black uppercase leading-none tracking-tight [font-stretch:118%] sm:text-5xl ${
-                  i === 1
-                    ? "rotate-1 bg-green-dark text-yellow"
-                    : "-rotate-1 bg-yellow text-green-dark"
-                }`}
-              >
+              <dd className="whitespace-nowrap font-heading text-3xl font-black uppercase leading-none tracking-tight text-ink [font-stretch:118%] sm:text-4xl">
                 {stat.value}
               </dd>
-              <dt className="mt-3 max-w-[28ch] text-pretty text-sm font-semibold leading-snug text-ink/70">
+              <div aria-hidden className="mt-2.5 h-1.5 w-9 bg-yellow" />
+              <dt className="mt-2.5 text-pretty text-sm font-semibold leading-snug text-ink/70">
                 {stat.label}
               </dt>
             </div>
@@ -195,7 +190,7 @@ export default function HomePage() {
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
               O hackathon global
             </h2>
-            <p className="mt-4 text-pretty leading-relaxed text-green-dark/70">
+            <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
               Todo ano, a Solana coloca builders do mundo inteiro para competir, 100% remoto.
             Os melhores times levam <strong className="text-ink">prêmios em dinheiro</strong> e{" "}
             <strong className="text-ink">investimento anjo direto</strong>. E times brasileiros já
