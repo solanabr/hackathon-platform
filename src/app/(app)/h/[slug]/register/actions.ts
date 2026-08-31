@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getHackathonBySlug, isRegistrationOpen } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
+import { track } from "@/lib/analytics-server";
 
 export async function registerForHackathon(
   slug: string,
@@ -38,6 +39,7 @@ export async function registerForHackathon(
 
   if (error) return { error: "Não foi possível concluir a inscrição. Tente novamente." };
 
+  track(state.userId, "registration_completed", { edition: slug });
   revalidatePath(`/h/${slug}/dashboard`);
   return {};
 }

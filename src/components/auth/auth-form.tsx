@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackClient } from "@/lib/analytics-browser";
 import { sanitizeRedirect } from "@/lib/security";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -38,6 +39,7 @@ export function AuthForm() {
     sanitizeRedirect(searchParams.get("next")) ?? sanitizeRedirect(searchParams.get("redirect"));
 
   async function signIn(provider: Provider) {
+    trackClient("auth_provider_clicked", { provider });
     setLoading(provider);
     setError(null);
     const redirectTo = `${window.location.origin}/auth/callback${

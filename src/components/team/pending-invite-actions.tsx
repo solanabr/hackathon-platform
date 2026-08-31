@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { acceptTeamInvite, declineTeamInvite } from "@/app/(app)/h/[slug]/team/actions";
+import { trackClient } from "@/lib/analytics-browser";
 
 export function PendingInviteActions({ teamId, blocked }: { teamId: string; blocked: boolean }) {
   const router = useRouter();
@@ -11,12 +12,14 @@ export function PendingInviteActions({ teamId, blocked }: { teamId: string; bloc
   const [declining, setDeclining] = useState(false);
   const [pending, start] = useTransition();
 
-  function run(action: typeof acceptTeamInvite) {
+  function run(action: typeof acceptTeamInvite, event: string) {
     setError(null);
     start(async () => {
       const result = await action({ teamId });
-      if (result.ok) router.refresh();
-      else setError(result.error);
+      if (result.ok) {
+        trackClient(event, { team_id: teamId });
+        router.refresh();
+      } else setError(result.error);
     });
   }
 
@@ -27,7 +30,7 @@ export function PendingInviteActions({ teamId, blocked }: { teamId: string; bloc
           type="button"
           variant="primary"
           disabled={pending || blocked}
-          onClick={() => run(acceptTeamInvite)}
+          onClick={() => run(acceptTeamInvite, "invite_accepted")}
         >
           {pending ? "Um instante..." : "Entrar no time"}
         </Button>
@@ -39,7 +42,7 @@ export function PendingInviteActions({ teamId, blocked }: { teamId: string; bloc
               variant="ghost"
               disabled={pending}
               className="px-4 py-2 text-sm text-red-700"
-              onClick={() => run(declineTeamInvite)}
+              onClick={() => run(declineTeamInvite, "invite_declined")}
             >
               Confirmar
             </Button>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackClient } from "@/lib/analytics-browser";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 
@@ -54,6 +55,8 @@ export function NewTeamForm({
       setLoading(false);
       return;
     }
+
+    trackClient("team_created", { hackathon_id: hackathonId });
 
     router.push(`/h/${slug}/team`);
     router.refresh();
