@@ -16,6 +16,7 @@ export const metadata = {
 };
 
 const STAT_CHIPS = [
+  "De 14 de setembro a 17 de outubro",
   "[CONFIRMAR] em prêmios",
   "80K+ participantes globais",
   "R$10M+ captados por times brasileiros na última edição",
