@@ -16,9 +16,11 @@ export const metadata = {
 };
 
 const STATS = [
+  { value: "14 set", label: "início do hackathon" },
+  { value: "17 out", label: "prazo final" },
   { value: "Milhões", label: "em prêmios e capital semente" },
   { value: "80K+", label: "participantes globais" },
-  { value: "R$10M+", label: "captados por times brasileiros na última edição" },
+  { value: "R$10M+", label: "captados por times BR" },
 ];
 
 const CASES = [
