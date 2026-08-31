@@ -119,7 +119,7 @@ export default async function HomePage() {
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
           <div
-            className="morth animate-float-c absolute -bottom-20 -right-14 h-48 w-48 bg-[#2f6b3f] sm:-bottom-32 sm:-right-16 sm:h-96 sm:w-96"
+            className="morth animate-float-c absolute bottom-4 right-4 h-40 w-40 bg-[#2f6b3f] sm:bottom-10 sm:right-10 sm:h-72 sm:w-72"
             style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(24deg)" }}
           />
         </div>
