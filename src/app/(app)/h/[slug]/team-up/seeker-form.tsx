@@ -74,11 +74,21 @@ export function SeekerForm({
   return (
     <Card sticker className="p-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-heading text-lg font-bold">Estou disponível</p>
+        <div>
+          <p className="font-heading text-lg font-bold">Estou disponível</p>
+          <p className="mt-0.5 text-sm text-muted">
+            Ative para aparecer no mural com seu perfil e contatos para os times desta edição.
+          </p>
+        </div>
+        <label className="flex shrink-0 cursor-pointer items-center gap-2">
+          <span className={`text-xs font-bold ${active ? "text-emerald" : "text-muted"}`}>
+            {active ? "Visível no mural" : "Oculto"}
+          </span>
         <button
           type="button"
           role="switch"
           aria-checked={active}
+          aria-label="Aparecer no mural"
           onClick={() => handleSubmit(!active)}
           disabled={pending}
           className={`relative h-6 w-11 shrink-0 rounded-full border-2 border-green-dark transition-colors disabled:opacity-50 ${
@@ -91,6 +101,7 @@ export function SeekerForm({
             }`}
           />
         </button>
+        </label>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
