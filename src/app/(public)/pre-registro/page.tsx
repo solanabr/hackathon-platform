@@ -8,6 +8,7 @@ import { unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
 import { COLOSSEUM_SLUG, LETS_BUILD_URL, WHATSAPP_COMMUNITY_URL } from "./constants";
+import { TrackedLink } from "./tracked-link";
 
 export const metadata = {
   title: "Pré-cadastro Colosseum",
@@ -135,14 +136,13 @@ export default async function PreRegistroPage() {
                   <p className="mt-1 text-sm text-muted">
                     Updates, mentorias e formação de times acontecem no grupo.
                   </p>
-                  <a
+                  <TrackedLink
                     href={WHATSAPP_COMMUNITY_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target="whatsapp"
                     className="mt-4 inline-block whitespace-nowrap rounded-full bg-green-dark px-6 py-2.5 text-sm font-bold text-surface transition-transform duration-200 hover:-translate-y-0.5"
                   >
                     Entrar no WhatsApp
-                  </a>
+                  </TrackedLink>
                 </div>
               </li>
 
@@ -155,14 +155,13 @@ export default async function PreRegistroPage() {
                   <p className="mt-1 text-sm text-muted">
                     Incubação de 30 dias com imersão presencial em São Paulo e US$50 mil em jogo.
                   </p>
-                  <a
+                  <TrackedLink
                     href={LETS_BUILD_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target="lets_build"
                     className="mt-4 inline-block whitespace-nowrap rounded-full border-2 border-green-dark px-6 py-2 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
                   >
                     Aplicar no Lets Build
-                  </a>
+                  </TrackedLink>
                 </div>
               </li>
 
@@ -182,14 +181,13 @@ export default async function PreRegistroPage() {
                   {hackathon?.external_url ? (
                     <>
                       <p className="mt-1 text-sm text-muted">Inscrições abertas. Garanta seu lugar na arena.</p>
-                      <a
+                      <TrackedLink
                         href={hackathon.external_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        target="colosseum"
                         className="mt-4 inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
                       >
                         Inscrever no Colosseum
-                      </a>
+                      </TrackedLink>
                     </>
                   ) : (
                     <p className="mt-1 text-sm text-muted">
