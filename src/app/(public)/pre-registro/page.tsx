@@ -72,7 +72,7 @@ export default async function PreRegistroPage() {
 
   return (
     <main className="relative bg-surface">
-      <div className="relative z-10 mx-auto flex max-w-xl flex-col px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28">
+      <div className="relative z-10 mx-auto flex max-w-xl flex-col px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10">
         <StepIndicator active={activeStep} />
 
         {activeStep === 1 && (
