@@ -71,6 +71,16 @@ export function ProfileForm({
         <Label htmlFor="telegram_handle">Telegram</Label>
         <Input id="telegram_handle" name="telegram_handle" defaultValue={profile?.telegram_handle ?? ""} />
       </div>
+      <div>
+        <Label htmlFor="whatsapp">WhatsApp</Label>
+        <Input
+          id="whatsapp"
+          name="whatsapp"
+          type="tel"
+          placeholder="+55 (11) 91234-5678"
+          defaultValue={profile?.whatsapp ?? ""}
+        />
+      </div>
 
       {state.error && (
         <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
