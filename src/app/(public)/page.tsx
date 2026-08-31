@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { LETS_BUILD_URL } from "./pre-registro/constants";
 
 
 export const metadata = {
@@ -330,7 +331,7 @@ export default function HomePage() {
             </a>
 
             <a
-              href="https://stoxs.club/en/lets-build"
+              href={LETS_BUILD_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="group block overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"

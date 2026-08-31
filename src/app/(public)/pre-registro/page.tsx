@@ -7,6 +7,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
+import { COLOSSEUM_SLUG, LETS_BUILD_URL, WHATSAPP_COMMUNITY_URL } from "./constants";
 
 export const metadata = {
   title: "Pré-cadastro Colosseum",
@@ -16,7 +17,6 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-const COLOSSEUM_SLUG = "colosseum-2026";
 
 const STEPS = [
   { n: 1, label: "Conta" },
@@ -49,8 +49,12 @@ function StepIndicator({ active }: { active: 1 | 2 | 3 }) {
 }
 
 export default async function PreRegistroPage() {
-  const state = await resolveAuthenticatedUserState();
-  const hackathon = await getHackathonBySlug(COLOSSEUM_SLUG);
+  // A transient failure on the edition lookup must not take down step 1 —
+  // anonymous visitors only need the auth form.
+  const [state, hackathon] = await Promise.all([
+    resolveAuthenticatedUserState(),
+    getHackathonBySlug(COLOSSEUM_SLUG).catch(() => null),
+  ]);
 
   let registered = false;
   if (state && hackathon) {
@@ -132,7 +136,7 @@ export default async function PreRegistroPage() {
                     Updates, mentorias e formação de times acontecem no grupo.
                   </p>
                   <a
-                    href="https://chat.whatsapp.com/HPIu1YV3mri5QOGf0gUMTO"
+                    href={WHATSAPP_COMMUNITY_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 inline-block whitespace-nowrap rounded-full bg-green-dark px-6 py-2.5 text-sm font-bold text-surface transition-transform duration-200 hover:-translate-y-0.5"
@@ -152,7 +156,7 @@ export default async function PreRegistroPage() {
                     Incubação de 30 dias com imersão presencial em São Paulo e US$50 mil em jogo.
                   </p>
                   <a
-                    href="https://stoxs.club/en/lets-build"
+                    href={LETS_BUILD_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 inline-block whitespace-nowrap rounded-full border-2 border-green-dark px-6 py-2 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"

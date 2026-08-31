@@ -58,7 +58,7 @@ export function PreregForm({ profile }: { profile: User | null }) {
 
       {!state.ok && state.error && (
         <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
-          {!state.ok ? state.error : ""}
+          {state.error}
         </p>
       )}
 
