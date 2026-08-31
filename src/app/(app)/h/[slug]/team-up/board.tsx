@@ -29,6 +29,7 @@ type Viewer = {
   teamId: string | null;
   hasTeam: boolean;
   profileComplete: boolean;
+  invitedUserIds: string[];
 };
 
 type Application = { id: string; team_id: string; status: string };
@@ -304,7 +305,10 @@ function TeamCard({
 function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  const invited = sent || viewer.invitedUserIds.includes(seeker.user_id);
 
   function invite() {
     if (!viewer.teamId) return;
@@ -315,6 +319,7 @@ function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer })
         setError(res.error);
         return;
       }
+      setSent(true);
       router.refresh();
     });
   }
@@ -384,7 +389,13 @@ function SeekerCard({ seeker, viewer }: { seeker: BoardSeeker; viewer: Viewer })
 
       {viewer.isLeader && (
         <div className="mt-4">
-          <ConfirmButton label="Convidar" variant="primary" disabled={pending} onConfirm={invite} />
+          {invited ? (
+            <span className="inline-block rounded-full border-2 border-emerald/40 px-4 py-1.5 text-sm font-bold text-emerald">
+              Convite enviado
+            </span>
+          ) : (
+            <ConfirmButton label="Convidar" variant="primary" disabled={pending} onConfirm={invite} />
+          )}
         </div>
       )}
 

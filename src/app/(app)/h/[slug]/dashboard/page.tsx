@@ -192,7 +192,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
         </header>
 
         {pendingTeam && (
-          <div className="rounded-2xl border border-emerald/30 bg-emerald/10 p-5 sm:p-6">
+          <div className="rounded-2xl border-2 border-green-dark bg-yellow/20 p-5 shadow-sticker sm:p-6">
             <p className="font-heading text-lg font-bold">
               Você foi adicionado ao time {pendingTeam.teamName}
             </p>
