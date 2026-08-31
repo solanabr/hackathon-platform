@@ -167,14 +167,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 pb-6 pt-2 sm:px-6" aria-label="Números da campanha">
-        <dl className="mx-auto grid max-w-6xl grid-cols-1 gap-x-8 gap-y-8 border-y-2 border-green-dark/15 py-8 sm:grid-cols-3 lg:px-2">
-          {STATS.map((stat) => (
+      <section className="px-4 pb-8 pt-2 sm:px-6" aria-label="Números da campanha">
+        <dl className="mx-auto grid max-w-6xl grid-cols-1 gap-8 py-6 sm:grid-cols-3 lg:px-2">
+          {STATS.map((stat, i) => (
             <div key={stat.label} className="min-w-0">
-              <dd className="whitespace-nowrap font-heading text-3xl font-black uppercase leading-none tracking-tight text-ink [font-stretch:115%] sm:text-4xl">
+              <dd
+                className={`inline-block whitespace-nowrap px-3 py-1 font-heading text-4xl font-black uppercase leading-none tracking-tight [font-stretch:118%] sm:text-5xl ${
+                  i === 1
+                    ? "rotate-1 bg-green-dark text-yellow"
+                    : "-rotate-1 bg-yellow text-green-dark"
+                }`}
+              >
                 {stat.value}
               </dd>
-              <dt className="mt-2 text-pretty text-sm leading-snug text-muted">{stat.label}</dt>
+              <dt className="mt-3 max-w-[28ch] text-pretty text-sm font-semibold leading-snug text-ink/70">
+                {stat.label}
+              </dt>
             </div>
           ))}
         </dl>
