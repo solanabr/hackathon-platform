@@ -15,11 +15,10 @@ export const metadata = {
   },
 };
 
-const STAT_CHIPS = [
-  "De 14 de setembro a 17 de outubro",
-  "[CONFIRMAR] em prêmios",
-  "80K+ participantes globais",
-  "R$10M+ captados por times brasileiros na última edição",
+const STATS = [
+  { value: "Milhões", label: "em prêmios e capital semente" },
+  { value: "80K+", label: "participantes globais" },
+  { value: "R$10M+", label: "captados por times brasileiros na última edição" },
 ];
 
 const CASES = [
@@ -168,17 +167,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 pb-4 pt-2 sm:px-6" aria-label="Números da campanha">
-        <ul className="mx-auto flex max-w-6xl flex-wrap gap-3 lg:px-2">
-          {STAT_CHIPS.map((stat, i) => (
-            <li
-              key={stat}
-              className={`rounded-xl border-2 border-green-dark bg-surface-raised px-4 py-2 text-sm font-bold text-ink shadow-sticker ${i % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
-            >
-              {stat}
-            </li>
+      <section className="px-4 pb-6 pt-2 sm:px-6" aria-label="Números da campanha">
+        <dl className="mx-auto grid max-w-6xl grid-cols-1 gap-x-8 gap-y-8 border-y-2 border-green-dark/15 py-8 sm:grid-cols-3 lg:px-2">
+          {STATS.map((stat) => (
+            <div key={stat.label} className="min-w-0">
+              <dd className="whitespace-nowrap font-heading text-3xl font-black uppercase leading-none tracking-tight text-ink [font-stretch:115%] sm:text-4xl">
+                {stat.value}
+              </dd>
+              <dt className="mt-2 text-pretty text-sm leading-snug text-muted">{stat.label}</dt>
+            </div>
           ))}
-        </ul>
+        </dl>
       </section>
 
       {/* O hackathon global: the credibility section , real cases, no filler. */}

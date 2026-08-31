@@ -11,6 +11,13 @@ const COLUMNS = [
     ],
   },
   {
+    title: "Legal",
+    links: [
+      { label: "Privacidade", href: "/privacidade" },
+      { label: "Termos", href: "/termos" },
+    ],
+  },
+  {
     title: "Superteam",
     links: [
       { label: "superteam.com.br", href: "https://superteam.com.br" },
@@ -32,7 +39,7 @@ export function Footer() {
     <footer className="mt-24 overflow-hidden bg-green-dark">
       <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
         <div className="grid gap-12 pb-14 lg:grid-cols-12">
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-4">
             <Image
               src="/brand/stbr/logo/horizontal-fwhite.svg"
               alt="Superteam Brasil"
@@ -75,13 +82,8 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="flex gap-6 border-t border-surface/15 py-5 text-sm text-surface/50">
-          <Link href="/privacidade" className="transition-colors hover:text-surface">
-            Privacidade
-          </Link>
-          <Link href="/termos" className="transition-colors hover:text-surface">
-            Termos
-          </Link>
+        <div className="border-t border-surface/15 py-6 text-sm text-surface/50">
+          <p>© 2026 Superteam Brasil</p>
         </div>
       </div>
 
