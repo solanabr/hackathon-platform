@@ -151,7 +151,7 @@ export default async function HomePage() {
             <div className="mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
               <a
                 href="#edicoes"
-                className="whitespace-nowrap rounded-full bg-yellow px-6 py-3.5 text-sm font-bold sm:text-base text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-8"
+                className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-3 text-sm font-bold sm:text-base text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-8"
               >
                 Explorar edições
               </a>
