@@ -33,7 +33,7 @@ export async function preRegister(
   }
 
   const hackathon = await getHackathonBySlug(COLOSSEUM_SLUG);
-  if (!hackathon) return { ok: false, error: "Não foi possível concluir o pré-cadastro. Tente novamente." };
+  if (!hackathon) return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
 
   // Own-row writes: RLS covers both tables, so the user-scoped client keeps
   // it as the backstop (same pattern as updateProfile and registerForHackathon).
@@ -45,7 +45,7 @@ export async function preRegister(
     .eq("id", state.userId);
   if (profileError) {
     logQueryError("preRegistro.updateProfile", profileError);
-    return { ok: false, error: "Não foi possível concluir o pré-cadastro. Tente novamente." };
+    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
   }
 
   const { error: regError } = await supabase.from("hackathon_registrations").upsert(
@@ -58,10 +58,39 @@ export async function preRegister(
   );
   if (regError) {
     logQueryError("preRegistro.upsertRegistration", regError);
-    return { ok: false, error: "Não foi possível concluir o pré-cadastro. Tente novamente." };
+    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
   }
 
   track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG });
   revalidatePath("/pre-registro");
   return { ok: true };
+}
+
+// Self-attestation that the user registered on the Colosseum platform.
+// This edition has no Luma gate, so luma_confirmed_at is free to carry the
+// external-registration confirmation (same semantics: "confirmed on the
+// external platform", same RLS own-row update path).
+export async function confirmColosseumRegistration(): Promise<void> {
+  const state = await requireUser();
+
+  const hackathon = await getHackathonBySlug(COLOSSEUM_SLUG);
+  if (!hackathon) return;
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("hackathon_registrations")
+    .update({ luma_confirmed_at: new Date().toISOString() })
+    .eq("hackathon_id", hackathon.id)
+    .eq("user_id", state.userId)
+    .select("user_id");
+  if (error) {
+    logQueryError("preRegistro.confirmColosseum", error);
+    return;
+  }
+  // No registration row, no attestation: keeps the funnel event honest even
+  // though the action endpoint is reachable by any signed-in user.
+  if (!data?.length) return;
+
+  track(state.userId, "colosseum_registration_confirmed", { edition: COLOSSEUM_SLUG });
+  revalidatePath("/pre-registro");
 }

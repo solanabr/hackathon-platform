@@ -63,7 +63,7 @@ export function PreregForm({ profile }: { profile: User | null }) {
       )}
 
       <Button type="submit" fullWidth disabled={pending}>
-        {pending ? "Enviando..." : "Concluir pré-cadastro"}
+        {pending ? "Enviando..." : "Concluir cadastro"}
       </Button>
     </form>
   );

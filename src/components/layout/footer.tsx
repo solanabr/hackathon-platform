@@ -6,7 +6,7 @@ const COLUMNS = [
     title: "Plataforma",
     links: [
       { label: "Hackathons", href: "/h" },
-      { label: "Pré-cadastro", href: "/pre-registro" },
+      { label: "Cadastro", href: "/pre-registro" },
       { label: "Entrar", href: "/auth" },
     ],
   },
