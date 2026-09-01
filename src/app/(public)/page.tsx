@@ -8,6 +8,7 @@ import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
+import { Tilt } from "@/components/ui/tilt";
 
 
 export const metadata = {
@@ -29,7 +30,12 @@ const CASES = [
     logo: "/brand/cases/cloak.png",
     result: "R$1,5 milhão de investimento anjo",
     tagline: "Infraestrutura de privacidade para empresas que usam blockchain",
-    body: "Time brasileiro formado só por alunos universitários. Saíram do hackathon com investimento anjo de R$1,5 milhão e se formaram com a startup já rodando.",
+    body: (
+      <>
+        Time brasileiro formado só por <strong className="text-ink">alunos universitários</strong>. Saíram do
+        hackathon com investimento anjo de R$1,5 milhão e se formaram com a startup já rodando.
+      </>
+    ),
   },
   {
     name: "Bido",
@@ -123,33 +129,28 @@ export default async function HomePage() {
           visual below it with room to read like a real cheque. */}
       <section className="relative flex min-h-[88dvh] flex-col justify-center overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          {/* Two shapes, one diagonal: emerald bleeds the top-left corner,
-              yellow anchors the cheque from behind its bottom-right corner.
-              On phones only the yellow accent shows — never behind text. */}
+          {/* Yellow field under the desk's left side, emerald behind its right. */}
           <div
-            className="morth animate-float-b absolute -right-10 bottom-[4%] h-36 w-36 bg-[#008c4c] sm:right-[4%] sm:bottom-[2%] sm:h-[24rem] sm:w-[24rem] 2xl:h-[28rem] 2xl:w-[28rem]"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
+            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:top-[42%] sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:top-[38%] lg:h-[34rem] lg:w-[34rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-a absolute -left-10 top-[6%] h-36 w-36 bg-yellow sm:-left-32 sm:top-[7%] sm:h-[28rem] sm:w-[28rem] 2xl:h-[32rem] 2xl:w-[32rem]"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(18deg)" }}
+            className="morth animate-float-b absolute hidden bg-[#008c4c] sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-48 2xl:h-[30rem] 2xl:w-[30rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 py-8 text-center sm:px-6">
-<h1 className="font-heading font-black uppercase leading-[1.06] tracking-tight text-ink [font-stretch:108%]">
-            <span className="block text-balance text-[clamp(1.7rem,7vw,2.6rem)] lg:text-[3.6rem] xl:text-[4.2rem]">O próximo time a captar</span>
-            <span className="mt-1 block text-balance text-[clamp(1.7rem,7vw,2.6rem)] lg:text-[3.6rem] xl:text-[4.2rem]">
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-10 text-center sm:px-6 lg:py-12">
+          <h1 className="font-heading font-black uppercase leading-[1.04] tracking-tight text-ink [font-stretch:108%]">
+            <span className="block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">O próximo time a captar</span>
+            <span className="mt-1 block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">
               <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">milhões</span> pode ser o seu.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-3xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg lg:text-xl">
+          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg">
             O Colosseum é o maior hackathon online do mundo: prêmios milionários e capital anjo
-            para as melhores equipes, 100% remoto.{" "}
-            <strong className="text-ink">
-              Nas duas últimas edições, 3 times brasileiros captaram mais de R$15 milhões.
-            </strong>
+            para as melhores equipes.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
@@ -169,12 +170,16 @@ export default async function HomePage() {
             </a>
           </div>
 
-          {/* The cheque fills itself out: payee types, amount stamps,
-              quantia types, signature draws. Timings in globals.css. */}
-          <div aria-hidden className="mt-10 w-full min-w-0 max-w-2xl text-left sm:mt-12 lg:max-w-3xl">
-            <div className="transition-transform duration-500 sm:[transform:rotate(-3deg)] sm:hover:[transform:rotate(-1deg)_translateY(-6px)]">
-              <div className="relative overflow-hidden rounded-xl border-4 border-green-dark bg-[linear-gradient(105deg,#eef3e2_0%,#fffdf6_40%,#fbf1d6_100%)] shadow-[14px_14px_0_rgba(27,35,29,0.9)]">
-                <div className="absolute inset-y-0 left-0 w-2.5 bg-yellow" />
+          {/* The desk: the cheque is the main sticker, the facts are stickers
+              around it. The cheque fills itself out on load (globals.css). */}
+          <div aria-hidden className="mx-auto mt-10 w-full max-w-xl lg:mt-10 lg:max-w-none">
+          <Tilt max={5} className="relative pt-11 text-left lg:h-[26rem] lg:pt-0">
+            <div className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2">
+            <div className="relative sm:[transform:rotate(-3deg)] lg:[transform:rotate(-4deg)]">
+              <div aria-hidden className="absolute inset-0 translate-y-6 rounded-xl bg-green-dark/25 blur-2xl" />
+              <div aria-hidden className="cheque-perf absolute inset-0 translate-x-3.5 translate-y-3.5 rounded-xl bg-green-dark" />
+              <div className="cheque-perf relative overflow-hidden rounded-xl border-4 border-green-dark bg-[linear-gradient(105deg,#eef3e2_0%,#fffdf6_40%,#fbf1d6_100%)]">
+                <div className="absolute inset-y-0 left-0 w-3 bg-yellow" />
                 <svg
                   viewBox="0 0 140 100"
                   className="absolute right-10 top-1/2 h-36 w-auto -translate-y-1/2 text-green-dark opacity-[0.06]"
@@ -191,12 +196,11 @@ export default async function HomePage() {
                     <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
                       Colosseum
                       <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
-                        <span className="hidden sm:inline">Global Hackathon · </span>Solana · 100% online
+                        Global Hackathon
                       </span>
                     </p>
                     <div className="shrink-0 whitespace-nowrap text-right font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
                       <p>Nº 001417</p>
-                      <p className="mt-1">14 set a 17 out</p>
                     </div>
                   </div>
 
@@ -212,8 +216,7 @@ export default async function HomePage() {
                       </div>
                     </div>
                     <div className="cheque-amount flex shrink-0 items-baseline gap-1.5 rounded-lg border-2 border-green-dark bg-yellow px-3 py-1.5 sm:px-4 sm:py-2">
-                      <span className="font-mono text-[11px] font-bold text-green-dark/80">R$</span>
-                      <span className="font-mono text-base font-bold leading-none tracking-[0.12em] text-green-dark sm:text-lg">✱✱✱✱✱✱✱</span>
+                      <span className="font-heading text-lg font-black leading-none tracking-tight text-green-dark sm:text-xl">USD 250k</span>
                     </div>
                   </div>
 
@@ -221,7 +224,7 @@ export default async function HomePage() {
                     <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
                       A quantia de
                     </p>
-                    <p className="border-b-2 border-dotted border-green-dark/50 pb-1 font-heading text-[0.8125rem] font-black uppercase text-ink sm:text-base">
+                    <p className="border-b-2 border-dotted border-green-dark/50 pb-1 font-heading text-[0.75rem] font-black uppercase text-ink sm:text-base">
                       <span className="cheque-quantia block">Milhões em prêmios e capital anjo</span>
                     </p>
                   </div>
@@ -248,6 +251,21 @@ export default async function HomePage() {
                 </div>
               </div>
             </div>
+            </div>
+            <div className="left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark ">
+              100% online
+            </div>
+            <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden sm:block">
+              14 set a 17 out
+            </div>
+            <div className="-bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface ">
+              <span className="lg:hidden">R$15M+ captados</span>
+              <span className="hidden lg:inline">R$15M+ captados por brasileiros</span>
+            </div>
+            <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-green-dark text-yellow ">
+              Solana
+            </div>
+          </Tilt>
           </div>
         </div>
       </section>

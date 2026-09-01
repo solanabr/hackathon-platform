@@ -267,6 +267,17 @@
   animation: chequeSign 1s ease-in-out 3.3s forwards;
 }
 
+/* Torn checkbook edge: half-circle punches down the left side. */
+.cheque-perf {
+  mask-image: radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
+  mask-size: 100% 26px;
+  mask-repeat: repeat-y;
+  -webkit-mask-image: radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
+  -webkit-mask-size: 100% 26px;
+  -webkit-mask-repeat: repeat-y;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   .animate-brand-fill {
     animation: none;
