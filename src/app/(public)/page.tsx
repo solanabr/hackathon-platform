@@ -3,7 +3,7 @@ import Image from "next/image";
 import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./pre-registro/constants";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { unwrap } from "@/lib/supabase/unwrap";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { CountUp, Reveal } from "@/components/ui/reveal";
@@ -13,11 +13,11 @@ import { TrackedCta } from "@/components/ui/tracked-cta";
 export const metadata = {
   title: "Colosseum Global Hackathon 2026",
   description:
-    "O Brasil entra na arena. Cadastre-se para o Colosseum, o hackathon global da Solana: 100% remoto, milhões em prêmios e capital semente para os melhores times.",
+    "O próximo time a captar milhões pode ser o seu. Cadastre-se para o Colosseum, o hackathon global da Solana: 100% remoto, prêmios milionários e capital anjo.",
   openGraph: {
-    title: "O Brasil entra na arena · Colosseum Global Hackathon 2026",
+    title: "O próximo time a captar milhões pode ser o seu · Colosseum 2026",
     description:
-      "Cadastre-se para o hackathon global da Solana: 100% remoto, milhões em prêmios e capital semente.",
+      "Hackathon global da Solana, 100% remoto, de 14 set a 17 out. Cadastre-se com o Superteam Brasil.",
     images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }],
   },
 };
@@ -106,13 +106,16 @@ export default async function HomePage() {
   let registered = false;
   if (state && colosseum) {
     const supabase = await createServerSupabaseClient();
-    const result = await supabase
+    const { data, error } = await supabase
       .from("hackathon_registrations")
       .select("hackathon_id")
       .eq("hackathon_id", colosseum.id)
       .eq("user_id", state.userId)
       .maybeSingle();
-    registered = Boolean(unwrap(result, "home.checkRegistration"));
+    // The landing page never dies on this lookup: an error just means the
+    // button routes through /pre-registro, which is the safe default.
+    if (error) logQueryError("home.checkRegistration", error);
+    registered = Boolean(data);
   }
   return (
     <div className="bg-surface text-ink">

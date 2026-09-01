@@ -193,8 +193,8 @@ export default async function PreRegistroPage() {
                       <Image
                         src="/brand/colosseum-registro.gif"
                         alt="Passo a passo do registro no Colosseum"
-                        width={720}
-                        height={540}
+                        width={751}
+                        height={648}
                         unoptimized
                         className="mt-4 w-full rounded-xl border-2 border-green-dark/20"
                       />

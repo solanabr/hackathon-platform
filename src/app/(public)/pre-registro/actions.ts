@@ -77,15 +77,19 @@ export async function confirmColosseumRegistration(): Promise<void> {
   if (!hackathon) return;
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("hackathon_registrations")
     .update({ luma_confirmed_at: new Date().toISOString() })
     .eq("hackathon_id", hackathon.id)
-    .eq("user_id", state.userId);
+    .eq("user_id", state.userId)
+    .select("user_id");
   if (error) {
     logQueryError("preRegistro.confirmColosseum", error);
     return;
   }
+  // No registration row, no attestation: keeps the funnel event honest even
+  // though the action endpoint is reachable by any signed-in user.
+  if (!data?.length) return;
 
   track(state.userId, "colosseum_registration_confirmed", { edition: COLOSSEUM_SLUG });
   revalidatePath("/pre-registro");
