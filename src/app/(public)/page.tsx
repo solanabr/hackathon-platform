@@ -140,7 +140,7 @@ export default async function HomePage() {
           />
         </div>
 
-        <div className="relative mx-auto w-full max-w-6xl px-4 py-10 text-center sm:px-6 lg:py-12">
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:820px)]:py-6">
           <h1 className="font-heading font-black uppercase leading-[1.04] tracking-tight text-ink [font-stretch:108%]">
             <span className="block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">O próximo time a captar</span>
             <span className="mt-1 block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">
@@ -172,9 +172,9 @@ export default async function HomePage() {
 
           {/* The desk: the cheque is the main sticker, the facts are stickers
               around it. The cheque fills itself out on load (globals.css). */}
-          <div aria-hidden className="mx-auto mt-10 w-full max-w-xl lg:mt-10 lg:max-w-none">
+          <div className="mx-auto mt-10 w-full max-w-xl lg:max-w-none">
           <Tilt max={5} className="relative pt-11 text-left lg:h-[26rem] lg:pt-0">
-            <div className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2">
+            <div aria-hidden className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2">
             <div className="relative sm:[transform:rotate(-3deg)] lg:[transform:rotate(-4deg)]">
               <div aria-hidden className="absolute inset-0 translate-y-6 rounded-xl bg-green-dark/25 blur-2xl" />
               <div aria-hidden className="cheque-perf absolute inset-0 translate-x-3.5 translate-y-3.5 rounded-xl bg-green-dark" />
@@ -252,17 +252,17 @@ export default async function HomePage() {
               </div>
             </div>
             </div>
-            <div className="left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark ">
+            <div className="left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark">
               100% online
             </div>
             <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden sm:block">
               14 set a 17 out
             </div>
-            <div className="-bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface ">
+            <div className="-bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
               <span className="lg:hidden">R$15M+ captados</span>
               <span className="hidden lg:inline">R$15M+ captados por brasileiros</span>
             </div>
-            <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-green-dark text-yellow ">
+            <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-green-dark text-yellow">
               Solana
             </div>
           </Tilt>

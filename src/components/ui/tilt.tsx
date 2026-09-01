@@ -15,6 +15,7 @@ export function Tilt({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useRef<MediaQueryList | null>(null);
 
   const apply = (rx: number, ry: number, animate: boolean) => {
     const el = ref.current;
@@ -25,7 +26,8 @@ export function Tilt({
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse") return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    reducedMotion.current ??= window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.current.matches) return;
     const r = e.currentTarget.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
