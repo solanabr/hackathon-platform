@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import Image from "next/image";
 import { AuthForm } from "@/components/auth/auth-form";
 import { Card } from "@/components/ui/card";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -7,11 +7,12 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
-import { COLOSSEUM_SLUG, LETS_BUILD_URL, WHATSAPP_COMMUNITY_URL } from "./constants";
+import { confirmColosseumRegistration } from "./actions";
+import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
 import { TrackedLink } from "./tracked-link";
 
 export const metadata = {
-  title: "Pré-cadastro Colosseum",
+  title: "Cadastro Colosseum",
   description: "Garanta sua vaga na campanha brasileira para o Colosseum Global Hackathon 2026.",
   openGraph: { images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }] },
 };
@@ -58,15 +59,18 @@ export default async function PreRegistroPage() {
   ]);
 
   let registered = false;
+  let colosseumConfirmed = false;
   if (state && hackathon) {
     const supabase = await createServerSupabaseClient();
     const result = await supabase
       .from("hackathon_registrations")
-      .select("hackathon_id")
+      .select("hackathon_id, luma_confirmed_at")
       .eq("hackathon_id", hackathon.id)
       .eq("user_id", state.userId)
       .maybeSingle();
-    registered = Boolean(unwrap(result, "preRegistro.checkRegistration"));
+    const reg = unwrap(result, "preRegistro.checkRegistration");
+    registered = Boolean(reg);
+    colosseumConfirmed = Boolean(reg?.luma_confirmed_at);
   }
 
   const activeStep: 1 | 2 | 3 = !state ? 1 : registered ? 3 : 2;
@@ -79,7 +83,7 @@ export default async function PreRegistroPage() {
         {activeStep === 1 && (
           <div className="flex justify-center">
             <div className="w-full max-w-md">
-              <h1 className="sr-only">Faça seu pré-cadastro</h1>
+              <h1 className="sr-only">Faça seu cadastro</h1>
               <Suspense fallback={null}>
                 <AuthForm defaultNext="/pre-registro" />
               </Suspense>
@@ -90,7 +94,7 @@ export default async function PreRegistroPage() {
         {activeStep === 2 && (
           <Card sticker className="p-8 sm:p-10">
             <h1 className="font-heading text-2xl font-black uppercase tracking-tight text-ink">
-              Complete seu pré-cadastro
+              Complete seu cadastro
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Global Hackathon.
@@ -106,14 +110,11 @@ export default async function PreRegistroPage() {
             <div className="text-center">
               <p className="inline-flex items-center gap-2 rounded-full bg-emerald/10 px-4 py-1.5 text-sm font-bold text-emerald">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald text-xs text-surface">✓</span>
-                Você está dentro
+                Cadastro confirmado
               </p>
               <h1 className="mt-4 font-heading text-3xl font-black uppercase tracking-tight text-ink sm:text-4xl">
-                Sua jornada até a arena
+                Próximos passos
               </h1>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-                Seu lugar na campanha está garantido. Avisamos cada abertura por e-mail e WhatsApp.
-              </p>
             </div>
 
             <ol className="relative mt-10 space-y-4 before:absolute before:bottom-8 before:left-[1.35rem] before:top-8 before:w-0.5 before:bg-green-dark/15">
@@ -122,14 +123,94 @@ export default async function PreRegistroPage() {
                   ✓
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-emerald/40 bg-emerald/5 p-5">
-                  <p className="font-heading text-base font-bold uppercase text-emerald">Pré-cadastro feito</p>
-                  <p className="mt-1 text-sm text-muted">Sua vaga na campanha brasileira está garantida.</p>
+                  <p className="font-heading text-base font-bold uppercase text-emerald">Cadastro feito</p>
+                  <p className="mt-1 text-sm text-muted">Avisamos as novidades por e-mail e WhatsApp.</p>
                 </div>
               </li>
 
+              {colosseumConfirmed ? (
+                <li className="relative flex items-start gap-4">
+                  <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
+                    ✓
+                  </span>
+                  <div className="flex-1 rounded-2xl border-2 border-emerald/40 bg-emerald/5 p-5">
+                    <p className="font-heading text-base font-bold uppercase text-emerald">Registro no Colosseum feito</p>
+                    <p className="mt-1 text-sm text-muted">Seu time submete o projeto por lá até 17 de outubro.</p>
+                  </div>
+                </li>
+              ) : (
               <li className="relative flex items-start gap-4">
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
                   2
+                </span>
+                <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-heading text-base font-bold uppercase text-ink">Registre-se no Colosseum</p>
+                    {!hackathon?.external_url && (
+                      <span className="rounded-full bg-yellow px-2.5 py-0.5 text-xs font-bold uppercase text-green-dark">
+                        Em breve
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm text-muted">
+                    O Colosseum é a plataforma oficial do hackathon: é por lá que seu time entra na
+                    competição e submete o projeto.
+                  </p>
+                  <ol className="mt-3 space-y-1.5 text-sm text-muted">
+                    <li className="flex gap-2">
+                      <span className="font-mono text-xs font-bold text-emerald">1.</span>
+                      Crie sua conta no Colosseum
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-mono text-xs font-bold text-emerald">2.</span>
+                      Clique em &quot;Register Now&quot; para entrar no hackathon
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-mono text-xs font-bold text-emerald">3.</span>
+                      Monte seu time e preencha os dados do projeto
+                    </li>
+                  </ol>
+                  {hackathon?.external_url ? (
+                    <>
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <TrackedLink
+                          href={hackathon.external_url}
+                          target="colosseum"
+                          className="inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
+                        >
+                          Abrir Colosseum
+                        </TrackedLink>
+                        <form action={confirmColosseumRegistration}>
+                          <button
+                            type="submit"
+                            className="whitespace-nowrap rounded-full border-2 border-green-dark px-5 py-2 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+                          >
+                            Já me registrei
+                          </button>
+                        </form>
+                      </div>
+                      {/* Same walkthrough we shipped on the El Gato campaign. */}
+                      <Image
+                        src="/brand/colosseum-registro.gif"
+                        alt="Passo a passo do registro no Colosseum"
+                        width={720}
+                        height={540}
+                        unoptimized
+                        className="mt-4 w-full rounded-xl border-2 border-green-dark/20"
+                      />
+                    </>
+                  ) : (
+                    <p className="mt-3 font-mono text-xs font-bold uppercase tracking-widest text-muted">
+                      Abre em breve; avisamos você na hora
+                    </p>
+                  )}
+                </div>
+              </li>
+              )}
+
+              <li className="relative flex items-start gap-4">
+                <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
+                  3
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <p className="font-heading text-base font-bold uppercase text-ink">Entre na comunidade</p>
@@ -143,57 +224,6 @@ export default async function PreRegistroPage() {
                   >
                     Entrar no WhatsApp
                   </TrackedLink>
-                </div>
-              </li>
-
-              <li className="relative flex items-start gap-4">
-                <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
-                  3
-                </span>
-                <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
-                  <p className="font-heading text-base font-bold uppercase text-ink">Lets Build</p>
-                  <p className="mt-1 text-sm text-muted">
-                    Incubação de 30 dias com imersão presencial em São Paulo e US$50 mil em jogo.
-                  </p>
-                  <TrackedLink
-                    href={LETS_BUILD_URL}
-                    target="lets_build"
-                    className="mt-4 inline-block whitespace-nowrap rounded-full border-2 border-green-dark px-6 py-2 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
-                  >
-                    Aplicar no Lets Build
-                  </TrackedLink>
-                </div>
-              </li>
-
-              <li className="relative flex items-start gap-4">
-                <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark/30 bg-surface font-heading text-lg font-black text-muted">
-                  4
-                </span>
-                <div className="flex-1 rounded-2xl border-2 border-dashed border-green-dark/30 bg-surface p-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-heading text-base font-bold uppercase text-ink">Colosseum</p>
-                    {!hackathon?.external_url && (
-                      <span className="rounded-full bg-yellow px-2.5 py-0.5 text-xs font-bold uppercase text-green-dark">
-                        Em breve
-                      </span>
-                    )}
-                  </div>
-                  {hackathon?.external_url ? (
-                    <>
-                      <p className="mt-1 text-sm text-muted">Inscrições abertas. Garanta seu lugar na arena.</p>
-                      <TrackedLink
-                        href={hackathon.external_url}
-                        target="colosseum"
-                        className="mt-4 inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
-                      >
-                        Inscrever no Colosseum
-                      </TrackedLink>
-                    </>
-                  ) : (
-                    <p className="mt-1 text-sm text-muted">
-                      Quando as inscrições abrirem, você fica sabendo primeiro.
-                    </p>
-                  )}
                 </div>
               </li>
             </ol>
