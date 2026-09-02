@@ -47,7 +47,8 @@ export default function PrivacidadePage() {
               </li>
               <li>
                 <strong>Uso da plataforma:</strong> eventos de navegação
-                (páginas visitadas, cliques) via PostHog e Google Tag Manager —
+                (páginas visitadas, cliques) via PostHog e, pelo Google Tag
+                Manager, medição de campanhas do Google Analytics e Google Ads —
                 somente se você aceitar no aviso de cookies — e relatórios de
                 erro via Sentry,
                 sem dados pessoais além do necessário para diagnosticar a falha.
@@ -80,9 +81,9 @@ export default function PrivacidadePage() {
               Não vendemos seus dados. Usamos provedores de infraestrutura que
               processam dados em nosso nome: Supabase (banco de dados e
               autenticação), Vercel (hospedagem), Resend (e-mails
-              transacionais), PostHog e Google Tag Manager (análise de uso,
-              servidores nos EUA, apenas com seu consentimento) e Sentry
-              (monitoramento de erros).
+              transacionais), PostHog e Google (Tag Manager, Analytics e Ads, para
+              análise de uso e medição de campanhas, servidores nos EUA, apenas
+              com seu consentimento) e Sentry (monitoramento de erros).
               Dados de premiação podem ser compartilhados com os organizadores e
               patrocinadores da edição conforme o regulamento que você aceitou.
             </p>
@@ -92,7 +93,7 @@ export default function PrivacidadePage() {
             <h2 className="font-heading text-xl font-bold">Cookies</h2>
             <p className="mt-3 leading-relaxed">
               Cookies essenciais mantêm sua sessão de login funcionando e não
-              dependem de consentimento. Cookies de análise (PostHog e Google Tag Manager) só são
+              dependem de consentimento. Cookies de análise e de campanhas (PostHog e Google) só são
               usados se você aceitar no aviso exibido na primeira visita — e
               você pode mudar de ideia limpando os dados do site no navegador.
             </p>
