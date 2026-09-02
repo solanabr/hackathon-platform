@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { updateGtmConsent } from "@/components/analytics/google-tag-manager";
 
 export const CONSENT_KEY = "stbr-consent";
 
@@ -21,8 +22,9 @@ function readConsent(): string | null {
 
 /**
  * LGPD consent for analytics. PostHog boots opted-out (see
- * instrumentation-client.ts); "Aceitar" opts it in, "Só o essencial" keeps it
- * out. Auth/session cookies are essential and don't gate on this.
+ * instrumentation-client.ts) and Google Tag Manager boots with consent
+ * denied; "Aceitar" opts both in, "Só o essencial" keeps them out.
+ * Auth/session cookies are essential and don't gate on this.
  */
 export function CookieBanner() {
   // Server snapshot "server" keeps the banner out of SSR/hydration; the
@@ -40,6 +42,7 @@ export function CookieBanner() {
       if (value === "all") posthog.opt_in_capturing();
       else posthog.opt_out_capturing();
     }
+    updateGtmConsent(value === "all" ? "granted" : "denied");
     setDismissed(true);
   }
 

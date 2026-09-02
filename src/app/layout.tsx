@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Archivo } from "next/font/google";
 import { CookieBanner } from "@/components/consent/cookie-banner";
+import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/analytics/google-tag-manager";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -40,8 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`${archivo.variable} ${inter.variable}`}>
       <body className="min-h-screen antialiased">
+        <GoogleTagManagerNoScript />
         {children}
         <CookieBanner />
+        <GoogleTagManager />
       </body>
     </html>
   );
