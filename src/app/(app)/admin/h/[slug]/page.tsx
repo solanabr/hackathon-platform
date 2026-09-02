@@ -10,6 +10,7 @@ import { LifecycleControl } from "@/components/admin/lifecycle-control";
 import { RegistrationsTable } from "@/components/admin/registrations-table";
 import { TeamsTable } from "@/components/admin/teams-table";
 import { requireEditionAdminBySlug } from "@/lib/roles";
+import { DownloadSimpleIcon } from "@phosphor-icons/react/dist/ssr";
 import {
   EDITION_PHASE_LABEL,
   editionPhase,
@@ -241,6 +242,12 @@ export default async function AdminEditionPage({
                 {registrations.length === 1 ? "inscrição" : "inscrições"}
               </p>
             </div>
+            {registrations.length > 0 && (
+              <a href={`/admin/h/${hackathon.slug}/export?type=users`} className="btn-secondary px-5 py-2 text-sm">
+                <DownloadSimpleIcon size={16} weight="bold" aria-hidden />
+                Exportar CSV
+              </a>
+            )}
           </div>
           {registrations.length === 0 ? (
             <p className="mt-5 font-mono text-sm text-muted">Nenhuma inscrição ainda.</p>
@@ -261,6 +268,12 @@ export default async function AdminEditionPage({
                 <span className="font-mono tabular-nums"> {submittedTeams}</span> submetidos
               </p>
             </div>
+            {teams.length > 0 && (
+              <a href={`/admin/h/${hackathon.slug}/export?type=teams`} className="btn-secondary px-5 py-2 text-sm">
+                <DownloadSimpleIcon size={16} weight="bold" aria-hidden />
+                Exportar CSV
+              </a>
+            )}
           </div>
           {teams.length === 0 ? (
             <p className="mt-5 font-mono text-sm text-muted">Nenhum time formado ainda.</p>
