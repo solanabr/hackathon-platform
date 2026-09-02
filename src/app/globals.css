@@ -235,6 +235,15 @@
   }
 }
 
+/* FAQ answers ease in when a row opens. */
+@keyframes faqOpen {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+details[open] > .faq-answer {
+  animation: faqOpen 0.25s ease-out;
+}
+
 /* Campaign cheque: the check fills itself out on load — payee types in,
    the amount stamps, the quantia types, the signature draws. */
 @keyframes chequeWrite {
