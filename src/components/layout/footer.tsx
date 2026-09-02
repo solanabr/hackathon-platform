@@ -90,7 +90,7 @@ export function Footer() {
       <svg
         aria-hidden
         viewBox="0 0 1000 128"
-        className="block w-full select-none text-surface/[0.07]"
+        className="hidden w-full select-none text-surface/[0.07] sm:block"
       >
         <text
           x="500"

@@ -5,7 +5,14 @@ import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  BookOpenIcon,
+  CoinsIcon,
+  DiscordLogoIcon,
+  GraduationCapIcon,
+  WhatsappLogoIcon,
+  YoutubeLogoIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { Tilt } from "@/components/ui/tilt";
@@ -70,34 +77,64 @@ const CALENDAR: CalendarItem[] = [
 ];
 
 const RESOURCES = [
-  { label: "Grupo do WhatsApp", href: "https://chat.whatsapp.com/HPIu1YV3mri5QOGf0gUMTO" },
-  { label: "Aulas no YouTube", href: "https://www.youtube.com/@SuperteamBrasil" },
-  { label: "Wiki do Superteam", href: "https://wiki.superteam.com.br" },
-  { label: "Superteam Earn", href: "https://superteam.fun/earn/s/superteambr" },
-  { label: "Academy", href: "https://www.st.academy/" },
-  { label: "Discord", href: "https://discord.gg/superteambrasil" },
+  { label: "Grupo do WhatsApp", href: WHATSAPP_COMMUNITY_URL, icon: WhatsappLogoIcon },
+  { label: "Aulas no YouTube", href: "https://www.youtube.com/@SuperteamBrasil", icon: YoutubeLogoIcon },
+  { label: "Wiki do Superteam", href: "https://wiki.superteam.com.br", icon: BookOpenIcon },
+  { label: "Superteam Earn", href: "https://superteam.fun/earn/s/superteambr", icon: CoinsIcon },
+  { label: "Academy", href: "https://www.st.academy/", icon: GraduationCapIcon },
+  { label: "Discord", href: "https://discord.gg/superteambrasil", icon: DiscordLogoIcon },
 ];
-
-const FAQS = [
+const FAQ_GROUPS = [
   {
-    q: "Preciso ter um time pronto para participar?",
-    a: "Não. Você pode entrar sozinho, conhecer pessoas na comunidade e montar sua equipe ao longo da campanha e dentro do Colosseum.",
+    title: "Antes de entrar",
+    items: [
+      {
+        q: "Preciso me cadastrar aqui e no Colosseum?",
+        a: "Sim, nos dois. O cadastro aqui coloca você nas mentorias, na comunidade e na Trilha Brasil. O do Colosseum é onde o projeto é enviado e julgado, e cada membro do time precisa de uma conta lá. Para concorrer à Trilha Brasil, o projeto também precisa ser submetido no Superteam Earn.",
+      },
+      {
+        q: "Preciso ter um time pronto?",
+        a: "Não. Dá para entrar sozinho e montar o time na comunidade ou no diretório de cofundadores do Colosseum. O Colosseum aceita submissão solo, mas recomenda time: cada pessoa só pode participar de um projeto.",
+      },
+      {
+        q: "Preciso saber blockchain ou Rust?",
+        a: "Não. Os workshops e a comunidade levam do zero até a submissão, e muito do trabalho é produto, front-end e negócio. O Colosseum não exige que todo mundo seja engenheiro, só que o time tenha quem construa e quem venda.",
+      },
+      {
+        q: "Quanto custa?",
+        a: "Nada. Cadastro, comunidade e hackathon são gratuitos.",
+      },
+    ],
   },
   {
-    q: "Quanto custa participar?",
-    a: "Nada. O cadastro, a comunidade e o hackathon são gratuitos.",
+    title: "Durante o hackathon",
+    items: [
+      {
+        q: "Preciso falar inglês?",
+        a: "A submissão no Colosseum é em inglês: um vídeo de pitch e um técnico, de até 3 minutos cada, mais o repositório. Toda a Trilha Brasil, as mentorias e o suporte são em português.",
+      },
+      {
+        q: "É 100% online? Quanto tempo dura?",
+        a: "Sim, de qualquer lugar do Brasil. São cinco semanas de construção, e o portal de submissão do Colosseum abre na última semana.",
+      },
+      {
+        q: "Posso usar um projeto que já existe?",
+        a: "Pode, desde que o projeto ainda não tenha captado investimento. Você pode começar antes e usar código existente, mas só o trabalho feito dentro do período do hackathon é avaliado, e todo o histórico precisa ser declarado no formulário. Omitir isso desclassifica o time.",
+      },
+    ],
   },
   {
-    q: "Quando envio os dados do projeto no Colosseum?",
-    a: "As inscrições e submissões abrem em breve na plataforma do Colosseum. Quem fez o cadastro é avisado na hora por e-mail e WhatsApp.",
-  },
-  {
-    q: "O Superteam Brasil ajuda durante o hackathon?",
-    a: "Sim. Mentorias, workshops ao vivo, formação de times e suporte na comunidade durante toda a campanha.",
-  },
-  {
-    q: "Preciso saber blockchain para começar?",
-    a: "Não. Os workshops e a comunidade existem justamente para te levar do zero até a submissão.",
+    title: "Prêmios e depois",
+    items: [
+      {
+        q: "O que o vencedor ganha?",
+        a: "Na última edição foram USD 250 mil em prêmios diretos: USD 30 mil para o campeão global e USD 10 mil para cada um dos 20 melhores, com prêmios extras para times universitários. Os melhores ainda entram no acelerador do Colosseum com USD 250 mil de investimento pré-seed. Entrar no acelerador é opcional.",
+      },
+      {
+        q: "O que é a Trilha Brasil?",
+        a: "Premiação e mentoria do Superteam Brasil só para times brasileiros, por cima do que o Colosseum paga. Para concorrer, além de enviar o projeto no Colosseum, você submete o mesmo projeto no desafio da Trilha Brasil no Superteam Earn. Foi por aqui que Cloak e Bido saíram do hackathon com investimento anjo.",
+      },
+    ],
   },
 ];
 
@@ -540,7 +577,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Recursos: link pills, plus where to follow. */}
+      {/* Recursos: link pills with an icon each. */}
       <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Recursos">
         <div className="mx-auto max-w-6xl">
           <Reveal>
@@ -551,64 +588,74 @@ export default async function HomePage() {
             Tudo que você precisa para chegar pronto na arena.
           </p>
 
-          <ul className="mt-8 flex flex-wrap gap-3">
-            {RESOURCES.map((r) =>
-              r.href ? (
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+            {RESOURCES.map((r) => {
+              const Icon = r.icon;
+              return (
                 <li key={r.label}>
                   <TrackedCta
                     href={r.href}
                     event="campaign_link_clicked"
                     properties={{ target: r.label, location: "recursos" }}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark bg-surface-raised px-5 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+                    className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-green-dark bg-surface-raised px-3 py-4 text-center text-[13px] font-bold text-ink shadow-sticker transition-colors duration-200 hover:bg-green-dark hover:text-surface sm:inline-flex sm:h-auto sm:flex-row sm:gap-2.5 sm:rounded-full sm:px-5 sm:py-2.5 sm:text-left sm:text-sm sm:shadow-none"
                   >
+                    <Icon size={22} weight="bold" aria-hidden className="sm:size-[18px]" />
                     {r.label}
-                    <ArrowUpRightIcon size={14} weight="bold" aria-hidden />
                   </TrackedCta>
                 </li>
-              ) : (
-                <li
-                  key={r.label}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-dashed border-green-dark/30 px-5 py-2.5 text-sm font-bold text-muted"
-                >
-                  {r.label}
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest">em breve</span>
-                </li>
-              ),
-            )}
+              );
+            })}
           </ul>
           </Reveal>
         </div>
       </section>
 
-      {/* FAQ: native accordions, sticker cards. */}
+      {/* FAQ: grouped divider lists in sticker cards; the heading stays put on desktop. */}
       <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Perguntas frequentes">
-        <div className="mx-auto max-w-6xl">
-          <Reveal>
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-            Perguntas frequentes
-          </h2>
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+          <Reveal className="lg:sticky lg:top-28 lg:self-start">
+            <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
+              Perguntas frequentes
+            </h2>
+            <p className="mt-4 max-w-md text-pretty text-lg leading-relaxed text-ink/80">
+              O que todo time pergunta antes de entrar. Ficou faltando alguma?
+            </p>
+            <TrackedCta
+              href={WHATSAPP_COMMUNITY_URL}
+              event="campaign_link_clicked"
+              properties={{ target: "whatsapp", location: "faq" }}
+              className="mt-5 inline-flex items-center gap-2 rounded-full border-2 border-green-dark bg-surface-raised px-5 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+            >
+              <WhatsappLogoIcon size={18} weight="bold" aria-hidden />
+              Pergunta no WhatsApp
+            </TrackedCta>
           </Reveal>
-          <Reveal delay={120}>
-          <div className="mt-8 space-y-4">
-            {FAQS.map((f) => (
-              <details
-                key={f.q}
-                className="group rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-heading text-base font-bold text-ink sm:p-6 sm:text-lg [&::-webkit-details-marker]:hidden">
-                  {f.q}
-                  <span
-                    aria-hidden
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-green-dark font-mono text-sm font-bold transition-transform duration-200 group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                <p className="px-5 pb-5 text-pretty leading-relaxed text-green-dark/80 sm:px-6 sm:pb-6">{f.a}</p>
-              </details>
+
+          <div className="space-y-8">
+            {FAQ_GROUPS.map((g, i) => (
+              <Reveal key={g.title} delay={i * 80}>
+                <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60">
+                  {g.title}
+                </p>
+                <div className="divide-y-2 divide-green-dark/15 rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
+                  {g.items.map((f) => (
+                    <details key={f.q} className="group">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-heading text-base font-bold text-ink transition-colors hover:text-emerald sm:px-6 sm:text-lg [&::-webkit-details-marker]:hidden">
+                        {f.q}
+                        <span
+                          aria-hidden
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-green-dark font-mono text-sm font-bold text-green-dark transition-transform duration-200 group-open:rotate-45"
+                        >
+                          +
+                        </span>
+                      </summary>
+                      <p className="faq-answer px-5 pb-5 text-pretty leading-relaxed text-green-dark/80 sm:px-6">{f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </Reveal>
             ))}
           </div>
-          </Reveal>
         </div>
       </section>
 
