@@ -1,10 +1,12 @@
-import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
+import { forwardRef, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 const BASE =
   "w-full rounded-xl border border-green-dark/15 bg-surface-raised px-4 py-3 text-ink placeholder:text-muted focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/30 transition-colors";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement>;
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>;
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { className = "", ...rest },
@@ -24,6 +26,25 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       className={`${BASE} resize-y ${className}`}
       {...rest}
     />
+  );
+});
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  { className = "", children, ...rest },
+  ref,
+) {
+  return (
+    <div className="relative">
+      <select ref={ref} className={`${BASE} appearance-none pr-11 ${className}`} {...rest}>
+        {children}
+      </select>
+      <CaretDownIcon
+        size={16}
+        weight="bold"
+        aria-hidden
+        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink"
+      />
+    </div>
   );
 });
 

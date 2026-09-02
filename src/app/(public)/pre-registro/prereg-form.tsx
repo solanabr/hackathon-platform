@@ -3,8 +3,9 @@
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { preRegister } from "./actions";
+import { isRoleOption, ROLE_OPTIONS } from "./constants";
 import type { User } from "@/types/db";
 
 export function PreregForm({ profile }: { profile: User | null }) {
@@ -34,6 +35,24 @@ export function PreregForm({ profile }: { profile: User | null }) {
           placeholder="+55 (11) 91234-5678"
           defaultValue={profile?.whatsapp ?? ""}
         />
+      </div>
+      <div>
+        <Label htmlFor="role">Como você se descreve?</Label>
+        <Select
+          id="role"
+          name="role"
+          required
+          defaultValue={profile?.headline && isRoleOption(profile.headline) ? profile.headline : ""}
+        >
+          <option value="" disabled>
+            Selecione
+          </option>
+          {ROLE_OPTIONS.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </Select>
       </div>
 
       <label className="flex items-start gap-3 text-sm leading-relaxed text-muted">
