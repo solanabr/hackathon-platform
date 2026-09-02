@@ -7,7 +7,7 @@ import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireUser } from "@/lib/user-state";
 import { sanitizeText } from "@/lib/security";
 import { track } from "@/lib/analytics-server";
-import { COLOSSEUM_SLUG } from "./constants";
+import { COLOSSEUM_SLUG, isRoleOption } from "./constants";
 
 
 export async function preRegister(
@@ -18,10 +18,12 @@ export async function preRegister(
 
   const fullName = sanitizeText(String(formData.get("full_name") ?? ""));
   const whatsapp = sanitizeText(String(formData.get("whatsapp") ?? ""));
+  const role = String(formData.get("role") ?? "");
   const termsAccepted = formData.get("terms_accepted") === "on";
 
   if (!fullName) return { ok: false, error: "Informe seu nome completo." };
   if (!whatsapp) return { ok: false, error: "Informe seu WhatsApp." };
+  if (!isRoleOption(role)) return { ok: false, error: "Escolha como você se descreve." };
   // Loose shape check only: DDI/DDD formats vary, but the field is the
   // campaign's outreach channel, so pure text must not pass as a number.
   const digits = whatsapp.replace(/\D/g, "");
@@ -39,9 +41,11 @@ export async function preRegister(
   // it as the backstop (same pattern as updateProfile and registerForHackathon).
   const supabase = await createServerSupabaseClient();
 
+  // The role doubles as the profile's Título; "Outro" says nothing useful
+  // there, so it leaves whatever the person already wrote.
   const { error: profileError } = await supabase
     .from("users")
-    .update({ full_name: fullName, whatsapp })
+    .update({ full_name: fullName, whatsapp, ...(role !== "Outro" && { headline: role }) })
     .eq("id", state.userId);
   if (profileError) {
     logQueryError("preRegistro.updateProfile", profileError);
@@ -61,7 +65,7 @@ export async function preRegister(
     return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
   }
 
-  track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG });
+  track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG, role });
   revalidatePath("/pre-registro");
   return { ok: true };
 }
