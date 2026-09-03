@@ -180,11 +180,11 @@ export default async function HomePage() {
         <div aria-hidden className="pointer-events-none absolute inset-0">
           {/* Yellow field under the desk's left side, emerald behind its right. */}
           <div
-            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:top-[42%] sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:top-[38%] lg:h-[34rem] lg:w-[34rem] xl:-left-28 2xl:-left-10 2xl:h-[38rem] 2xl:w-[38rem]"
+            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:top-[42%] sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:top-[38%] lg:h-[34rem] lg:w-[34rem] 2xl:-left-56 2xl:h-[40rem] 2xl:w-[40rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute hidden bg-emerald sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] xl:-right-36 2xl:-right-12 2xl:h-[32rem] 2xl:w-[32rem]"
+            className="morth animate-float-b absolute hidden bg-emerald sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
         </div>
