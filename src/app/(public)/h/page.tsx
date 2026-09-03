@@ -4,6 +4,8 @@ import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
 import { EditionGallery } from "@/components/home/edition-gallery";
+import Link from "next/link";
+import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -41,14 +43,17 @@ const STEPS = [
   {
     title: "Inscreva-se",
     body: "Garanta sua vaga em uma edição aberta. É grátis e leva dois minutos.",
+    action: { label: "Ver edições", href: "#edicoes", primary: true },
   },
   {
     title: "Monte o time e construa",
     body: "Cada edição define o tamanho do time. Aulas, mentorias e o grupo da comunidade durante toda a fase online.",
+    action: { label: "Entrar na comunidade", href: WHATSAPP_COMMUNITY_URL, primary: false },
   },
   {
     title: "Submeta e dispute os prêmios",
     body: "Deck, vídeo demo e repositório até o prazo. As melhores equipes apresentam para a banca.",
+    action: { label: "Como receber o prêmio", href: "/guias/do-earn-ao-pix", primary: false },
   },
 ];
 
@@ -178,35 +183,41 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Como funciona: numbered, asymmetric, no card trio */}
+      {/* Como funciona: the same sticker trio as the campaign LP's jornada. */}
       <section id="como-funciona" className="px-4 pt-20 sm:px-6 lg:px-8" aria-label="Como funciona">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-              Como funciona
-            </h2>
-            <p className="mt-4 max-w-sm text-pretty leading-relaxed text-green-dark/70">
-              Três passos entre o cadastro e o palco. Todo o resto acontece na plataforma.
-            </p>
-          </div>
-          <ol className="lg:col-span-8">
-            {STEPS.map((step, i) => (
-              <li
-                key={step.title}
-                className="group flex gap-6 border-b-2 border-[#1b231d]/15 py-8 first:pt-0 last:border-b-0 sm:gap-10"
-              >
-                <span
-                  aria-hidden
-                  className="text-outline-green shrink-0 font-heading text-6xl font-black leading-none tabular-nums [font-stretch:125%] transition-colors duration-200 group-hover:text-[#ffd23f] sm:text-7xl"
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
+            Como funciona
+          </h2>
+          <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-green-dark/70">
+            Três passos entre o cadastro e o palco. Todo o resto acontece na plataforma.
+          </p>
+          <ol className="mt-10 grid gap-5 md:grid-cols-3">
+            {STEPS.map((step, i) => {
+              const external = step.action.href.startsWith("http");
+              const cls = `${step.action.primary ? "btn-primary" : "btn-secondary"} mt-auto w-fit px-5 py-2 text-sm`;
+              return (
+                <li
+                  key={step.title}
+                  className="card-hover flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7"
                 >
-                  {i + 1}
-                </span>
-                <div className="min-w-0 pt-1">
-                  <h3 className="font-heading text-2xl font-bold">{step.title}</h3>
-                  <p className="mt-2 max-w-lg text-pretty leading-relaxed text-green-dark/70">{step.body}</p>
-                </div>
-              </li>
-            ))}
+                  <span className="inline-flex w-fit rounded-lg border-2 border-green-dark bg-yellow px-2.5 py-1 font-mono text-sm font-bold text-green-dark">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="mt-4 font-heading text-xl font-bold">{step.title}</h3>
+                  <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{step.body}</p>
+                  {external ? (
+                    <a href={step.action.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                      {step.action.label}
+                    </a>
+                  ) : (
+                    <Link href={step.action.href} className={cls}>
+                      {step.action.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ol>
         </div>
       </section>
