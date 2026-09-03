@@ -115,9 +115,22 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   return (
     <div>
       <section
-        className="relative px-4 pb-6 pt-8 sm:px-6 lg:px-8 lg:pt-14"
+        className="relative overflow-hidden px-4 pb-6 pt-8 sm:px-6 lg:px-8 lg:pt-14"
         aria-label={hackathon.name}
       >
+        {/* The brand's organic shapes, same treatment as the LP and the hub:
+            yellow anchors the copy on the left, emerald bleeds the top-right
+            behind the cover. Desktop and tablet only. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div
+            className="morth animate-float-a absolute hidden bg-yellow sm:-left-32 sm:top-[60%] sm:block sm:h-[22rem] sm:w-[22rem] lg:-left-44 lg:top-[66%] lg:h-[30rem] lg:w-[30rem] 2xl:-left-52 2xl:h-[38rem] 2xl:w-[38rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
+          />
+          <div
+            className="morth animate-float-b absolute hidden bg-emerald sm:-right-36 sm:-top-16 sm:block sm:h-[20rem] sm:w-[20rem] lg:-right-44 lg:-top-24 lg:h-[28rem] lg:w-[28rem] 2xl:-right-56 2xl:h-[36rem] 2xl:w-[36rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
+          />
+        </div>
         <div className="relative mx-auto mb-8 max-w-6xl">
           <BackLink href="/h" label="Hackathons" />
         </div>

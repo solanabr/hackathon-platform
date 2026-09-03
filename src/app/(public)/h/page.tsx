@@ -5,6 +5,7 @@ import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
 import { EditionGallery } from "@/components/home/edition-gallery";
 import Link from "next/link";
+import { Reveal } from "@/components/ui/reveal";
 import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ const STEPS = [
   },
   {
     title: "Monte o time e construa",
-    body: "Cada edição define o tamanho do time. Aulas, mentorias e o grupo da comunidade durante toda a fase online.",
+    body: "Encontre parceiros na comunidade e construa junto. Aulas, mentorias e o grupo no WhatsApp durante toda a fase online.",
     action: { label: "Entrar na comunidade", href: WHATSAPP_COMMUNITY_URL, primary: false },
   },
   {
@@ -183,38 +184,42 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Como funciona: the same sticker trio as the campaign LP's jornada. */}
-      <section id="como-funciona" className="px-4 pt-20 sm:px-6 lg:px-8" aria-label="Como funciona">
+      {/* Como funciona: the campaign LP's jornada, one action per step. */}
+      <section id="como-funciona" className="px-4 pt-20 sm:px-6 lg:px-8 lg:pt-24" aria-label="Como funciona">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-            Como funciona
-          </h2>
-          <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-green-dark/70">
-            Três passos entre o cadastro e o palco. Todo o resto acontece na plataforma.
-          </p>
-          <ol className="mt-10 grid gap-5 md:grid-cols-3">
+          <Reveal>
+            <h2 className="max-w-2xl text-balance font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] sm:text-5xl">
+              Do cadastro à submissão em três passos.
+            </h2>
+            <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
+              Inscreva-se em uma edição, monte o time com a comunidade e envie o projeto. Tudo pela
+              plataforma, com mentorias e workshops no caminho.
+            </p>
+          </Reveal>
+          <ol className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((step, i) => {
               const external = step.action.href.startsWith("http");
-              const cls = `${step.action.primary ? "btn-primary" : "btn-secondary"} mt-auto w-fit px-5 py-2 text-sm`;
+              const cls = step.action.primary
+                ? "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
+                : "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface";
               return (
-                <li
-                  key={step.title}
-                  className="card-hover flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7"
-                >
-                  <span className="inline-flex w-fit rounded-lg border-2 border-green-dark bg-yellow px-2.5 py-1 font-mono text-sm font-bold text-green-dark">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-4 font-heading text-xl font-bold">{step.title}</h3>
-                  <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{step.body}</p>
-                  {external ? (
-                    <a href={step.action.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                      {step.action.label}
-                    </a>
-                  ) : (
-                    <Link href={step.action.href} className={cls}>
-                      {step.action.label}
-                    </Link>
-                  )}
+                <li key={step.title} className="h-full">
+                  <Reveal delay={i * 130} className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
+                    <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                      Passo {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3 className="mt-4 font-heading text-xl font-bold">{step.title}</h3>
+                    <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{step.body}</p>
+                    {external ? (
+                      <a href={step.action.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                        {step.action.label}
+                      </a>
+                    ) : (
+                      <Link href={step.action.href} className={cls}>
+                        {step.action.label}
+                      </Link>
+                    )}
+                  </Reveal>
                 </li>
               );
             })}
@@ -222,42 +227,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Closing CTA: the hero's language, inverted */}
-      <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Participe">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-green-dark px-8 py-16 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-14 sm:py-20">
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div
-              className="morth animate-float-b absolute -right-24 -top-28 h-[22rem] w-[22rem] bg-emerald sm:h-[28rem] sm:w-[28rem]"
-              style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-14deg)" }}
-            />
-            <div
-              className="morth animate-float-c absolute -bottom-24 right-[26%] h-52 w-52 bg-yellow/90 sm:h-64 sm:w-64"
-              style={{ maskImage: "url(/brand/stbr/elements/morth-03.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-03.svg)", transform: "rotate(18deg)" }}
-            />
-            <div
-              className="morth absolute -left-16 -bottom-20 h-56 w-56 bg-green/60"
-              style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(-24deg)" }}
-            />
-          </div>
+      {/* Closing CTA: the LP hero's language on cream, shapes as paint. */}
+      <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-label="Participe">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div
+            className="morth animate-float-a absolute hidden bg-yellow sm:-left-24 sm:top-[10%] sm:block sm:h-[22rem] sm:w-[22rem] lg:-left-32 lg:h-[30rem] lg:w-[30rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
+          />
+          <div
+            className="morth animate-float-b absolute hidden bg-emerald sm:-right-28 sm:-bottom-24 sm:block sm:h-[20rem] sm:w-[20rem] lg:-right-36 lg:h-[26rem] lg:w-[26rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
+          />
+        </div>
 
-          <div className="relative grid gap-10 lg:grid-cols-12 lg:items-center">
-            <div className="min-w-0 lg:col-span-8">
-              <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.22] tracking-tight text-surface [font-stretch:118%] sm:text-5xl">
-                O próximo{" "}
-                <span className="inline-block -rotate-1 bg-yellow px-3 text-green-dark">
-                  vencedor
-                </span>{" "}
-                ainda não se inscreveu
-              </h2>
-            </div>
+        <div className="relative mx-auto max-w-6xl">
+          <div className="rounded-3xl border-2 border-green-dark bg-surface-raised px-6 py-12 shadow-sticker sm:px-12 sm:py-16 lg:px-16">
+            <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
+              <div className="min-w-0 lg:col-span-8">
+                <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.1] tracking-tight text-ink [font-stretch:110%] sm:text-5xl lg:text-6xl">
+                  Escolha uma edição e comece a{" "}
+                  <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">
+                    construir
+                  </span>
+                  .
+                </h2>
+                <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-ink/80">
+                  Inscrição grátis, comunidade no WhatsApp e mentorias durante toda a edição.
+                </p>
+              </div>
 
-            <div className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
-              <a
-                href="#edicoes"
-                className="rounded-full bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
-              >
-                Garantir minha vaga
-              </a>
+              <div className="flex flex-col items-start gap-3 lg:col-span-4 lg:items-end">
+                <a
+                  href="#edicoes"
+                  className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                >
+                  Ver edições abertas
+                </a>
+              </div>
             </div>
           </div>
         </div>
