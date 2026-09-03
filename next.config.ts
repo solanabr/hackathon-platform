@@ -13,6 +13,18 @@ const config: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "10mb" },
   },
+  // vibe.superteam.com.br is a vanity entry point for the Vibeathon; every
+  // path on it lands on the edition page.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "vibe.superteam.com.br" }],
+        destination: "https://hackathon.superteam.com.br/h/vibeathon-superteam-replit",
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
