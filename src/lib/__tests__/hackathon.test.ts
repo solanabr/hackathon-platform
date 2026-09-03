@@ -10,6 +10,8 @@ import {
   editionUsesTeams,
   requiresLumaConfirmation,
   registrationClosesWithSubmission,
+  teamLimits,
+  teamSizeLabel,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -154,5 +156,30 @@ describe("submission target", () => {
   it("asks for Luma only when the edition has one", () => {
     expect(requiresLumaConfirmation({ ...base, luma_url: "https://luma.com/x" } as Hackathon)).toBe(true);
     expect(requiresLumaConfirmation({ ...base, luma_url: null } as Hackathon)).toBe(false);
+  });
+});
+
+describe("team size limits", () => {
+  it("reads min/max off the hackathon row", () => {
+    const h = { ...base, team_size_min: 2, team_size_max: 4 } as Hackathon;
+    expect(teamLimits(h)).toEqual({ min: 2, max: 4 });
+  });
+
+  it("labels a range as 'N a M integrantes'", () => {
+    expect(teamSizeLabel({ ...base, team_size_min: 2, team_size_max: 4 } as Hackathon)).toBe(
+      "2 a 4 integrantes",
+    );
+  });
+
+  it("labels a fixed size as 'N integrantes'", () => {
+    expect(teamSizeLabel({ ...base, team_size_min: 4, team_size_max: 4 } as Hackathon)).toBe(
+      "4 integrantes",
+    );
+  });
+
+  it("labels an open floor (min 1) as 'até N integrantes'", () => {
+    expect(teamSizeLabel({ ...base, team_size_min: 1, team_size_max: 10 } as Hackathon)).toBe(
+      "até 10 integrantes",
+    );
   });
 });

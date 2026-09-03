@@ -21,6 +21,7 @@ type Props = {
   dashboardHref: string;
   membersPending: number;
   membersAccepted: number;
+  teamMin: number;
   judgeGithubHandle: string | null;
 };
 
@@ -52,18 +53,20 @@ function toForm(s: Submission): FormState {
   };
 }
 
-const SUBMIT_ERRORS: Record<string, string> = {
-  not_authenticated: "Sessão expirada.",
-  not_leader: "Apenas o líder pode submeter.",
-  already_locked: "Time já submetido.",
-  team_not_found: "Time não encontrado.",
-  deadline_passed: "Prazo encerrado.",
-  missing_required_fields:
-    "Preencha todos os campos obrigatórios (incluindo a imagem do projeto) antes de submeter.",
-  team_too_small: "O time precisa de pelo menos 2 integrantes para submeter.",
-  members_missing_luma:
-    "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
-};
+function submitErrors(teamMin: number): Record<string, string> {
+  return {
+    not_authenticated: "Sessão expirada.",
+    not_leader: "Apenas o líder pode submeter.",
+    already_locked: "Time já submetido.",
+    team_not_found: "Time não encontrado.",
+    deadline_passed: "Prazo encerrado.",
+    missing_required_fields:
+      "Preencha todos os campos obrigatórios (incluindo a imagem do projeto) antes de submeter.",
+    team_too_small: `O time precisa de pelo menos ${teamMin} integrantes para submeter.`,
+    members_missing_luma:
+      "Todos os integrantes precisam confirmar a inscrição no Luma antes da submissão.",
+  };
+}
 
 export function SubmissionEditor({
   teamId,
@@ -75,6 +78,7 @@ export function SubmissionEditor({
   dashboardHref,
   membersPending,
   membersAccepted,
+  teamMin,
   judgeGithubHandle,
 }: Props) {
   const router = useRouter();
@@ -183,7 +187,7 @@ export function SubmissionEditor({
         const data = await res.json().catch(() => ({}));
         const code = data.code as string | undefined;
         setSubmitError(
-          (code && SUBMIT_ERRORS[code]) ?? data.error ?? "Não foi possível submeter.",
+          (code && submitErrors(teamMin)[code]) ?? data.error ?? "Não foi possível submeter.",
         );
         submitInFlight.current = false;
         return;
@@ -223,11 +227,11 @@ export function SubmissionEditor({
     !!sanitizeUrl(form.github_url) &&
     form.github_access_granted;
 
-  const canSubmit = allRequiredFilled && membersPending === 0 && membersAccepted >= 2;
+  const canSubmit = allRequiredFilled && membersPending === 0 && membersAccepted >= teamMin;
   const blockedReason = !allRequiredFilled
     ? "Preencha todos os campos obrigatórios"
-    : membersAccepted < 2
-      ? "O time precisa de pelo menos 2 integrantes"
+    : membersAccepted < teamMin
+      ? `O time precisa de pelo menos ${teamMin} integrantes`
       : membersPending > 0
       ? `${membersPending} ${membersPending === 1 ? "integrante ainda não confirmou" : "integrantes ainda não confirmaram"} a inscrição`
       : "";

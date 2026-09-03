@@ -4,26 +4,28 @@ import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 
-const RPC_ERRORS: Record<string, { status: number; message: string }> = {
-  not_authenticated: { status: 401, message: "Sessão expirada." },
-  not_leader: { status: 403, message: "Apenas o líder pode submeter." },
-  team_not_found: { status: 404, message: "Time não encontrado." },
-  already_locked: { status: 409, message: "Time já submetido." },
-  deadline_passed: { status: 409, message: "Prazo encerrado." },
-  external_edition: { status: 400, message: "Esta edição não usa times na plataforma." },
-  missing_required_fields: {
-    status: 422,
-    message: "Preencha todos os campos obrigatórios (incluindo imagem do projeto).",
-  },
-  team_too_small: {
-    status: 422,
-    message: "O time precisa de pelo menos 2 integrantes aceitos para submeter.",
-  },
-  members_missing_luma: {
-    status: 422,
-    message: "Todos os integrantes precisam confirmar a inscrição no Luma antes de submeter.",
-  },
-};
+function rpcErrors(teamMin: number): Record<string, { status: number; message: string }> {
+  return {
+    not_authenticated: { status: 401, message: "Sessão expirada." },
+    not_leader: { status: 403, message: "Apenas o líder pode submeter." },
+    team_not_found: { status: 404, message: "Time não encontrado." },
+    already_locked: { status: 409, message: "Time já submetido." },
+    deadline_passed: { status: 409, message: "Prazo encerrado." },
+    external_edition: { status: 400, message: "Esta edição não usa times na plataforma." },
+    missing_required_fields: {
+      status: 422,
+      message: "Preencha todos os campos obrigatórios (incluindo imagem do projeto).",
+    },
+    team_too_small: {
+      status: 422,
+      message: `O time precisa de pelo menos ${teamMin} integrantes aceitos para submeter.`,
+    },
+    members_missing_luma: {
+      status: 422,
+      message: "Todos os integrantes precisam confirmar a inscrição no Luma antes de submeter.",
+    },
+  };
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -40,7 +42,18 @@ export async function POST(request: NextRequest) {
 
   const { error: rpcError } = await supabase.rpc("submit_team", { p_team_id: body.teamId });
   if (rpcError) {
-    const mapped = RPC_ERRORS[rpcError.message];
+    let teamMin = 2;
+    if (rpcError.message === "team_too_small") {
+      const { data: team, error: teamError } = await supabase
+        .from("teams")
+        .select("hackathons(team_size_min)")
+        .eq("id", body.teamId)
+        .maybeSingle();
+      if (teamError) logQueryError("api.submit.teamMin", teamError);
+      const edition = Array.isArray(team?.hackathons) ? team?.hackathons[0] : team?.hackathons;
+      teamMin = edition?.team_size_min ?? teamMin;
+    }
+    const mapped = rpcErrors(teamMin)[rpcError.message];
     return NextResponse.json(
       { error: mapped?.message ?? "Não foi possível submeter.", code: rpcError.message },
       { status: mapped?.status ?? 500 },

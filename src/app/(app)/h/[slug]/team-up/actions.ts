@@ -12,20 +12,45 @@ import { sendApplicationReceived } from "@/lib/email";
 
 export type TeamUpActionResult = { ok: true } | { ok: false; error: string };
 
-const RPC_ERRORS: Record<string, string> = {
-  not_registered: "Complete sua inscrição na edição antes de continuar.",
-  already_on_team: "Você já está em um time nesta edição.",
-  team_locked: "Esse time já fechou a submissão.",
-  team_full: "Esse time já está com 4 integrantes.",
-  opening_not_found: "Essa vaga não está mais aberta.",
-  application_not_found: "Candidatura não encontrada.",
-  not_leader: "Apenas o líder pode responder candidaturas.",
-  already_applied: "Você já se candidatou a esse time.",
-  own_team: "Esse é o seu próprio time.",
-};
+function rpcErrors(teamMax: number): Record<string, string> {
+  return {
+    not_registered: "Complete sua inscrição na edição antes de continuar.",
+    already_on_team: "Você já está em um time nesta edição.",
+    team_locked: "Esse time já fechou a submissão.",
+    team_full: `Esse time já está com ${teamMax} integrantes.`,
+    opening_not_found: "Essa vaga não está mais aberta.",
+    application_not_found: "Candidatura não encontrada.",
+    not_leader: "Apenas o líder pode responder candidaturas.",
+    already_applied: "Você já se candidatou a esse time.",
+    own_team: "Esse é o seu próprio time.",
+  };
+}
 
-function mapRpcError(message: string): TeamUpActionResult {
-  return { ok: false, error: RPC_ERRORS[message] ?? "Não foi possível concluir. Tente novamente." };
+function mapRpcError(message: string, teamMax = 4): TeamUpActionResult {
+  return { ok: false, error: rpcErrors(teamMax)[message] ?? "Não foi possível concluir. Tente novamente." };
+}
+
+type SupabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
+
+// Only used to word the team_full error message — a lookup failure here
+// just falls back to the generic "4 integrantes" phrasing (mapRpcError's
+// default), it never blocks the underlying RPC's own error handling.
+async function teamMaxForTeam(supabase: SupabaseClient, teamId: string): Promise<number | undefined> {
+  const { data, error } = await supabase.from("teams").select("hackathons(team_size_max)").eq("id", teamId).maybeSingle();
+  if (error) logQueryError("teamUp.teamMax", error);
+  const edition = Array.isArray(data?.hackathons) ? data?.hackathons[0] : data?.hackathons;
+  return edition?.team_size_max;
+}
+
+async function teamMaxForApplication(supabase: SupabaseClient, applicationId: string): Promise<number | undefined> {
+  const { data, error } = await supabase
+    .from("team_applications")
+    .select("hackathons(team_size_max)")
+    .eq("id", applicationId)
+    .maybeSingle();
+  if (error) logQueryError("teamUp.applicationTeamMax", error);
+  const edition = Array.isArray(data?.hackathons) ? data?.hackathons[0] : data?.hackathons;
+  return edition?.team_size_max;
 }
 
 export async function saveOpening(input: {
@@ -121,7 +146,12 @@ export async function applyToTeam(input: {
     p_team_id: input.teamId,
     p_message: message,
   });
-  if (error) return mapRpcError(error.message);
+  if (error) {
+    return mapRpcError(
+      error.message,
+      error.message === "team_full" ? await teamMaxForTeam(supabase, input.teamId) : undefined,
+    );
+  }
 
   after(async () => {
     const admin = await createServiceRoleClient();
@@ -209,7 +239,12 @@ export async function respondToApplication(input: {
     p_application_id: input.applicationId,
     p_accept: input.accept,
   });
-  if (error) return mapRpcError(error.message);
+  if (error) {
+    return mapRpcError(
+      error.message,
+      error.message === "team_full" ? await teamMaxForApplication(supabase, input.applicationId) : undefined,
+    );
+  }
   track(state.userId, "application_responded", { accepted: input.accept });
   return { ok: true };
 }

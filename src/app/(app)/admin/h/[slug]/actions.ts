@@ -129,6 +129,18 @@ export async function updateEdition(
   }
   patch.slug = slug;
 
+  if (!fields.team_size_min && !fields.team_size_max) {
+    const min = patch.team_size_min as number | null;
+    const max = patch.team_size_max as number | null;
+    if (min === null || min < 1) {
+      fields.team_size_min = "Informe um mínimo de pelo menos 1 integrante.";
+    } else if (max === null || max < 1) {
+      fields.team_size_max = "Informe um máximo de pelo menos 1 integrante.";
+    } else if (max < min) {
+      fields.team_size_max = "O máximo precisa ser maior ou igual ao mínimo.";
+    }
+  }
+
   if (!patch.starts_at) fields.starts_at = "Informe a data de início.";
   if (!patch.submission_deadline_at) {
     fields.submission_deadline_at = "Informe o prazo de submissão.";

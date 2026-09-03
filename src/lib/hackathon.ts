@@ -89,6 +89,18 @@ export function requiresLumaConfirmation(h: Hackathon): boolean {
   return Boolean(h.luma_url);
 }
 
+export function teamLimits(h: Hackathon): { min: number; max: number } {
+  return { min: h.team_size_min, max: h.team_size_max };
+}
+
+/** pt-BR label for team size, e.g. "2 a 4 integrantes", "até 10 integrantes". */
+export function teamSizeLabel(h: Hackathon): string {
+  const { min, max } = teamLimits(h);
+  if (min === max) return `${max} integrantes`;
+  if (min === 1) return `até ${max} integrantes`;
+  return `${min} a ${max} integrantes`;
+}
+
 export function isVotingOpen(h: Hackathon, now: Date = new Date()): boolean {
   if (!h.voting_opens_at || !h.voting_closes_at) return false;
   const t = now.getTime();

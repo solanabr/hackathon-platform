@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { CopyLink } from "@/components/ui/copy-link";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
-import { getHackathonBySlug, isSubmissionWindowOpen, editionUsesTeams } from "@/lib/hackathon";
+import { getHackathonBySlug, isSubmissionWindowOpen, editionUsesTeams, teamLimits } from "@/lib/hackathon";
 import {
   confirmedMemberIds,
   getRegistration,
@@ -188,6 +188,7 @@ export default async function SubmissionPage({
               dashboardHref={`/h/${slug}/dashboard`}
               membersPending={membersPending}
               membersAccepted={membersAccepted}
+              teamMin={teamLimits(hackathon).min}
               judgeGithubHandle={hackathon.judge_github_handle}
             />
           </Card>
