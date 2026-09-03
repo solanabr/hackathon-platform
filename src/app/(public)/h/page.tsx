@@ -5,6 +5,7 @@ import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
 import { EditionGallery } from "@/components/home/edition-gallery";
 import Link from "next/link";
+import { Reveal } from "@/components/ui/reveal";
 import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
 
 export const dynamic = "force-dynamic";
@@ -183,39 +184,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Como funciona: the same sticker trio as the campaign LP's jornada. */}
-      <section id="como-funciona" className="px-4 pt-20 sm:px-6 lg:px-8" aria-label="Como funciona">
+      {/* Como funciona: the campaign LP's jornada, one action per step. */}
+      <section id="como-funciona" className="px-4 pt-20 sm:px-6 lg:px-8 lg:pt-24" aria-label="Como funciona">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-            Como funciona
-          </h2>
-          <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-green-dark/70">
-            Três passos entre o cadastro e o palco. Todo o resto acontece na plataforma.
-          </p>
-          <ol className="mt-10 grid gap-5 md:grid-cols-3">
+          <Reveal>
+            <h2 className="max-w-2xl text-balance font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] sm:text-5xl">
+              Três passos entre o cadastro e o palco.
+            </h2>
+            <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
+              Inscreva-se em uma edição, monte o time com a comunidade e submeta o projeto. Todo o
+              resto acontece na plataforma.
+            </p>
+          </Reveal>
+          <ol className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((step, i) => {
               const external = step.action.href.startsWith("http");
-              const cls = `${step.action.primary ? "btn-primary" : "btn-secondary"} mt-auto w-fit px-5 py-2 text-sm`;
+              const cls = step.action.primary
+                ? "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
+                : "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface";
               return (
-                <li
-                  key={step.title}
-                  className="card-hover flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7"
-                >
-                  <span className="inline-flex w-fit rounded-lg border-2 border-green-dark bg-yellow px-2.5 py-1 font-mono text-sm font-bold text-green-dark">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-4 font-heading text-xl font-bold">{step.title}</h3>
-                  <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{step.body}</p>
-                  {external ? (
-                    <a href={step.action.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                      {step.action.label}
-                    </a>
-                  ) : (
-                    <Link href={step.action.href} className={cls}>
-                      {step.action.label}
-                    </Link>
-                  )}
-                </li>
+                <Reveal key={step.title} delay={i * 130} className="h-full">
+                  <li className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
+                    <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                      Passo {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3 className="mt-4 font-heading text-xl font-bold">{step.title}</h3>
+                    <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{step.body}</p>
+                    {external ? (
+                      <a href={step.action.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                        {step.action.label}
+                      </a>
+                    ) : (
+                      <Link href={step.action.href} className={cls}>
+                        {step.action.label}
+                      </Link>
+                    )}
+                  </li>
+                </Reveal>
               );
             })}
           </ol>
