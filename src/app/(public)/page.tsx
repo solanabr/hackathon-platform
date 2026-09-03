@@ -138,6 +138,12 @@ const FAQ_GROUPS = [
   },
 ];
 
+// Shared stage width for section containers so the LP stops looking like a
+// narrow mobile column once there's room at xl/2xl — narrow text measures
+// (max-w-2xl paragraphs etc.) stay as they are.
+const LP_CONTAINER = "mx-auto w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem]";
+const LP_SECTION = "px-4 pt-24 sm:px-6 lg:px-8 lg:pt-28 xl:px-12 xl:pt-32";
+
 export default async function HomePage() {
   const [colosseum, state] = await Promise.all([
     getHackathonBySlug(COLOSSEUM_SLUG).catch(() => null),
@@ -168,16 +174,16 @@ export default async function HomePage() {
         <div aria-hidden className="pointer-events-none absolute inset-0">
           {/* Yellow field under the desk's left side, emerald behind its right. */}
           <div
-            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:top-[42%] sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:top-[38%] lg:h-[34rem] lg:w-[34rem]"
+            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:top-[42%] sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:top-[38%] lg:h-[34rem] lg:w-[34rem] 2xl:-left-56 2xl:h-[40rem] 2xl:w-[40rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute hidden bg-[#008c4c] sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-48 2xl:h-[30rem] 2xl:w-[30rem]"
+            className="morth animate-float-b absolute hidden bg-[#008c4c] sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
         </div>
 
-        <div className="relative mx-auto w-full max-w-6xl px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:820px)]:py-6">
+        <div className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:820px)]:py-6`}>
           <h1 className="font-heading font-black uppercase leading-[1.04] tracking-tight text-ink [font-stretch:108%]">
             <span className="block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">O próximo time a captar</span>
             <span className="mt-1 block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">
@@ -210,8 +216,8 @@ export default async function HomePage() {
           {/* The desk: the cheque is the main sticker, the facts are stickers
               around it. The cheque fills itself out on load (globals.css). */}
           <div className="mx-auto mt-10 w-full max-w-xl lg:max-w-none">
-          <Tilt max={5} className="relative pt-11 text-left lg:h-[26rem] lg:pt-0">
-            <div aria-hidden className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2">
+          <Tilt max={5} className="relative pt-11 text-left lg:h-[26rem] lg:pt-0 xl:h-[28rem]">
+            <div aria-hidden className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2 xl:w-[44rem]">
             <div className="relative sm:[transform:rotate(-3deg)] lg:[transform:rotate(-4deg)]">
               <div aria-hidden className="absolute inset-0 translate-y-6 rounded-xl bg-green-dark/25 blur-2xl" />
               <div aria-hidden className="cheque-perf absolute inset-0 translate-x-3.5 translate-y-3.5 rounded-xl bg-green-dark" />
@@ -308,8 +314,8 @@ export default async function HomePage() {
       </section>
 
       {/* Why Solana: plain typographic stats, no boxes — the numbers carry it. */}
-      <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="O que é a Solana">
-        <div className="mx-auto max-w-6xl">
+      <section id="solana" className={LP_SECTION} aria-label="O que é a Solana">
+        <div className={LP_CONTAINER}>
           <Reveal>
             <h2 className="max-w-3xl text-balance font-heading text-4xl font-black leading-[1.15] tracking-tight [font-stretch:105%] sm:text-5xl">
               Uma nova infraestrutura financeira.{" "}
@@ -346,8 +352,8 @@ export default async function HomePage() {
       </section>
 
       {/* O hackathon global: the credibility section, real cases, no filler. */}
-      <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="O hackathon global">
-        <div className="mx-auto max-w-6xl">
+      <section id="cases" className={LP_SECTION} aria-label="O hackathon global">
+        <div className={LP_CONTAINER}>
           <Reveal className="max-w-2xl">
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
               O hackathon global
@@ -395,8 +401,8 @@ export default async function HomePage() {
       </section>
 
       {/* A Jornada: mirrors the /pre-registro stepper, numbered like /h's steps. */}
-      <section id="jornada" className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Como participar">
-        <div className="mx-auto max-w-6xl">
+      <section id="jornada" className={LP_SECTION} aria-label="Como participar">
+        <div className={LP_CONTAINER}>
           <Reveal>
             <h2 className="max-w-2xl text-balance font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] sm:text-5xl">
               Entre no hackathon em 3 passos.
@@ -485,16 +491,19 @@ export default async function HomePage() {
       </section>
 
       {/* Calendário: one schedule sheet, rows instead of a card grid. */}
-      <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Calendário do hackathon">
-        <div className="mx-auto max-w-6xl">
-          <Reveal>
+      <section id="calendario" className={LP_SECTION} aria-label="Calendário do hackathon">
+        <div className={`${LP_CONTAINER} grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16`}>
+          <Reveal className="lg:sticky lg:top-28 lg:self-start">
           <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
             Calendário do hackathon
           </h2>
+          <p className="mt-4 hidden max-w-md text-pretty text-lg leading-relaxed text-ink/80 lg:block">
+            Da abertura do Colosseum ao anúncio dos vencedores: as datas que não podem passar batido.
+          </p>
           </Reveal>
 
           <Reveal delay={150}>
-          <ol className="mt-10 divide-y-2 divide-green-dark/15 overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
+          <ol className="divide-y-2 divide-green-dark/15 overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
             {CALENDAR.map((item) => (
               <li
                 key={item.title}
@@ -527,19 +536,19 @@ export default async function HomePage() {
       </section>
 
       {/* Side tracks: compact cards, no empty cover art. */}
-      <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Trilha Brasil">
-        <div className="mx-auto max-w-6xl">
-          <Reveal>
+      <section id="trilha-brasil" className={LP_SECTION} aria-label="Trilha Brasil">
+        <div className={`${LP_CONTAINER} grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16`}>
+          <Reveal className="lg:sticky lg:top-28 lg:self-start">
           <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
             Trilha Brasil
           </h2>
-          <p className="mt-3 max-w-xl text-pretty leading-relaxed text-green-dark/70">
+          <p className="mt-3 max-w-xl text-pretty leading-relaxed text-green-dark/70 lg:max-w-none">
             Além dos prêmios e investimentos da competição Global, os brasileiros têm uma trilha extra com prêmios adicionais. Você pode participar dela e da Global ao mesmo tempo, e concorrer a ainda mais prêmios.
           </p>
           </Reveal>
 
-          <div className="mt-10 grid gap-6">
-            <Reveal className="max-w-3xl">
+          <div className="grid gap-6">
+            <Reveal delay={100} className="max-w-3xl lg:max-w-none">
             <TrackedCta
               href="https://superteam.fun/earn/s/superteambr"
               event="campaign_link_clicked"
@@ -578,17 +587,19 @@ export default async function HomePage() {
       </section>
 
       {/* Recursos: link pills with an icon each. */}
-      <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Recursos">
-        <div className="mx-auto max-w-6xl">
-          <Reveal>
+      <section id="recursos" className={LP_SECTION} aria-label="Recursos">
+        <div className={`${LP_CONTAINER} lg:flex lg:items-end lg:justify-between lg:gap-10`}>
+          <Reveal className="lg:max-w-md lg:shrink-0">
           <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
             Recursos
           </h2>
-          <p className="mt-3 max-w-xl text-pretty text-lg leading-relaxed text-ink/80">
+          <p className="mt-3 max-w-xl text-pretty text-lg leading-relaxed text-ink/80 lg:max-w-none">
             Tudo que você precisa para chegar pronto na arena.
           </p>
+          </Reveal>
 
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+          <Reveal delay={100} className="lg:min-w-0 lg:flex-1">
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap lg:mt-0 lg:justify-end">
             {RESOURCES.map((r) => {
               const Icon = r.icon;
               return (
@@ -611,8 +622,8 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ: grouped divider lists in sticker cards; the heading stays put on desktop. */}
-      <section className="px-4 pt-24 sm:px-6 lg:px-8" aria-label="Perguntas frequentes">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+      <section id="faq" className={LP_SECTION} aria-label="Perguntas frequentes">
+        <div className={`${LP_CONTAINER} grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16`}>
           <Reveal className="lg:sticky lg:top-28 lg:self-start">
             <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
               Perguntas frequentes
@@ -659,7 +670,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 pb-0 pt-24 text-center sm:px-6" aria-label="Hackathons da Superteam Brasil">
+      <section className="px-4 pb-0 pt-24 text-center sm:px-6 lg:pt-28 xl:pt-32" aria-label="Hackathons da Superteam Brasil">
         <p className="text-sm text-muted">
           Procurando os hackathons da Superteam Brasil?{" "}
           <Link
