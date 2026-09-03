@@ -589,7 +589,7 @@ export default async function HomePage() {
       {/* Recursos: link pills with an icon each. */}
       <section id="recursos" className={LP_SECTION} aria-label="Recursos">
         <div className={`${LP_CONTAINER} lg:flex lg:items-end lg:justify-between lg:gap-10`}>
-          <Reveal className="lg:max-w-md">
+          <Reveal className="lg:max-w-md lg:shrink-0">
           <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
             Recursos
           </h2>
@@ -598,7 +598,7 @@ export default async function HomePage() {
           </p>
           </Reveal>
 
-          <Reveal delay={100} className="lg:shrink-0">
+          <Reveal delay={100} className="lg:min-w-0 lg:flex-1">
           <ul className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap lg:mt-0 lg:justify-end">
             {RESOURCES.map((r) => {
               const Icon = r.icon;
