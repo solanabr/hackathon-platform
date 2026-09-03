@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PainelNav } from "@/components/edition/painel-nav";
-import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
+import { getHackathonBySlug, isSubmissionWindowOpen, editionUsesTeams } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
@@ -30,6 +30,7 @@ export default async function TeamUpPage({ params }: { params: Promise<{ slug: s
 
   const registration = await getRegistration(state.userId, hackathon.id);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
+  if (!editionUsesTeams(hackathon)) redirect(`/h/${slug}/dashboard`);
 
   if (!isSubmissionWindowOpen(hackathon)) {
     return (

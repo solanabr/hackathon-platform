@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { PainelNav } from "@/components/edition/painel-nav";
 import { ContentList, type ContentCard } from "@/components/edition/content-list";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { editionUsesTeams, getHackathonBySlug } from "@/lib/hackathon";
 import { renderableThumbnail, youtubeThumbnail } from "@/lib/content";
 import { KIND_LABELS } from "@/lib/content-fields";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
@@ -96,7 +96,7 @@ export default async function ContentsPage({
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <BackLink href={`/h/${slug}/dashboard`} label="Painel" />
-          <PainelNav slug={slug} />
+          <PainelNav slug={slug} usesTeams={editionUsesTeams(hackathon)} />
         </div>
 
         <ContentList items={cards}>

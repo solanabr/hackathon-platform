@@ -8,9 +8,13 @@ import { registerForHackathon } from "@/app/(app)/h/[slug]/register/actions";
 export function RegistrationForm({
   slug,
   lumaUrl,
+  requireLuma = true,
+  external = false,
 }: {
   slug: string;
   lumaUrl: string | null;
+  requireLuma?: boolean;
+  external?: boolean;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [registered, setRegistered] = useState(false);
@@ -38,21 +42,32 @@ export function RegistrationForm({
           <div>
             <h2 className="font-heading text-xl font-bold">Você está inscrito!</h2>
             <p className="mt-0.5 text-sm text-muted">
-              As aulas e a criação de time já estão liberadas.
+              {external
+                ? "Sua inscrição está confirmada."
+                : "As aulas e a criação de time já estão liberadas."}
             </p>
           </div>
         </div>
         <p className="text-sm leading-relaxed text-muted">
-          Próximo passo: monte seu time. Crie um time como líder ou peça para o líder te
-          adicionar — e preparem o projeto para a submissão.
+          {external
+            ? "Próximo passo: o painel mostra onde e como enviar o seu projeto."
+            : "Próximo passo: monte seu time. Crie um time como líder ou peça para o líder te adicionar — e preparem o projeto para a submissão."}
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link href={`/h/${slug}/team`} className="btn-primary">
-            Montar meu time
-          </Link>
-          <Link href={`/h/${slug}/dashboard`} className="btn-secondary">
-            Ir para o painel
-          </Link>
+          {external ? (
+            <Link href={`/h/${slug}/dashboard`} className="btn-primary">
+              Ver como enviar o projeto
+            </Link>
+          ) : (
+            <>
+              <Link href={`/h/${slug}/team`} className="btn-primary">
+                Montar meu time
+              </Link>
+              <Link href={`/h/${slug}/dashboard`} className="btn-secondary">
+                Ir para o painel
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );
@@ -70,6 +85,7 @@ export function RegistrationForm({
       }
       className="space-y-5"
     >
+      {requireLuma && (
       <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
         <input type="checkbox" name="luma_confirmed" className="mt-0.5 h-4 w-4 accent-emerald" />
         <span className="text-sm text-ink">
@@ -91,6 +107,7 @@ export function RegistrationForm({
           .
         </span>
       </label>
+      )}
 
       <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
         <input type="checkbox" name="terms_accepted" className="mt-0.5 h-4 w-4 accent-emerald" />

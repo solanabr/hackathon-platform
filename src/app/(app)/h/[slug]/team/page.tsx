@@ -12,7 +12,7 @@ import { TeamDangerZone } from "@/components/team/team-danger-zone";
 import { MemberRow } from "@/components/team/member-row";
 import { RecruitingCard } from "./recruiting-card";
 import { ApplicationsCard, type PendingApplication } from "./applications-card";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { getHackathonBySlug, editionUsesTeams } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
@@ -38,6 +38,7 @@ export default async function TeamPage({
     getPendingTeamForHackathon(hackathon.id),
   ]);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
+  if (!editionUsesTeams(hackathon)) redirect(`/h/${slug}/dashboard`);
   if (!snapshot) {
     if (pendingTeam) {
       return (

@@ -60,6 +60,25 @@ export function isSubmissionWindowOpen(h: Hackathon, now: Date = new Date()): bo
   return new Date(h.submission_deadline_at).getTime() > now.getTime();
 }
 
+export type SubmissionTarget = { mode: "platform" } | { mode: "external"; url: string | null };
+
+/** Where this edition collects projects. Pages branch on this, never on the
+ * raw columns, so a new mode is one more case here. */
+export function submissionTarget(h: Hackathon): SubmissionTarget {
+  if (h.submission_mode === "external") return { mode: "external", url: h.external_submission_url };
+  return { mode: "platform" };
+}
+
+/** Teams, team-up and the submission editor only exist for platform editions. */
+export function editionUsesTeams(h: Hackathon): boolean {
+  return submissionTarget(h).mode === "platform";
+}
+
+/** Registration asks for the Luma confirmation only when the edition has one. */
+export function requiresLumaConfirmation(h: Hackathon): boolean {
+  return Boolean(h.luma_url);
+}
+
 export function isVotingOpen(h: Hackathon, now: Date = new Date()): boolean {
   if (!h.voting_opens_at || !h.voting_closes_at) return false;
   const t = now.getTime();

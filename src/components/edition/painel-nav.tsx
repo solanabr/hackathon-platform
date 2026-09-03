@@ -12,13 +12,16 @@ const TABS = [
 ] as const;
 
 /** DoraHacks-style section tabs, in the LP segmented control. */
-export function PainelNav({ slug }: { slug: string }) {
+const TEAM_TABS: ReadonlyArray<(typeof TABS)[number]["path"]> = ["team", "team-up", "submission"];
+
+export function PainelNav({ slug, usesTeams = true }: { slug: string; usesTeams?: boolean }) {
   const pathname = usePathname();
+  const tabs = usesTeams ? TABS : TABS.filter((tab) => !TEAM_TABS.includes(tab.path));
 
   return (
     <SegmentedNav
       label="Seções do painel"
-      items={TABS.map((tab) => {
+      items={tabs.map((tab) => {
         const href = `/h/${slug}/${tab.path}`;
         return {
           key: tab.path,
