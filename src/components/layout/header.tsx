@@ -4,6 +4,7 @@ import { resolveRoleState } from "@/lib/roles";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
 import { EntrarLink } from "./entrar-link";
+import { LpSectionNav } from "./lp-section-nav";
 
 /**
  * Floating dark dock instead of a hairline bar: the cream page keeps its
@@ -42,6 +43,10 @@ export async function Header() {
             className="h-6 w-auto"
           />
         </Link>
+
+        <div className="hidden lg:flex lg:flex-1 lg:justify-center">
+          <LpSectionNav />
+        </div>
 
         <nav className="flex items-center gap-1 text-sm sm:gap-1.5">
           {state ? (
