@@ -13,7 +13,7 @@ import { TrackedLink } from "./tracked-link";
 
 export const metadata = {
   title: "Cadastro Colosseum",
-  description: "Garanta sua vaga na campanha brasileira para o Colosseum Global Hackathon 2026.",
+  description: "Garanta sua vaga na campanha brasileira para o Colosseum Crypto World's Fair 2026.",
   openGraph: { images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }] },
 };
 
@@ -97,7 +97,7 @@ export default async function PreRegistroPage() {
               Complete seu cadastro
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Global Hackathon.
+              Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Crypto World&apos;s Fair.
             </p>
             <div className="mt-6">
               <PreregForm profile={state!.profile} />
@@ -135,7 +135,7 @@ export default async function PreRegistroPage() {
                   </span>
                   <div className="flex-1 rounded-2xl border-2 border-emerald/40 bg-emerald/5 p-5">
                     <p className="font-heading text-base font-bold uppercase text-emerald">Registro no Colosseum feito</p>
-                    <p className="mt-1 text-sm text-muted">Seu time submete o projeto por lá até 17 de outubro.</p>
+                    <p className="mt-1 text-sm text-muted">A partir de 14 de setembro você cadastra o projeto e o time por lá. Submissão até 12 de outubro.</p>
                   </div>
                 </li>
               ) : (
@@ -154,20 +154,21 @@ export default async function PreRegistroPage() {
                   </div>
                   <p className="mt-1 text-sm text-muted">
                     O Colosseum é a plataforma oficial do hackathon: é por lá que seu time entra na
-                    competição e submete o projeto.
+                    competição e submete o projeto. O registro já está aberto e não precisa ter ideia
+                    nem time ainda.
                   </p>
                   <ol className="mt-3 space-y-1.5 text-sm text-muted">
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">1.</span>
-                      Crie sua conta no Colosseum
+                      Crie sua conta no Colosseum e complete o perfil
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">2.</span>
-                      Clique em &quot;Register Now&quot; para entrar no hackathon
+                      Clique em &quot;Register now&quot;, escolha Brasil e sua cidade e marque Solana (print abaixo)
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">3.</span>
-                      Monte seu time e preencha os dados do projeto
+                      A partir de 14 de setembro, cadastre o projeto e adicione o time por lá. Dá para começar a construir antes.
                     </li>
                   </ol>
                   {hackathon?.external_url ? (
@@ -189,13 +190,11 @@ export default async function PreRegistroPage() {
                           </button>
                         </form>
                       </div>
-                      {/* Same walkthrough we shipped on the El Gato campaign. */}
                       <Image
-                        src="/brand/colosseum-registro.gif"
-                        alt="Passo a passo do registro no Colosseum"
-                        width={751}
-                        height={648}
-                        unoptimized
+                        src="/brand/colosseum-registro.png"
+                        alt="Formulário de registro do Colosseum preenchido com Brasil, cidade e Solana"
+                        width={928}
+                        height={899}
                         className="mt-4 w-full rounded-xl border-2 border-green-dark/20"
                       />
                     </>

@@ -9,6 +9,7 @@ import {
   submissionTarget,
   editionUsesTeams,
   requiresLumaConfirmation,
+  registrationClosesWithSubmission,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -61,6 +62,22 @@ describe("hackathon phase helpers", () => {
     expect(editionStage(base, new Date("2026-08-01T00:00:00Z"))).toBe("upcoming");
     expect(editionStage(base, new Date("2026-09-05T00:00:00Z"))).toBe("running");
     expect(editionStage(base, new Date("2026-10-01T00:00:00Z"))).toBe("finished");
+  });
+});
+
+describe("registrationClosesWithSubmission", () => {
+  it("is false when the two dates differ", () => {
+    expect(registrationClosesWithSubmission(base)).toBe(false);
+  });
+
+  it("is true when inscriptions close at the submission deadline", () => {
+    const same = { ...base, registration_closes_at: base.submission_deadline_at } as Hackathon;
+    expect(registrationClosesWithSubmission(same)).toBe(true);
+  });
+
+  it("is false when registration never closes", () => {
+    const open = { ...base, registration_closes_at: null } as Hackathon;
+    expect(registrationClosesWithSubmission(open)).toBe(false);
   });
 });
 

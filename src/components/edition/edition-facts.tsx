@@ -1,4 +1,5 @@
 import { DAY_MONTH, DAY_MONTH_LONG, TIME_HM, stripPeriods } from "@/lib/dates";
+import { registrationClosesWithSubmission } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 
 type Fact = {
@@ -86,7 +87,7 @@ export function EditionFacts({ hackathon }: { hackathon: Hackathon }) {
       key: "prazo",
       label: "Prazo final",
       value: stripPeriods(DAY_MONTH_LONG.format(deadline)),
-      detail: `Submissão até ${TIME_HM.format(deadline)}`,
+      detail: `${registrationClosesWithSubmission(hackathon) ? "Inscrição e submissão" : "Submissão"} até ${TIME_HM.format(deadline)}`,
       icon: IconClock,
     },
     ...(prize

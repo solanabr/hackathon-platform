@@ -19,13 +19,13 @@ import { Tilt } from "@/components/ui/tilt";
 
 
 export const metadata = {
-  title: "Colosseum Global Hackathon 2026",
+  title: "Colosseum Crypto World's Fair 2026",
   description:
     "O próximo time a captar milhões pode ser o seu. Cadastre-se para o Colosseum, o hackathon global da Solana: 100% remoto, prêmios milionários e capital anjo.",
   openGraph: {
     title: "O próximo time a captar milhões pode ser o seu · Colosseum 2026",
     description:
-      "Hackathon global da Solana, 100% remoto, de 14 set a 17 out. Cadastre-se com o Superteam Brasil.",
+      "Hackathon global da Solana, 100% remoto, de 14 set a 12 out. Cadastre-se com o Superteam Brasil.",
     images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }],
   },
 };
@@ -70,9 +70,10 @@ type CalendarItem = {
 };
 
 const CALENDAR: CalendarItem[] = [
-  { date: "14 set", title: "Início da competição", body: "Colosseum no ar: times se formam e os projetos começam.", highlight: true },
+  { date: "Agora", title: "Registro aberto no Colosseum", body: "Crie sua conta e registre-se. Não precisa de ideia nem de time, e dá para começar a construir já.", highlight: true },
+  { date: "14 set", title: "Início da competição", body: "Abre o cadastro de projeto e time na plataforma. Só o que for construído a partir daqui conta." },
   { date: "set a out", title: "Workshops e mentorias", body: "Conteúdo ao vivo e suporte da comunidade durante toda a campanha." },
-  { date: "17 out", title: "Deadline de envio", body: "Submissões fecham no Colosseum, trilhas Brasil e Global." },
+  { date: "12 out", title: "Deadline de envio", body: "Submissões fecham às 23h59 no horário da Califórnia, 3h59 do dia 13 em Brasília. Trilhas Brasil e Global." },
   { date: "Em breve", title: "Anúncio dos vencedores", body: "Resultado das trilhas Brasil e Global. Avisamos por e-mail e WhatsApp." },
 ];
 
@@ -90,15 +91,15 @@ const FAQ_GROUPS = [
     items: [
       {
         q: "Preciso me cadastrar aqui e no Colosseum?",
-        a: "Sim, nos dois. O cadastro aqui coloca você nas mentorias, na comunidade e na Trilha Brasil. O do Colosseum é onde o projeto é enviado e julgado, e cada membro do time precisa de uma conta lá. Para concorrer à Trilha Brasil, o projeto também precisa ser submetido no Superteam Earn.",
+        a: "Sim, nos dois. Aqui você entra nas mentorias, na comunidade e na Trilha Brasil. No Colosseum é onde o projeto é enviado e julgado, e cada membro do time precisa de uma conta lá, com Solana marcada no registro. A conta também libera o diretório de cofundadores e o Discord deles. Para a Trilha Brasil, o mesmo projeto vai para o Superteam Earn.",
       },
       {
-        q: "Preciso ter um time pronto?",
-        a: "Não. Dá para entrar sozinho e montar o time na comunidade ou no diretório de cofundadores do Colosseum. O Colosseum aceita submissão solo, mas recomenda time: cada pessoa só pode participar de um projeto.",
+        q: "Preciso ter ideia ou time pronto?",
+        a: "Não. Registre-se no Colosseum agora: o cadastro de projeto e time abre na plataforma em 14 de setembro, e dá para entrar num time que já existe. O time pode ser montado na nossa comunidade ou no diretório de cofundadores. A regra é um projeto por pessoa.",
       },
       {
         q: "Preciso saber blockchain ou Rust?",
-        a: "Não. Os workshops e a comunidade levam do zero até a submissão, e muito do trabalho é produto, front-end e negócio. O Colosseum não exige que todo mundo seja engenheiro, só que o time tenha quem construa e quem venda.",
+        a: "Não. Os workshops levam do zero até a submissão, e boa parte do trabalho é produto, front-end e negócio. O Colosseum não exige linguagem nem framework: quer ver integração onchain de verdade e um time com quem constrói e quem vende.",
       },
       {
         q: "Quanto custa?",
@@ -110,16 +111,20 @@ const FAQ_GROUPS = [
     title: "Durante o hackathon",
     items: [
       {
-        q: "Preciso falar inglês?",
-        a: "A submissão no Colosseum é em inglês: um vídeo de pitch e um técnico, de até 3 minutos cada, mais o repositório. Toda a Trilha Brasil, as mentorias e o suporte são em português.",
+        q: "É 100% online? Quanto tempo dura?",
+        a: "Sim, de qualquer lugar do Brasil. São quatro semanas, de 14 de setembro a 12 de outubro. A partir do dia 14 você cadastra projeto e time no Colosseum e pode submeter a qualquer momento até o prazo.",
       },
       {
-        q: "É 100% online? Quanto tempo dura?",
-        a: "Sim, de qualquer lugar do Brasil. São cinco semanas de construção, e o portal de submissão do Colosseum abre na última semana.",
+        q: "Preciso falar inglês?",
+        a: "A submissão no Colosseum é em inglês: vídeo de pitch de dois a três minutos, demo técnica de até três minutos, repositório no GitHub e um formulário com produto, time e estratégia de mercado. Toda a Trilha Brasil, as mentorias e o suporte são em português.",
       },
       {
         q: "Posso usar um projeto que já existe?",
-        a: "Pode, desde que o projeto ainda não tenha captado investimento. Você pode começar antes e usar código existente, mas só o trabalho feito dentro do período do hackathon é avaliado, e todo o histórico precisa ser declarado no formulário. Omitir isso desclassifica o time.",
+        a: "Pode, desde que a startup não tenha captado capital relevante. Você pode começar antes e reaproveitar código, mas só o que for construído entre 14 de setembro e 12 de outubro conta, e todo o histórico precisa ser declarado no formulário. Omitir isso desclassifica o time.",
+      },
+      {
+        q: "Como os projetos são avaliados?",
+        a: "Seis critérios: time certo para o mercado, um insight que os outros não têm, produto funcionando e ritmo de entrega, tamanho do mercado, clareza na comunicação e viabilidade como negócio. No repositório, o que importa é trabalho relevante feito pelo próprio time durante o hackathon, com integração onchain de verdade.",
       },
     ],
   },
@@ -128,7 +133,7 @@ const FAQ_GROUPS = [
     items: [
       {
         q: "O que o vencedor ganha?",
-        a: "Na última edição foram USD 250 mil em prêmios diretos: USD 30 mil para o campeão global e USD 10 mil para cada um dos 20 melhores, com prêmios extras para times universitários. Os melhores ainda entram no acelerador do Colosseum com USD 250 mil de investimento pré-seed. Entrar no acelerador é opcional.",
+        a: "Na última edição foram USD 250 mil em prêmios diretos: USD 30 mil para o campeão global e USD 10 mil para cada um dos 20 melhores, com prêmios extras para times universitários. Os melhores ainda são chamados para o acelerador do Colosseum: USD 250 mil de investimento pré-seed e oito semanas de programa, duas em São Francisco e seis remotas. Entrar no acelerador é opcional.",
       },
       {
         q: "O que é a Trilha Brasil?",
@@ -178,7 +183,7 @@ export default async function HomePage() {
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute hidden bg-[#008c4c] sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
+            className="morth animate-float-b absolute hidden bg-emerald sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
         </div>
@@ -239,7 +244,7 @@ export default async function HomePage() {
                     <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
                       Colosseum
                       <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
-                        Global Hackathon
+                        Crypto World&apos;s Fair
                       </span>
                     </p>
                     <div className="shrink-0 whitespace-nowrap text-right font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
@@ -274,7 +279,7 @@ export default async function HomePage() {
 
                   <div className="mt-3 flex items-end justify-between gap-4">
                     <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/60 sm:text-xs sm:tracking-[0.35em]">
-                      ⑆001417 ⑆0914 ⑈1710 2026⑈
+                      ⑆001417 ⑆0914 ⑈1210 2026⑈
                     </p>
                     <div className="shrink-0 text-right">
                       <svg viewBox="0 0 120 28" className="cheque-sign ml-auto h-5 w-24 text-ink" aria-hidden>
@@ -299,7 +304,7 @@ export default async function HomePage() {
               100% online
             </div>
             <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden sm:block">
-              14 set a 17 out
+              14 set a 12 out
             </div>
             <div className="-bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
               <span className="lg:hidden">R$15M+ captados</span>
@@ -329,19 +334,19 @@ export default async function HomePage() {
           </Reveal>
 
           <Reveal delay={150}>
-            <div className="mt-12 rounded-2xl border-2 border-green-dark bg-green-dark p-7 shadow-sticker sm:p-10">
+            <div className="mt-12 rounded-2xl border-2 border-green-dark bg-green p-7 shadow-sticker sm:p-10">
               <dl className="grid grid-cols-2 gap-x-6 gap-y-9 lg:grid-cols-4 lg:gap-x-0 lg:divide-x lg:divide-surface/15">
                 {SOLANA_STATS.map((stat, i) => (
                   <Reveal key={stat.value} delay={i * 130} className="lg:px-8 lg:first:pl-0 lg:last:pr-0">
                     <dd className="font-heading text-4xl font-black uppercase leading-none tracking-tight text-yellow [font-stretch:115%] sm:text-5xl">
                       <CountUp value={stat.value} />
                     </dd>
-                    <dt className="mt-3 text-pretty text-sm leading-snug text-surface/70">{stat.label}</dt>
+                    <dt className="mt-3 text-pretty text-sm leading-snug text-surface/85">{stat.label}</dt>
                   </Reveal>
                 ))}
               </dl>
 
-              <p className="mt-9 border-t border-surface/15 pt-5 text-pretty text-sm leading-relaxed text-surface/60">
+              <p className="mt-9 border-t border-surface/20 pt-5 text-pretty text-sm leading-relaxed text-surface/80">
                 Não é só hype:{" "}
                 <span className="font-semibold text-surface">Visa, PayPal, BlackRock, J.P. Morgan e Western Union</span>{" "}
                 já emitem e liquidam ativos na rede.
@@ -416,8 +421,8 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <Reveal className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="inline-flex w-fit rounded-lg border-2 border-green-dark bg-yellow px-2.5 py-1 font-mono text-sm font-bold text-green-dark">
-                  01
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                  Passo 01
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Faça seu cadastro</h3>
                 <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">
@@ -437,13 +442,13 @@ export default async function HomePage() {
 
             <Reveal delay={130} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="inline-flex w-fit rounded-lg border-2 border-green-dark bg-yellow px-2.5 py-1 font-mono text-sm font-bold text-green-dark">
-                  02
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                  Passo 02
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Registre-se no hackathon</h3>
                 <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">
-                  Crie sua conta no Colosseum e clique em &quot;Register Now&quot; para entrar na
-                  competição. É por lá que seu time submete o projeto.
+                  Crie sua conta no Colosseum e clique em &quot;Register now&quot; já, mesmo sem ideia
+                  ou time: projeto e time entram na plataforma a partir de 14 de setembro.
                 </p>
                 {colosseum?.external_url ? (
                   <TrackedCta
@@ -454,7 +459,7 @@ export default async function HomePage() {
                         ? { target: "colosseum", location: "lp" }
                         : { cta: "cadastro", location: "jornada_colosseum" }
                     }
-                    className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-green-dark px-6 py-2.5 text-sm font-bold text-yellow transition-transform duration-200 hover:-translate-y-0.5"
+                    className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
                   >
                     Abrir Colosseum
                   </TrackedCta>
@@ -468,8 +473,8 @@ export default async function HomePage() {
 
             <Reveal delay={260} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="inline-flex w-fit rounded-lg border-2 border-green-dark bg-yellow px-2.5 py-1 font-mono text-sm font-bold text-green-dark">
-                  03
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                  Passo 03
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Entre na comunidade</h3>
                 <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">
@@ -508,14 +513,14 @@ export default async function HomePage() {
               <li
                 key={item.title}
                 className={`grid gap-1 px-6 py-5 sm:grid-cols-12 sm:items-baseline sm:gap-6 sm:px-8 sm:py-6 ${
-                  item.highlight ? "bg-yellow" : ""
+                  item.highlight ? "bg-green text-surface" : "text-ink"
                 }`}
               >
-                <p className="font-heading text-2xl font-black uppercase leading-none text-ink [font-stretch:115%] sm:col-span-3 sm:text-3xl">
+                <p className={`font-heading text-2xl font-black uppercase leading-none [font-stretch:115%] sm:col-span-3 sm:text-3xl ${item.highlight ? "text-yellow" : ""}`}>
                   {item.date}
                 </p>
                 <div className="sm:col-span-9">
-                  <p className="font-heading text-lg font-bold text-ink">
+                  <p className="font-heading text-lg font-bold">
                     {item.href ? (
                       <a href={item.href} target="_blank" rel="noopener noreferrer" className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald">
                         {item.title}
@@ -524,7 +529,7 @@ export default async function HomePage() {
                       item.title
                     )}
                   </p>
-                  <p className={`mt-0.5 text-pretty text-sm leading-snug ${item.highlight ? "text-green-dark/80" : "text-muted"}`}>
+                  <p className={`mt-0.5 text-pretty text-sm leading-snug ${item.highlight ? "text-surface/85" : "text-muted"}`}>
                     {item.body}
                   </p>
                 </div>
