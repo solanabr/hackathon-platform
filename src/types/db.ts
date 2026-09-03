@@ -15,6 +15,8 @@ export type User = {
   updated_at: string;
 };
 
+export type SubmissionMode = "platform" | "external";
+
 export type HackathonStatus =
   | "draft"
   | "published"
@@ -53,6 +55,9 @@ export type Hackathon = {
   judge_github_handle: string | null;
   // Set = the edition lives elsewhere: cards link out, /h/[slug] forwards (00050).
   external_url: string | null;
+  // "external": people register here and submit the project elsewhere (00055).
+  submission_mode: SubmissionMode;
+  external_submission_url: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;

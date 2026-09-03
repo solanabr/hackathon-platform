@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { CopyLink } from "@/components/ui/copy-link";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import { Countdown } from "@/components/ui/countdown";
-import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
+import { getHackathonBySlug, isSubmissionWindowOpen, editionUsesTeams } from "@/lib/hackathon";
 import {
   confirmedMemberIds,
   getRegistration,
@@ -42,6 +42,7 @@ export default async function SubmissionPage({
     getTeamForHackathon(state.userId, hackathon.id),
   ]);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
+  if (!editionUsesTeams(hackathon)) redirect(`/h/${slug}/dashboard`);
   if (!snapshot) redirect(`/h/${slug}/dashboard`);
 
   const { team, submission, isLeader } = snapshot;

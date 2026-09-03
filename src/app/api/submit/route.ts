@@ -10,6 +10,7 @@ const RPC_ERRORS: Record<string, { status: number; message: string }> = {
   team_not_found: { status: 404, message: "Time não encontrado." },
   already_locked: { status: 409, message: "Time já submetido." },
   deadline_passed: { status: 409, message: "Prazo encerrado." },
+  external_edition: { status: 400, message: "Esta edição não usa times na plataforma." },
   missing_required_fields: {
     status: 422,
     message: "Preencha todos os campos obrigatórios (incluindo imagem do projeto).",

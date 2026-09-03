@@ -12,6 +12,7 @@ const ERRORS: Record<string, string> = {
   not_authenticated: "Sessão expirada. Faça login novamente.",
   duplicate_name: "Já existe um time com esse nome.",
   deadline_passed: "O prazo de submissão já passou. Não dá mais para criar times nesta edição.",
+  external_edition: "Esta edição não usa times na plataforma.",
 };
 
 export function NewTeamForm({

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { Card } from "@/components/ui/card";
 import { NewTeamForm } from "@/components/team/new-team-form";
-import { getHackathonBySlug, isSubmissionWindowOpen } from "@/lib/hackathon";
+import { getHackathonBySlug, isSubmissionWindowOpen, editionUsesTeams } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
@@ -23,6 +23,7 @@ export default async function NewTeamPage({
 
   const registration = await getRegistration(state.userId, hackathon.id);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
+  if (!editionUsesTeams(hackathon)) redirect(`/h/${slug}/dashboard`);
 
   if (!isSubmissionWindowOpen(hackathon)) redirect(`/h/${slug}/dashboard`);
 

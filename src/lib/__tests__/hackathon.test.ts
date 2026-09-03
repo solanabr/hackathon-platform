@@ -6,6 +6,9 @@ import {
   isFinalistsVisible,
   editionStage,
   editionPhase,
+  submissionTarget,
+  editionUsesTeams,
+  requiresLumaConfirmation,
 } from "../hackathon";
 import type { Hackathon } from "@/types/db";
 
@@ -113,3 +116,26 @@ describe("isFinalistsVisible", () => {
 });
 
 
+
+describe("submission target", () => {
+  it("defaults to the platform with teams", () => {
+    const h = { ...base, submission_mode: "platform", external_submission_url: null } as Hackathon;
+    expect(submissionTarget(h)).toEqual({ mode: "platform" });
+    expect(editionUsesTeams(h)).toBe(true);
+  });
+
+  it("external editions carry the submission url and drop teams", () => {
+    const h = {
+      ...base,
+      submission_mode: "external",
+      external_submission_url: "https://earn.superteam.fun/listing/x",
+    } as Hackathon;
+    expect(submissionTarget(h)).toEqual({ mode: "external", url: "https://earn.superteam.fun/listing/x" });
+    expect(editionUsesTeams(h)).toBe(false);
+  });
+
+  it("asks for Luma only when the edition has one", () => {
+    expect(requiresLumaConfirmation({ ...base, luma_url: "https://luma.com/x" } as Hackathon)).toBe(true);
+    expect(requiresLumaConfirmation({ ...base, luma_url: null } as Hackathon)).toBe(false);
+  });
+});

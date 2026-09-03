@@ -108,6 +108,14 @@ export async function updateEdition(
       case "textarea":
         patch[key] = sanitizeText(value, 4000);
         break;
+      case "select": {
+        if (!field.options?.some((o) => o.value === value)) {
+          fields[key] = "Opção inválida.";
+          break;
+        }
+        patch[key] = value;
+        break;
+      }
       default:
         patch[key] = sanitizeText(value, 300);
     }

@@ -16,8 +16,7 @@ import {
   editionPhase,
   getHackathonBySlug,
   isSubmissionWindowOpen,
-  ratingRound,
-} from "@/lib/hackathon";
+  ratingRound, editionUsesTeams } from "@/lib/hackathon";
 import {
   listRegistrationsForEdition,
   listTeamsForEdition,
@@ -170,6 +169,7 @@ export default async function AdminEditionPage({
               {SUBMITTED_AT.format(new Date(hackathon.submission_deadline_at))}
             </p>
           </div>
+          {editionUsesTeams(hackathon) && (
           <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Times
@@ -179,6 +179,7 @@ export default async function AdminEditionPage({
             </p>
             <p className="mt-0.5 font-mono text-xs text-muted">submetidos</p>
           </div>
+          )}
           <div className="rounded-xl border-2 border-green-dark/15 bg-surface-raised p-4">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
               Jurados · {roundLabel}
@@ -256,6 +257,7 @@ export default async function AdminEditionPage({
           )}
         </Card>
 
+        {editionUsesTeams(hackathon) && (
         <Card sticker className="p-6 sm:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -281,6 +283,7 @@ export default async function AdminEditionPage({
             <TeamsTable rows={teamRows} />
           )}
         </Card>
+        )}
 
       </div>
     </div>

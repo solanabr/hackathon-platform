@@ -11,7 +11,7 @@ export type EditionField = {
   group: string;
 };
 
-export const EDITION_GROUPS = ["Identidade", "Datas", "Local e links", "Prêmios"] as const;
+export const EDITION_GROUPS = ["Identidade", "Datas", "Submissão", "Local e links", "Prêmios"] as const;
 
 export const EDITION_FIELDS: EditionField[] = [
   { key: "name", label: "Nome", kind: "text", group: "Identidade" },
@@ -66,6 +66,25 @@ export const EDITION_FIELDS: EditionField[] = [
     kind: "datetime",
     group: "Datas",
     help: "Opcional. Sem ele, a edição termina no anúncio dos finalistas.",
+  },
+
+  {
+    key: "submission_mode",
+    label: "Onde o projeto é enviado",
+    kind: "select",
+    group: "Submissão",
+    help: "Externa: a inscrição fica aqui, times e submissão ficam desligados e o painel aponta para a URL abaixo.",
+    options: [
+      { value: "platform", label: "Na plataforma (times e submissão aqui)" },
+      { value: "external", label: "Externa (Superteam Earn ou outro site)" },
+    ],
+  },
+  {
+    key: "external_submission_url",
+    label: "URL de submissão externa",
+    kind: "url",
+    group: "Submissão",
+    help: "Só usada no modo externo. Ex.: o listing no Superteam Earn.",
   },
 
   { key: "location_name", label: "Local", kind: "text", group: "Local e links" },

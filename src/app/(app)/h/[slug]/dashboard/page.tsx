@@ -15,7 +15,9 @@ import { buildMilestones } from "@/lib/milestones";
 import {
   getHackathonBySlug,
   isSubmissionWindowOpen,
+  submissionTarget,
 } from "@/lib/hackathon";
+import { ExternalSubmissionPanel } from "@/components/edition/external-submission-panel";
 import {
   confirmedMemberIds,
   getRegistration,
@@ -51,13 +53,15 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   if (!hackathon || hackathon.status === "draft") notFound();
 
   const supabase = await createServerSupabaseClient();
+  const target = submissionTarget(hackathon);
 
   // Registration, team, pending invite and the schedule count only need the
   // user and the edition — one batch instead of four sequential round-trips.
+  // External editions have no teams, so those two lookups are skipped.
   const [registration, snapshot, pendingTeam, scheduleResult] = await Promise.all([
     getRegistration(state.userId, hackathon.id),
-    getTeamForHackathon(state.userId, hackathon.id),
-    getPendingTeamForHackathon(hackathon.id),
+    target.mode === "platform" ? getTeamForHackathon(state.userId, hackathon.id) : Promise.resolve(null),
+    target.mode === "platform" ? getPendingTeamForHackathon(hackathon.id) : Promise.resolve(null),
     supabase
       .from("public_schedule")
       .select("id", { count: "exact", head: true })
@@ -67,6 +71,26 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
   if (scheduleResult.error) logQueryError("painel.scheduleCount", scheduleResult.error);
   const totalCount = scheduleResult.count;
+
+  if (target.mode === "external") {
+    return (
+      <div className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <BackLink href={`/h/${slug}`} label={hackathon.name} />
+            <PainelNav slug={slug} usesTeams={false} />
+          </div>
+          <ExternalSubmissionPanel
+            hackathon={hackathon}
+            slug={slug}
+            firstName={state.profile?.full_name?.split(" ")[0] ?? null}
+            submissionUrl={target.url}
+            contentCount={totalCount ?? 0}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const open = isSubmissionWindowOpen(hackathon);
   // Server component, one render per request — "now" is a request input.

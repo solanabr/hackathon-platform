@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getHackathonBySlug, isRegistrationOpen } from "@/lib/hackathon";
+import { getHackathonBySlug, isRegistrationOpen, requiresLumaConfirmation } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
 import { track } from "@/lib/analytics-server";
@@ -12,16 +12,21 @@ export async function registerForHackathon(
 ): Promise<{ error?: string }> {
   const state = await requireUser();
 
-  const lumaConfirmed = formData.get("luma_confirmed") === "on";
-  const termsAccepted = formData.get("terms_accepted") === "on";
-
-  if (!lumaConfirmed || !termsAccepted) {
-    return { error: "Confirme a inscrição no Luma e aceite as regras para continuar." };
-  }
-
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || !isRegistrationOpen(hackathon)) {
     return { error: "Inscrições encerradas." };
+  }
+
+  const needsLuma = requiresLumaConfirmation(hackathon);
+  const lumaConfirmed = formData.get("luma_confirmed") === "on";
+  const termsAccepted = formData.get("terms_accepted") === "on";
+
+  if (!termsAccepted || (needsLuma && !lumaConfirmed)) {
+    return {
+      error: needsLuma
+        ? "Confirme a inscrição no Luma e aceite as regras para continuar."
+        : "Aceite as regras para continuar.",
+    };
   }
 
   const supabase = await createServerSupabaseClient();
