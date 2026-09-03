@@ -189,11 +189,11 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <h2 className="max-w-2xl text-balance font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] sm:text-5xl">
-              Três passos entre o cadastro e o palco.
+              Do cadastro à submissão em três passos.
             </h2>
             <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
-              Inscreva-se em uma edição, monte o time com a comunidade e submeta o projeto. Todo o
-              resto acontece na plataforma.
+              Inscreva-se em uma edição, monte o time com a comunidade e envie o projeto. Tudo pela
+              plataforma, com mentorias e workshops no caminho.
             </p>
           </Reveal>
           <ol className="mt-10 grid gap-6 md:grid-cols-3">
@@ -227,42 +227,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Closing CTA: the hero's language, inverted */}
-      <section className="px-4 py-20 sm:px-6 lg:px-8" aria-label="Participe">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-green-dark px-8 py-16 shadow-[10px_10px_0_rgba(27,35,29,0.25)] sm:px-14 sm:py-20">
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div
-              className="morth animate-float-b absolute -right-24 -top-28 h-[22rem] w-[22rem] bg-emerald sm:h-[28rem] sm:w-[28rem]"
-              style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-14deg)" }}
-            />
-            <div
-              className="morth animate-float-c absolute -bottom-24 right-[26%] h-52 w-52 bg-yellow/90 sm:h-64 sm:w-64"
-              style={{ maskImage: "url(/brand/stbr/elements/morth-03.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-03.svg)", transform: "rotate(18deg)" }}
-            />
-            <div
-              className="morth absolute -left-16 -bottom-20 h-56 w-56 bg-green/60"
-              style={{ maskImage: "url(/brand/stbr/elements/morth-18.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-18.svg)", transform: "rotate(-24deg)" }}
-            />
-          </div>
+      {/* Closing CTA: the LP hero's language on cream, shapes as paint. */}
+      <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-label="Participe">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div
+            className="morth animate-float-a absolute hidden bg-yellow sm:-left-24 sm:top-[10%] sm:block sm:h-[22rem] sm:w-[22rem] lg:-left-32 lg:h-[30rem] lg:w-[30rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
+          />
+          <div
+            className="morth animate-float-b absolute hidden bg-emerald sm:-right-28 sm:-bottom-24 sm:block sm:h-[20rem] sm:w-[20rem] lg:-right-36 lg:h-[26rem] lg:w-[26rem]"
+            style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
+          />
+        </div>
 
-          <div className="relative grid gap-10 lg:grid-cols-12 lg:items-center">
-            <div className="min-w-0 lg:col-span-8">
-              <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.22] tracking-tight text-surface [font-stretch:118%] sm:text-5xl">
-                O próximo{" "}
-                <span className="inline-block -rotate-1 bg-yellow px-3 text-green-dark">
-                  vencedor
-                </span>{" "}
-                ainda não se inscreveu
-              </h2>
-            </div>
+        <div className="relative mx-auto max-w-6xl">
+          <div className="rounded-3xl border-2 border-green-dark bg-surface-raised px-6 py-12 shadow-sticker sm:px-12 sm:py-16 lg:px-16">
+            <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
+              <div className="min-w-0 lg:col-span-8">
+                <h2 className="text-balance font-heading text-4xl font-black uppercase leading-[1.1] tracking-tight text-ink [font-stretch:110%] sm:text-5xl lg:text-6xl">
+                  Escolha uma edição e comece a{" "}
+                  <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">
+                    construir
+                  </span>
+                  .
+                </h2>
+                <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-ink/80">
+                  Inscrição grátis, comunidade no WhatsApp e mentorias durante toda a edição.
+                </p>
+              </div>
 
-            <div className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
-              <a
-                href="#edicoes"
-                className="rounded-full bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
-              >
-                Garantir minha vaga
-              </a>
+              <div className="flex flex-col items-start gap-3 lg:col-span-4 lg:items-end">
+                <a
+                  href="#edicoes"
+                  className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                >
+                  Ver edições abertas
+                </a>
+              </div>
             </div>
           </div>
         </div>
