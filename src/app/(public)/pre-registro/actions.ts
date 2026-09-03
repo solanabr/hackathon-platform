@@ -10,10 +10,12 @@ import { track } from "@/lib/analytics-server";
 import { COLOSSEUM_SLUG, isRoleOption } from "./constants";
 
 
+export type RegistrationField = "full_name" | "whatsapp" | "role" | "terms" | "server";
+
 export async function preRegister(
   _prevState: { ok: boolean; error?: string },
   formData: FormData,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<{ ok: true } | { ok: false; error: string; field: RegistrationField }> {
   const state = await requireUser();
 
   const fullName = sanitizeText(String(formData.get("full_name") ?? ""));
@@ -21,21 +23,26 @@ export async function preRegister(
   const role = String(formData.get("role") ?? "");
   const termsAccepted = formData.get("terms_accepted") === "on";
 
-  if (!fullName) return { ok: false, error: "Informe seu nome completo." };
-  if (!whatsapp) return { ok: false, error: "Informe seu WhatsApp." };
-  if (!isRoleOption(role)) return { ok: false, error: "Escolha como você se descreve." };
+  if (!fullName) return { ok: false, error: "Informe seu nome completo.", field: "full_name" };
+  if (!whatsapp) return { ok: false, error: "Informe seu WhatsApp.", field: "whatsapp" };
+  if (!isRoleOption(role)) return { ok: false, error: "Escolha como você se descreve.", field: "role" };
   // Loose shape check only: DDI/DDD formats vary, but the field is the
   // campaign's outreach channel, so pure text must not pass as a number.
   const digits = whatsapp.replace(/\D/g, "");
   if (digits.length < 10 || digits.length > 14) {
-    return { ok: false, error: "Informe um WhatsApp válido, com DDD." };
+    return { ok: false, error: "Informe um WhatsApp válido, com DDD.", field: "whatsapp" };
   }
   if (!termsAccepted) {
-    return { ok: false, error: "Você precisa aceitar os Termos de Uso e a Política de Privacidade." };
+    return {
+      ok: false,
+      error: "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
+      field: "terms",
+    };
   }
 
   const hackathon = await getHackathonBySlug(COLOSSEUM_SLUG);
-  if (!hackathon) return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
+  if (!hackathon)
+    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente.", field: "server" };
 
   // Own-row writes: RLS covers both tables, so the user-scoped client keeps
   // it as the backstop (same pattern as updateProfile and registerForHackathon).
@@ -49,7 +56,7 @@ export async function preRegister(
     .eq("id", state.userId);
   if (profileError) {
     logQueryError("preRegistro.updateProfile", profileError);
-    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
+    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente.", field: "server" };
   }
 
   const { error: regError } = await supabase.from("hackathon_registrations").upsert(
@@ -62,7 +69,7 @@ export async function preRegister(
   );
   if (regError) {
     logQueryError("preRegistro.upsertRegistration", regError);
-    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente." };
+    return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente.", field: "server" };
   }
 
   track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG, role });

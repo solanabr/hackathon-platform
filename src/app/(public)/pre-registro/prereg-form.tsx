@@ -1,23 +1,35 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
-import { preRegister } from "./actions";
+import { trackClient } from "@/lib/analytics-browser";
+import { preRegister, type RegistrationField } from "./actions";
 import { isRoleOption, ROLE_OPTIONS } from "./constants";
 import type { User } from "@/types/db";
 
 export function PreregForm({ profile }: { profile: User | null }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
-    async (prev: { ok: true } | { ok: false; error: string }, formData: FormData) => {
+    async (
+      prev: { ok: true } | { ok: false; error: string; field: RegistrationField },
+      formData: FormData,
+    ) => {
       const result = await preRegister(prev, formData);
-      if (result.ok) router.refresh();
+      if (result.ok) {
+        router.refresh();
+      } else {
+        trackClient("registration_form_error", { field: result.field });
+      }
       return result;
     },
-    { ok: false, error: "" },
+    { ok: false, error: "", field: "server" },
   );
+
+  useEffect(() => {
+    trackClient("registration_form_viewed");
+  }, []);
 
   return (
     <form action={formAction} className="space-y-4">
