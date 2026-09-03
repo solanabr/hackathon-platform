@@ -180,7 +180,7 @@ export default async function HomePage() {
         <div aria-hidden className="pointer-events-none absolute inset-0">
           {/* Yellow field under the desk's left side, emerald behind its right. */}
           <div
-            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:top-[42%] sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:top-[38%] lg:h-[34rem] lg:w-[34rem] 2xl:-left-56 2xl:h-[40rem] 2xl:w-[40rem]"
+            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:bottom-6 sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:bottom-8 lg:h-[34rem] lg:w-[34rem] 2xl:-left-56 2xl:h-[40rem] 2xl:w-[40rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
