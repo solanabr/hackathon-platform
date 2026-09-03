@@ -13,7 +13,7 @@ import { TrackedLink } from "./tracked-link";
 
 export const metadata = {
   title: "Cadastro Colosseum",
-  description: "Garanta sua vaga na campanha brasileira para o Colosseum Global Hackathon 2026.",
+  description: "Garanta sua vaga na campanha brasileira para o Colosseum Crypto World's Fair 2026.",
   openGraph: { images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }] },
 };
 
@@ -97,7 +97,7 @@ export default async function PreRegistroPage() {
               Complete seu cadastro
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Global Hackathon.
+              Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Crypto World&apos;s Fair.
             </p>
             <div className="mt-6">
               <PreregForm profile={state!.profile} />

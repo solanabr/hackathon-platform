@@ -19,7 +19,7 @@ import { Tilt } from "@/components/ui/tilt";
 
 
 export const metadata = {
-  title: "Colosseum Global Hackathon 2026",
+  title: "Colosseum Crypto World's Fair 2026",
   description:
     "O próximo time a captar milhões pode ser o seu. Cadastre-se para o Colosseum, o hackathon global da Solana: 100% remoto, prêmios milionários e capital anjo.",
   openGraph: {
@@ -183,7 +183,7 @@ export default async function HomePage() {
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute -right-28 top-[58%] h-56 w-56 bg-emerald sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
+            className="morth animate-float-b absolute hidden bg-emerald sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
         </div>
