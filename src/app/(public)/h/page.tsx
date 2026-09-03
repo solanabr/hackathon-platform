@@ -48,7 +48,7 @@ const STEPS = [
   },
   {
     title: "Monte o time e construa",
-    body: "Cada edição define o tamanho do time. Aulas, mentorias e o grupo da comunidade durante toda a fase online.",
+    body: "Encontre parceiros na comunidade e construa junto. Aulas, mentorias e o grupo no WhatsApp durante toda a fase online.",
     action: { label: "Entrar na comunidade", href: WHATSAPP_COMMUNITY_URL, primary: false },
   },
   {
