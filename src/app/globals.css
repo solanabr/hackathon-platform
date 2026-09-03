@@ -196,11 +196,6 @@
   -webkit-mask-position: center;
 }
 
-.text-outline-green {
-  -webkit-text-stroke: 2px #1b231d;
-  color: transparent;
-}
-
 
 @media (prefers-reduced-motion: reduce) {
   html {
