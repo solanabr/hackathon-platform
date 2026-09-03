@@ -5,6 +5,7 @@ const PUBLIC_ROUTES = [
   "/privacidade",
   "/termos",
   "/pre-registro",
+  "/guias",
 ];
 
 // Bare hub only — /h/[slug]... paths are gated separately below.
