@@ -20,7 +20,7 @@ export function MobileCtaBar({ watchId }: { watchId: string }) {
 
   return (
     <div
-      aria-hidden={!shown}
+      inert={!shown}
       className={`fixed inset-x-3 bottom-3 z-40 transition-[transform,opacity] duration-300 lg:hidden ${
         shown ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
       }`}
