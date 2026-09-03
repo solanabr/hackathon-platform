@@ -12,7 +12,7 @@ import { TeamDangerZone } from "@/components/team/team-danger-zone";
 import { MemberRow } from "@/components/team/member-row";
 import { RecruitingCard } from "./recruiting-card";
 import { ApplicationsCard, type PendingApplication } from "./applications-card";
-import { getHackathonBySlug, editionUsesTeams } from "@/lib/hackathon";
+import { getHackathonBySlug, editionUsesTeams, teamLimits } from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
@@ -111,7 +111,8 @@ export default async function TeamPage({
   const acceptedMembers = members.filter((m) => m.status === "accepted");
   const pendingMembers = members.filter((m) => m.status === "pending");
   const acceptedCount = acceptedMembers.length;
-  const canInvite = isLeader && !team.locked && acceptedCount + pendingMembers.length < 4;
+  const { max: teamMax } = teamLimits(hackathon);
+  const canInvite = isLeader && !team.locked && acceptedCount + pendingMembers.length < teamMax;
   const canRecruit = isLeader && !team.locked;
 
   let opening: { roles: string[]; note: string | null; active: boolean } | null = null;
@@ -173,7 +174,7 @@ export default async function TeamPage({
           </p>
           <div className="mt-1 flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold">Integrantes</h2>
-            <p className="font-mono text-xs tabular-nums text-muted">{acceptedCount}/4</p>
+            <p className="font-mono text-xs tabular-nums text-muted">{acceptedCount}/{teamMax}</p>
           </div>
           {isLeader && !team.locked && acceptedCount > 1 && (
             <p className="mt-1 text-xs text-muted">
@@ -268,11 +269,11 @@ export default async function TeamPage({
         )}
 
         {canRecruit &&
-          (acceptedCount >= 4 && !opening?.active ? (
+          (acceptedCount >= teamMax && !opening?.active ? (
             <Card sticker className="p-6">
               <p className="font-heading text-lg font-bold">Recrutamento</p>
               <p className="mt-2 text-sm text-muted">
-                Time completo — não é possível anunciar vagas com 4 integrantes.
+                Time completo — não é possível anunciar vagas com {teamMax} integrantes.
               </p>
             </Card>
           ) : (

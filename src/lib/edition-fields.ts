@@ -11,7 +11,7 @@ export type EditionField = {
   group: string;
 };
 
-export const EDITION_GROUPS = ["Identidade", "Datas", "Submissão", "Local e links", "Prêmios"] as const;
+export const EDITION_GROUPS = ["Identidade", "Datas", "Submissão", "Times", "Local e links", "Prêmios"] as const;
 
 export const EDITION_FIELDS: EditionField[] = [
   { key: "name", label: "Nome", kind: "text", group: "Identidade" },
@@ -85,6 +85,20 @@ export const EDITION_FIELDS: EditionField[] = [
     kind: "url",
     group: "Submissão",
     help: "Só usada no modo externo. Ex.: o listing no Superteam Earn.",
+  },
+
+  {
+    key: "team_size_min",
+    label: "Mínimo de integrantes",
+    kind: "number",
+    group: "Times",
+  },
+  {
+    key: "team_size_max",
+    label: "Máximo de integrantes",
+    kind: "number",
+    group: "Times",
+    help: "Vale para times criados na plataforma; o Colosseum e outras edições externas ignoram.",
   },
 
   { key: "location_name", label: "Local", kind: "text", group: "Local e links" },

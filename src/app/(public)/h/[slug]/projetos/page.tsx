@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar } from "@/components/ui/avatar";
-import { getHackathonBySlug, isFinalistsVisible } from "@/lib/hackathon";
+import { getHackathonBySlug, isFinalistsVisible, teamLimits } from "@/lib/hackathon";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { DAY_MONTH_LONG, stripPeriods } from "@/lib/dates";
@@ -67,6 +67,8 @@ export default async function ProjectsGalleryPage({
   ]);
   const { data: teamMembers, error: membersError } = membersResult;
   if (membersError) logQueryError("public.gallery.members", membersError);
+
+  const avatarMax = teamLimits(hackathon).max;
 
   const membersByTeam = new Map<string, PublicTeamMember[]>();
   for (const m of (teamMembers as PublicTeamMember[] | null) ?? []) {
@@ -230,7 +232,7 @@ export default async function ProjectsGalleryPage({
                       </div>
                       {members.length > 0 && (
                         <div className="flex items-center">
-                          {members.slice(0, 4).map((m, i) => (
+                          {members.slice(0, avatarMax).map((m, i) => (
                             <Avatar
                               key={m.user_id}
                               src={m.avatar_url}
@@ -239,9 +241,9 @@ export default async function ProjectsGalleryPage({
                               className={i === 0 ? "" : "-ml-2"}
                             />
                           ))}
-                          {members.length > 4 && (
+                          {members.length > avatarMax && (
                             <span className="-ml-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-raised font-mono text-xs font-bold tabular-nums text-muted ring-2 ring-surface">
-                              +{members.length - 4}
+                              +{members.length - avatarMax}
                             </span>
                           )}
                         </div>

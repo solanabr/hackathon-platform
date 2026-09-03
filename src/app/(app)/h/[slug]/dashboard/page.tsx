@@ -16,6 +16,7 @@ import {
   getHackathonBySlug,
   isSubmissionWindowOpen,
   submissionTarget,
+  teamLimits,
 } from "@/lib/hackathon";
 import { ExternalSubmissionPanel } from "@/components/edition/external-submission-panel";
 import {
@@ -102,6 +103,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const confirmedIds = await confirmedMemberIds(hackathon.id, memberIds);
   const pendingMembers = membersPendingRegistration(snapshot?.members ?? [], confirmedIds);
   const acceptedMembers = (snapshot?.members ?? []).filter((m) => m.status === "accepted").length;
+  const { min: teamMin } = teamLimits(hackathon);
 
   const submission = snapshot?.submission;
   const missing = submission
@@ -116,7 +118,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
   const checklistDone =
     REQUIRED.length -
     missing.length +
-    (acceptedMembers >= 2 ? 1 : 0) +
+    (acceptedMembers >= teamMin ? 1 : 0) +
     (pendingMembers.length === 0 ? 1 : 0);
 
   // The hero counts down to whichever milestone comes next: the submission
@@ -356,8 +358,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                       ? "Tudo pronto. O líder pode enviar."
                       : missing.length > 0
                         ? `Faltam ${checklistTotal - checklistDone} de ${checklistTotal} itens.`
-                        : acceptedMembers < 2
-                          ? "O time precisa de pelo menos 2 integrantes."
+                        : acceptedMembers < teamMin
+                          ? `O time precisa de pelo menos ${teamMin} integrantes.`
                           : `Falta a inscrição de ${pendingMembers.length} ${
                               pendingMembers.length === 1 ? "integrante" : "integrantes"
                             }.`}
@@ -378,8 +380,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
                       {f.label}
                     </CheckRow>
                   ))}
-                  <CheckRow done={acceptedMembers >= 2}>
-                    Pelo menos 2 integrantes no time
+                  <CheckRow done={acceptedMembers >= teamMin}>
+                    Pelo menos {teamMin} integrantes no time
                   </CheckRow>
                   <CheckRow done={pendingMembers.length === 0}>
                     Time todo confirmado na inscrição

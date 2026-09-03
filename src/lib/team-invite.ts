@@ -57,8 +57,19 @@ export async function addMemberToTeam(
     return { ok: false, error: "Não foi possível validar o time. Tente novamente." };
   }
 
-  if ((existingMembers?.length ?? 0) >= 4) {
-    return { ok: false, error: "Time já tem 4 integrantes." };
+  const { data: teamSizeRow, error: teamSizeError } = await admin
+    .from("hackathons")
+    .select("team_size_max")
+    .eq("id", leaderCheck.hackathon_id)
+    .maybeSingle();
+  if (teamSizeError) {
+    logQueryError("team.addMemberByEmail.edition", teamSizeError);
+    return { ok: false, error: "Não foi possível validar o time. Tente novamente." };
+  }
+  const teamSizeMax = teamSizeRow?.team_size_max ?? 4;
+
+  if ((existingMembers?.length ?? 0) >= teamSizeMax) {
+    return { ok: false, error: `Time já tem ${teamSizeMax} integrantes.` };
   }
   if (existingMembers?.some((m) => m.invited_email.toLowerCase() === email)) {
     return { ok: false, error: "Esse e-mail já está no time." };

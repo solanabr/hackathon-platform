@@ -7,13 +7,15 @@ import { addMemberToTeam, type AddMemberResult } from "@/lib/team-invite";
 
 export type InviteActionResult = { ok: true } | { ok: false; error: string };
 
-const INVITE_ERRORS: Record<string, string> = {
-  team_locked: "O time já fechou a submissão. Fale com o líder.",
-  team_full: "O time já está com 4 integrantes.",
-  already_on_team: "Você já está em outro time nesta edição.",
-  not_registered: "Complete sua inscrição na edição antes de entrar no time.",
-  invite_not_found: "Convite não encontrado. Ele pode ter sido removido pelo líder.",
-};
+function inviteErrors(teamMax: number): Record<string, string> {
+  return {
+    team_locked: "O time já fechou a submissão. Fale com o líder.",
+    team_full: `O time já está com ${teamMax} integrantes.`,
+    already_on_team: "Você já está em outro time nesta edição.",
+    not_registered: "Complete sua inscrição na edição antes de entrar no time.",
+    invite_not_found: "Convite não encontrado. Ele pode ter sido removido pelo líder.",
+  };
+}
 
 async function runInviteRpc(
   fn: "accept_pending_membership" | "decline_pending_membership",
@@ -24,9 +26,19 @@ async function runInviteRpc(
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc(fn, { p_team_id: teamId });
   if (error) {
+    let teamMax = 4;
+    if (error.message === "team_full") {
+      const { data: team } = await supabase
+        .from("teams")
+        .select("hackathons(team_size_max)")
+        .eq("id", teamId)
+        .maybeSingle();
+      const edition = Array.isArray(team?.hackathons) ? team?.hackathons[0] : team?.hackathons;
+      teamMax = edition?.team_size_max ?? teamMax;
+    }
     return {
       ok: false,
-      error: INVITE_ERRORS[error.message] ?? "Não foi possível concluir. Tente novamente.",
+      error: inviteErrors(teamMax)[error.message] ?? "Não foi possível concluir. Tente novamente.",
     };
   }
   return { ok: true };

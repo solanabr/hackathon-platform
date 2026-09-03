@@ -58,6 +58,9 @@ export type Hackathon = {
   // "external": people register here and submit the project elsewhere (00055).
   submission_mode: SubmissionMode;
   external_submission_url: string | null;
+  // Per-edition team size bounds (00058); platform-created teams only.
+  team_size_min: number;
+  team_size_max: number;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
