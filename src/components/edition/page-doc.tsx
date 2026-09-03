@@ -505,7 +505,7 @@ function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className:
       decoding="async"
       width={190}
       height={64}
-      className={`h-auto w-auto object-contain ${className}`}
+      className={`w-auto object-contain ${className}`}
     />
   );
   return sponsor.url ? (
@@ -534,7 +534,7 @@ function PartnersSection({ sponsors }: { sponsors: Record<SponsorTier, SponsorLo
                 <SponsorImage
                   key={p.id}
                   sponsor={p}
-                  className="max-h-7 w-auto max-w-[190px] opacity-90 sm:max-h-8 sm:max-w-[218px]"
+                  className="h-7 w-auto max-w-[190px] opacity-90 sm:h-8 sm:max-w-[218px]"
                 />
               ))}
             </div>
@@ -554,7 +554,7 @@ function PartnersSection({ sponsors }: { sponsors: Record<SponsorTier, SponsorLo
                 <SponsorImage
                   key={sp.id}
                   sponsor={sp}
-                  className="max-h-9 w-auto max-w-[112px] opacity-80 sm:max-h-10 sm:max-w-[128px]"
+                  className="h-9 w-auto max-w-[112px] opacity-80 sm:h-10 sm:max-w-[128px]"
                 />
               ))}
             </div>
