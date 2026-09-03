@@ -203,8 +203,8 @@ export default async function HomePage() {
                 ? "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
                 : "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface";
               return (
-                <Reveal key={step.title} delay={i * 130} className="h-full">
-                  <li className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
+                <li key={step.title} className="h-full">
+                  <Reveal delay={i * 130} className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
                     <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
                       Passo {String(i + 1).padStart(2, "0")}
                     </span>
@@ -219,8 +219,8 @@ export default async function HomePage() {
                         {step.action.label}
                       </Link>
                     )}
-                  </li>
-                </Reveal>
+                  </Reveal>
+                </li>
               );
             })}
           </ol>
