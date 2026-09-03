@@ -494,8 +494,21 @@ function FinalistsSection({
   );
 }
 
-function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className: string }) {
+function SponsorImage({
+  sponsor,
+  height,
+  maxHeight,
+  className,
+}: {
+  sponsor: SponsorLogo;
+  height: string;
+  maxHeight: string;
+  className: string;
+}) {
   // Width/height reserve the box so the band doesn't reflow as logos land.
+  // A linked SVG with height:auto collapses to 0x0 in Chrome, so SVGs get the
+  // fixed row height; raster logos keep max-height so small files don't upscale.
+  const isSvg = /\.svg(\?|$)/i.test(sponsor.src);
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -505,7 +518,7 @@ function SponsorImage({ sponsor, className }: { sponsor: SponsorLogo; className:
       decoding="async"
       width={190}
       height={64}
-      className={`w-auto object-contain ${className}`}
+      className={`w-auto object-contain ${isSvg ? height : `h-auto ${maxHeight}`} ${className}`}
     />
   );
   return sponsor.url ? (
@@ -534,7 +547,9 @@ function PartnersSection({ sponsors }: { sponsors: Record<SponsorTier, SponsorLo
                 <SponsorImage
                   key={p.id}
                   sponsor={p}
-                  className="h-7 w-auto max-w-[190px] opacity-90 sm:h-8 sm:max-w-[218px]"
+                  height="h-7 sm:h-8"
+                  maxHeight="max-h-7 sm:max-h-8"
+                  className="max-w-[190px] opacity-90 sm:max-w-[218px]"
                 />
               ))}
             </div>
@@ -554,7 +569,9 @@ function PartnersSection({ sponsors }: { sponsors: Record<SponsorTier, SponsorLo
                 <SponsorImage
                   key={sp.id}
                   sponsor={sp}
-                  className="h-9 w-auto max-w-[112px] opacity-80 sm:h-10 sm:max-w-[128px]"
+                  height="h-9 sm:h-10"
+                  maxHeight="max-h-9 sm:max-h-10"
+                  className="max-w-[112px] opacity-80 sm:max-w-[128px]"
                 />
               ))}
             </div>
