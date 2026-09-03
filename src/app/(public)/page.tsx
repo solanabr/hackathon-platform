@@ -16,6 +16,7 @@ import {
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { Tilt } from "@/components/ui/tilt";
+import { MobileCtaBar } from "@/components/campaign/mobile-cta-bar";
 
 
 export const metadata = {
@@ -201,7 +202,7 @@ export default async function HomePage() {
             para as melhores equipes.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+          <div id="hero-cta" className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <TrackedCta
               href="/pre-registro"
               event="cta_clicked"
@@ -686,6 +687,13 @@ export default async function HomePage() {
           </Link>
         </p>
       </section>
+
+      {!registered && (
+        <>
+          <div aria-hidden className="h-20 lg:hidden" />
+          <MobileCtaBar watchId="hero-cta" />
+        </>
+      )}
     </div>
   );
 }

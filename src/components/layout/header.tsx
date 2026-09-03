@@ -31,7 +31,7 @@ export async function Header() {
       {state && <PostHogIdentify userId={state.userId} />}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-sticker sm:px-6">
         <Link
-          href={state ? "/h" : "/"}
+          href="/"
           className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
         >
           <Image
