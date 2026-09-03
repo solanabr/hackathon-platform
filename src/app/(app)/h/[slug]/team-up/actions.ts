@@ -31,6 +31,20 @@ function mapRpcError(message: string, teamMax = 4): TeamUpActionResult {
 }
 
 type SupabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
+type EditionRel = { slug: string } | { slug: string }[] | null | undefined;
+
+function editionSlug(rel: EditionRel): string | null {
+  const edition = Array.isArray(rel) ? rel[0] : rel;
+  return edition?.slug ?? null;
+}
+
+// Analytics context only: a failed read leaves the event without its edition
+// rather than failing an action that already succeeded.
+async function teamEditionSlug(supabase: SupabaseClient, teamId: string): Promise<string | null> {
+  const { data, error } = await supabase.from("teams").select("hackathons(slug)").eq("id", teamId).maybeSingle();
+  if (error) logQueryError("teamUp.teamEdition", error);
+  return editionSlug(data?.hackathons);
+}
 
 // Only used to word the team_full error message — a lookup failure here
 // just falls back to the generic "4 integrantes" phrasing (mapRpcError's
@@ -66,7 +80,7 @@ export async function saveOpening(input: {
   const admin = await createServiceRoleClient();
   const { data: team, error } = await admin
     .from("teams")
-    .select("id, hackathon_id, leader_id, locked")
+    .select("id, hackathon_id, leader_id, locked, hackathons(slug)")
     .eq("id", input.teamId)
     .maybeSingle();
   if (error) {
@@ -91,6 +105,7 @@ export async function saveOpening(input: {
     return { ok: false, error: "Não foi possível salvar. Tente novamente." };
   }
   track(state.userId, "opening_saved", {
+    edition: editionSlug(team.hackathons),
     team_id: team.id,
     active: input.active,
     roles_count: roles.length,
@@ -127,8 +142,14 @@ export async function saveSeekerPost(input: {
     logQueryError("teamUp.saveSeekerPost", error);
     return { ok: false, error: "Não foi possível salvar. Tente novamente." };
   }
+  const { data: hackathon, error: hackathonError } = await supabase
+    .from("hackathons")
+    .select("slug")
+    .eq("id", input.hackathonId)
+    .maybeSingle();
+  if (hackathonError) logQueryError("teamUp.saveSeekerPost.edition", hackathonError);
   track(state.userId, "seeker_post_saved", {
-    hackathon_id: input.hackathonId,
+    edition: hackathon?.slug ?? null,
     active: input.active,
     roles_count: roles.length,
   });
@@ -211,6 +232,7 @@ export async function applyToTeam(input: {
   });
 
   track(state.userId, "application_sent", {
+    edition: await teamEditionSlug(supabase, input.teamId),
     team_id: input.teamId,
     has_message: message.length > 0,
   });
@@ -245,7 +267,17 @@ export async function respondToApplication(input: {
       error.message === "team_full" ? await teamMaxForApplication(supabase, input.applicationId) : undefined,
     );
   }
-  track(state.userId, "application_responded", { accepted: input.accept });
+  const { data: application, error: applicationError } = await supabase
+    .from("team_applications")
+    .select("team_id, hackathons(slug)")
+    .eq("id", input.applicationId)
+    .maybeSingle();
+  if (applicationError) logQueryError("teamUp.respond.edition", applicationError);
+  track(state.userId, "application_responded", {
+    edition: editionSlug(application?.hackathons),
+    team_id: application?.team_id ?? null,
+    accepted: input.accept,
+  });
   return { ok: true };
 }
 

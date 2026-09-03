@@ -57,6 +57,7 @@ export default async function TeamPage({
             </p>
             <PendingInviteActions
               teamId={pendingTeam.teamId}
+              slug={slug}
               blocked={pendingTeam.locked || pendingTeam.full}
             />
             <div className="mt-4">

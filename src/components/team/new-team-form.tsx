@@ -57,7 +57,7 @@ export function NewTeamForm({
       return;
     }
 
-    trackClient("team_created", { hackathon_id: hackathonId });
+    trackClient("team_created", { edition: slug });
 
     router.push(`/h/${slug}/team`);
     router.refresh();

@@ -105,7 +105,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
       trackClient("auth_failed", { provider: "email", reason: "otp_verify_failed" });
       return;
     }
-    trackClient("auth_code_verified");
+    trackClient("auth_code_verified", { provider: "email" });
     // Route back through /auth/callback when no deep link was requested, so a
     // signed-in participant lands on their painel instead of the home gallery.
     window.location.assign(postLoginPath ?? "/auth/callback");

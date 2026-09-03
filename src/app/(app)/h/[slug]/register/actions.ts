@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getHackathonBySlug, isRegistrationOpen, requiresLumaConfirmation } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { track } from "@/lib/analytics-server";
 
 export async function registerForHackathon(
@@ -32,6 +33,17 @@ export async function registerForHackathon(
   const supabase = await createServerSupabaseClient();
   const now = new Date().toISOString();
 
+  // Re-submitting the form must not count as a second registration in the funnel.
+  const { data: existing, error: existingError } = await supabase
+    .from("hackathon_registrations")
+    .select("terms_accepted_at, luma_confirmed_at")
+    .eq("hackathon_id", hackathon.id)
+    .eq("user_id", state.userId)
+    .maybeSingle();
+  if (existingError) logQueryError("register.existingRegistration", existingError);
+  const alreadyComplete =
+    !!existing?.terms_accepted_at && (!needsLuma || !!existing?.luma_confirmed_at);
+
   const { error } = await supabase.from("hackathon_registrations").upsert(
     {
       hackathon_id: hackathon.id,
@@ -44,7 +56,7 @@ export async function registerForHackathon(
 
   if (error) return { error: "Não foi possível concluir a inscrição. Tente novamente." };
 
-  track(state.userId, "registration_completed", { edition: slug });
+  if (!alreadyComplete) track(state.userId, "registration_completed", { edition: slug });
   revalidatePath(`/h/${slug}/dashboard`);
   return {};
 }

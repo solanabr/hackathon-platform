@@ -5,6 +5,7 @@ import posthog from "posthog-js";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
+import { hasAnalyticsConsent } from "@/lib/consent";
 
 type MenuLink = { href: string; label: string };
 
@@ -85,12 +86,15 @@ export function UserMenu({
           <div className="my-1 border-t border-green-dark/15" />
 
           {/* reset() before the POST navigates away — without it the next
-              person on a shared device inherits this profile. */}
+              person on a shared device inherits this profile. It also wipes
+              PostHog's own opt-in record, so the banner choice is re-applied. */}
           <form
             action="/api/auth/signout"
             method="post"
             onSubmit={() => {
-              if (posthog.__loaded) posthog.reset();
+              if (!posthog.__loaded) return;
+              posthog.reset();
+              if (hasAnalyticsConsent()) posthog.opt_in_capturing({ captureEventName: false });
             }}
           >
             <button type="submit" role="menuitem" className={`${itemClass} w-full text-left`}>

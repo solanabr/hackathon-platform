@@ -21,7 +21,7 @@ export function TrackedLink({
       target="_blank"
       rel="noopener noreferrer"
       className={className}
-      onClick={() => trackClient("campaign_link_clicked", { target })}
+      onClick={() => trackClient("campaign_link_clicked", { location: "pre_registro", target })}
     >
       {children}
     </a>

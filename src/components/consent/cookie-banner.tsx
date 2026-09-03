@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { updateGtmConsent } from "@/components/analytics/google-tag-manager";
-
-export const CONSENT_KEY = "stbr-consent";
+import { CONSENT_KEY, parseConsent, writeConsentCookie, type ConsentValue } from "@/lib/consent";
 
 function subscribe() {
   return () => {};
@@ -23,7 +22,8 @@ function readConsent(): string | null {
 /**
  * LGPD consent for analytics. PostHog boots opted-out (see
  * instrumentation-client.ts) and Google Tag Manager boots with consent
- * denied; "Aceitar" opts both in, "Só o essencial" keeps them out.
+ * denied; "Aceitar" opts both in, "Só o essencial" keeps them out. The
+ * choice is mirrored into a cookie so server-side capture can honour it.
  * Auth/session cookies are essential and don't gate on this.
  */
 export function CookieBanner() {
@@ -32,12 +32,20 @@ export function CookieBanner() {
   const stored = useSyncExternalStore(subscribe, readConsent, () => "server");
   const [dismissed, setDismissed] = useState(false);
 
-  function choose(value: "all" | "essential") {
+  // Choices made before the cookie existed live only in localStorage; mirror
+  // them so server-side capture honours them without asking again.
+  useEffect(() => {
+    const value = parseConsent(stored);
+    if (value) writeConsentCookie(value);
+  }, [stored]);
+
+  function choose(value: ConsentValue) {
     try {
       localStorage.setItem(CONSENT_KEY, value);
     } catch {
       // Choice won't persist, but still applies to this session.
     }
+    writeConsentCookie(value);
     if (posthog.__loaded) {
       if (value === "all") posthog.opt_in_capturing();
       else posthog.opt_out_capturing();

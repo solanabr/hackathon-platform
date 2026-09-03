@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { CONSENT_KEY } from "@/lib/consent";
 
 export const GTM_ID = "GTM-TC7KKF57";
 
@@ -39,7 +40,7 @@ const boot = `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 var stbrConsent = 'denied';
-try { if (localStorage.getItem('stbr-consent') === 'all') stbrConsent = 'granted'; } catch (e) {}
+try { if (localStorage.getItem('${CONSENT_KEY}') === 'all') stbrConsent = 'granted'; } catch (e) {}
 gtag('consent', 'default', {
   ad_storage: stbrConsent,
   ad_user_data: stbrConsent,
