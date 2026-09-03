@@ -231,8 +231,10 @@ export async function applyToTeam(input: {
     if (!result.ok) console.error("teamUp.applyEmail.send", result.error);
   });
 
+  // The applicant is not a member yet, so RLS hides the team from them;
+  // the RPC already authorised the action, this read is context only.
   track(state.userId, "application_sent", {
-    edition: await teamEditionSlug(supabase, input.teamId),
+    edition: await teamEditionSlug(await createServiceRoleClient(), input.teamId),
     team_id: input.teamId,
     has_message: message.length > 0,
   });
@@ -261,13 +263,16 @@ export async function respondToApplication(input: {
     p_application_id: input.applicationId,
     p_accept: input.accept,
   });
+  // team_applications is readable only by the applicant; the leader
+  // responding needs the service role for these context reads.
+  const admin = await createServiceRoleClient();
   if (error) {
     return mapRpcError(
       error.message,
-      error.message === "team_full" ? await teamMaxForApplication(supabase, input.applicationId) : undefined,
+      error.message === "team_full" ? await teamMaxForApplication(admin, input.applicationId) : undefined,
     );
   }
-  const { data: application, error: applicationError } = await supabase
+  const { data: application, error: applicationError } = await admin
     .from("team_applications")
     .select("team_id, hackathons(slug)")
     .eq("id", input.applicationId)
