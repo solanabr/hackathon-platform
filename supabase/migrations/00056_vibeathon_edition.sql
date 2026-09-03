@@ -72,14 +72,3 @@ $md$
 where not exists (
   select 1 from public.hackathons where slug = 'vibeathon-superteam-replit'
 );
-
-insert into public.hackathon_contents (hackathon_id, kind, title, speaker, description, scheduled_at, location, duration_minutes, position, published)
-select h.id, c.kind, c.title, c.speaker, c.description, c.scheduled_at::timestamptz, c.location, c.duration_minutes, c.position, true
-from public.hackathons h
-cross join (values
-  ('evento', 'Live de abertura', 'Superteam Brasil e Replit', 'Regras, prêmios, o que a Replit espera de um MVP e como funciona a submissão no Earn.', '2026-09-08T19:00:00-03:00', 'YouTube e X', 60, 1),
-  ('workshop', 'Pitch deck que convence', 'Estevão Rizzo', 'Como contar o problema, a solução e a tração em um deck de 3 minutos. Horário a confirmar.', '2026-09-09T19:00:00-03:00', 'Online', 60, 2),
-  ('workshop', 'Do prompt ao deploy na Replit', 'Marcelo Echeverria', 'Um MVP construído ao vivo na Replit, com as dicas de quem faz isso todo dia. Horário a confirmar.', '2026-09-10T19:00:00-03:00', 'Online', 60, 3)
-) as c(kind, title, speaker, description, scheduled_at, location, duration_minutes, position)
-where h.slug = 'vibeathon-superteam-replit'
-  and not exists (select 1 from public.hackathon_contents x where x.hackathon_id = h.id);
