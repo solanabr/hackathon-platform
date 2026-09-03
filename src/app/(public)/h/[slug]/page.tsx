@@ -6,6 +6,7 @@ import {
   getHackathonBySlug,
   isRegistrationOpen,
   isFinalistsVisible,
+  registrationClosesWithSubmission,
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
@@ -99,7 +100,12 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   const nowMs = Date.now();
   const countdownTarget =
     hackathon.registration_closes_at && new Date(hackathon.registration_closes_at).getTime() > nowMs
-      ? { label: "Inscrições encerram em", iso: hackathon.registration_closes_at }
+      ? {
+          label: registrationClosesWithSubmission(hackathon)
+            ? "Inscrições e submissões encerram em"
+            : "Inscrições encerram em",
+          iso: hackathon.registration_closes_at,
+        }
       : new Date(hackathon.submission_deadline_at).getTime() > nowMs
         ? { label: "Submissões encerram em", iso: hackathon.submission_deadline_at }
         : hackathon.presential_at && new Date(hackathon.presential_at).getTime() > nowMs

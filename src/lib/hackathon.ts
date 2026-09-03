@@ -56,6 +56,16 @@ export function isRegistrationOpen(h: Hackathon, now: Date = new Date()): boolea
   return new Date(h.registration_closes_at).getTime() > now.getTime();
 }
 
+/** Inscriptions and submissions close at the same instant, so surfaces name
+ * both instead of letting the hero say one and the fact card the other. */
+export function registrationClosesWithSubmission(h: Hackathon): boolean {
+  if (!h.registration_closes_at) return false;
+  return (
+    new Date(h.registration_closes_at).getTime() ===
+    new Date(h.submission_deadline_at).getTime()
+  );
+}
+
 export function isSubmissionWindowOpen(h: Hackathon, now: Date = new Date()): boolean {
   return new Date(h.submission_deadline_at).getTime() > now.getTime();
 }
