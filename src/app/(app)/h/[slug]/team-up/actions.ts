@@ -36,17 +36,19 @@ type SupabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
 // just falls back to the generic "4 integrantes" phrasing (mapRpcError's
 // default), it never blocks the underlying RPC's own error handling.
 async function teamMaxForTeam(supabase: SupabaseClient, teamId: string): Promise<number | undefined> {
-  const { data } = await supabase.from("teams").select("hackathons(team_size_max)").eq("id", teamId).maybeSingle();
+  const { data, error } = await supabase.from("teams").select("hackathons(team_size_max)").eq("id", teamId).maybeSingle();
+  if (error) logQueryError("teamUp.teamMax", error);
   const edition = Array.isArray(data?.hackathons) ? data?.hackathons[0] : data?.hackathons;
   return edition?.team_size_max;
 }
 
 async function teamMaxForApplication(supabase: SupabaseClient, applicationId: string): Promise<number | undefined> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("team_applications")
     .select("hackathons(team_size_max)")
     .eq("id", applicationId)
     .maybeSingle();
+  if (error) logQueryError("teamUp.applicationTeamMax", error);
   const edition = Array.isArray(data?.hackathons) ? data?.hackathons[0] : data?.hackathons;
   return edition?.team_size_max;
 }

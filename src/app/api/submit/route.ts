@@ -44,11 +44,12 @@ export async function POST(request: NextRequest) {
   if (rpcError) {
     let teamMin = 2;
     if (rpcError.message === "team_too_small") {
-      const { data: team } = await supabase
+      const { data: team, error: teamError } = await supabase
         .from("teams")
         .select("hackathons(team_size_min)")
         .eq("id", body.teamId)
         .maybeSingle();
+      if (teamError) logQueryError("api.submit.teamMin", teamError);
       const edition = Array.isArray(team?.hackathons) ? team?.hackathons[0] : team?.hackathons;
       teamMin = edition?.team_size_min ?? teamMin;
     }

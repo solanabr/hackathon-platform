@@ -2,6 +2,7 @@
 
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { logQueryError } from "@/lib/supabase/unwrap";
 import { addMemberToTeam, type AddMemberResult } from "@/lib/team-invite";
 
 
@@ -28,11 +29,12 @@ async function runInviteRpc(
   if (error) {
     let teamMax = 4;
     if (error.message === "team_full") {
-      const { data: team } = await supabase
+      const { data: team, error: teamError } = await supabase
         .from("teams")
         .select("hackathons(team_size_max)")
         .eq("id", teamId)
         .maybeSingle();
+      if (teamError) logQueryError("team.membership.teamMax", teamError);
       const edition = Array.isArray(team?.hackathons) ? team?.hackathons[0] : team?.hackathons;
       teamMax = edition?.team_size_max ?? teamMax;
     }

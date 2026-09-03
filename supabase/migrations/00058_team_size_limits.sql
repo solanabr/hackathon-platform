@@ -7,8 +7,12 @@ alter table public.hackathons
   add column if not exists team_size_min int not null default 2 check (team_size_min >= 1),
   add column if not exists team_size_max int not null default 4 check (team_size_max >= 1);
 
-alter table public.hackathons
-  add constraint hackathons_team_size_max_gte_min check (team_size_max >= team_size_min);
+do $$
+begin
+  alter table public.hackathons
+    add constraint hackathons_team_size_max_gte_min check (team_size_max >= team_size_min);
+exception when duplicate_object then null;
+end $$;
 
 update public.hackathons
 set team_size_min = (metadata->>'team_size_min')::int
@@ -424,6 +428,15 @@ begin
   update public.team_applications
   set status = 'accepted', decided_at = now(), decided_by = v_user
   where id = p_application_id;
+
+  update public.team_seekers
+  set active = false, updated_at = now()
+  where user_id = v_app.user_id and hackathon_id = v_app.hackathon_id and active;
+
+  update public.team_applications
+  set status = 'withdrawn', decided_at = now()
+  where user_id = v_app.user_id and hackathon_id = v_app.hackathon_id
+    and status = 'pending' and id <> p_application_id;
 end;
 $$;
 
