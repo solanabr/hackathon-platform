@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { trackClient } from "@/lib/analytics-browser";
@@ -33,6 +33,14 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
   const supabase = createClient();
+
+  useEffect(() => {
+    if (callbackError) {
+      trackClient("auth_failed", { provider: "unknown", reason: callbackError });
+    }
+    // Only relevant to the redirect that produced this page load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // `next` carries the page the user came from (requireUser/middleware);
   // `redirect` is kept as a legacy alias for invite links that still use it.
   const postLoginPath =
@@ -54,6 +62,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     if (error) {
       setError(`Não foi possível conectar com ${PROVIDER_LABELS[provider]}. Tente novamente.`);
       setLoading(null);
+      trackClient("auth_failed", { provider, reason: "oauth_request_failed" });
     }
   }
 
@@ -67,6 +76,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     e.preventDefault();
     setError(null);
     setStage("sending");
+    trackClient("auth_provider_clicked", { provider: "email" });
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: redirectTarget() },
@@ -74,6 +84,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     if (error) {
       setError("Não foi possível enviar o código. Confira o e-mail e tente de novo.");
       setStage("idle");
+      trackClient("auth_failed", { provider: "email", reason: "otp_request_failed" });
       return;
     }
     setStage("sent");
@@ -91,8 +102,10 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     if (error) {
       setError("Código inválido ou expirado. Peça um novo.");
       setStage("sent");
+      trackClient("auth_failed", { provider: "email", reason: "otp_verify_failed" });
       return;
     }
+    trackClient("auth_code_verified");
     // Route back through /auth/callback when no deep link was requested, so a
     // signed-in participant lands on their painel instead of the home gallery.
     window.location.assign(postLoginPath ?? "/auth/callback");
@@ -206,6 +219,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
               id="email"
               name="email"
               type="email"
+              inputMode="email"
               autoComplete="email"
               spellCheck={false}
               required
