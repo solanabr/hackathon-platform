@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { registerForHackathon } from "@/app/(app)/h/[slug]/register/actions";
+import { trackClient } from "@/lib/analytics-browser";
 
 export function RegistrationForm({
   slug,
@@ -19,6 +20,10 @@ export function RegistrationForm({
   const [error, setError] = useState<string | null>(null);
   const [registered, setRegistered] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    trackClient("registration_form_viewed", { edition: slug });
+  }, [slug]);
 
   if (registered) {
     return (
@@ -79,8 +84,10 @@ export function RegistrationForm({
         startTransition(async () => {
           setError(null);
           const result = await registerForHackathon(slug, formData);
-          if (result.error) setError(result.error);
-          else setRegistered(true);
+          if (result.error) {
+            setError(result.error);
+            trackClient("registration_form_error", { edition: slug, field: "server" });
+          } else setRegistered(true);
         })
       }
       className="space-y-5"
