@@ -19,6 +19,13 @@ export function TrackedCta({
   children: React.ReactNode;
 }) {
   const fire = () => trackClient(event, properties);
+  if (href.startsWith("#")) {
+    return (
+      <a href={href} className={className} onClick={fire}>
+        {children}
+      </a>
+    );
+  }
   if (href.startsWith("http")) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={className} onClick={fire}>
