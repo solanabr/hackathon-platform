@@ -16,6 +16,12 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/h/a/b")).toBe(false);
   });
 
+  it("keeps the guides public", () => {
+    expect(isPublicRoute("/guias")).toBe(true);
+    expect(isPublicRoute("/guias/do-earn-ao-pix")).toBe(true);
+    expect(isPublicRoute("/guiasx")).toBe(false);
+  });
+
   it("keeps auth and cron routes public", () => {
     expect(isPublicRoute("/auth")).toBe(true);
     expect(isPublicRoute("/auth/callback")).toBe(true);

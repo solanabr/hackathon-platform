@@ -23,6 +23,7 @@ const COLUMNS = [
       { label: "superteam.com.br", href: "https://superteam.com.br" },
       { label: "Wiki", href: "https://wiki.superteam.com.br" },
       { label: "Earn", href: "https://earn.superteam.fun" },
+      { label: "Guia: do Earn ao Pix", href: "/guias/do-earn-ao-pix" },
     ],
   },
   {
