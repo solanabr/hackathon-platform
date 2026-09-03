@@ -127,7 +127,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
             style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
           />
           <div
-            className="morth animate-float-b absolute hidden bg-emerald sm:-right-36 sm:-top-16 sm:block sm:h-[20rem] sm:w-[20rem] lg:-right-44 lg:-top-24 lg:h-[28rem] lg:w-[28rem] 2xl:-right-56 2xl:h-[36rem] 2xl:w-[36rem]"
+            className="morth animate-float-b absolute hidden bg-emerald sm:-right-36 sm:top-2 sm:block sm:h-[20rem] sm:w-[20rem] lg:-right-44 lg:top-3 lg:h-[28rem] lg:w-[28rem] 2xl:-right-56 2xl:h-[36rem] 2xl:w-[36rem]"
             style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
           />
         </div>
