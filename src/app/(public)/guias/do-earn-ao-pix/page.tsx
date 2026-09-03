@@ -189,36 +189,38 @@ function Sub({ n, children, hint }: { n: string; children: ReactNode; hint?: str
 export default function GuiaEarnPixPage() {
   return (
     <div>
-      {/* Cover: the same ink band as the printed guide, facts and the money path. */}
-      <section className="-mt-24 bg-green-dark px-4 pb-16 pt-40 text-surface sm:px-6 sm:pb-24 sm:pt-48">
+      <section className="px-4 pt-10 sm:px-6 sm:pt-14">
         <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-yellow">Guia prático</p>
-          <h1 className="mt-4 font-heading text-5xl font-black leading-[0.95] tracking-tight text-surface [font-stretch:110%] sm:text-7xl">
-            Do Earn <br /> ao Pix
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">Guia prático</p>
+          <h1 className="mt-4 font-heading font-black uppercase leading-[0.95] tracking-tight text-ink">
+            <span className="block text-5xl [font-stretch:120%] sm:text-7xl">Do Earn</span>
+            <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-3xl text-yellow [font-stretch:110%] sm:text-5xl">
+              ao Pix
+            </span>
           </h1>
-          <p className="mt-4 font-heading text-xl font-bold text-yellow sm:text-2xl">Como receber sua grant em reais</p>
-          <p className="mt-4 max-w-2xl text-pretty leading-relaxed text-surface/75 sm:text-lg">
+          <p className="mt-6 font-heading text-xl font-bold text-ink sm:text-2xl">Como receber sua grant em reais</p>
+          <p className="mt-3 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
             Passo a passo completo: criar sua conta no Superteam Earn, sacar para sua wallet, converter USDG em USDC e
             transformar tudo em reais via Pix.
           </p>
-          <dl className="mt-10 grid grid-cols-3 gap-3 sm:gap-4">
+          <dl className="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
             {[
               ["5", "passos"],
               ["~30", "minutos"],
               ["R$ 0", "de custo"],
             ].map(([v, l]) => (
-              <div key={l} className="rounded-2xl border-2 border-surface/20 px-4 py-4 sm:px-6">
-                <dt className="font-heading text-3xl font-black text-surface sm:text-4xl">{v}</dt>
-                <dd className="mt-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-yellow sm:text-xs">{l}</dd>
+              <div key={l} className="rounded-2xl border-2 border-green-dark bg-surface-raised px-4 py-4 shadow-sticker sm:px-6">
+                <dt className="font-heading text-3xl font-black text-ink sm:text-4xl">{v}</dt>
+                <dd className="mt-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-emerald sm:text-xs">{l}</dd>
               </div>
             ))}
           </dl>
-          <p className="mt-10 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-yellow">O caminho do dinheiro</p>
+          <p className="mt-8 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">O caminho do dinheiro</p>
           <ol className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold">
             {["Superteam Earn", "Phantom Wallet", "USDG", "USDC · Jupiter", "Pix · 4P"].map((s, i, arr) => (
               <li key={s} className="flex items-center gap-2">
-                <span className={`rounded-full px-3 py-1.5 ${i === arr.length - 1 ? "bg-yellow text-green-dark" : "bg-emerald text-surface"}`}>{s}</span>
-                {i < arr.length - 1 && <ArrowRightIcon size={14} weight="bold" className="text-surface/50" aria-hidden />}
+                <span className={`rounded-full border-2 border-green-dark px-3 py-1.5 ${i === arr.length - 1 ? "bg-yellow text-green-dark" : "bg-surface-raised text-ink"}`}>{s}</span>
+                {i < arr.length - 1 && <ArrowRightIcon size={14} weight="bold" className="text-green-dark/40" aria-hidden />}
               </li>
             ))}
           </ol>
@@ -230,7 +232,7 @@ export default function GuiaEarnPixPage() {
           {/* Overview */}
           <section className="py-16 sm:py-20">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">Visão geral</p>
-            <h2 className="mt-2 font-heading text-3xl font-black tracking-tight text-ink [font-stretch:110%] sm:text-4xl">O que você vai fazer</h2>
+            <h2 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight text-ink [font-stretch:118%] sm:text-4xl">O que você vai fazer</h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-ink/80">
               Cinco passos, do cadastro no Superteam Earn até os reais caírem no seu Pix. Siga na ordem, cada passo
               depende do anterior.
@@ -481,7 +483,7 @@ export default function GuiaEarnPixPage() {
           {/* Troubleshooting */}
           <section className="border-t-2 border-green-dark/10 py-16" id="deu-errado">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">Deu errado?</p>
-            <h2 className="mt-2 font-heading text-3xl font-black tracking-tight text-ink [font-stretch:110%] sm:text-4xl">
+            <h2 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight text-ink [font-stretch:118%] sm:text-4xl">
               Respira, quase tudo tem solução
             </h2>
             <Callout tone="danger" title="Muito importante">
@@ -518,34 +520,32 @@ export default function GuiaEarnPixPage() {
         </article>
       </div>
 
-      {/* End band */}
-      <section className="bg-green-dark px-4 py-16 text-surface sm:px-6 sm:py-24">
-        <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-yellow">Fim do guia</p>
-          <h2 className="mt-4 font-heading text-5xl font-black leading-[0.95] tracking-tight [font-stretch:110%] sm:text-7xl">
-            <span className="text-yellow">Pronto!</span>
-            <br />
-            Grant recebida, reais na conta.
+      <section className="px-4 pb-4 pt-16 sm:px-6 sm:pt-20">
+        <div className="mx-auto max-w-4xl rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-10">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">Fim do guia</p>
+          <h2 className="mt-4 font-heading font-black uppercase leading-[0.95] tracking-tight text-ink">
+            <span className="inline-block -rotate-1 bg-yellow px-3 py-1 text-4xl text-green-dark [font-stretch:120%] sm:text-6xl">Pronto!</span>
+            <span className="mt-3 block text-3xl [font-stretch:118%] sm:text-5xl">Grant recebida, reais na conta.</span>
           </h2>
-          <p className="mt-6 max-w-xl leading-relaxed text-surface/75 sm:text-lg">
-            Depois do primeiro saque, o processo inteiro leva menos de <strong className="text-surface">10 minutos</strong>.
-            Ficou com dúvida em algum passo? Me chama:
+          <p className="mt-5 max-w-xl leading-relaxed text-ink/80 sm:text-lg">
+            Depois do primeiro saque, o processo inteiro leva menos de <strong className="text-ink">10 minutos</strong>. Ficou
+            com dúvida em algum passo? Me chama:
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             {[
-              ["WhatsApp", "@Foka", "https://wa.me/5511958526267", "bg-[#25d366] text-green-dark", <WhatsappLogoIcon key="w" size={18} weight="bold" aria-hidden />],
-              ["Telegram", "@soufoka", "https://t.me/soufoka", "bg-[#2aabee] text-green-dark", <TelegramLogoIcon key="t" size={18} weight="bold" aria-hidden />],
-              ["X", "@sou_foka", "https://twitter.com/sou_foka", "bg-surface text-green-dark", <XLogoIcon key="x" size={18} weight="bold" aria-hidden />],
-            ].map(([label, handle, href, cls, icon]) => (
+              ["WhatsApp", "@Foka", "https://wa.me/5511958526267", <WhatsappLogoIcon key="w" size={18} weight="bold" aria-hidden />],
+              ["Telegram", "@soufoka", "https://t.me/soufoka", <TelegramLogoIcon key="t" size={18} weight="bold" aria-hidden />],
+              ["X", "@sou_foka", "https://twitter.com/sou_foka", <XLogoIcon key="x" size={18} weight="bold" aria-hidden />],
+            ].map(([label, handle, href, icon]) => (
               <a
                 key={label as string}
                 href={href as string}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-transform duration-150 hover:-translate-y-0.5 ${cls}`}
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark bg-surface-raised px-4 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
               >
                 {icon}
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-70">{label}</span>
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-60">{label}</span>
                 {handle}
                 <ArrowUpRightIcon size={14} weight="bold" aria-hidden />
               </a>
