@@ -18,7 +18,7 @@ select
   '2026-09-12T23:59:00-03:00',
   'external',
   'https://superteam.fun/earn/s/superteambr',
-  'https://chat.whatsapp.com/HPIu1YV3mri5QOGf0gUMTO',
+  'https://chat.whatsapp.com/BVXYPlcB9R853QnvgzpCRT?mode=gi_t',
   'US$ 3.000 + créditos Replit',
   $md$
 ## Como funciona
