@@ -229,6 +229,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
                 height={1080}
                 priority
                 className="h-auto w-full"
+                quality={90}
                 sizes="(max-width: 1024px) 100vw, 45vw"
               />
               </div>

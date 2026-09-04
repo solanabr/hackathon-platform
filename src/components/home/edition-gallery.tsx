@@ -87,6 +87,7 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
                       alt=""
                       fill
                       loading="lazy"
+                      quality={90}
                       sizes="(min-width: 1024px) 550px, 100vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                     />

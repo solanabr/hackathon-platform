@@ -5,6 +5,8 @@ import { ALLOWED_IMAGE_HOSTS } from "./src/lib/image-hosts";
 const config: NextConfig = {
   reactStrictMode: true,
   images: {
+    // Edition covers carry small type; 75 smears it on retina cards.
+    qualities: [75, 90],
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
       ...ALLOWED_IMAGE_HOSTS.map((hostname) => ({ protocol: "https" as const, hostname })),
