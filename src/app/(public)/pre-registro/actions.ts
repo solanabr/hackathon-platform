@@ -59,6 +59,16 @@ export async function preRegister(
     return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente.", field: "server" };
   }
 
+  // Re-saving the form must not count as a second registration in the funnel.
+  const { data: existing, error: existingError } = await supabase
+    .from("hackathon_registrations")
+    .select("terms_accepted_at")
+    .eq("hackathon_id", hackathon.id)
+    .eq("user_id", state.userId)
+    .maybeSingle();
+  if (existingError) logQueryError("preRegistro.existingRegistration", existingError);
+  const alreadyComplete = !!existing?.terms_accepted_at;
+
   const { error: regError } = await supabase.from("hackathon_registrations").upsert(
     {
       hackathon_id: hackathon.id,
@@ -72,7 +82,7 @@ export async function preRegister(
     return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente.", field: "server" };
   }
 
-  track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG, role });
+  if (!alreadyComplete) track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG, role });
   revalidatePath("/pre-registro");
   return { ok: true };
 }

@@ -1,5 +1,6 @@
 import { NextResponse, after, type NextRequest } from "next/server";
 import { createPostHogServer } from "@/lib/posthog-server";
+import { CONSENT_KEY, readConsentCookie } from "@/lib/consent";
 import { sendSubmissionReceived, siteUrl } from "@/lib/email";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const analyticsConsented = readConsentCookie(request.cookies.get(CONSENT_KEY)?.value);
+
   // The RPC only lets the team leader through, so the session email is the
   // leader's. after() runs once the response is flushed and, unlike a floated
   // promise, survives the serverless instance being frozen at flush time.
@@ -87,8 +90,9 @@ export async function POST(request: NextRequest) {
         : row?.submissions;
 
       // The event the client can't see reliably: the moment a team's project
-      // actually lands. Same distinct id the browser identifies with.
-      const ph = createPostHogServer();
+      // actually lands. Same distinct id the browser identifies with, same
+      // cookie-banner gate.
+      const ph = analyticsConsented ? createPostHogServer() : null;
       const leaderId = claimsData.claims.sub as string | undefined;
       if (ph && leaderId) {
         await ph

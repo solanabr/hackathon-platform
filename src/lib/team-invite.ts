@@ -165,6 +165,7 @@ export async function addMemberToTeam(
   }
 
   track(state.userId, "member_invited", {
+    edition: edition?.slug ?? null,
     team_id: teamId,
     via,
     has_account: !!existingUser,

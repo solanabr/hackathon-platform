@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button";
 import { acceptTeamInvite, declineTeamInvite } from "@/app/(app)/h/[slug]/team/actions";
 import { trackClient } from "@/lib/analytics-browser";
 
-export function PendingInviteActions({ teamId, blocked }: { teamId: string; blocked: boolean }) {
+export function PendingInviteActions({
+  teamId,
+  slug,
+  blocked,
+}: {
+  teamId: string;
+  slug: string;
+  blocked: boolean;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [declining, setDeclining] = useState(false);
@@ -17,7 +25,7 @@ export function PendingInviteActions({ teamId, blocked }: { teamId: string; bloc
     start(async () => {
       const result = await action({ teamId });
       if (result.ok) {
-        trackClient(event, { team_id: teamId });
+        trackClient(event, { edition: slug, team_id: teamId });
         router.refresh();
       } else setError(result.error);
     });
