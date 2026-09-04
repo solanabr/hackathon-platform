@@ -6,6 +6,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/user-state";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { track } from "@/lib/analytics-server";
+import { attributionFromFormData } from "@/lib/attribution";
 
 export async function registerForHackathon(
   slug: string,
@@ -44,19 +45,29 @@ export async function registerForHackathon(
   const alreadyComplete =
     !!existing?.terms_accepted_at && (!needsLuma || !!existing?.luma_confirmed_at);
 
+  // First touch only: a re-submit never overwrites the attribution the row
+  // was created with.
+  const attribution = attributionFromFormData(formData);
   const { error } = await supabase.from("hackathon_registrations").upsert(
     {
       hackathon_id: hackathon.id,
       user_id: state.userId,
       luma_confirmed_at: now,
       terms_accepted_at: now,
+      ...(!existing && attribution),
     },
     { onConflict: "hackathon_id,user_id" },
   );
 
   if (error) return { error: "Não foi possível concluir a inscrição. Tente novamente." };
 
-  if (!alreadyComplete) track(state.userId, "registration_completed", { edition: slug });
+  if (!alreadyComplete) {
+    track(state.userId, "registration_completed", {
+      edition: slug,
+      utm_source: attribution.utm_source,
+      utm_campaign: attribution.utm_campaign,
+    });
+  }
   revalidatePath(`/h/${slug}/dashboard`);
   return {};
 }

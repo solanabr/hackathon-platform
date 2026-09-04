@@ -91,12 +91,14 @@ export function RoleManager({
           <input
             name="email"
             type="email"
+            aria-label="E-mail"
             required
             placeholder="e-mail"
             className="min-h-11 min-w-0 flex-1 basis-56 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors placeholder:text-muted/60 focus:border-emerald"
           />
           <select
             name="role"
+            aria-label="Papel"
             className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
           >
             <option value="admin">Admin</option>
@@ -104,6 +106,7 @@ export function RoleManager({
           </select>
           <select
             name="hackathon_id"
+            aria-label="Edição"
             className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
           >
             <option value="">Toda a plataforma</option>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { trackClient } from "@/lib/analytics-browser";
 import { pushGtmEvent } from "@/components/analytics/google-tag-manager";
+import { AttributionFields } from "@/components/analytics/attribution-fields";
 import { preRegister, type RegistrationField } from "./actions";
 import { isRoleOption, ROLE_OPTIONS } from "./constants";
 import type { User } from "@/types/db";
@@ -36,6 +37,7 @@ export function PreregForm({ profile }: { profile: User | null }) {
 
   return (
     <form action={formAction} className="space-y-4">
+      <AttributionFields />
       <div>
         <Label htmlFor="full_name">Nome completo</Label>
         <Input id="full_name" name="full_name" required defaultValue={profile?.full_name ?? ""} />
@@ -70,12 +72,16 @@ export function PreregForm({ profile }: { profile: User | null }) {
         </Select>
       </div>
 
-      <label className="flex items-start gap-3 text-sm leading-relaxed text-muted">
+      <label
+        htmlFor="terms_accepted"
+        className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm leading-relaxed text-muted"
+      >
         <input
+          id="terms_accepted"
           type="checkbox"
           name="terms_accepted"
           required
-          className="mt-1 h-4 w-4 rounded border-green-dark/30 text-emerald focus:ring-emerald/30"
+          className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-green-dark/30 text-emerald focus:ring-emerald/30"
         />
         <span>
           Li e aceito os{" "}

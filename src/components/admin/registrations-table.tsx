@@ -32,6 +32,7 @@ export function RegistrationsTable({ rows }: { rows: RegistrationTableRow[] }) {
     <div className="mt-4">
       <input
         type="search"
+        aria-label="Buscar por nome ou e-mail"
         value={search}
         placeholder="Buscar por nome ou e-mail"
         onChange={(e) => {

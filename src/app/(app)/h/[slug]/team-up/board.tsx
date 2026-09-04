@@ -272,6 +272,7 @@ function TeamCard({
             expanded ? (
               <div className="space-y-2">
                 <textarea
+                  aria-label="Mensagem para o time"
                   value={message}
                   onChange={(e) => setMessage(e.target.value.slice(0, APPLY_MESSAGE_MAX))}
                   maxLength={APPLY_MESSAGE_MAX}

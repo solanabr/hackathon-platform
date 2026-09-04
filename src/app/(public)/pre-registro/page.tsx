@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import Image from "next/image";
-import { AuthForm } from "@/components/auth/auth-form";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -57,6 +56,9 @@ export default async function PreRegistroPage() {
     resolveAuthenticatedUserState(),
     getHackathonBySlug(COLOSSEUM_SLUG).catch(() => null),
   ]);
+  // Step 1 (Conta) lives on /auth so every entry point shares one login
+  // funnel and comes back here through `next`.
+  if (!state) redirect("/auth?next=/pre-registro");
 
   let registered = false;
   let colosseumConfirmed = false;
@@ -73,23 +75,12 @@ export default async function PreRegistroPage() {
     colosseumConfirmed = Boolean(reg?.luma_confirmed_at);
   }
 
-  const activeStep: 1 | 2 | 3 = !state ? 1 : registered ? 3 : 2;
+  const activeStep: 2 | 3 = registered ? 3 : 2;
 
   return (
     <main className="relative bg-surface">
       <div className="relative z-10 mx-auto flex max-w-xl flex-col px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10">
         <StepIndicator active={activeStep} />
-
-        {activeStep === 1 && (
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              <h1 className="sr-only">Faça seu cadastro</h1>
-              <Suspense fallback={null}>
-                <AuthForm defaultNext="/pre-registro" />
-              </Suspense>
-            </div>
-          </div>
-        )}
 
         {activeStep === 2 && (
           <Card sticker className="p-8 sm:p-10">
@@ -100,7 +91,7 @@ export default async function PreRegistroPage() {
               Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Crypto World&apos;s Fair.
             </p>
             <div className="mt-6">
-              <PreregForm profile={state!.profile} />
+              <PreregForm profile={state.profile} />
             </div>
           </Card>
         )}

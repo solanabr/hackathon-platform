@@ -40,7 +40,10 @@ export function AddMemberForm({ teamId }: { teamId: string }) {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row">
         <Input
+          id="member_email"
+          name="email"
           type="email"
+          aria-label="E-mail do integrante"
           required
           placeholder="email@dotime.com"
           value={email}

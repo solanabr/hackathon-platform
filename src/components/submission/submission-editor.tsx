@@ -311,12 +311,16 @@ export function SubmissionEditor({
             </p>
           </div>
           <div className="sm:col-span-2">
-            <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
+            <label
+              htmlFor="github_access_granted"
+              className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4 has-[:disabled]:cursor-not-allowed"
+            >
               <input
+                id="github_access_granted"
                 type="checkbox"
                 checked={form.github_access_granted}
                 onChange={(e) => set("github_access_granted", e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-emerald"
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-emerald disabled:cursor-not-allowed"
               />
               <span className="text-sm text-ink">
                 Confirmo que adicionei{" "}
@@ -359,8 +363,9 @@ export function SubmissionEditor({
         </div>
 
         <div>
-          <Label hint="JPG / PNG, 250 × 250 px, até 5 MB">Imagem de capa do projeto</Label>
+          <Label htmlFor="project_image" hint="JPG / PNG, 250 × 250 px, até 5 MB">Imagem de capa do projeto</Label>
           <ImageUpload
+            inputId="project_image"
             teamId={teamId}
             currentPath={imagePath}
             currentUrl={imageUrl}

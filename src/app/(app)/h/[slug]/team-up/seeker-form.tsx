@@ -104,6 +104,8 @@ export function SeekerForm({
 
       <div className="mt-4">
         <textarea
+          id="seeker_note"
+          aria-label="Uma frase sobre você e o que procura"
           value={note}
           onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))}
           maxLength={NOTE_MAX}

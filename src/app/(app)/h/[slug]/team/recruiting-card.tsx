@@ -86,6 +86,8 @@ export function RecruitingCard({
 
       <div className="mt-4">
         <textarea
+          id="recruiting_note"
+          aria-label="Uma frase sobre o que o time procura"
           value={note}
           onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))}
           maxLength={NOTE_MAX}
