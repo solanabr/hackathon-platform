@@ -17,6 +17,7 @@ import {
   isSubmissionWindowOpen,
   submissionTarget,
   teamLimits,
+  editionUsesMentorship,
 } from "@/lib/hackathon";
 import { ExternalSubmissionPanel } from "@/components/edition/external-submission-panel";
 import {
@@ -26,6 +27,8 @@ import {
   membersPendingRegistration,
 } from "@/lib/registration";
 import { getPendingTeamForHackathon, getTeamForHackathon } from "@/lib/team";
+import { TRACK_LABEL } from "@/lib/mentorship";
+import { getMentorshipBoard } from "@/lib/mentorship-server";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
@@ -69,6 +72,11 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
       .eq("hackathon_id", hackathon.id),
   ]);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
+
+  // After the registration redirect, not inside the batch above: the board RPC
+  // raises for an unregistered caller, and only a team has mentorships at all.
+  const mentorship =
+    snapshot && editionUsesMentorship(hackathon) ? await getMentorshipBoard(hackathon.id) : null;
 
   if (scheduleResult.error) logQueryError("painel.scheduleCount", scheduleResult.error);
   const totalCount = scheduleResult.count;
@@ -382,6 +390,34 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
           <aside className="space-y-6">
             <EditionInfoCard hackathon={hackathon} />
+            {mentorship && (mentorship.mentors.length > 0 || mentorship.bookings.length > 0) && (
+              <Card sticker className="p-6 sm:p-7">
+                <h2 className="font-heading text-xl font-bold">Mentorias</h2>
+                {mentorship.bookings.length > 0 ? (
+                  <ul className="mt-2 space-y-1 text-sm text-muted">
+                    {mentorship.bookings.map((booking) => (
+                      <li key={booking.id}>
+                        <span className="font-bold text-ink">{TRACK_LABEL[booking.track]}:</span>{" "}
+                        {booking.mentor_name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-sm leading-relaxed text-muted">
+                    Seu time escolhe um mentor técnico e um de negócios. O horário é marcado na
+                    agenda do mentor.
+                  </p>
+                )}
+                <Link
+                  href={`/h/${slug}/mentorship`}
+                  className={`${mentorship.isLeader ? "btn-primary" : "btn-secondary"} mt-4 inline-block px-5 py-2 text-sm`}
+                >
+                  {mentorship.isLeader && mentorship.bookings.length === 0
+                    ? "Escolher mentores"
+                    : "Ver mentorias"}
+                </Link>
+              </Card>
+            )}
             {(totalCount ?? 0) > 0 && (
               <Card sticker className="p-6 sm:p-7">
                 <h2 className="font-heading text-xl font-bold">Conteúdos</h2>

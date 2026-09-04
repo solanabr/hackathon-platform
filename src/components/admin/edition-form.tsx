@@ -52,6 +52,24 @@ export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
                 const id = `field-${String(field.key)}`;
                 const wide = field.kind === "textarea";
 
+                if (field.kind === "boolean") {
+                  return (
+                    <div key={String(field.key)} className="flex items-start gap-3 pt-1">
+                      <input
+                        id={id}
+                        name={String(field.key)}
+                        type="checkbox"
+                        defaultChecked={Boolean(value)}
+                        className="mt-1 h-4 w-4 accent-emerald"
+                      />
+                      <div>
+                        <Label htmlFor={id}>{field.label}</Label>
+                        {field.help && <p className="mt-1 text-xs text-muted">{field.help}</p>}
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={String(field.key)} className={wide ? "sm:col-span-2" : ""}>
                     <Label htmlFor={id}>{field.label}</Label>

@@ -8,6 +8,7 @@ const TABS = [
   { path: "/page", label: "Página" },
   { path: "/content", label: "Conteúdos" },
   { path: "/sponsors", label: "Marcas" },
+  { path: "/mentorship", label: "Mentores" },
   { path: "/judges", label: "Jurados" },
   { path: "/finalistas", label: "Finalistas" },
 ] as const;

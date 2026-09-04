@@ -61,6 +61,8 @@ export type Hackathon = {
   // Per-edition team size bounds (00058); platform-created teams only.
   team_size_min: number;
   team_size_max: number;
+  // Opt-in mentorship module (00060); only meaningful for platform editions.
+  mentorship_enabled: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -152,6 +154,35 @@ export type HackathonSponsor = {
   url: string | null;
   position: number;
   created_at: string;
+};
+
+export type MentorTrack = "tecnico" | "negocios";
+
+export type HackathonMentor = {
+  id: string;
+  hackathon_id: string;
+  track: MentorTrack;
+  name: string;
+  specialty: string | null;
+  booking_url: string;
+  available: boolean;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MentorshipBooking = {
+  id: string;
+  hackathon_id: string;
+  team_id: string;
+  mentor_id: string;
+  track: MentorTrack;
+  claimed_by: string | null;
+  claimed_at: string;
+  released_at: string | null;
+  released_by: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type SectionKind = "markdown" | "phases" | "schedule" | "deliverables" | "prizes";
