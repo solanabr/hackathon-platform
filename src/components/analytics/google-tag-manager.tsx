@@ -13,6 +13,16 @@ declare global {
   }
 }
 
+/** Custom GTM event, for triggers the marketing team owns in the container. */
+export function pushGtmEvent(event: string): void {
+  try {
+    window.dataLayer = window.dataLayer ?? [];
+    window.dataLayer.push({ event });
+  } catch {
+    // Analytics must never break the UI.
+  }
+}
+
 /** Google Consent Mode v2: tags in the container only get analytics and ad
  * storage after the cookie banner's "Aceitar". Called from the banner; the
  * boot script below applies the stored choice for returning visitors. */

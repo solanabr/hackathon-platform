@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { trackClient } from "@/lib/analytics-browser";
+import { pushGtmEvent } from "@/components/analytics/google-tag-manager";
 import { preRegister, type RegistrationField } from "./actions";
 import { isRoleOption, ROLE_OPTIONS } from "./constants";
 import type { User } from "@/types/db";
@@ -18,6 +19,8 @@ export function PreregForm({ profile }: { profile: User | null }) {
     ) => {
       const result = await preRegister(prev, formData);
       if (result.ok) {
+        // Fires only on backend confirmation, never on the click.
+        pushGtmEvent("inscricao_concluida_hackathon");
         router.refresh();
       } else {
         trackClient("registration_form_error", { field: result.field });
