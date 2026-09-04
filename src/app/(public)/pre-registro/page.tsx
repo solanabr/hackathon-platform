@@ -70,14 +70,15 @@ export default async function PreRegistroPage() {
   ]);
   // Step 1 (Conta) lives on /auth so every entry point shares one login
   // funnel and comes back here through `next`.
-  if (!state) redirect("/auth?next=/pre-registro");
+  if (!claims) redirect("/auth?next=/pre-registro");
 
   // The registration row only needs the user id, so it loads alongside the
   // profile instead of queuing behind it.
   const [state, reg] = await Promise.all([
     resolveAuthenticatedUserState(),
-    claims && hackathon ? loadRegistration(claims.userId, hackathon.id) : Promise.resolve(null),
+    hackathon ? loadRegistration(claims.userId, hackathon.id) : Promise.resolve(null),
   ]);
+  if (!state) redirect("/auth?next=/pre-registro");
   const registered = Boolean(reg);
   const colosseumConfirmed = Boolean(reg?.luma_confirmed_at);
 
