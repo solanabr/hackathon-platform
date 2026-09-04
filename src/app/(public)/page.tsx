@@ -349,8 +349,11 @@ export default async function HomePage() {
 
               <p className="mt-9 border-t border-surface/20 pt-5 text-pretty text-sm leading-relaxed text-surface/80">
                 Não é só hype:{" "}
-                <span className="font-semibold text-surface">Visa, PayPal, BlackRock, J.P. Morgan e Western Union</span>{" "}
-                já emitem e liquidam ativos na rede.
+                <span className="font-semibold text-surface">
+                  Visa, Mastercard, Stripe, PayPal, BlackRock, J.P. Morgan, Western Union, SpaceX e Kalshi
+                </span>{" "}
+                já emitem e liquidam ativos na rede. E a Solana está nas maiores bolsas do planeta, de
+                Wall Street à B3.
               </p>
             </div>
           </Reveal>
