@@ -22,6 +22,14 @@
 -- a slot. `available` is the manual off switch for a mentor whose agenda
 -- filled, which is a different thing from counting.
 
+-- Most editions never run a mentorship day, so the module is opt-in per
+-- edition. Admin flips it at /admin/h/[slug]; the RPCs refuse while it is off.
+alter table public.hackathons
+  add column if not exists mentorship_enabled boolean not null default false;
+
+update public.hackathons set mentorship_enabled = true
+where slug = 'solana-cursor-passo-fundo-2026';
+
 create table public.hackathon_mentors (
   id uuid primary key default gen_random_uuid(),
   hackathon_id uuid not null references public.hackathons(id) on delete cascade,
@@ -118,8 +126,18 @@ begin
   end if;
 
   if not exists (
+    select 1 from public.hackathons h
+    where h.id = p_hackathon_id and h.mentorship_enabled
+  ) then
+    raise exception 'mentorship_disabled';
+  end if;
+
+  -- Same gate as team_up_board / apply_to_team (00053): a bare registrations
+  -- row is not "registered".
+  if not exists (
     select 1 from public.hackathon_registrations
     where user_id = v_user and hackathon_id = p_hackathon_id
+      and luma_confirmed_at is not null and terms_accepted_at is not null
   ) then
     raise exception 'not_registered';
   end if;
@@ -203,7 +221,7 @@ begin
   v_user := auth.uid();
   if v_user is null then raise exception 'not_authenticated'; end if;
 
-  select m.id, m.hackathon_id, m.track
+  select m.id, m.hackathon_id, m.track, h.mentorship_enabled
   into v_mentor
   from public.hackathon_mentors m
   join public.hackathons h on h.id = m.hackathon_id and h.status <> 'draft'
@@ -212,6 +230,15 @@ begin
     and m.available;
 
   if v_mentor.id is null then raise exception 'mentor_not_found'; end if;
+  if not v_mentor.mentorship_enabled then raise exception 'mentorship_disabled'; end if;
+
+  if not exists (
+    select 1 from public.hackathon_registrations
+    where user_id = v_user and hackathon_id = v_mentor.hackathon_id
+      and luma_confirmed_at is not null and terms_accepted_at is not null
+  ) then
+    raise exception 'not_registered';
+  end if;
 
   -- The team is resolved from the mentor's edition, never from the caller: a
   -- leader in two editions must not spend edition A's slot on edition B. The
@@ -245,30 +272,3 @@ revoke execute on function public.mentorship_board(uuid) from public, anon;
 revoke execute on function public.book_mentorship(uuid) from public, anon;
 grant execute on function public.mentorship_board(uuid) to authenticated;
 grant execute on function public.book_mentorship(uuid) to authenticated;
-
--- Seeded here so the admin screen is not on the critical path the night before
--- the mentorship day: the feature works even if nobody opens /admin.
---
--- Marcelo Barella (técnico, AI e programação) is missing on purpose — his
--- booking link did not exist when this was written, and a mentor without an
--- agenda cannot be chosen. Add him from /admin/h/[slug]/mentorship the moment
--- the link arrives.
-insert into public.hackathon_mentors (hackathon_id, track, name, specialty, booking_url)
-select h.id, m.track, m.name, m.specialty, m.booking_url
-from public.hackathons h
-cross join (values
-  ('tecnico',  'Ronaldo Pereira',   'Blockchain e Solana',
-   'https://calendar.app.google/cXiWp61ByptQ5Lwg8'),
-  ('tecnico',  'Douglas Alexandre', 'Blockchain e Solana',
-   'https://cal.com/douglas-alexandre-nsd/mentorias-hackathon-da-solana'),
-  ('negocios', 'Matheus Draau',     'Produto, negócios e pitch',
-   'https://calendar.app.google/xG5SfJz8nw7KTDqT9'),
-  ('negocios', 'Bernardo Nery',     'Produto, negócios e pitch',
-   'https://calendar.app.google/2ytJGw4GjaahBR4i9'),
-  ('negocios', 'Lucas Galvão',      'Negócios e jurídico',
-   'https://calendar.app.google/nLeb4u4bAMdLKXZXA')
-) as m(track, name, specialty, booking_url)
-where h.slug = 'solana-cursor-passo-fundo-2026'
-  and not exists (
-    select 1 from public.hackathon_mentors x where x.hackathon_id = h.id
-  );
