@@ -1,0 +1,72 @@
+name: Claude Code Review
+
+# One review per PR, re-run only when the PR is ready or when someone asks
+# with a fresh push after review. Drafts, bots and docs-only changes skip.
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "public/**"
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(fromJSON('["dependabot[bot]","github-actions[bot]","vercel[bot]"]'), github.event.pull_request.user.login)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Review the pull request
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: >-
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view *),Bash(gh pr diff *),Bash(git diff *),Bash(git log *),Bash(npm test *),Bash(npx vitest *),Bash(npx tsc *)"
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} of ${{ github.repository }}.
+            Get the diff with `gh pr diff ${{ github.event.pull_request.number }}`; read surrounding files as needed.
+            CLAUDE.md is the project contract. Check the diff against it, in this priority:
+
+            1. Authorization. Every server action or route that writes with `createServiceRoleClient()`
+               gates on `requireUser` / `requireAdmin` / `requireEditionAdmin*` first. Anything under
+               `/admin/h/[slug]` uses the edition-scoped gate and filters every mutation on
+               `gate.hackathon.id` as well as the row id. Member flows go through the SECURITY DEFINER
+               RPCs, not direct cross-table writes. Reads that feed analytics or emails use the right
+               client for who the caller is (RLS hides rows from non-members).
+            2. Data safety. Migrations are re-runnable (IF NOT EXISTS, DROP ... IF EXISTS) and never
+               drop clauses from an existing function without carrying them over. Query errors go
+               through `unwrap()` or `logQueryError()`, never swallowed; `.maybeSingle()` over `.single()`.
+            3. Correctness. Wrong or inverted conditions, missing awaits, `cookies()`/`headers()`
+               called outside request scope, `after()` misuse, RLS assumptions, redirect and `next`
+               handling, timezone handling (America/Sao_Paulo, formatters in src/lib/dates.ts).
+            4. Consent and analytics. Client capture goes through `trackClient`, server capture through
+               `track()`; both must respect the cookie choice. Events keep the documented names and
+               carry `edition` (docs/TRACKING.md).
+            5. Conventions. UI copy in pt-BR, everything in git in English, brand tokens from
+               globals.css (no dark bands on cream), `(app)` pages export `dynamic = 'force-dynamic'`,
+               no code comments unless they explain why.
+
+            Rules for the review:
+            - Report only real defects with a concrete failure scenario. No style nits, no praise,
+              no restating the diff, no "consider" suggestions without a scenario.
+            - At most 8 findings, most severe first, each anchored with an inline comment on the
+              exact line via mcp__github_inline_comment__create_inline_comment. Then one short summary
+              comment: a one-line verdict (safe to merge / needs changes) and the list.
+            - If there are no findings, post a single line saying so and what you checked.
+            - Write like a busy engineer leaving a note for a teammate. English.
