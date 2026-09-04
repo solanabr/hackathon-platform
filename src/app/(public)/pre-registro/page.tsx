@@ -3,6 +3,7 @@ import Image from "next/image";
 import { AuthForm } from "@/components/auth/auth-form";
 import { Card } from "@/components/ui/card";
 import { getHackathonBySlug } from "@/lib/hackathon";
+import { withPlatformUtm } from "@/lib/attribution";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
@@ -175,7 +176,7 @@ export default async function PreRegistroPage() {
                     <>
                       <div className="mt-4 flex flex-wrap items-center gap-3">
                         <TrackedLink
-                          href={hackathon.external_url}
+                          href={withPlatformUtm(hackathon.external_url, { content: "pre_registro_step3", campaign: "colosseum-2026" })}
                           target="colosseum"
                           className="inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
                         >
