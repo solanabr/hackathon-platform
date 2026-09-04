@@ -44,6 +44,7 @@ export default async function AdminPageEditorPage({
     finalists,
     finalistsVisible: isFinalistsVisible(hackathon),
     startsAt: hackathon.starts_at,
+    registerHref: `/h/${hackathon.slug}/register`,
   };
 
   return (

@@ -11,11 +11,13 @@ export function RegistrationForm({
   lumaUrl,
   requireLuma = true,
   external = false,
+  submissionUrl = null,
 }: {
   slug: string;
   lumaUrl: string | null;
   requireLuma?: boolean;
   external?: boolean;
+  submissionUrl?: string | null;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [registered, setRegistered] = useState(false);
@@ -55,14 +57,21 @@ export function RegistrationForm({
         </div>
         <p className="text-sm leading-relaxed text-muted">
           {external
-            ? "Próximo passo: o painel mostra onde e como enviar o seu projeto."
+            ? "Próximo passo: abra o listing no Superteam Earn e envie o projeto por lá até o prazo. O link fica salvo no seu painel."
             : "Próximo passo: monte seu time. Crie um time como líder ou peça para o líder te adicionar — e preparem o projeto para a submissão."}
         </p>
         <div className="flex flex-wrap gap-3">
           {external ? (
-            <Link href={`/h/${slug}/dashboard`} className="btn-primary">
-              Ver como enviar o projeto
-            </Link>
+            <>
+              {submissionUrl && (
+                <a href={submissionUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                  Abrir o listing no Earn
+                </a>
+              )}
+              <Link href={`/h/${slug}/dashboard`} className={submissionUrl ? "btn-secondary" : "btn-primary"}>
+                Ver meu painel
+              </Link>
+            </>
           ) : (
             <>
               <Link href={`/h/${slug}/team`} className="btn-primary">

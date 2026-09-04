@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -39,6 +40,9 @@ export type DocContext = {
   // which is what lets a schedule card show a weekday and a timeline know
   // which milestone is next.
   startsAt: string;
+  // Where "[texto](#inscricao)" in the document sends people: the register
+  // page while it's open, the dashboard once they're in, nowhere when closed.
+  registerHref: string | null;
 };
 
 /**
@@ -94,7 +98,7 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
                 }`}
               >
                 {section.blocks.map((block, j) => (
-                  <Block key={j} block={block} startsAt={ctx.startsAt} />
+                  <Block key={j} block={block} startsAt={ctx.startsAt} registerHref={ctx.registerHref} />
                 ))}
               </div>
             </section>
@@ -109,8 +113,16 @@ export function EditionPageDoc({ doc, ctx }: { doc: string; ctx: DocContext }) {
   );
 }
 
-function Block({ block, startsAt }: { block: DocBlock; startsAt: string }) {
-  if (block.kind === "markdown") return <ProseDoc md={block.md} />;
+function Block({
+  block,
+  startsAt,
+  registerHref,
+}: {
+  block: DocBlock;
+  startsAt: string;
+  registerHref: string | null;
+}) {
+  if (block.kind === "markdown") return <ProseDoc md={block.md} registerHref={registerHref} />;
   if (block.kind === "callout") return <CalloutBlock md={block.md} />;
 
   const rows = block.rows.filter((r) => r.some((c) => c !== ""));
@@ -428,12 +440,26 @@ function OutlineNav({ outline }: { outline: OutlineEntry[] }) {
   );
 }
 
-function ProseDoc({ md }: { md: string }) {
+const REGISTER_ANCHOR = "#inscricao";
+
+function ProseDoc({ md, registerHref }: { md: string; registerHref: string | null }) {
   return (
     <div className="prose-lp max-w-3xl [&>:first-child]:mt-0">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
+          a: ({ href, children }) => {
+            if (href !== REGISTER_ANCHOR) return <a href={href}>{children}</a>;
+            if (!registerHref) return <>{children}</>;
+            return (
+              <Link
+                href={registerHref}
+                className="mx-0.5 inline-flex items-center rounded-full bg-yellow px-4 py-1.5 align-middle text-sm font-bold text-green-dark no-underline shadow-sticker transition-transform hover:-translate-y-0.5 hover:text-green-dark"
+              >
+                {children}
+              </Link>
+            );
+          },
           p: ({ children }) => (
             <p className="mt-4 max-w-2xl leading-relaxed text-muted">{children}</p>
           ),
