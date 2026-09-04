@@ -4,8 +4,22 @@ import { useEffect, useState } from "react";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 
 /** Phone-only bar that slides in once the hero's own buttons scroll away, so
- * the cadastro is one tap from anywhere on the page. */
-export function MobileCtaBar({ watchId }: { watchId: string }) {
+ * the main CTA is one tap from anywhere on the page. */
+export function MobileCtaBar({
+  watchId,
+  href,
+  label,
+  secondaryHref,
+  secondaryLabel,
+  properties,
+}: {
+  watchId: string;
+  href: string;
+  label: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  properties?: Record<string, unknown>;
+}) {
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
@@ -28,19 +42,21 @@ export function MobileCtaBar({ watchId }: { watchId: string }) {
     >
       <div className="flex items-center gap-2 rounded-2xl border-2 border-green-dark bg-green-dark p-2 shadow-sticker">
         <TrackedCta
-          href="/pre-registro"
+          href={href}
           event="cta_clicked"
-          properties={{ cta: "cadastro", location: "sticky" }}
+          properties={{ cta: "cadastro", ...properties, location: "sticky" }}
           className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-yellow px-4 text-sm font-bold text-green-dark"
         >
-          Fazer cadastro
+          {label}
         </TrackedCta>
-        <a
-          href="#jornada"
-          className="flex min-h-11 items-center justify-center rounded-xl border-2 border-surface/30 px-4 text-sm font-bold text-surface"
-        >
-          Como funciona
-        </a>
+        {secondaryHref && secondaryLabel && (
+          <a
+            href={secondaryHref}
+            className="flex min-h-11 items-center justify-center rounded-xl border-2 border-surface/30 px-4 text-sm font-bold text-surface"
+          >
+            {secondaryLabel}
+          </a>
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
 import { EditionGallery } from "@/components/home/edition-gallery";
-import Link from "next/link";
+import { TrackedCta } from "@/components/ui/tracked-cta";
 import { Reveal } from "@/components/ui/reveal";
 import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
 
@@ -44,17 +44,35 @@ const STEPS = [
   {
     title: "Inscreva-se",
     body: "Garanta sua vaga em uma edição aberta. É grátis e leva dois minutos.",
-    action: { label: "Ver edições", href: "#edicoes", primary: true },
+    action: {
+      label: "Ver edições",
+      href: "#edicoes",
+      primary: true,
+      event: "cta_clicked",
+      properties: { cta: "edicoes", location: "steps" },
+    },
   },
   {
     title: "Monte o time e construa",
     body: "Encontre parceiros na comunidade e construa junto. Aulas, mentorias e o grupo no WhatsApp durante toda a fase online.",
-    action: { label: "Entrar na comunidade", href: WHATSAPP_COMMUNITY_URL, primary: false },
+    action: {
+      label: "Entrar na comunidade",
+      href: WHATSAPP_COMMUNITY_URL,
+      primary: false,
+      event: "campaign_link_clicked",
+      properties: { target: "whatsapp", location: "hub_steps" },
+    },
   },
   {
     title: "Submeta e dispute os prêmios",
     body: "Deck, vídeo demo e repositório até o prazo. As melhores equipes apresentam para a banca.",
-    action: { label: "Como receber o prêmio", href: "/guias/do-earn-ao-pix", primary: false },
+    action: {
+      label: "Como receber o prêmio",
+      href: "/guias/do-earn-ao-pix",
+      primary: false,
+      event: "campaign_link_clicked",
+      properties: { target: "guia_pix", location: "hub_steps" },
+    },
   },
 ];
 
@@ -155,12 +173,14 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
-              <a
+              <TrackedCta
                 href="#edicoes"
+                event="cta_clicked"
+                properties={{ cta: "edicoes", location: "hero" }}
                 className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-3 text-sm font-bold sm:text-base text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-8"
               >
                 Explorar edições
-              </a>
+              </TrackedCta>
               <a
                 href="#como-funciona"
                 className="whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-5 py-3 text-sm font-bold sm:text-base text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-7"
@@ -198,7 +218,6 @@ export default async function HomePage() {
           </Reveal>
           <ol className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((step, i) => {
-              const external = step.action.href.startsWith("http");
               const cls = step.action.primary
                 ? "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
                 : "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface";
@@ -210,15 +229,14 @@ export default async function HomePage() {
                     </span>
                     <h3 className="mt-4 font-heading text-xl font-bold">{step.title}</h3>
                     <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{step.body}</p>
-                    {external ? (
-                      <a href={step.action.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                        {step.action.label}
-                      </a>
-                    ) : (
-                      <Link href={step.action.href} className={cls}>
-                        {step.action.label}
-                      </Link>
-                    )}
+                    <TrackedCta
+                      href={step.action.href}
+                      event={step.action.event}
+                      properties={step.action.properties}
+                      className={cls}
+                    >
+                      {step.action.label}
+                    </TrackedCta>
                   </Reveal>
                 </li>
               );
@@ -257,12 +275,14 @@ export default async function HomePage() {
               </div>
 
               <div className="flex flex-col items-start gap-3 lg:col-span-4 lg:items-end">
-                <a
+                <TrackedCta
                   href="#edicoes"
+                  event="cta_clicked"
+                  properties={{ cta: "edicoes", location: "closing" }}
                   className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 >
                   Ver edições abertas
-                </a>
+                </TrackedCta>
               </div>
             </div>
           </div>

@@ -691,7 +691,13 @@ export default async function HomePage() {
       {!registered && (
         <>
           <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] lg:hidden" />
-          <MobileCtaBar watchId="hero-cta" />
+          <MobileCtaBar
+            watchId="hero-cta"
+            href="/pre-registro"
+            label="Fazer cadastro"
+            secondaryHref="#jornada"
+            secondaryLabel="Como funciona"
+          />
         </>
       )}
     </div>

@@ -19,6 +19,9 @@ import { EditionPageDoc } from "@/components/edition/page-doc";
 import { EditionFacts } from "@/components/edition/edition-facts";
 import { Countdown } from "@/components/ui/countdown";
 import { BackLink } from "@/components/ui/back-link";
+import { TrackedCta } from "@/components/ui/tracked-cta";
+import { MobileCtaBar } from "@/components/campaign/mobile-cta-bar";
+import { extractOutline } from "@/lib/page-doc";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +74,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
     (roles?.isAdmin ?? false) || (roles?.adminFor.includes(hackathon.id) ?? false);
 
   const sponsors = groupByTier(sponsorRows);
+  const showStickyCta = open && !registered;
+  const firstAnchor = hackathon.page_md ? extractOutline(hackathon.page_md)[0] : undefined;
 
   const coverUrl = hackathon.cover_image_path
     ? publicStorageUrl("hackathon-covers", hackathon.cover_image_path)
@@ -165,21 +170,25 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">{hackathon.tagline}</p>
             )}
 
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <div id="hero-cta" className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
               {registered ? (
-                <Link
+                <TrackedCta
                   href={`/h/${hackathon.slug}/dashboard`}
+                  event="cta_clicked"
+                  properties={{ cta: "dashboard", location: "hero", edition: hackathon.slug }}
                   className="btn-primary px-10 py-4 text-lg shadow-sticker"
                 >
                   Acessar painel
-                </Link>
+                </TrackedCta>
               ) : open ? (
-                <Link
+                <TrackedCta
                   href={`/h/${hackathon.slug}/register`}
+                  event="cta_clicked"
+                  properties={{ cta: "cadastro", location: "hero", edition: hackathon.slug }}
                   className="btn-primary px-10 py-4 text-lg shadow-sticker"
                 >
                   Fazer inscrição
-                </Link>
+                </TrackedCta>
               ) : (
                 <button
                   type="button"
@@ -260,6 +269,19 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
         </div>
       )}
 
+      {showStickyCta && (
+        <>
+          <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] lg:hidden" />
+          <MobileCtaBar
+            watchId="hero-cta"
+            href={`/h/${hackathon.slug}/register`}
+            label="Fazer inscrição"
+            secondaryHref={firstAnchor ? `#${firstAnchor.id}` : undefined}
+            secondaryLabel={firstAnchor ? "Ver detalhes" : undefined}
+            properties={{ edition: hackathon.slug }}
+          />
+        </>
+      )}
     </div>
   );
 }
