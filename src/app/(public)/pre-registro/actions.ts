@@ -6,6 +6,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireUser } from "@/lib/user-state";
 import { sanitizeText } from "@/lib/security";
+import { attributionFromFormData } from "@/lib/attribution";
 import { track } from "@/lib/analytics-server";
 import { COLOSSEUM_SLUG, isRoleOption } from "./constants";
 
@@ -69,11 +70,15 @@ export async function preRegister(
   if (existingError) logQueryError("preRegistro.existingRegistration", existingError);
   const alreadyComplete = !!existing?.terms_accepted_at;
 
+  // First touch only: a re-save never overwrites the attribution the row was
+  // created with.
+  const attribution = attributionFromFormData(formData);
   const { error: regError } = await supabase.from("hackathon_registrations").upsert(
     {
       hackathon_id: hackathon.id,
       user_id: state.userId,
       terms_accepted_at: new Date().toISOString(),
+      ...(!existing && attribution),
     },
     { onConflict: "hackathon_id,user_id" },
   );
@@ -82,7 +87,14 @@ export async function preRegister(
     return { ok: false, error: "Não foi possível concluir o cadastro. Tente novamente.", field: "server" };
   }
 
-  if (!alreadyComplete) track(state.userId, "registration_completed", { edition: COLOSSEUM_SLUG, role });
+  if (!alreadyComplete) {
+    track(state.userId, "registration_completed", {
+      edition: COLOSSEUM_SLUG,
+      role,
+      utm_source: attribution.utm_source,
+      utm_campaign: attribution.utm_campaign,
+    });
+  }
   revalidatePath("/pre-registro");
   return { ok: true };
 }

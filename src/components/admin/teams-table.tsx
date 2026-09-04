@@ -56,6 +56,7 @@ export function TeamsTable({ rows }: { rows: TeamTableRow[] }) {
       <div className="flex flex-wrap items-center gap-3">
         <input
           type="search"
+          aria-label="Buscar por nome do time"
           value={search}
           placeholder="Buscar por nome do time"
           onChange={(e) => {

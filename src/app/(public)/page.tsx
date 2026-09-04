@@ -178,6 +178,9 @@ export default async function HomePage() {
     if (error) logQueryError("home.checkRegistration", error);
     registered = Boolean(data);
   }
+  // Logged-out visitors skip the /pre-registro round trip and land on the
+  // login step with the deep link already attached.
+  const cadastroHref = state ? "/pre-registro" : "/auth?next=/pre-registro";
   return (
     <div className="bg-surface text-ink">
       {/* Hero: centered launch-announcement stack, the cheque as the single
@@ -213,7 +216,7 @@ export default async function HomePage() {
 
           <div id="hero-cta" className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <TrackedCta
-              href="/pre-registro"
+              href={cadastroHref}
               event="cta_clicked"
               properties={{ cta: "cadastro", location: "hero" }}
               className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-7 py-3.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-10 sm:text-lg"
@@ -464,7 +467,7 @@ export default async function HomePage() {
                   nenhuma data importante.
                 </p>
                 <TrackedCta
-                  href="/pre-registro"
+                  href={cadastroHref}
                   event="cta_clicked"
                   properties={{ cta: "cadastro", location: "jornada" }}
                   className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
@@ -486,7 +489,7 @@ export default async function HomePage() {
                 </p>
                 {colosseum?.external_url ? (
                   <TrackedCta
-                    href={registered ? colosseum.external_url : "/pre-registro"}
+                    href={registered ? colosseum.external_url : cadastroHref}
                     event={registered ? "campaign_link_clicked" : "cta_clicked"}
                     properties={
                       registered
@@ -726,7 +729,7 @@ export default async function HomePage() {
           <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] lg:hidden" />
           <MobileCtaBar
             watchId="hero-cta"
-            href="/pre-registro"
+            href={cadastroHref}
             label="Fazer cadastro"
             secondaryHref="#jornada"
             secondaryLabel="Como funciona"

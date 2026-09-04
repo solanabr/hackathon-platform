@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { registerForHackathon } from "@/app/(app)/h/[slug]/register/actions";
 import { trackClient } from "@/lib/analytics-browser";
+import { AttributionFields } from "@/components/analytics/attribution-fields";
 
 export function RegistrationForm({
   slug,
@@ -101,9 +102,18 @@ export function RegistrationForm({
       }
       className="space-y-5"
     >
+      <AttributionFields />
       {requireLuma && (
-      <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
-        <input type="checkbox" name="luma_confirmed" className="mt-0.5 h-4 w-4 accent-emerald" />
+      <label
+        htmlFor="luma_confirmed"
+        className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4"
+      >
+        <input
+          id="luma_confirmed"
+          type="checkbox"
+          name="luma_confirmed"
+          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-emerald"
+        />
         <span className="text-sm text-ink">
           Confirmo que me inscrevi no evento pelo Luma
           {lumaUrl && (
@@ -125,8 +135,16 @@ export function RegistrationForm({
       </label>
       )}
 
-      <label className="flex items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4">
-        <input type="checkbox" name="terms_accepted" className="mt-0.5 h-4 w-4 accent-emerald" />
+      <label
+        htmlFor="terms_accepted"
+        className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-green-dark/15 bg-surface-raised p-4"
+      >
+        <input
+          id="terms_accepted"
+          type="checkbox"
+          name="terms_accepted"
+          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-emerald"
+        />
         <span className="text-sm text-ink">
           Li e aceito as regras do hackathon e a{" "}
           <a

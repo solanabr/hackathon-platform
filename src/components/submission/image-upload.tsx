@@ -8,13 +8,14 @@ type Props = {
   currentPath: string | null;
   currentUrl: string | null;
   disabled: boolean;
+  inputId?: string;
   onUploaded: (path: string, url: string) => void;
 };
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 
-export function ImageUpload({ teamId, currentUrl, disabled, onUploaded }: Props) {
+export function ImageUpload({ teamId, currentUrl, disabled, inputId, onUploaded }: Props) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -68,6 +69,7 @@ export function ImageUpload({ teamId, currentUrl, disabled, onUploaded }: Props)
       )}
       <input
         ref={inputRef}
+        id={inputId}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         disabled={disabled || uploading}

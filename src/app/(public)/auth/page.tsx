@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { defaultAuthRedirect, resolveAuthenticatedUserState } from "@/lib/user-state";
-import { sanitizeRedirect } from "@/lib/security";
+import { pickAuthNext } from "@/lib/auth-next";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +16,7 @@ export default async function AuthPage({
   if (state) {
     // Keep the deep link: someone mid-registration who is already signed in
     // continues where they were, not on their painel.
-    redirect(
-      sanitizeRedirect(next ?? null) ??
-        sanitizeRedirect(redirectParam ?? null) ??
-        (await defaultAuthRedirect(state)),
-    );
+    redirect(pickAuthNext(next, redirectParam) ?? (await defaultAuthRedirect(state)));
   }
 
   return (
