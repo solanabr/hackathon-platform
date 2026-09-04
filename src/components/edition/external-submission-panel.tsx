@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Morth } from "@/components/ui/morth";
 import { ArrowUpRightIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
 import { Card } from "@/components/ui/card";
 import { Countdown } from "@/components/ui/countdown";
@@ -34,7 +34,7 @@ export function ExternalSubmissionPanel({
     <>
       <header className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-8">
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
-          <Image src="/brand/stbr/elements/morth-05.svg" alt="" width={320} height={320} className="animate-float-b" />
+          <Morth id="05" width={320} height={320} className="animate-float-b" />
         </div>
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div>

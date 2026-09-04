@@ -5,7 +5,7 @@ import { getHackathonBySlug } from "@/lib/hackathon";
 import { withPlatformUtm } from "@/lib/attribution";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
-import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { resolveAuthenticatedUserState, resolveSessionClaims } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
 import { confirmColosseumRegistration } from "./actions";
 import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
@@ -19,6 +19,17 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
+
+async function loadRegistration(userId: string, hackathonId: string) {
+  const supabase = await createServerSupabaseClient();
+  const result = await supabase
+    .from("hackathon_registrations")
+    .select("hackathon_id, luma_confirmed_at")
+    .eq("hackathon_id", hackathonId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  return unwrap(result, "preRegistro.checkRegistration");
+}
 
 const STEPS = [
   { n: 1, label: "Conta" },
@@ -53,28 +64,23 @@ function StepIndicator({ active }: { active: 1 | 2 | 3 }) {
 export default async function PreRegistroPage() {
   // A transient failure on the edition lookup must not take down step 1 —
   // anonymous visitors only need the auth form.
-  const [state, hackathon] = await Promise.all([
-    resolveAuthenticatedUserState(),
+  const [claims, hackathon] = await Promise.all([
+    resolveSessionClaims(),
     getHackathonBySlug(COLOSSEUM_SLUG).catch(() => null),
   ]);
   // Step 1 (Conta) lives on /auth so every entry point shares one login
   // funnel and comes back here through `next`.
-  if (!state) redirect("/auth?next=/pre-registro");
+  if (!claims) redirect("/auth?next=/pre-registro");
 
-  let registered = false;
-  let colosseumConfirmed = false;
-  if (state && hackathon) {
-    const supabase = await createServerSupabaseClient();
-    const result = await supabase
-      .from("hackathon_registrations")
-      .select("hackathon_id, luma_confirmed_at")
-      .eq("hackathon_id", hackathon.id)
-      .eq("user_id", state.userId)
-      .maybeSingle();
-    const reg = unwrap(result, "preRegistro.checkRegistration");
-    registered = Boolean(reg);
-    colosseumConfirmed = Boolean(reg?.luma_confirmed_at);
-  }
+  // The registration row only needs the user id, so it loads alongside the
+  // profile instead of queuing behind it.
+  const [state, reg] = await Promise.all([
+    resolveAuthenticatedUserState(),
+    hackathon ? loadRegistration(claims.userId, hackathon.id) : Promise.resolve(null),
+  ]);
+  if (!state) redirect("/auth?next=/pre-registro");
+  const registered = Boolean(reg);
+  const colosseumConfirmed = Boolean(reg?.luma_confirmed_at);
 
   const activeStep: 2 | 3 = registered ? 3 : 2;
 

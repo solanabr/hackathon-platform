@@ -14,8 +14,7 @@ export default async function RegistrationPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const state = await requireUser();
-  const hackathon = await getHackathonBySlug(slug);
+  const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
   // External editions register on their own site, never here.
   if (hackathon.external_url) redirect(hackathon.external_url);

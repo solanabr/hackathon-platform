@@ -1,5 +1,9 @@
 import { cache } from "react";
-import { resolveAuthenticatedUserState, type AuthenticatedState } from "./user-state";
+import {
+  resolveAuthenticatedUserState,
+  resolveSessionClaims,
+  type AuthenticatedState,
+} from "./user-state";
 import { getHackathonBySlug } from "./hackathon";
 import { createServiceRoleClient } from "./supabase/server";
 import { unwrap } from "./supabase/unwrap";
@@ -99,10 +103,20 @@ export type RoleState = {
   judgeFor: string[];
 };
 
-/** One round-trip for callers that need both the identity and the roles. */
+/**
+ * Identity and roles for callers that need both. The roles read only needs
+ * the user id from the verified claims, so it runs alongside the profile
+ * read — the header sits on this, and one round-trip less here is one
+ * round-trip less before the shell of every authenticated page.
+ */
 export async function resolveRoleState(): Promise<RoleState | null> {
-  const state = await resolveAuthenticatedUserState();
+  const claims = await resolveSessionClaims();
+  if (!claims) return null;
+  const [state, rows] = await Promise.all([
+    resolveAuthenticatedUserState(),
+    loadRoles(claims.userId),
+  ]);
   if (!state) return null;
-  const { isAdmin, adminFor, judgeFor } = resolveRoles(await loadRoles(state.userId), state.email);
+  const { isAdmin, adminFor, judgeFor } = resolveRoles(rows, state.email);
   return { state, isAdmin, adminFor, judgeFor };
 }

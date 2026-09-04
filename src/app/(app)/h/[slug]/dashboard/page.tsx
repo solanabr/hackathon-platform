@@ -1,7 +1,7 @@
 import { DAY_MONTH, DAY_MONTH_LONG_TIME, stripPeriods } from "@/lib/dates";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { Morth } from "@/components/ui/morth";
 import { Countdown } from "@/components/ui/countdown";
 import { Card } from "@/components/ui/card";
 import { CopyLink } from "@/components/ui/copy-link";
@@ -177,13 +177,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
         <header className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 opacity-[0.12]">
-            <Image
-              src="/brand/stbr/elements/morth-05.svg"
-              alt=""
-              width={320}
-              height={320}
-              className="animate-float-b"
-            />
+            <Morth id="05" width={320} height={320} className="animate-float-b" />
           </div>
 
           <div className="relative flex flex-wrap items-end justify-between gap-6">
@@ -278,13 +272,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </>
             ) : (
               <div className="relative flex flex-col items-center overflow-hidden rounded-xl px-4 py-6 text-center">
-                <Image
-                  src="/brand/stbr/elements/morth-12.svg"
-                  alt=""
-                  width={120}
-                  height={120}
-                  className="opacity-20"
-                />
+                <Morth id="12" width={120} height={120} className="opacity-20" />
                 <p className="mt-3 text-sm leading-relaxed text-muted">
                   Crie o seu como líder, ou peça para o líder do seu time te adicionar pelo e-mail{" "}
                   <strong className="text-ink">{state.email}</strong>.

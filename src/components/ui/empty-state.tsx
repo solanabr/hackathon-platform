@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Morth } from "@/components/ui/morth";
 
 export function EmptyState({
   title,
@@ -15,10 +15,8 @@ export function EmptyState({
     <div
       className={`relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-ink/10 bg-surface-raised px-8 py-16 text-center ${className}`}
     >
-      <Image
-        src="/brand/stbr/elements/morth-24.svg"
-        alt=""
-        aria-hidden
+      <Morth
+        id="24"
         width={128}
         height={128}
         className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.07]"
