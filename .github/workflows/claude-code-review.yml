@@ -9,16 +9,23 @@ on:
       - "docs/**"
       - "**/*.md"
       - "public/**"
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to review
+        required: true
+        type: number
 
 concurrency:
-  group: claude-review-${{ github.event.pull_request.number }}
+  group: claude-review-${{ github.event.pull_request.number || inputs.pr }}
   cancel-in-progress: true
 
 jobs:
   review:
     if: >-
-      github.event.pull_request.draft == false &&
-      !contains(fromJSON('["dependabot[bot]","github-actions[bot]","vercel[bot]"]'), github.event.pull_request.user.login)
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.draft == false &&
+      !contains(fromJSON('["dependabot[bot]","github-actions[bot]","vercel[bot]"]'), github.event.pull_request.user.login))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -34,13 +41,18 @@ jobs:
 
       - name: Review the pull request
         uses: anthropics/claude-code-action@v1
+        env:
+          PR: ${{ github.event.pull_request.number || inputs.pr }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The action opens a tracking comment on the PR and exposes
+          # update_claude_comment; that comment is where the verdict lands.
+          track_progress: true
           claude_args: >-
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view *),Bash(gh pr diff *),Bash(git diff *),Bash(git log *),Bash(npm test *),Bash(npx vitest *),Bash(npx tsc *)"
+            --allowedTools "mcp__github_comment__update_claude_comment,mcp__github_inline_comment__create_inline_comment,Bash(gh pr view *),Bash(gh pr diff *),Bash(gh pr comment *),Bash(git diff *),Bash(git log *),Bash(npm test *),Bash(npx vitest *),Bash(npx tsc *)"
           prompt: |
-            Review pull request #${{ github.event.pull_request.number }} of ${{ github.repository }}.
-            Get the diff with `gh pr diff ${{ github.event.pull_request.number }}`; read surrounding files as needed.
+            Review pull request #${{ github.event.pull_request.number || inputs.pr }} of ${{ github.repository }}.
+            Get the diff with `gh pr diff ${{ github.event.pull_request.number || inputs.pr }}`; read surrounding files as needed.
             CLAUDE.md is the project contract. Check the diff against it, in this priority:
 
             1. Authorization. Every server action or route that writes with `createServiceRoleClient()`
@@ -66,7 +78,10 @@ jobs:
             - Report only real defects with a concrete failure scenario. No style nits, no praise,
               no restating the diff, no "consider" suggestions without a scenario.
             - At most 8 findings, most severe first, each anchored with an inline comment on the
-              exact line via mcp__github_inline_comment__create_inline_comment. Then one short summary
-              comment: a one-line verdict (safe to merge / needs changes) and the list.
-            - If there are no findings, post a single line saying so and what you checked.
+              exact line via mcp__github_inline_comment__create_inline_comment. Then write the
+              summary into the tracking comment with mcp__github_comment__update_claude_comment:
+              a one-line verdict (safe to merge / needs changes) and the list. If that tool is
+              unavailable, post the summary with `gh pr comment <number> --body "..."`.
+            - If there are no findings, the tracking comment gets a single line saying so and
+              what you checked. Never finish without writing the summary.
             - Write like a busy engineer leaving a note for a teammate. English.
