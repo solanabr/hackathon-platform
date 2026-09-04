@@ -53,20 +53,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function EditionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const hackathon = await getHackathonBySlug(slug);
+  // The edition row, the viewer and the roles don't depend on each other —
+  // one batch, then the two reads that need the edition id.
+  const [hackathon, viewer, roles] = await Promise.all([
+    getHackathonBySlug(slug),
+    resolveAuthenticatedUserState(),
+    resolveRoleState(),
+  ]);
   if (!hackathon || hackathon.status === "draft") notFound();
   // External editions live elsewhere — deep links forward to their LP.
   if (hackathon.external_url) redirect(hackathon.external_url);
 
   const open = isRegistrationOpen(hackathon);
 
-  const viewer = await resolveAuthenticatedUserState();
-  // Registration, roles and sponsors are mutually independent — one batch.
-  const [viewerRegistration, roles, sponsorRows] = await Promise.all([
+  // The band degrades to no logos on a read failure; the throw exists only
+  // so unstable_cache never stores the transient error.
+  const [viewerRegistration, sponsorRows] = await Promise.all([
     viewer ? getRegistration(viewer.userId, hackathon.id) : Promise.resolve(null),
-    viewer ? resolveRoleState() : Promise.resolve(null),
-    // The band degrades to no logos on a read failure; the throw exists only
-    // so unstable_cache never stores the transient error.
     listSponsors(hackathon.id).catch(() => []),
   ]);
   const registered = viewer !== null && isRegistrationComplete(viewerRegistration);

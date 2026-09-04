@@ -1,26 +1,23 @@
-const shapes = [
-  { src: "/brand/stbr/elements/morth-05.svg", className: "left-[-8%] top-[6%] w-72 animate-float-a" },
-  { src: "/brand/stbr/elements/morth-21.svg", className: "right-[-6%] top-[38%] w-96 animate-float-b" },
-  { src: "/brand/stbr/elements/morth-12.svg", className: "bottom-[-4%] left-[18%] w-80 animate-float-c" },
-  { src: "/brand/stbr/elements/morth-24.svg", className: "right-[10%] bottom-[-6%] w-72 animate-float-b" },
-  { src: "/brand/stbr/elements/morth-27.svg", className: "left-[28%] top-[22%] w-56 animate-float-c" },
+import { Morth, type MorthId } from "@/components/ui/morth";
+
+const shapes: Array<{ id: MorthId; width: number; height: number; className: string }> = [
+  { id: "05", width: 210, height: 155, className: "left-[-8%] top-[6%] w-72 animate-float-a" },
+  { id: "21", width: 341, height: 322, className: "right-[-6%] top-[38%] w-96 animate-float-b" },
+  { id: "12", width: 293, height: 253, className: "bottom-[-4%] left-[18%] w-80 animate-float-c" },
+  { id: "24", width: 361, height: 320, className: "right-[10%] bottom-[-6%] w-72 animate-float-b" },
+  { id: "27", width: 328, height: 318, className: "left-[28%] top-[22%] w-56 animate-float-c" },
 ];
 
 export function Background() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {shapes.map((shape) => (
-        // Decorative SVGs gain nothing from next/image (it passes SVG through)
-        // — a plain img skips the loader indirection.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={shape.src}
-          src={shape.src}
-          alt=""
-          width={400}
-          height={400}
-          loading="lazy"
-          className={`absolute opacity-[0.07] ${shape.className}`}
+        <Morth
+          key={shape.id}
+          id={shape.id}
+          width={shape.width}
+          height={shape.height}
+          className={`absolute h-auto opacity-[0.07] ${shape.className}`}
         />
       ))}
     </div>

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { Morth } from "@/components/ui/morth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
@@ -79,13 +79,7 @@ export default async function TeamPage({
         <PainelNav slug={slug} />
         <div className="relative mx-auto max-w-xl overflow-hidden rounded-3xl border-2 border-green-dark bg-surface-raised p-10 text-center shadow-sticker">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 opacity-[0.12]">
-            <Image
-              src="/brand/stbr/elements/morth-12.svg"
-              alt=""
-              width={260}
-              height={260}
-              className="animate-float-b"
-            />
+            <Morth id="12" width={260} height={260} className="animate-float-b" />
           </div>
           <div className="relative">
             <h1 className="font-heading text-2xl font-bold">Você não está em um time</h1>

@@ -4,5 +4,5 @@ import Loading from "@/components/ui/loading";
 // which is also when the router scrolls to top. Without it the old page
 // holds at its scroll position until the new one fully renders.
 export default function SegmentLoading() {
-  return <Loading className="min-h-[70vh]" />;
+  return <Loading className="min-h-dvh" />;
 }
