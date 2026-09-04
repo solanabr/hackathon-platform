@@ -14,6 +14,13 @@ export async function middleware(request: NextRequest) {
     const url = new URL(stripped + request.nextUrl.search, request.url);
     return NextResponse.redirect(url, 308);
   }
+  // Supabase sends the PKCE code to the Site URL when it rejects our
+  // redirectTo (allowlist miss). Nothing on "/" exchanges it, so the visitor
+  // would land on the LP logged out; hand it to the callback instead, which
+  // recovers the deep link from the cookie the auth form set.
+  if (pathname === "/" && request.nextUrl.searchParams.has("code")) {
+    return NextResponse.redirect(new URL("/auth/callback" + request.nextUrl.search, request.url));
+  }
   return updateSession(request);
 }
 

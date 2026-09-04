@@ -12,7 +12,7 @@ export function LabeledSwitch({
   onToggle: (next: boolean) => void;
 }) {
   return (
-    <label className="flex shrink-0 cursor-pointer items-center gap-2">
+    <label className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2">
       <span className={`text-xs font-bold ${active ? "text-emerald" : "text-muted"}`}>
         {active ? "Visível no mural" : "Oculto"}
       </span>

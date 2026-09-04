@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { trackClient } from "@/lib/analytics-browser";
-import { sanitizeRedirect } from "@/lib/security";
+import { AUTH_NEXT_COOKIE, AUTH_NEXT_MAX_AGE, pickAuthNext } from "@/lib/auth-next";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 
@@ -43,21 +43,32 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
   }, []);
   // `next` carries the page the user came from (requireUser/middleware);
   // `redirect` is kept as a legacy alias for invite links that still use it.
-  const postLoginPath =
-    sanitizeRedirect(searchParams.get("next")) ??
-    sanitizeRedirect(searchParams.get("redirect")) ??
-    sanitizeRedirect(defaultNext ?? null);
+  const postLoginPath = pickAuthNext(
+    searchParams.get("next"),
+    searchParams.get("redirect"),
+    defaultNext,
+  );
 
-  async function signIn(provider: Provider) {
-    trackClient("auth_provider_clicked", { provider });
-    setLoading(provider);
-    setError(null);
-    const redirectTo = `${window.location.origin}/auth/callback${
+  // The deep link rides on the callback URL and, as a fallback, in a
+  // short-lived cookie: Supabase replaces a redirectTo its allowlist rejects
+  // with the Site URL, and the cookie is the only thing that survives that.
+  function redirectTarget() {
+    if (postLoginPath) {
+      const secure = window.location.protocol === "https:" ? "; Secure" : "";
+      document.cookie = `${AUTH_NEXT_COOKIE}=${encodeURIComponent(postLoginPath)}; Path=/; Max-Age=${AUTH_NEXT_MAX_AGE}; SameSite=Lax${secure}`;
+    }
+    return `${window.location.origin}/auth/callback${
       postLoginPath ? `?next=${encodeURIComponent(postLoginPath)}` : ""
     }`;
+  }
+
+  async function signIn(provider: Provider) {
+    trackClient("auth_provider_clicked", { provider, next: postLoginPath });
+    setLoading(provider);
+    setError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: { redirectTo: redirectTarget() },
     });
     if (error) {
       setError(`Não foi possível conectar com ${PROVIDER_LABELS[provider]}. Tente novamente.`);
@@ -66,17 +77,11 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     }
   }
 
-  function redirectTarget() {
-    return `${window.location.origin}/auth/callback${
-      postLoginPath ? `?next=${encodeURIComponent(postLoginPath)}` : ""
-    }`;
-  }
-
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setStage("sending");
-    trackClient("auth_provider_clicked", { provider: "email" });
+    trackClient("auth_provider_clicked", { provider: "email", next: postLoginPath });
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: redirectTarget() },

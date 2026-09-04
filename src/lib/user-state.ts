@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createServerSupabaseClient } from "./supabase/server";
 import { logQueryError } from "./supabase/unwrap";
-import { sanitizeRedirect } from "./security";
+import { DEFAULT_AUTH_NEXT, pickAuthNext } from "./auth-next";
 import { editionStage } from "./hackathon";
 import type { Hackathon, User } from "@/types/db";
 
@@ -51,7 +51,7 @@ function latestLiveDashboard(
  *
  * Precedence for the painel path: an accepted membership in a live edition
  * wins; otherwise the newest live edition the user registered for — even with
- * no team yet — so a registered participant is never stranded on `/`. The
+ * no team yet — so a registered participant is never stranded on the hub. The
  * registration fallback prefers editions with an open submission window over
  * ones that already closed.
  */
@@ -81,7 +81,7 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   );
 
   const allIds = [...new Set([...membershipIds, ...registrationIds])];
-  if (allIds.length === 0) return "/";
+  if (allIds.length === 0) return DEFAULT_AUTH_NEXT;
 
   const { data: hackathons, error: hackathonsError } = await supabase
     .from("hackathons")
@@ -93,7 +93,7 @@ const liveDashboardPath = cache(async (userId: string): Promise<string> => {
   return (
     latestLiveDashboard(rows, membershipIds) ??
     latestLiveDashboard(rows, registrationIds, true) ??
-    "/"
+    DEFAULT_AUTH_NEXT
   );
 });
 
@@ -142,7 +142,7 @@ export async function requireUser() {
   if (!state) {
     const h = await headers();
     const path = `${h.get("x-pathname") ?? ""}${h.get("x-search") ?? ""}`;
-    const next = path && path !== "/" ? sanitizeRedirect(path) : null;
+    const next = path && path !== "/" ? pickAuthNext(path) : null;
     redirect(next ? `/auth?next=${encodeURIComponent(next)}` : "/auth");
   }
   return state;
