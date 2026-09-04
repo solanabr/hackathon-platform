@@ -1,6 +1,6 @@
 import type { Hackathon } from "@/types/db";
 
-export type FieldKind = "text" | "textarea" | "datetime" | "number" | "url" | "select";
+export type FieldKind = "text" | "textarea" | "datetime" | "number" | "url" | "select" | "boolean";
 
 export type EditionField = {
   key: keyof Hackathon;
@@ -99,6 +99,13 @@ export const EDITION_FIELDS: EditionField[] = [
     kind: "number",
     group: "Times",
     help: "Vale para times criados na plataforma; o Colosseum e outras edições externas ignoram.",
+  },
+  {
+    key: "mentorship_enabled",
+    label: "Mentoria",
+    kind: "boolean",
+    group: "Times",
+    help: "Liga a escolha de mentores por time no painel. Só vale para edições com times na plataforma.",
   },
 
   { key: "location_name", label: "Local", kind: "text", group: "Local e links" },

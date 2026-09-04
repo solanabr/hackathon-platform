@@ -86,6 +86,16 @@ describe("bookingErrorMessage", () => {
     expect(bookingErrorMessage("already_booked")).toBe("Seu time já escolheu um mentor nessa mentoria.");
   });
 
+  it("tells a leader when the edition has mentorship switched off", () => {
+    expect(bookingErrorMessage("mentorship_disabled")).toBe("As mentorias não estão ativas nesta edição.");
+  });
+
+  it("asks for a complete registration instead of a generic failure", () => {
+    expect(bookingErrorMessage("not_registered")).toBe(
+      "Complete sua inscrição na edição para escolher um mentor.",
+    );
+  });
+
   it("falls back instead of rendering undefined for an unmapped code", () => {
     expect(bookingErrorMessage("23505")).toBe("Não foi possível escolher. Tente novamente.");
     expect(bookingErrorMessage(undefined)).toBe("Não foi possível escolher. Tente novamente.");

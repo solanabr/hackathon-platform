@@ -8,6 +8,7 @@ import {
   editionPhase,
   submissionTarget,
   editionUsesTeams,
+  editionUsesMentorship,
   requiresLumaConfirmation,
   registrationClosesWithSubmission,
   teamLimits,
@@ -156,6 +157,29 @@ describe("submission target", () => {
   it("asks for Luma only when the edition has one", () => {
     expect(requiresLumaConfirmation({ ...base, luma_url: "https://luma.com/x" } as Hackathon)).toBe(true);
     expect(requiresLumaConfirmation({ ...base, luma_url: null } as Hackathon)).toBe(false);
+  });
+});
+
+describe("editionUsesMentorship", () => {
+  it("is off by default, even on a platform edition", () => {
+    const h = { ...base, submission_mode: "platform", mentorship_enabled: false } as Hackathon;
+    expect(editionUsesMentorship(h)).toBe(false);
+    expect(editionUsesMentorship({ ...base, submission_mode: "platform" } as Hackathon)).toBe(false);
+  });
+
+  it("turns on with the flag on a platform edition", () => {
+    const h = { ...base, submission_mode: "platform", mentorship_enabled: true } as Hackathon;
+    expect(editionUsesMentorship(h)).toBe(true);
+  });
+
+  it("stays off on an external edition whatever the flag says", () => {
+    const h = {
+      ...base,
+      submission_mode: "external",
+      external_submission_url: "https://earn.superteam.fun/listing/x",
+      mentorship_enabled: true,
+    } as Hackathon;
+    expect(editionUsesMentorship(h)).toBe(false);
   });
 });
 

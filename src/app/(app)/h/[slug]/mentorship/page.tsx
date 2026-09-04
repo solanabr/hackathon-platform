@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PainelNav } from "@/components/edition/painel-nav";
-import { getHackathonBySlug, editionUsesTeams } from "@/lib/hackathon";
+import { getHackathonBySlug, editionUsesMentorship } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete, isProfileComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
 import { mentorshipView } from "@/lib/mentorship";
@@ -25,12 +25,11 @@ function Header({ slug, hackathonName }: { slug: string; hackathonName: string }
 export default async function MentorshipPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
-  if (!hackathon || hackathon.status === "draft") notFound();
+  if (!hackathon || hackathon.status === "draft" || !editionUsesMentorship(hackathon)) notFound();
   if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/mentorship`);
 
   const registration = await getRegistration(state.userId, hackathon.id);
   if (!isRegistrationComplete(registration)) redirect(`/h/${slug}/register`);
-  if (!editionUsesTeams(hackathon)) redirect(`/h/${slug}/dashboard`);
 
   const view = mentorshipView(await getMentorshipBoard(hackathon.id));
 

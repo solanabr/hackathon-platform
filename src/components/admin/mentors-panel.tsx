@@ -12,6 +12,7 @@ import {
   setMentorAvailable,
   deleteMentor,
   releaseBooking,
+  setMentorshipEnabled,
   type MentorInput,
 } from "@/app/(app)/admin/h/[slug]/mentorship/actions";
 import type { MentorTrack } from "@/types/db";
@@ -181,6 +182,48 @@ function MentorRow({ slug, mentor }: { slug: string; mentor: AdminMentor }) {
  * already has this list in a message or a sheet; typing six of them into
  * separate fields on a phone the night before is the slow path.
  */
+export function MentorshipEnabledToggle({
+  slug,
+  enabled,
+  usesTeams,
+}: {
+  slug: string;
+  enabled: boolean;
+  usesTeams: boolean;
+}) {
+  const { error, pending, run } = useRunner();
+
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 className="font-heading text-lg font-bold">
+          {enabled ? "Mentoria ativa" : "Mentoria desativada nesta edição"}
+        </h2>
+        <p className="mt-1 max-w-lg text-sm leading-relaxed text-muted">
+          {enabled
+            ? "Os líderes escolhem mentores pelo painel. Desligue para esconder o card e fechar a escolha."
+            : "Nenhum participante vê mentores enquanto estiver desligada. Ligue quando a lista estiver pronta."}
+        </p>
+        {!usesTeams && (
+          <p className="mt-2 text-sm font-semibold text-red-700">
+            Esta edição não usa times na plataforma, então a mentoria não aparece para ninguém
+            mesmo ligada.
+          </p>
+        )}
+        {error && <p className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
+      </div>
+      <Button
+        type="button"
+        variant={enabled ? "secondary" : "primary"}
+        disabled={pending}
+        onClick={() => run(() => setMentorshipEnabled({ slug, enabled: !enabled }))}
+      >
+        {enabled ? "Desligar mentoria" : "Ligar mentoria"}
+      </Button>
+    </div>
+  );
+}
+
 export function parseMentorLines(text: string): MentorInput[] {
   return text
     .split("\n")

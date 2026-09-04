@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/card";
 import {
   MentorTrackPanel,
   BookingsLedger,
+  MentorshipEnabledToggle,
   type AdminMentor,
   type AdminBooking,
 } from "@/components/admin/mentors-panel";
 import { requireEditionAdminBySlug } from "@/lib/roles";
-import { getHackathonBySlug } from "@/lib/hackathon";
+import { getHackathonBySlug, editionUsesTeams } from "@/lib/hackathon";
 import { TRACKS } from "@/lib/mentorship";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
@@ -105,6 +106,14 @@ export default async function AdminMentorshipPage({
             depois que ele escolhe — o horário é marcado na agenda do mentor.
           </p>
         </header>
+
+        <Card sticker className="p-6 sm:p-7">
+          <MentorshipEnabledToggle
+            slug={hackathon.slug}
+            enabled={hackathon.mentorship_enabled}
+            usesTeams={editionUsesTeams(hackathon)}
+          />
+        </Card>
 
         {TRACKS.map((track) => (
           <Card key={track} sticker className="p-6 sm:p-7">

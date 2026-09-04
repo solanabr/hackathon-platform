@@ -61,6 +61,8 @@ export type Hackathon = {
   // Per-edition team size bounds (00058); platform-created teams only.
   team_size_min: number;
   team_size_max: number;
+  // Opt-in mentorship module (00060); only meaningful for platform editions.
+  mentorship_enabled: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;

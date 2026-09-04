@@ -84,6 +84,11 @@ export function editionUsesTeams(h: Hackathon): boolean {
   return submissionTarget(h).mode === "platform";
 }
 
+/** Mentor picking is opt-in per edition and needs platform teams to hang off. */
+export function editionUsesMentorship(h: Hackathon): boolean {
+  return Boolean(h.mentorship_enabled) && editionUsesTeams(h);
+}
+
 /** Registration asks for the Luma confirmation only when the edition has one. */
 export function requiresLumaConfirmation(h: Hackathon): boolean {
   return Boolean(h.luma_url);

@@ -72,6 +72,10 @@ export async function updateEdition(
   for (const field of EDITION_FIELDS) {
     const key = field.key as string;
     const raw = formData.get(key);
+    if (field.kind === "boolean") {
+      patch[key] = raw === "on";
+      continue;
+    }
     if (raw === null) continue;
     const value = String(raw);
 

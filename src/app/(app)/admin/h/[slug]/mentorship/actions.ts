@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { HACKATHONS_TAG, hackathonTag } from "@/lib/cache-tags";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireEditionAdminBySlug } from "@/lib/roles";
@@ -179,5 +180,31 @@ export async function releaseBooking(input: {
   }
 
   revalidate(input.slug);
+  return { ok: true };
+}
+
+export async function setMentorshipEnabled(input: {
+  slug: string;
+  enabled: boolean;
+}): Promise<MentorActionResult> {
+  const gate = await requireEditionAdminBySlug(input.slug);
+  if (!gate.ok) return { ok: false, error: "Sem permissão." };
+
+  const supabase = await createServiceRoleClient();
+  const { error } = await supabase
+    .from("hackathons")
+    .update({ mentorship_enabled: input.enabled })
+    .eq("id", gate.hackathon.id);
+
+  if (error) {
+    logQueryError("admin.mentorship.enabled", error);
+    return { ok: false, error: "Não foi possível salvar." };
+  }
+
+  revalidateTag(hackathonTag(input.slug), "max");
+  revalidateTag(HACKATHONS_TAG, "max");
+  revalidate(input.slug);
+  revalidatePath(`/admin/h/${input.slug}`);
+  revalidatePath(`/h/${input.slug}/dashboard`);
   return { ok: true };
 }

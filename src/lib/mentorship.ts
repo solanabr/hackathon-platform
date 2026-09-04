@@ -81,6 +81,7 @@ const BOOKING_ERRORS: Record<string, string> = {
   mentor_not_found: "Esse mentor não está mais disponível. Atualize a página.",
   edition_not_found: "Esse mentor não está mais disponível. Atualize a página.",
   not_registered: "Complete sua inscrição na edição para escolher um mentor.",
+  mentorship_disabled: "As mentorias não estão ativas nesta edição.",
 };
 
 /**

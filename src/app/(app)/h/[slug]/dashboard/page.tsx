@@ -17,6 +17,7 @@ import {
   isSubmissionWindowOpen,
   submissionTarget,
   teamLimits,
+  editionUsesMentorship,
 } from "@/lib/hackathon";
 import { ExternalSubmissionPanel } from "@/components/edition/external-submission-panel";
 import {
@@ -74,7 +75,8 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
   // After the registration redirect, not inside the batch above: the board RPC
   // raises for an unregistered caller, and only a team has mentorships at all.
-  const mentorship = snapshot ? await getMentorshipBoard(hackathon.id) : null;
+  const mentorship =
+    snapshot && editionUsesMentorship(hackathon) ? await getMentorshipBoard(hackathon.id) : null;
 
   if (scheduleResult.error) logQueryError("painel.scheduleCount", scheduleResult.error);
   const totalCount = scheduleResult.count;
