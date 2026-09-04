@@ -8,6 +8,7 @@ import { TrackedCta } from "@/components/ui/tracked-cta";
 import { EditionInfoCard } from "@/components/edition/info-card";
 import { DAY_MONTH_LONG_TIME } from "@/lib/dates";
 import { isSubmissionWindowOpen } from "@/lib/hackathon";
+import { campaignForSlug, withPlatformUtm } from "@/lib/attribution";
 import type { Hackathon } from "@/types/db";
 
 /** Dashboard body for editions that collect the project elsewhere: the
@@ -96,7 +97,7 @@ export function ExternalSubmissionPanel({
                 </p>
                 {submissionUrl ? (
                   <TrackedCta
-                    href={submissionUrl}
+                    href={withPlatformUtm(submissionUrl, { content: "dashboard_step3", campaign: campaignForSlug(slug) })}
                     event="campaign_link_clicked"
                     properties={{ target: "external_submission", location: "dashboard", edition: slug }}
                     className="btn-primary mt-4 inline-flex px-6 py-2.5 text-sm shadow-sticker"

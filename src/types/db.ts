@@ -178,6 +178,11 @@ export type HackathonRegistration = {
   registered_at: string;
   luma_confirmed_at: string | null;
   terms_accepted_at: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  referrer: string | null;
 };
 
 export type PlatformRole = {

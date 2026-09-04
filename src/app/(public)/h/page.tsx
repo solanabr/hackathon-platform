@@ -7,6 +7,7 @@ import { EditionGallery } from "@/components/home/edition-gallery";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { Reveal } from "@/components/ui/reveal";
 import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
+import { campaignForSlug, withPlatformUtm } from "@/lib/attribution";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +104,12 @@ export default async function HomePage() {
   });
 
 
+  const galleryEditions = editions.map((e) =>
+    e.externalUrl
+      ? { ...e, externalUrl: withPlatformUtm(e.externalUrl, { content: "hub_gallery", campaign: campaignForSlug(e.slug) }) }
+      : e,
+  );
+
   const live = hackathons.find((h) => isRegistrationOpen(h) && editionStage(h) !== "finished") ?? null;
 
   // The deck leads with what's happening now, then what's coming — external
@@ -113,7 +120,9 @@ export default async function HomePage() {
     .slice(0, 3)
     .map((e) => ({
       key: e.slug,
-      href: e.externalUrl ?? `/h/${e.slug}`,
+      href: e.externalUrl
+        ? withPlatformUtm(e.externalUrl, { content: "hub_deck", campaign: campaignForSlug(e.slug) })
+        : `/h/${e.slug}`,
       label: e.name,
       meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
       coverUrl: e.coverUrl,
@@ -200,7 +209,7 @@ export default async function HomePage() {
       {/* The hub: DoraHacks structure in LP skin */}
       <section id="edicoes" className="px-4 pt-16 sm:px-6 lg:px-8" aria-label="Edições">
         <div className="mx-auto max-w-6xl">
-          <EditionGallery editions={editions} />
+          <EditionGallery editions={galleryEditions} />
         </div>
       </section>
 

@@ -11,6 +11,7 @@ import {
   XLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { CopyCode } from "./copy-code";
+import { withPlatformUtm } from "@/lib/attribution";
 
 export const metadata: Metadata = {
   title: "Do Earn ao Pix: como receber sua grant em reais",
@@ -269,7 +270,7 @@ export default function GuiaEarnPixPage() {
             <StepHeader n={1}>Criar sua conta no Superteam Earn</StepHeader>
             <Steps
               items={[
-                <>Acesse <Ext href="https://superteam.fun/earn">superteam.fun/earn</Ext> e clique em “Sign Up”. Escolha “Continue with Email” (ou Google).</>,
+                <>Acesse <Ext href={withPlatformUtm("https://superteam.fun/earn", { content: "guia_earn_pix" })}>superteam.fun/earn</Ext> e clique em “Sign Up”. Escolha “Continue with Email” (ou Google).</>,
                 <>Digite seu email e o <strong>código de verificação (OTP)</strong> de 6 dígitos que chega no email (remetente Privy). Expira em 10 minutos.</>,
                 <>Na tela de escolha, selecione <strong>“Continue as Talent”</strong>, <strong className="text-red-700">nunca “Sponsor”</strong>.</>,
                 <>Complete o perfil (nome, username, localização, skills) e clique em “Create Profile”.</>,

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { withPlatformUtm } from "@/lib/attribution";
 
 const COLUMNS = [
   {
@@ -22,7 +23,7 @@ const COLUMNS = [
     links: [
       { label: "superteam.com.br", href: "https://superteam.com.br" },
       { label: "Wiki", href: "https://wiki.superteam.com.br" },
-      { label: "Earn", href: "https://earn.superteam.fun" },
+      { label: "Earn", href: withPlatformUtm("https://earn.superteam.fun", { content: "footer" }) },
       { label: "Guia: do Earn ao Pix", href: "/guias/do-earn-ao-pix" },
     ],
   },
