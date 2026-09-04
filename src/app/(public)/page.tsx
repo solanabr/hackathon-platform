@@ -5,6 +5,7 @@ import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { withPlatformUtm } from "@/lib/attribution";
 import {
   BookOpenIcon,
   CoinsIcon,
@@ -17,6 +18,7 @@ import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { Tilt } from "@/components/ui/tilt";
 import { MobileCtaBar } from "@/components/campaign/mobile-cta-bar";
+import { MobileSteps } from "@/components/campaign/mobile-steps";
 
 
 export const metadata = {
@@ -82,7 +84,11 @@ const RESOURCES = [
   { label: "Grupo do WhatsApp", href: WHATSAPP_COMMUNITY_URL, icon: WhatsappLogoIcon },
   { label: "Aulas no YouTube", href: "https://www.youtube.com/@SuperteamBrasil", icon: YoutubeLogoIcon },
   { label: "Wiki do Superteam", href: "https://wiki.superteam.com.br", icon: BookOpenIcon },
-  { label: "Superteam Earn", href: "https://superteam.fun/earn/s/superteambr", icon: CoinsIcon },
+  {
+    label: "Superteam Earn",
+    href: withPlatformUtm("https://superteam.fun/earn/s/superteambr", { content: "lp_recursos", campaign: "colosseum-2026" }),
+    icon: CoinsIcon,
+  },
   { label: "Academy", href: "https://www.st.academy/", icon: GraduationCapIcon },
   { label: "Discord", href: "https://discord.gg/superteambrasil", icon: DiscordLogoIcon },
 ];
@@ -197,7 +203,10 @@ export default async function HomePage() {
             </span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg">
+          <p className="mx-auto mt-4 max-w-2xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg lg:hidden">
+            O maior hackathon online do mundo: prêmios milionários e capital anjo.
+          </p>
+          <p className="mx-auto mt-5 hidden max-w-2xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg lg:block">
             O Colosseum é o maior hackathon online do mundo: prêmios milionários e capital anjo
             para as melhores equipes.
           </p>
@@ -213,16 +222,24 @@ export default async function HomePage() {
             </TrackedCta>
             <a
               href="#jornada"
-              className="whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-3.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-9 sm:text-lg"
+              className="hidden whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-3.5 lg:block text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-9 sm:text-lg"
             >
               Como funciona
             </a>
           </div>
 
+          <MobileSteps
+            whatsappUrl={WHATSAPP_COMMUNITY_URL}
+            colosseumUrl={colosseum?.external_url ?? null}
+            registered={registered}
+          />
+
           {/* The desk: the cheque is the main sticker, the facts are stickers
-              around it. The cheque fills itself out on load (globals.css). */}
-          <div className="mx-auto mt-10 w-full max-w-xl lg:max-w-none">
-          <Tilt max={5} className="relative pt-11 text-left lg:h-[26rem] lg:pt-0 xl:h-[28rem]">
+              around it. The cheque fills itself out on load (globals.css).
+              Below lg the stickers are folded into a caption so the cheque
+              stays a compact visual instead of a second wall. */}
+          <div className="mx-auto mt-8 w-full max-w-sm md:max-w-xl lg:mt-10 lg:max-w-none">
+          <Tilt max={5} className="relative pt-2 text-left lg:h-[26rem] lg:pt-0 xl:h-[28rem]">
             <div aria-hidden className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2 xl:w-[44rem]">
             <div className="relative sm:[transform:rotate(-3deg)] lg:[transform:rotate(-4deg)]">
               <div aria-hidden className="absolute inset-0 translate-y-6 rounded-xl bg-green-dark/25 blur-2xl" />
@@ -302,13 +319,13 @@ export default async function HomePage() {
               </div>
             </div>
             </div>
-            <div className="left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark">
+            <div className="hidden lg:block left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark">
               100% online
             </div>
-            <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden sm:block">
+            <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden lg:block">
               14 set a 12 out
             </div>
-            <div className="-bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
+            <div className="hidden lg:block -bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
               R$15M+ captados
               <span className="block font-mono text-[8px] font-bold normal-case tracking-wider text-surface/80 lg:text-[11px]">
                 por times brasileiros em edições anteriores
@@ -318,6 +335,16 @@ export default async function HomePage() {
               Solana
             </div>
           </Tilt>
+          <ul className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:hidden" aria-label="Fatos do hackathon">
+            {["100% online", "14 set a 12 out", "R$15M+ captados por times brasileiros"].map((fact) => (
+              <li
+                key={fact}
+                className="rounded-full border-2 border-green-dark bg-surface-raised px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-green-dark"
+              >
+                {fact}
+              </li>
+            ))}
+          </ul>
           </div>
         </div>
       </section>
@@ -562,7 +589,7 @@ export default async function HomePage() {
           <div className="grid gap-6">
             <Reveal delay={100} className="max-w-3xl lg:max-w-none">
             <TrackedCta
-              href="https://superteam.fun/earn/s/superteambr"
+              href={withPlatformUtm("https://superteam.fun/earn/s/superteambr", { content: "lp_trilha_brasil", campaign: "colosseum-2026" })}
               event="campaign_link_clicked"
               properties={{ target: "earn", location: "lp" }}
               className="group flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:p-7"
