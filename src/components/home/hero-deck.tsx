@@ -58,7 +58,8 @@ export function HeroDeck({ cards }: { cards: DeckCard[] }) {
                   alt={isFront ? `Arte da edição ${card.label}` : ""}
                   fill
                   priority={idx === 0}
-                  sizes="(min-width: 1024px) 448px, 90vw"
+                  quality={90}
+                  sizes="(min-width: 1024px) 540px, 90vw"
                   className="object-cover"
                 />
               ) : (
