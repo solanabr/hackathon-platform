@@ -57,7 +57,7 @@ export default async function AdminMentorshipPage({
     supabase
       .from("mentorship_bookings")
       .select(
-        "id, track, mentor_id, claimed_at, mentor:hackathon_mentors(name), team:teams(name), claimer:users(full_name)",
+        "id, track, mentor_id, claimed_at, mentor:hackathon_mentors(name), team:teams(name), claimer:users!mentorship_bookings_claimed_by_fkey(full_name)",
       )
       .eq("hackathon_id", hackathon.id)
       .is("released_at", null)
