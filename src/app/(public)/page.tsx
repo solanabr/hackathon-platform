@@ -245,7 +245,7 @@ export default async function HomePage() {
                     <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
                       Colosseum
                       <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
-                        Crypto World&apos;s Fair
+                        Prêmio do Crypto World&apos;s Fair
                       </span>
                     </p>
                     <div className="shrink-0 whitespace-nowrap text-right font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
@@ -265,6 +265,7 @@ export default async function HomePage() {
                       </div>
                     </div>
                     <div className="cheque-amount flex shrink-0 items-baseline gap-1.5 rounded-lg border-2 border-green-dark bg-yellow px-3 py-1.5 sm:px-4 sm:py-2">
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">até</span>
                       <span className="font-heading text-lg font-black leading-none tracking-tight text-green-dark sm:text-xl">USD 250k</span>
                     </div>
                   </div>
@@ -293,7 +294,7 @@ export default async function HomePage() {
                         />
                       </svg>
                       <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/60">
-                        Assinatura
+                        Colosseum
                       </p>
                     </div>
                   </div>
@@ -308,8 +309,10 @@ export default async function HomePage() {
               14 set a 12 out
             </div>
             <div className="-bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
-              <span className="lg:hidden">R$15M+ captados</span>
-              <span className="hidden lg:inline">R$15M+ captados por brasileiros</span>
+              R$15M+ captados
+              <span className="block font-mono text-[8px] font-bold normal-case tracking-wider text-surface/80 lg:text-[11px]">
+                por times brasileiros em edições anteriores
+              </span>
             </div>
             <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-green-dark text-yellow">
               Solana
