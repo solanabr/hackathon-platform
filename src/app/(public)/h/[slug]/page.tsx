@@ -264,6 +264,11 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
               finalists,
               finalistsVisible: isFinalistsVisible(hackathon),
               startsAt: hackathon.starts_at,
+              registerHref: registered
+                ? `/h/${hackathon.slug}/dashboard`
+                : open
+                  ? `/h/${hackathon.slug}/register`
+                  : null,
             }}
           />
         </div>

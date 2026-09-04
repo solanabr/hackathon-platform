@@ -27,7 +27,8 @@ export default async function RegistrationPage({
   if (isRegistrationComplete(registration)) redirect(`/h/${slug}/dashboard`);
 
   const needsLuma = requiresLumaConfirmation(hackathon);
-  const external = submissionTarget(hackathon).mode === "external";
+  const target = submissionTarget(hackathon);
+  const external = target.mode === "external";
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
@@ -49,6 +50,7 @@ export default async function RegistrationPage({
             lumaUrl={needsLuma ? hackathon.luma_url : null}
             requireLuma={needsLuma}
             external={external}
+            submissionUrl={external ? target.url : null}
           />
         </Card>
       </div>

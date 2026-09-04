@@ -8,6 +8,7 @@ const ctx: DocContext = {
   finalists: [],
   finalistsVisible: false,
   startsAt: "2026-08-31T09:00:00-03:00",
+  registerHref: "/h/edicao/register",
 };
 
 const render = (doc: string) =>
@@ -114,5 +115,25 @@ describe("EditionPageDoc — degrades instead of breaking", () => {
     expect(html).toContain("<table");
     expect(html).toContain("<th");
     for (const cell of ["1", "2", "3", "4"]) expect(html).toContain(cell);
+  });
+});
+
+describe("register anchor", () => {
+  it("renders [texto](#inscricao) as a button to the register page", () => {
+    const html = render("## Como enviar\n\n1. [Inscreva-se na plataforma](#inscricao) primeiro.");
+    expect(html).toContain('href="/h/edicao/register"');
+    expect(html).toContain("Inscreva-se na plataforma");
+    expect(html).not.toContain('href="#inscricao"');
+  });
+
+  it("drops the link and keeps the text when registration is closed", () => {
+    const closed = renderToStaticMarkup(
+      React.createElement(EditionPageDoc, {
+        doc: "## Como enviar\n\n1. [Inscreva-se](#inscricao) primeiro.",
+        ctx: { ...ctx, registerHref: null },
+      }),
+    );
+    expect(closed).toContain("Inscreva-se");
+    expect(closed).not.toContain("href=");
   });
 });
