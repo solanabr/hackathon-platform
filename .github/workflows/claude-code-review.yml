@@ -47,7 +47,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The action opens a tracking comment on the PR and exposes
           # update_claude_comment; that comment is where the verdict lands.
-          track_progress: true
+          track_progress: ${{ github.event_name == 'pull_request' }}
           claude_args: >-
             --allowedTools "mcp__github_comment__update_claude_comment,mcp__github_inline_comment__create_inline_comment,Bash(gh pr view *),Bash(gh pr diff *),Bash(gh pr comment *),Bash(git diff *),Bash(git log *),Bash(npm test *),Bash(npx vitest *),Bash(npx tsc *)"
           prompt: |
