@@ -56,6 +56,7 @@ both sides land on one person.
 | `application_responded` | server | `edition`, `team_id`, `accepted` | `respondToApplication` (applications card) |
 | `role_filter_used` | client | `roles` | Team-up board filter chips |
 | `team_submitted` | server | `edition`, `team_id` | `POST /api/submit`, after `submit_team` succeeds |
+| `mentorship_booked` | server | `edition`, `track` | `bookMentorship`, after `book_mentorship` succeeds |
 
 Pageviews (including App Router soft navigations) are autocaptured by
 PostHog under the `2026-05-30` defaults; there is no pageview component.
