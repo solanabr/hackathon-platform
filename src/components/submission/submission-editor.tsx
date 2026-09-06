@@ -219,17 +219,19 @@ export function SubmissionEditor({
     return () => clearTimeout(id);
   }, [form, name, pendingSubmit, editable, isDraft]);
 
-  const allRequiredFilled =
-    !!name.trim() &&
-    !!form.description.trim() &&
-    !!sanitizeUrl(form.pitch_deck_url) &&
-    !!sanitizeUrl(form.pitch_video_url) &&
-    !!sanitizeUrl(form.github_url) &&
-    form.github_access_granted;
+  const missingRequired = [
+    !name.trim() && "nome do projeto",
+    !form.description.trim() && "descrição",
+    !sanitizeUrl(form.pitch_deck_url) && "deck",
+    !sanitizeUrl(form.pitch_video_url) && "vídeo de apresentação",
+    !sanitizeUrl(form.github_url) && "repositório GitHub",
+    !form.github_access_granted && "confirmação do colaborador no GitHub",
+  ].filter((f): f is string => Boolean(f));
+  const allRequiredFilled = missingRequired.length === 0;
 
   const canSubmit = allRequiredFilled && membersPending === 0 && membersAccepted >= teamMin;
   const blockedReason = !allRequiredFilled
-    ? "Preencha todos os campos obrigatórios"
+    ? `Para submeter, ainda falta: ${missingRequired.join(", ")}`
     : membersAccepted < teamMin
       ? `O time precisa de pelo menos ${teamMin} integrantes`
       : membersPending > 0

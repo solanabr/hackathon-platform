@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { trackClient } from "@/lib/analytics-browser";
-import { AUTH_NEXT_COOKIE, AUTH_NEXT_MAX_AGE, pickAuthNext } from "@/lib/auth-next";
+import {
+  AUTH_NEXT_COOKIE,
+  AUTH_NEXT_MAX_AGE,
+  OTP_RESEND_COOLDOWN_S,
+  isOtpRateLimited,
+  pickAuthNext,
+} from "@/lib/auth-next";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 
@@ -32,7 +38,14 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
+  const [cooldown, setCooldown] = useState(0);
   const supabase = createClient();
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
 
   useEffect(() => {
     if (callbackError) {
@@ -77,9 +90,10 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     }
   }
 
-  async function sendCode(e: React.FormEvent) {
-    e.preventDefault();
+  async function requestCode(resend: boolean) {
+    if (cooldown > 0) return;
     setError(null);
+    const previous = resend ? "sent" : "idle";
     setStage("sending");
     trackClient("auth_provider_clicked", { provider: "email", next: postLoginPath });
     const { error } = await supabase.auth.signInWithOtp({
@@ -87,12 +101,27 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
       options: { emailRedirectTo: redirectTarget() },
     });
     if (error) {
-      setError("Não foi possível enviar o código. Confira o e-mail e tente de novo.");
-      setStage("idle");
-      trackClient("auth_failed", { provider: "email", reason: "otp_request_failed" });
+      const limited = isOtpRateLimited(error);
+      setError(
+        limited
+          ? "Muitos pedidos de código para este e-mail. Aguarde 1 minuto antes de tentar de novo, ou entre com Google ou GitHub."
+          : "Não foi possível enviar o código. Confira o e-mail e tente de novo.",
+      );
+      if (limited) setCooldown(OTP_RESEND_COOLDOWN_S);
+      setStage(previous);
+      trackClient("auth_failed", {
+        provider: "email",
+        reason: limited ? "rate_limited" : "otp_request_failed",
+      });
       return;
     }
+    setCooldown(OTP_RESEND_COOLDOWN_S);
     setStage("sent");
+  }
+
+  function sendCode(e: React.FormEvent) {
+    e.preventDefault();
+    void requestCode(false);
   }
 
   async function verifyCode(e: React.FormEvent) {
@@ -205,16 +234,27 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
           <Button type="submit" fullWidth disabled={stage === "verifying"}>
             {stage === "verifying" ? "Verificando..." : "Entrar"}
           </Button>
-          <button
-            type="button"
-            onClick={() => {
-              setStage("idle");
-              setCode("");
-            }}
-            className="w-full text-center text-xs font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
-          >
-            Usar outro e-mail
-          </button>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setStage("idle");
+                setCode("");
+                setCooldown(0);
+              }}
+              className="text-xs font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
+            >
+              Usar outro e-mail
+            </button>
+            <button
+              type="button"
+              disabled={cooldown > 0 || stage === "verifying"}
+              onClick={() => void requestCode(true)}
+              className="text-xs font-semibold text-muted tabular-nums underline-offset-4 hover:text-ink hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-70"
+            >
+              {cooldown > 0 ? `Reenviar em ${cooldown} s` : "Reenviar código"}
+            </button>
+          </div>
         </form>
       ) : (
         <form onSubmit={sendCode} className="mt-6 space-y-4">
@@ -233,8 +273,16 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <Button type="submit" fullWidth disabled={stage === "sending" || loading !== null}>
-            {stage === "sending" ? "Enviando..." : "Enviar código"}
+          <Button
+            type="submit"
+            fullWidth
+            disabled={stage === "sending" || loading !== null || cooldown > 0}
+          >
+            {stage === "sending"
+              ? "Enviando..."
+              : cooldown > 0
+                ? `Reenviar em ${cooldown} s`
+                : "Enviar código"}
           </Button>
         </form>
       )}
