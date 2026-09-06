@@ -226,7 +226,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
               autoComplete="one-time-code"
               spellCheck={false}
               required
-              placeholder="000000"
+              placeholder="00000000"
               value={code}
               onChange={(e) => setCode(e.target.value)}
             />
