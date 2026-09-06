@@ -240,6 +240,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
               onClick={() => {
                 setStage("idle");
                 setCode("");
+                setCooldown(0);
               }}
               className="text-xs font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
             >
