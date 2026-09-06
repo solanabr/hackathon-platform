@@ -29,3 +29,23 @@ export function pickAuthNext(...candidates: Array<string | null | undefined>): s
 export function authNextOrDefault(...candidates: Array<string | null | undefined>): string {
   return pickAuthNext(...candidates) ?? DEFAULT_AUTH_NEXT;
 }
+
+/** Supabase Auth allows one OTP e-mail per address every 60 s. */
+export const OTP_RESEND_COOLDOWN_S = 60;
+
+/**
+ * Supabase Auth answers a throttled OTP request with HTTP 429 and code
+ * `over_email_send_rate_limit` (per address) or `over_request_rate_limit`
+ * (per hour); older clients only carry the message.
+ */
+export function isOtpRateLimited(error: {
+  message?: string;
+  status?: number;
+  code?: string;
+}): boolean {
+  return (
+    error.status === 429 ||
+    (error.code ?? "").includes("rate_limit") ||
+    /rate limit/i.test(error.message ?? "")
+  );
+}

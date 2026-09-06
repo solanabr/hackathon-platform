@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { authNextOrDefault, pickAuthNext } from "../auth-next";
+import { authNextOrDefault, isOtpRateLimited, pickAuthNext } from "../auth-next";
 
 describe("pickAuthNext", () => {
   it("keeps a same-origin path, query included", () => {
@@ -49,5 +49,18 @@ describe("authNextOrDefault", () => {
     expect(authNextOrDefault(null)).toBe("/h");
     expect(authNextOrDefault("https://evil.com")).toBe("/h");
     expect(authNextOrDefault("/pre-registro")).toBe("/pre-registro");
+  });
+});
+
+describe("isOtpRateLimited", () => {
+  it("matches the 429 status, the rate_limit codes and the message", () => {
+    expect(isOtpRateLimited({ message: "x", status: 429 })).toBe(true);
+    expect(isOtpRateLimited({ message: "x", status: 400, code: "over_email_send_rate_limit" })).toBe(true);
+    expect(isOtpRateLimited({ message: "Email rate limit exceeded" })).toBe(true);
+  });
+
+  it("leaves other failures alone", () => {
+    expect(isOtpRateLimited({ message: "Signups not allowed", status: 422 })).toBe(false);
+    expect(isOtpRateLimited({})).toBe(false);
   });
 });
