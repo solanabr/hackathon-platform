@@ -120,6 +120,13 @@ export const EDITION_FIELDS: EditionField[] = [
     group: "Local e links",
   },
   {
+    key: "landing_path",
+    label: "Página de entrada na plataforma",
+    kind: "text",
+    group: "Local e links",
+    help: "Caminho interno começando com /, ex.: / para a LP do Colosseum. Tem prioridade sobre a URL externa nos cards e em /h/[slug].",
+  },
+  {
     key: "judge_github_handle",
     label: "GitHub dos jurados",
     kind: "text",

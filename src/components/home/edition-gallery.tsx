@@ -17,6 +17,7 @@ export type EditionCard = {
   locationCity: string | null;
   registrationClosesLabel: string | null;
   externalUrl?: string;
+  landingPath?: string;
 };
 
 const FILTERS = [
@@ -119,7 +120,7 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
                       {e.locationCity ? ` · ${e.locationCity}` : ""}
                     </p>
                     <p className="mt-2.5 text-xs font-bold text-[#008c4c]">
-                      {e.externalUrl
+                      {e.externalUrl && !e.landingPath
                         ? e.registrationOpen && e.registrationClosesLabel
                           ? `Inscrições até ${e.registrationClosesLabel}`
                           : "Acessar site"
@@ -129,7 +130,7 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
                             ? "Ver projetos"
                             : "Ver detalhes"}
                       <span aria-hidden className="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-1">
-                        {e.externalUrl ? "↗" : "→"}
+                        {e.externalUrl && !e.landingPath ? "↗" : "→"}
                       </span>
                     </p>
                   </div>
@@ -139,12 +140,12 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
 
             return (
               <li key={e.slug} className="w-[85%] min-w-0 shrink-0 snap-center sm:w-auto sm:shrink">
-                {e.externalUrl ? (
+                {e.externalUrl && !e.landingPath ? (
                   <a href={e.externalUrl} target="_blank" rel="noreferrer" className={cardClass}>
                     {inner}
                   </a>
                 ) : (
-                  <Link href={`/h/${e.slug}`} className={cardClass}>
+                  <Link href={e.landingPath ?? `/h/${e.slug}`} className={cardClass}>
                     {inner}
                   </Link>
                 )}
