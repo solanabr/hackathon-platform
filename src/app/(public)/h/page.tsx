@@ -39,6 +39,7 @@ type CardData = {
   prizeSummary: string | null;
   registrationClosesLabel: string | null;
   externalUrl?: string;
+  landingPath?: string;
 };
 
 const STEPS = [
@@ -100,6 +101,7 @@ export default async function HomePage() {
       prizeSummary: h.prize_summary,
       registrationClosesLabel: h.registration_closes_at ? DAY_NUMERIC.format(new Date(h.registration_closes_at)) : null,
       externalUrl: h.external_url ?? undefined,
+      landingPath: h.landing_path ?? undefined,
     };
   });
 
@@ -120,9 +122,11 @@ export default async function HomePage() {
     .slice(0, 3)
     .map((e) => ({
       key: e.slug,
-      href: e.externalUrl
-        ? withPlatformUtm(e.externalUrl, { content: "hub_deck", campaign: campaignForSlug(e.slug) })
-        : `/h/${e.slug}`,
+      href: e.landingPath
+        ? e.landingPath
+        : e.externalUrl
+          ? withPlatformUtm(e.externalUrl, { content: "hub_deck", campaign: campaignForSlug(e.slug) })
+          : `/h/${e.slug}`,
       label: e.name,
       meta: `${e.dateRange}${e.locationCity ? ` · ${e.locationCity}` : ""}`,
       coverUrl: e.coverUrl,

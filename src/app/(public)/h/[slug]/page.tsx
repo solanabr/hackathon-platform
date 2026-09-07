@@ -29,8 +29,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const hackathon = await getHackathonBySlug(slug);
   if (!hackathon || hackathon.status === "draft") return {};
-  // External editions redirect out — their LP owns the preview card, not us.
-  if (hackathon.external_url) return {};
+  // Editions with their own front door redirect there — that page owns the
+  // preview card, not us.
+  if (hackathon.landing_path || hackathon.external_url) return {};
 
   const description = hackathon.description ?? hackathon.tagline ?? undefined;
   return {
@@ -61,7 +62,9 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
     resolveRoleState(),
   ]);
   if (!hackathon || hackathon.status === "draft") notFound();
-  // External editions live elsewhere — deep links forward to their LP.
+  // Editions with their own front door forward there: the internal landing
+  // first, so a campaign LP is never skipped for the external sign-up.
+  if (hackathon.landing_path) redirect(hackathon.landing_path);
   if (hackathon.external_url) redirect(hackathon.external_url);
 
   const open = isRegistrationOpen(hackathon);

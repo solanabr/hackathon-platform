@@ -55,6 +55,9 @@ export type Hackathon = {
   judge_github_handle: string | null;
   // Set = the edition lives elsewhere: cards link out, /h/[slug] forwards (00050).
   external_url: string | null;
+  // Internal front door for the edition, e.g. "/" for the Colosseum LP; takes
+  // precedence over external_url for cards and deep links (00061).
+  landing_path: string | null;
   // "external": people register here and submit the project elsewhere (00055).
   submission_mode: SubmissionMode;
   external_submission_url: string | null;
