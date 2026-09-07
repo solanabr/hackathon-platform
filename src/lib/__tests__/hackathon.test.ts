@@ -9,6 +9,7 @@ import {
   submissionTarget,
   editionUsesTeams,
   editionUsesMentorship,
+  editionLandingPath,
   requiresLumaConfirmation,
   registrationClosesWithSubmission,
   teamLimits,
@@ -205,5 +206,19 @@ describe("team size limits", () => {
     expect(teamSizeLabel({ ...base, team_size_min: 1, team_size_max: 10 } as Hackathon)).toBe(
       "até 10 integrantes",
     );
+  });
+});
+
+describe("editionLandingPath", () => {
+  it("returns an internal path as is and null when unset", () => {
+    expect(editionLandingPath({ ...base, landing_path: "/" } as Hackathon)).toBe("/");
+    expect(editionLandingPath({ ...base, landing_path: "/colosseum?x=1" } as Hackathon)).toBe("/colosseum?x=1");
+    expect(editionLandingPath({ ...base, landing_path: null } as Hackathon)).toBeNull();
+  });
+
+  it("never yields a target that leaves the origin", () => {
+    for (const raw of ["//evil.com", "/\t/evil.com", "/\\evil.com", "https://evil.com", "evil"]) {
+      expect(editionLandingPath({ ...base, landing_path: raw } as Hackathon)).toBeNull();
+    }
   });
 });

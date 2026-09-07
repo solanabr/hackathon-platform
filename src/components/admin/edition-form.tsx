@@ -109,7 +109,7 @@ export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
                         type={field.kind === "number" ? "number" : "text"}
                         inputMode={field.kind === "number" ? "numeric" : undefined}
                         spellCheck={field.kind === "url" ? false : undefined}
-                        placeholder={field.kind === "url" ? "https://..." : undefined}
+                        placeholder={field.kind === "url" ? "https://..." : field.kind === "path" ? "/..." : undefined}
                         defaultValue={
                           value === null ||
                           value === undefined ||

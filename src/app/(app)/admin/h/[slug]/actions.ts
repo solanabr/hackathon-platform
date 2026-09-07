@@ -4,7 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { HACKATHONS_TAG, hackathonTag } from "@/lib/cache-tags";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireEditionAdmin, requireEditionAdminBySlug } from "@/lib/roles";
-import { sanitizeUrl, sanitizeText } from "@/lib/security";
+import { sanitizeRedirect, sanitizeUrl, sanitizeText } from "@/lib/security";
 import { EDITION_FIELDS, fromLocalInput } from "@/lib/edition-fields";
 import type { HackathonStatus } from "@/types/db";
 
@@ -107,6 +107,19 @@ export async function updateEdition(
           break;
         }
         patch[key] = url;
+        break;
+      }
+      case "path": {
+        if (!value.trim()) {
+          patch[key] = null;
+          break;
+        }
+        const path = sanitizeRedirect(value.trim());
+        if (!path) {
+          fields[key] = "Use um caminho interno começando com /, ex.: /h/minha-edicao.";
+          break;
+        }
+        patch[key] = path;
         break;
       }
       case "textarea":
