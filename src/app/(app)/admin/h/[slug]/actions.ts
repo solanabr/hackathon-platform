@@ -146,6 +146,11 @@ export async function updateEdition(
   }
   patch.slug = slug;
 
+  const landing = patch.landing_path as string | null;
+  if (landing && !fields.landing_path && /^\/h\/[^/?#]+(?:[/?#]|$)/.test(landing) && landing.split(/[/?#]/)[2] === slug) {
+    fields.landing_path = "A página de entrada não pode ser a própria /h/[slug]: ela redireciona para cá.";
+  }
+
   if (!fields.team_size_min && !fields.team_size_max) {
     const min = patch.team_size_min as number | null;
     const max = patch.team_size_max as number | null;
