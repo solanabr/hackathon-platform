@@ -4,7 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { HACKATHONS_TAG, hackathonTag } from "@/lib/cache-tags";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireEditionAdmin, requireEditionAdminBySlug } from "@/lib/roles";
-import { sanitizeUrl, sanitizeText } from "@/lib/security";
+import { sanitizeRedirect, sanitizeUrl, sanitizeText } from "@/lib/security";
 import { EDITION_FIELDS, fromLocalInput } from "@/lib/edition-fields";
 import type { HackathonStatus } from "@/types/db";
 
@@ -109,6 +109,19 @@ export async function updateEdition(
         patch[key] = url;
         break;
       }
+      case "path": {
+        if (!value.trim()) {
+          patch[key] = null;
+          break;
+        }
+        const path = sanitizeRedirect(value.trim());
+        if (!path) {
+          fields[key] = "Use um caminho interno começando com /, ex.: /h/minha-edicao.";
+          break;
+        }
+        patch[key] = path;
+        break;
+      }
       case "textarea":
         patch[key] = sanitizeText(value, 4000);
         break;
@@ -132,6 +145,11 @@ export async function updateEdition(
     fields.slug = "Use apenas letras minúsculas, números e hífens.";
   }
   patch.slug = slug;
+
+  const landing = patch.landing_path as string | null;
+  if (landing && !fields.landing_path && /^\/h\/[^/?#]+(?:[/?#]|$)/.test(landing) && landing.split(/[/?#]/)[2] === slug) {
+    fields.landing_path = "A página de entrada não pode ser a própria /h/[slug]: ela redireciona para cá.";
+  }
 
   if (!fields.team_size_min && !fields.team_size_max) {
     const min = patch.team_size_min as number | null;

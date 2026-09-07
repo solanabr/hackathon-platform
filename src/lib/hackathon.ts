@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { createAnonClient } from "./supabase/anon";
 import { HACKATHONS_TAG, hackathonTag } from "./cache-tags";
 import { logQueryError } from "./supabase/unwrap";
+import { sanitizeRedirect } from "./security";
 import type { Hackathon } from "@/types/db";
 
 // Edition rows are viewer-independent, so they live in the shared data cache
@@ -87,6 +88,15 @@ export function editionUsesTeams(h: Hackathon): boolean {
 /** Mentor picking is opt-in per edition and needs platform teams to hang off. */
 export function editionUsesMentorship(h: Hackathon): boolean {
   return Boolean(h.mentorship_enabled) && editionUsesTeams(h);
+}
+
+/**
+ * The internal front door, or null. The column is a redirect target, so it is
+ * re-checked on every read: the DB constraint and the admin form both guard
+ * it, but a row written by hand must not turn /h/[slug] into an open redirect.
+ */
+export function editionLandingPath(h: Hackathon): string | null {
+  return sanitizeRedirect(h.landing_path);
 }
 
 /** Registration asks for the Luma confirmation only when the edition has one. */

@@ -7,6 +7,7 @@ import {
   isRegistrationOpen,
   isFinalistsVisible,
   registrationClosesWithSubmission,
+  editionLandingPath,
 } from "@/lib/hackathon";
 import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!hackathon || hackathon.status === "draft") return {};
   // Editions with their own front door redirect there — that page owns the
   // preview card, not us.
-  if (hackathon.landing_path || hackathon.external_url) return {};
+  if (editionLandingPath(hackathon) || hackathon.external_url) return {};
 
   const description = hackathon.description ?? hackathon.tagline ?? undefined;
   return {
@@ -64,7 +65,8 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   if (!hackathon || hackathon.status === "draft") notFound();
   // Editions with their own front door forward there: the internal landing
   // first, so a campaign LP is never skipped for the external sign-up.
-  if (hackathon.landing_path) redirect(hackathon.landing_path);
+  const landing = editionLandingPath(hackathon);
+  if (landing) redirect(landing);
   if (hackathon.external_url) redirect(hackathon.external_url);
 
   const open = isRegistrationOpen(hackathon);

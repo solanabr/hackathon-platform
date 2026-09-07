@@ -1,6 +1,6 @@
 import type { Hackathon } from "@/types/db";
 
-export type FieldKind = "text" | "textarea" | "datetime" | "number" | "url" | "select" | "boolean";
+export type FieldKind = "text" | "textarea" | "datetime" | "number" | "url" | "path" | "select" | "boolean";
 
 export type EditionField = {
   key: keyof Hackathon;
@@ -122,7 +122,7 @@ export const EDITION_FIELDS: EditionField[] = [
   {
     key: "landing_path",
     label: "Página de entrada na plataforma",
-    kind: "text",
+    kind: "path",
     group: "Local e links",
     help: "Caminho interno começando com /, ex.: / para a LP do Colosseum. Tem prioridade sobre a URL externa nos cards e em /h/[slug].",
   },

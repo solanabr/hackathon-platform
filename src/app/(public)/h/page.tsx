@@ -1,5 +1,5 @@
 import { publicStorageUrl } from "@/lib/storage";
-import { listHackathons, editionStage, isRegistrationOpen } from "@/lib/hackathon";
+import { listHackathons, editionLandingPath, editionStage, isRegistrationOpen } from "@/lib/hackathon";
 import type { Hackathon } from "@/types/db";
 import { HeroDeck, type DeckCard } from "@/components/home/hero-deck";
 import { DAY_MONTH, DAY_NUMERIC, stripPeriods } from "@/lib/dates";
@@ -101,7 +101,7 @@ export default async function HomePage() {
       prizeSummary: h.prize_summary,
       registrationClosesLabel: h.registration_closes_at ? DAY_NUMERIC.format(new Date(h.registration_closes_at)) : null,
       externalUrl: h.external_url ?? undefined,
-      landingPath: h.landing_path ?? undefined,
+      landingPath: editionLandingPath(h) ?? undefined,
     };
   });
 

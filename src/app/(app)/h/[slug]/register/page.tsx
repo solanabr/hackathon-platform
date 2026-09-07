@@ -2,7 +2,13 @@ import { notFound, redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { BackLink } from "@/components/ui/back-link";
 import { RegistrationForm } from "@/components/registration/registration-form";
-import { getHackathonBySlug, isRegistrationOpen, requiresLumaConfirmation, submissionTarget } from "@/lib/hackathon";
+import {
+  editionLandingPath,
+  getHackathonBySlug,
+  isRegistrationOpen,
+  requiresLumaConfirmation,
+  submissionTarget,
+} from "@/lib/hackathon";
 import { getRegistration, isProfileComplete, isRegistrationComplete } from "@/lib/registration";
 import { requireUser } from "@/lib/user-state";
 
@@ -17,7 +23,8 @@ export default async function RegistrationPage({
   const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
   // Editions with their own front door register through it, never here.
-  if (hackathon.landing_path) redirect(hackathon.landing_path);
+  const landing = editionLandingPath(hackathon);
+  if (landing) redirect(landing);
   if (hackathon.external_url) redirect(hackathon.external_url);
   if (!isRegistrationOpen(hackathon)) redirect(`/h/${slug}`);
 
