@@ -1,17 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
 import { requireUser } from "@/lib/user-state";
 import { sanitizeText } from "@/lib/security";
+import { normalizeWhatsapp } from "@/lib/phone";
 import { attributionFromFormData } from "@/lib/attribution";
 import { track } from "@/lib/analytics-server";
 import { COLOSSEUM_SLUG, isRoleOption } from "./constants";
+import { validateInterest, type InterestField, type InterestIntent } from "./interest";
 
-
-export type RegistrationField = "full_name" | "whatsapp" | "role" | "terms" | "server";
+export type RegistrationField = "full_name" | "whatsapp" | "location" | "role" | "terms" | "server";
 
 export async function preRegister(
   _prevState: { ok: boolean; error?: string },
@@ -21,11 +23,13 @@ export async function preRegister(
 
   const fullName = sanitizeText(String(formData.get("full_name") ?? ""));
   const whatsapp = sanitizeText(String(formData.get("whatsapp") ?? ""));
+  const location = sanitizeText(String(formData.get("location") ?? ""), 120);
   const role = String(formData.get("role") ?? "");
   const termsAccepted = formData.get("terms_accepted") === "on";
 
   if (!fullName) return { ok: false, error: "Informe seu nome completo.", field: "full_name" };
   if (!whatsapp) return { ok: false, error: "Informe seu WhatsApp.", field: "whatsapp" };
+  if (!location) return { ok: false, error: "Informe sua cidade e estado.", field: "location" };
   if (!isRoleOption(role)) return { ok: false, error: "Escolha como você se descreve.", field: "role" };
   // Loose shape check only: DDI/DDD formats vary, but the field is the
   // campaign's outreach channel, so pure text must not pass as a number.
@@ -53,7 +57,12 @@ export async function preRegister(
   // there, so it leaves whatever the person already wrote.
   const { error: profileError } = await supabase
     .from("users")
-    .update({ full_name: fullName, whatsapp, ...(role !== "Outro" && { headline: role }) })
+    .update({
+      full_name: fullName,
+      whatsapp: normalizeWhatsapp(whatsapp),
+      location,
+      ...(role !== "Outro" && { headline: role }),
+    })
     .eq("id", state.userId);
   if (profileError) {
     logQueryError("preRegistro.updateProfile", profileError);
@@ -126,4 +135,66 @@ export async function confirmColosseumRegistration(): Promise<void> {
 
   track(state.userId, "colosseum_registration_confirmed", { edition: COLOSSEUM_SLUG });
   revalidatePath("/pre-registro");
+}
+
+const INTEREST_ERROR = "Não foi possível salvar. Tente novamente.";
+
+export async function saveInterest(
+  _prevState: { ok: boolean; error?: string },
+  formData: FormData,
+): Promise<{ ok: false; error: string; field: InterestField }> {
+  const state = await requireUser();
+
+  const intentRaw = formData.get("intent");
+  const intent: InterestIntent = intentRaw === "later" ? "later" : "complete";
+  const field = (name: string) => {
+    const v = formData.get(name);
+    return typeof v === "string" ? v : null;
+  };
+  const validation = validateInterest(
+    {
+      has_project: field("has_project"),
+      looking_for_team: field("looking_for_team"),
+      project_name: field("project_name"),
+      one_liner: field("one_liner"),
+      stage: field("stage"),
+      team_size: field("team_size"),
+      project_url: field("project_url"),
+      project_socials: field("project_socials"),
+      notes: field("notes"),
+    },
+    intent,
+  );
+  if (!validation.ok) return validation;
+
+  const hackathon = await getHackathonBySlug(COLOSSEUM_SLUG);
+  if (!hackathon) return { ok: false, error: INTEREST_ERROR, field: "server" };
+
+  // Own-row write behind RLS, like preRegister. A "later" save keeps an
+  // earlier completed_at: the row was complete once, and the person only
+  // came back to edit.
+  const supabase = await createServerSupabaseClient();
+  const completed = intent === "complete";
+  const { error } = await supabase.from("campaign_interest").upsert(
+    {
+      hackathon_id: hackathon.id,
+      user_id: state.userId,
+      ...validation.values,
+      ...(completed && { completed_at: new Date().toISOString() }),
+    },
+    { onConflict: "hackathon_id,user_id" },
+  );
+  if (error) {
+    logQueryError("preRegistro.saveInterest", error);
+    return { ok: false, error: INTEREST_ERROR, field: "server" };
+  }
+
+  track(state.userId, "interest_form_saved", {
+    edition: COLOSSEUM_SLUG,
+    completed,
+    has_project: validation.values.has_project,
+    looking_for_team: validation.values.looking_for_team,
+  });
+  revalidatePath("/pre-registro");
+  redirect("/pre-registro?step=jornada");
 }

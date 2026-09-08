@@ -11,8 +11,15 @@ import { preRegister, type RegistrationField } from "./actions";
 import { isRoleOption, ROLE_OPTIONS } from "./constants";
 import type { User } from "@/types/db";
 
-export function PreregForm({ profile }: { profile: User | null }) {
+export function PreregForm({ profile, email }: { profile: User | null; email: string }) {
   const router = useRouter();
+  const currentRole = profile?.headline && isRoleOption(profile.headline) ? profile.headline : "";
+  // A headline from the first version of the form is not in the list anymore
+  // but still has to show as selected, so it rides along as an extra option.
+  const roles: readonly string[] =
+    currentRole && !(ROLE_OPTIONS as readonly string[]).includes(currentRole)
+      ? [currentRole, ...ROLE_OPTIONS]
+      : ROLE_OPTIONS;
   const [state, formAction, pending] = useActionState(
     async (
       prev: { ok: true } | { ok: false; error: string; field: RegistrationField },
@@ -43,28 +50,37 @@ export function PreregForm({ profile }: { profile: User | null }) {
         <Input id="full_name" name="full_name" required defaultValue={profile?.full_name ?? ""} />
       </div>
       <div>
-        <Label htmlFor="whatsapp">WhatsApp</Label>
+        <Label htmlFor="email" hint="vem do seu login">E-mail</Label>
+        <Input id="email" type="email" value={email} readOnly className="bg-surface text-muted" />
+      </div>
+      <div>
+        <Label htmlFor="whatsapp" hint="com DDD">WhatsApp</Label>
         <Input
           id="whatsapp"
           name="whatsapp"
           type="tel"
           required
-          placeholder="+55 (11) 91234-5678"
+          placeholder="(11) 91234-5678"
           defaultValue={profile?.whatsapp ?? ""}
         />
       </div>
       <div>
-        <Label htmlFor="role">Como você se descreve?</Label>
-        <Select
-          id="role"
-          name="role"
+        <Label htmlFor="location">Cidade/Estado</Label>
+        <Input
+          id="location"
+          name="location"
           required
-          defaultValue={profile?.headline && isRoleOption(profile.headline) ? profile.headline : ""}
-        >
+          placeholder="São Paulo/SP"
+          defaultValue={profile?.location ?? ""}
+        />
+      </div>
+      <div>
+        <Label htmlFor="role">Perfil principal</Label>
+        <Select id="role" name="role" required defaultValue={currentRole}>
           <option value="" disabled>
             Selecione
           </option>
-          {ROLE_OPTIONS.map((r) => (
+          {roles.map((r) => (
             <option key={r} value={r}>
               {r}
             </option>

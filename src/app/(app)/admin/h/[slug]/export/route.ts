@@ -16,8 +16,24 @@ type UserCols = {
   twitter_url: string | null;
   linkedin_url: string | null;
   telegram_handle: string | null;
+  location: string | null;
 };
-const USER_COLS = "id, full_name, email, whatsapp, headline, github_url, twitter_url, linkedin_url, telegram_handle";
+const USER_COLS =
+  "id, full_name, email, whatsapp, headline, github_url, twitter_url, linkedin_url, telegram_handle, location";
+
+type InterestRow = {
+  user_id: string;
+  has_project: string | null;
+  looking_for_team: boolean | null;
+  project_name: string | null;
+  one_liner: string | null;
+  stage: string | null;
+  team_size: number | null;
+  project_url: string | null;
+  project_socials: string | null;
+  notes: string | null;
+  completed_at: string | null;
+};
 
 type MemberRow = {
   team_id: string;
@@ -30,7 +46,7 @@ const one = <T>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? nul
 
 async function usersCsv(hackathonId: string): Promise<CsvCell[][]> {
   const supabase = await createServiceRoleClient();
-  const [regs, members] = await Promise.all([
+  const [regs, members, interests] = await Promise.all([
     supabase
       .from("hackathon_registrations")
       .select(`user_id, registered_at, terms_accepted_at, luma_confirmed_at, user:users(${USER_COLS})`)
@@ -41,6 +57,12 @@ async function usersCsv(hackathonId: string): Promise<CsvCell[][]> {
       .select("user_id, teams!inner(name)")
       .eq("hackathon_id", hackathonId)
       .eq("status", "accepted"),
+    supabase
+      .from("campaign_interest")
+      .select(
+        "user_id, has_project, looking_for_team, project_name, one_liner, stage, team_size, project_url, project_socials, notes, completed_at",
+      )
+      .eq("hackathon_id", hackathonId),
   ]);
   type Reg = {
     user_id: string;
@@ -58,8 +80,13 @@ async function usersCsv(hackathonId: string): Promise<CsvCell[][]> {
     const t = one(m.teams);
     if (m.user_id && t) teamByUser.set(m.user_id, t.name);
   }
+  const interestByUser = new Map<string, InterestRow>();
+  for (const i of (unwrap(interests, "admin.export.users.interest") as unknown as InterestRow[] | null) ?? []) {
+    interestByUser.set(i.user_id, i);
+  }
   return rows.map((r) => {
     const u = one(r.user);
+    const i = interestByUser.get(r.user_id);
     return [
       u?.full_name,
       u?.email,
@@ -73,12 +100,25 @@ async function usersCsv(hackathonId: string): Promise<CsvCell[][]> {
       r.registered_at,
       r.terms_accepted_at,
       r.luma_confirmed_at,
+      u?.location,
+      i?.has_project,
+      i?.looking_for_team,
+      i?.project_name,
+      i?.one_liner,
+      i?.stage,
+      i?.team_size,
+      i?.project_url,
+      i?.project_socials,
+      i?.notes,
+      i?.completed_at,
     ];
   });
 }
 const USERS_HEADER = [
   "nome", "email", "whatsapp", "titulo", "github", "twitter", "linkedin", "telegram",
   "time", "inscrito_em", "termos_aceitos_em", "colosseum_confirmado_em",
+  "cidade_estado", "tem_projeto", "procura_time", "nome_projeto", "resumo_projeto", "estagio",
+  "tamanho_time", "link_projeto", "redes_projeto", "observacoes", "formulario_concluido_em",
 ];
 
 async function teamsCsv(hackathonId: string): Promise<CsvCell[][]> {

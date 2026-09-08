@@ -38,14 +38,16 @@ both sides land on one person.
 | Event | Side | Properties | Fires from |
 | --- | --- | --- | --- |
 | `cta_clicked` | client | `cta` (`"cadastro"`), `location` (`hero`, `jornada`, `jornada_colosseum`, `sticky`) | `TrackedCta` on the campaign LP and `MobileCtaBar` |
-| `campaign_link_clicked` | client | `target`, `location` (`lp`, `recursos`, `faq`, `pre_registro`, `dashboard`), `edition` on the dashboard panel | `TrackedCta` on the LP, `TrackedLink` on `/pre-registro`, `ExternalSubmissionPanel` |
+| `campaign_link_clicked` | client | `target` (`colosseum`, `colosseum_arena`, `whatsapp`, …), `location` (`lp`, `recursos`, `faq`, `pre_registro`, `dashboard`), `edition` on the dashboard panel | `TrackedCta` on the LP, `TrackedLink` on `/pre-registro`, `ExternalSubmissionPanel` |
 | `auth_provider_clicked` | client | `provider` (`google`, `github`, `email`, …) | `AuthForm`, on any sign-in attempt |
 | `auth_failed` | client | `provider`, `reason` (`oauth_request_failed`, `otp_request_failed`, `otp_verify_failed`, or the callback error) | `AuthForm` |
 | `auth_code_verified` | client | `provider: "email"` | `AuthForm`, after a valid OTP |
 | `registration_form_viewed` | client | — | `PreRegForm` mount on `/pre-registro` |
-| `registration_form_error` | client | `field` | `PreRegForm`, on a rejected submit |
+| `registration_form_error` | client | `field`, `form` (`"interest"` when it comes from the Sobre você step; absent on the Contato step) | `PreRegForm` and `InterestForm`, on a rejected submit |
 | `registration_completed` | server | `edition`, `role` (pre-registro only) | `preRegister` and `registerForHackathon`; only the first time the registration becomes complete for that edition, never on a re-save |
 | `colosseum_registration_confirmed` | server | `edition` | `confirmColosseumRegistration`, self-attestation on `/pre-registro` |
+| `interest_form_viewed` | client | — | `InterestForm` mount on `/pre-registro` (step Sobre você) |
+| `interest_form_saved` | server | `edition`, `completed` (`true` for "Salvar e continuar", `false` for "Salvar e terminar depois"), `has_project`, `looking_for_team` | `saveInterest`, on every successful save; not a funnel KPI, the flag says which button |
 | `team_created` | client | `edition` | `NewTeamForm`, after `create_team_with_leader` succeeds |
 | `member_invited` | server | `edition`, `team_id`, `via` (`email`, `board`), `has_account` | `addMemberToTeam` (team page form and team-up board invite) |
 | `invite_accepted` | client | `edition`, `team_id` | `PendingInviteActions` on the team page |

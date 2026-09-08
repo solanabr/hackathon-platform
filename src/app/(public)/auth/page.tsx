@@ -19,11 +19,19 @@ export default async function AuthPage({
     redirect(pickAuthNext(next, redirectParam) ?? (await defaultAuthRedirect(state)));
   }
 
+  const interestFunnel = pickAuthNext(next, redirectParam)?.startsWith("/pre-registro") ?? false;
+
   return (
     <main className="relative bg-surface">
       <div className="relative z-10 flex justify-center px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28">
         <Suspense fallback={null}>
-          <AuthForm />
+          <AuthForm
+            intro={
+              interestFunnel
+                ? "Para se cadastrar no hackathon, entre com Google ou receba um código por e-mail. Leva 1 minuto."
+                : undefined
+            }
+          />
         </Suspense>
       </div>
     </main>

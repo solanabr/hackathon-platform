@@ -28,7 +28,7 @@ const CALLBACK_ERRORS: Record<string, string> = {
     "Não foi possível concluir o login. Abra o link no mesmo navegador em que pediu o código, ou peça um novo.",
 };
 
-export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
+export function AuthForm({ defaultNext, intro }: { defaultNext?: string; intro?: string } = {}) {
   const searchParams = useSearchParams();
   const callbackError = searchParams.get("error");
   const [loading, setLoading] = useState<Provider | null>(null);
@@ -161,7 +161,7 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
           </span>
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-muted">
-          Entre para participar dos hackathons da Superteam Brasil.
+          {intro ?? "Entre para participar dos hackathons da Superteam Brasil."}
         </p>
       </div>
 
