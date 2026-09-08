@@ -18,7 +18,7 @@ import { LpSectionNav } from "./lp-section-nav";
  * on those two queries before the browser could even start on CSS and fonts.
  */
 const ENTRAR_CLASS =
-  "btn-cut btn-cut-outline inline-flex items-center px-3.5 py-1.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:text-surface sm:px-5 sm:py-2 sm:text-sm";
+  "btn-cut btn-cut-outline btn-cut-quiet inline-flex items-center px-3.5 py-1.5 text-[13px] font-semibold text-ink sm:px-5 sm:py-2 sm:text-sm";
 
 const CADASTRO_CLASS =
   "btn-cut inline-flex items-center whitespace-nowrap bg-emerald px-3.5 py-1.5 text-[13px] font-semibold text-surface transition-colors duration-200 hover:bg-emerald-deep sm:px-5 sm:py-2 sm:text-sm";

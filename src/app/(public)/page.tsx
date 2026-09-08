@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./pre-registro/constants";
+import { COLOSSEUM_DEADLINE_FALLBACK, COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./pre-registro/constants";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
@@ -8,7 +8,6 @@ import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { withPlatformUtm } from "@/lib/attribution";
 import {
   BookOpenIcon,
-  CaretDownIcon,
   CheckIcon,
   CoinsIcon,
   DiscordLogoIcon,
@@ -23,8 +22,10 @@ import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumBackdrop } from "@/components/home/colosseum-backdrop";
 import { NetworkHalo } from "@/components/home/network-halo";
 import { MobileCtaBar } from "@/components/campaign/mobile-cta-bar";
+import { StepGlyph } from "@/components/home/step-glyph";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
 import { EventTicket } from "@/components/campaign/event-ticket";
+import { CasesRail } from "@/components/home/cases-rail";
 
 
 export const metadata = {
@@ -231,10 +232,12 @@ export default async function HomePage() {
   // Logged-out visitors skip the /pre-registro round trip and land on the
   // login step with the deep link already attached.
   const cadastroHref = state ? "/pre-registro" : "/auth?next=/pre-registro";
+  const submissionDeadline = colosseum?.submission_deadline_at ?? COLOSSEUM_DEADLINE_FALLBACK;
 
   const journey = [
     {
       marker: "Agora",
+      glyph: "badge" as const,
       title: "Faça seu cadastro.",
       items: [
         "Leva dois minutos",
@@ -246,14 +249,15 @@ export default async function HomePage() {
           href={cadastroHref}
           event="cta_clicked"
           properties={{ cta: "cadastro", location: "jornada" }}
-          className="inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
+          className="btn-cut inline-flex w-fit items-center whitespace-nowrap bg-yellow px-6 py-3 text-sm font-bold text-green-dark transition-colors duration-200 hover:bg-yellow-strong"
         >
-          Fazer cadastro
+          <span>Fazer cadastro</span>
         </TrackedCta>
       ),
     },
     {
       marker: "Em seguida",
+      glyph: "arena" as const,
       title: "Registre-se no Colosseum.",
       items: [
         "Crie sua conta e clique em \u201cRegister now\u201d",
@@ -269,9 +273,9 @@ export default async function HomePage() {
               ? { target: "colosseum", location: "lp" }
               : { cta: "cadastro", location: "jornada_colosseum" }
           }
-          className="inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-emerald hover:text-surface"
+          className="btn-cut btn-cut-outline inline-flex w-fit items-center whitespace-nowrap px-6 py-3 text-sm font-bold text-ink transition-colors duration-200 hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"
         >
-          {registered ? "Abrir Colosseum" : "Libera após o cadastro"}
+          <span>{registered ? "Abrir Colosseum" : "Libera após o cadastro"}</span>
         </TrackedCta>
       ) : (
         <p className="font-mono text-xs font-bold uppercase tracking-widest text-muted">
@@ -281,6 +285,7 @@ export default async function HomePage() {
     },
     {
       marker: "Antes de 14 set",
+      glyph: "community" as const,
       title: "Entre na comunidade.",
       items: [
         "Workshops e mentorias ao vivo",
@@ -292,9 +297,9 @@ export default async function HomePage() {
           href={WHATSAPP_COMMUNITY_URL}
           event="campaign_link_clicked"
           properties={{ target: "whatsapp", location: "lp" }}
-          className="inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-emerald hover:text-surface"
+          className="btn-cut btn-cut-outline inline-flex w-fit items-center whitespace-nowrap px-6 py-3 text-sm font-bold text-ink transition-colors duration-200 hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"
         >
-          Entrar no WhatsApp
+          <span>Entrar no WhatsApp</span>
         </TrackedCta>
       ),
     },
@@ -337,7 +342,7 @@ export default async function HomePage() {
             </TrackedCta>
             <a
               href="#jornada"
-              className="btn-cut btn-cut-outline hidden whitespace-nowrap px-8 py-3.5 text-sm font-semibold text-ink transition-colors duration-200 hover:text-surface sm:px-9 sm:text-base lg:inline-flex lg:items-center"
+              className="btn-cut btn-cut-outline btn-cut-quiet hidden whitespace-nowrap px-8 py-3.5 text-sm font-semibold text-ink sm:px-9 sm:text-base lg:inline-flex lg:items-center"
             >
               <span>Como funciona</span>
             </a>
@@ -420,52 +425,23 @@ export default async function HomePage() {
       </section>
 
       {/* O hackathon global: the credibility section, real cases, no filler. */}
-      <section id="cases" className={LP_SECTION} aria-label="O hackathon global">
+      <section id="cases" className={`${LP_SECTION} mt-24 bg-surface-kraft pb-24 lg:mt-28 lg:pb-28`} aria-label="O hackathon global">
         <div className={LP_CONTAINER}>
-          <Reveal className="max-w-2xl">
-            <SectionHat>Colosseum</SectionHat>
-            <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-              O hackathon global
-            </h2>
-            <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
-              Todo ano, a Solana coloca builders do mundo inteiro para competir, 100% remoto, com
-              prêmios em dinheiro e investimento anjo direto para os melhores times.{" "}
-              <strong className="text-ink">
-                Nas duas últimas edições, times brasileiros saíram de lá com capital confirmado.
-              </strong>
-            </p>
-          </Reveal>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2">
-            {CASES.map((c, i) => (
-              <Reveal key={c.name} delay={i * 150}>
-              <a
-                href={c.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block h-full rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker transition-transform duration-200 hover:-translate-y-1 sm:p-8"
-              >
-                <div className="flex items-center gap-4">
-                  <Image
-                    src={c.logo}
-                    alt={`Logo da ${c.name}`}
-                    width={56}
-                    height={56}
-                    className="h-14 w-14 rounded-2xl border-2 border-green-dark/10 object-cover"
-                  />
-                  <div className="min-w-0">
-                    <p className="font-heading text-2xl font-bold group-hover:underline">{c.name}</p>
-                    <p className="text-sm text-muted">{c.tagline}</p>
-                  </div>
-                </div>
-                <p className="mt-4 inline-block -rotate-1 bg-yellow px-2.5 py-1 text-sm font-bold text-green-dark">
-                  {c.result}
-                </p>
-                <p className="mt-4 text-pretty leading-relaxed text-green-dark/70">{c.body}</p>
-              </a>
-              </Reveal>
-            ))}
-          </div>
+          <CasesRail cases={CASES}>
+            <Reveal>
+              <SectionHat>Colosseum</SectionHat>
+              <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
+                O hackathon global
+              </h2>
+              <p className="mt-4 text-pretty leading-relaxed text-ink/80">
+                Todo ano, a Solana coloca builders do mundo inteiro para competir, 100% remoto, com
+                prêmios em dinheiro e investimento anjo direto para os melhores times.{" "}
+                <strong className="text-ink">
+                  Nas duas últimas edições, times brasileiros saíram de lá com capital confirmado.
+                </strong>
+              </p>
+            </Reveal>
+          </CasesRail>
         </div>
       </section>
 
@@ -514,8 +490,14 @@ export default async function HomePage() {
                     />
                   </div>
 
-                  <div className="mt-5 flex flex-1 flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                    <h3 className="font-heading text-xl font-bold">{step.title}</h3>
+                  <div className="card-cut mt-5 flex flex-1 flex-col p-6 sm:p-7">
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/40">
+                      Passo {`0${i + 1}`}
+                    </p>
+                    <div className="mt-4 border-y border-green-dark/15 py-4 text-green-dark">
+                      <StepGlyph shape={step.glyph} className="mx-auto h-32 w-auto" />
+                    </div>
+                    <h3 className="mt-6 font-heading text-xl font-bold">{step.title}</h3>
                     <ul className="mb-6 mt-4 space-y-2.5">
                       {step.items.map((item) => (
                         <li
@@ -555,31 +537,31 @@ export default async function HomePage() {
 
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <Reveal delay={100} className="lg:col-span-2">
-              <article className="overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-deeper shadow-sticker">
-                <header className="px-6 pt-6 sm:px-8 sm:pt-8">
+              <article className="overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-kraft shadow-sticker">
+                <header className="px-6 pt-5 sm:px-8 sm:pt-6">
                   <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
                     Calendário
                   </p>
-                  <h3 className="mt-2 font-heading text-2xl font-black uppercase text-ink [font-stretch:115%] sm:text-3xl">
+                  <h3 className="mt-1.5 font-heading text-xl font-black uppercase text-ink [font-stretch:115%] sm:text-2xl">
                     Calendário do hackathon
                   </h3>
-                  <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-green-dark/70">
+                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-green-dark/70">
                     Da abertura do Colosseum ao anúncio dos vencedores.
                   </p>
                 </header>
-                <ol className="mx-6 mt-6 overflow-hidden rounded-t-2xl border-2 border-b-0 border-green-dark bg-surface-raised divide-y-2 divide-green-dark/15 sm:mx-12 sm:mt-8 lg:mx-20 xl:mx-28">
+                <ol className="mx-6 mt-5 overflow-hidden rounded-t-2xl border-2 border-b-0 border-green-dark bg-surface-raised divide-y-2 divide-green-dark/15 sm:mx-16 sm:mt-6 lg:mx-28 xl:mx-40">
                   {CALENDAR.map((item) => (
                     <li
                       key={item.title}
-                      className={`grid gap-1 px-6 py-5 sm:grid-cols-12 sm:items-baseline sm:gap-6 sm:px-8 sm:py-6 ${
+                      className={`grid gap-0.5 px-5 py-3.5 sm:grid-cols-12 sm:items-baseline sm:gap-6 sm:px-6 sm:py-4 ${
                         item.highlight ? "bg-green text-surface" : "text-ink"
                       }`}
                     >
-                      <p className={`font-heading text-2xl font-black uppercase leading-none [font-stretch:115%] sm:col-span-3 sm:text-3xl ${item.highlight ? "text-yellow" : ""}`}>
+                      <p className={`font-heading text-xl font-black uppercase leading-none [font-stretch:115%] sm:col-span-3 sm:text-2xl ${item.highlight ? "text-yellow" : ""}`}>
                         {item.date}
                       </p>
                       <div className="sm:col-span-9">
-                        <p className="font-heading text-lg font-bold">
+                        <p className="font-heading text-base font-bold">
                           {item.href ? (
                             <a href={item.href} target="_blank" rel="noopener noreferrer" className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald">
                               {item.title}
@@ -669,12 +651,12 @@ export default async function HomePage() {
           the darker sheet bleeding to the edges. */}
       <section id="faq" aria-label="Perguntas frequentes" className="mt-24 lg:mt-28">
         <div className={`${LP_CONTAINER} px-4 sm:px-6 lg:px-8 xl:px-12`}>
-          <span className="ml-4 inline-block rounded-t-xl bg-surface-deep px-10 pb-1 pt-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-green-dark/70 sm:ml-[8%]">
+          <span className="ml-4 inline-block rounded-t-xl bg-surface-kraft px-10 pb-1 pt-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-green-dark/70 sm:ml-[8%]">
             FAQ
           </span>
         </div>
 
-        <div className="bg-surface-deep">
+        <div className="bg-surface-kraft">
           <div className={`${LP_CONTAINER} grid gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20 lg:px-8 lg:pb-28 lg:pt-12 xl:px-12`}>
             <FaqAside>
               <Reveal>
@@ -698,33 +680,46 @@ export default async function HomePage() {
                   </span>
                   Pergunta no WhatsApp
                 </TrackedCta>
+                <StepGlyph shape="question" className="mt-12 hidden w-full max-w-[17rem] text-ink lg:block" />
               </Reveal>
             </FaqAside>
 
-            <div className="space-y-10">
-              {FAQ_GROUPS.map((g, i) => (
-                <Reveal key={g.title} delay={i * 80}>
-                  <p className="mb-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/50">
-                    {g.title}
-                  </p>
-                  {g.items.map((f) => (
-                    <details key={f.q} className="group border-b border-dashed border-green-dark/40">
-                      <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-4 font-heading text-base font-bold leading-snug text-ink transition-colors hover:text-emerald sm:text-lg [&::-webkit-details-marker]:hidden">
-                        <span className="text-pretty">{f.q}</span>
-                        <span
-                          aria-hidden
-                          className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-raised text-green-dark transition-transform duration-200 group-open:rotate-180"
-                        >
-                          <CaretDownIcon size={13} weight="bold" />
-                        </span>
-                      </summary>
-                      <p className="faq-answer max-w-2xl pb-5 pr-10 text-pretty leading-relaxed text-green-dark/75">
-                        {f.a}
-                      </p>
-                    </details>
-                  ))}
-                </Reveal>
-              ))}
+            <div className="space-y-12 border-y border-dashed border-green-dark/30 py-10 sm:border-x sm:px-8">
+              {FAQ_GROUPS.map((g, i) => {
+                const offset = FAQ_GROUPS.slice(0, i).reduce((n, prev) => n + prev.items.length, 0);
+                return (
+                  <Reveal key={g.title} delay={i * 80}>
+                    <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/45">
+                      {g.title}
+                    </p>
+                    {g.items.map((f, j) => (
+                      <details key={f.q} className="group border-t border-dashed border-green-dark/35">
+                        <summary className="flex cursor-pointer list-none items-start gap-4 py-5 sm:gap-6 [&::-webkit-details-marker]:hidden">
+                          <span
+                            aria-hidden
+                            className="mt-1.5 w-7 shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-green-dark/40"
+                          >
+                            Q{offset + j + 1}
+                          </span>
+                          <span className="flex-1 text-pretty font-heading text-lg font-bold leading-snug text-ink transition-colors group-hover:text-emerald sm:text-xl">
+                            {f.q}
+                          </span>
+                          <span
+                            aria-hidden
+                            className="relative mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border-2 border-green-dark/60 text-green-dark transition-colors duration-200 group-hover:border-green-dark group-hover:bg-yellow"
+                          >
+                            <span className="h-[2px] w-3 rounded-full bg-current" />
+                            <span className="absolute h-3 w-[2px] rounded-full bg-current transition-transform duration-200 group-open:scale-y-0" />
+                          </span>
+                        </summary>
+                        <p className="faq-answer max-w-2xl pb-6 pl-11 pr-10 text-pretty leading-relaxed text-green-dark/75 sm:pl-13">
+                          {f.a}
+                        </p>
+                      </details>
+                    ))}
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -737,14 +732,12 @@ export default async function HomePage() {
         className={`${LP_SECTION} -mb-24 overflow-hidden bg-emerald-deep pb-48 lg:pb-52`}
         aria-label="Fazer cadastro"
       >
-        <div className={`${LP_CONTAINER} relative`}>
-          {colosseum && (
-            <Countdown
-              deadlineIso={colosseum.submission_deadline_at}
-              variant="backdrop"
-              className="pointer-events-none absolute inset-x-0 top-0 -translate-y-1/2 text-center text-[clamp(3rem,14vw,11rem)] text-surface/20"
-            />
-          )}
+        <div className={`${LP_CONTAINER} relative pt-[clamp(5rem,18vw,15rem)]`}>
+          <Countdown
+            deadlineIso={submissionDeadline}
+            variant="backdrop"
+            className="pointer-events-none absolute inset-x-0 top-0 text-center text-[clamp(3.5rem,16vw,13rem)] text-surface/25"
+          />
           <Reveal>
             <div className="relative rounded-2xl border-2 border-green-dark bg-surface-raised p-7 text-center shadow-sticker sm:p-12">
               <SectionHat centered>Última chamada</SectionHat>
@@ -759,20 +752,6 @@ export default async function HomePage() {
                   pode ser o seu.
                 </span>
               </h2>
-
-              {colosseum && (
-                <div className="mt-9">
-                  <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60">
-                    Prazo final de envio
-                  </p>
-                  <Countdown
-                    deadlineIso={colosseum.submission_deadline_at}
-                    variant="segments"
-                    size="md"
-                    className="mt-4"
-                  />
-                </div>
-              )}
 
               <TrackedCta
                 href={cadastroHref}

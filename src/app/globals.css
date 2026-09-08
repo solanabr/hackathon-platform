@@ -5,6 +5,7 @@
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
   --color-surface-deep: #efe0ba;
+  --color-surface-kraft: #d1c09f;
   --color-surface-deeper: #e8d5a6;
   --color-ink: #1b231d;
   --color-muted: #5f6f60;
@@ -102,27 +103,40 @@
   }
 
   .btn-cut-outline {
-    background-color: var(--color-green-dark);
+    --btn-cut-edge: 2px;
+    background-color: var(--btn-cut-edge-color, var(--color-green-dark));
   }
 
   .btn-cut-outline::before {
     content: "";
     position: absolute;
-    inset: 2px;
+    inset: var(--btn-cut-edge);
     border-radius: 0.375rem;
     background-color: var(--btn-cut-fill, var(--color-surface));
     transition: background-color 200ms;
     clip-path: polygon(
       0 0,
       100% 0,
-      100% calc(100% - var(--cut) + 2px),
-      calc(100% - var(--cut) + 2px) 100%,
+      100% calc(100% - var(--cut) + var(--btn-cut-edge)),
+      calc(100% - var(--cut) + var(--btn-cut-edge)) 100%,
       0 100%
     );
   }
 
   .btn-cut-outline:hover::before {
     background-color: var(--color-emerald);
+  }
+
+  /* Quiet secondary: a light kraft behind a hairline edge, and a hover that
+     only deepens the same tone instead of turning green. */
+  .btn-cut-quiet {
+    --btn-cut-edge: 1px;
+    --btn-cut-edge-color: color-mix(in srgb, var(--color-green-dark) 35%, transparent);
+    --btn-cut-fill: var(--color-surface-deeper);
+  }
+
+  .btn-cut-outline.btn-cut-quiet:hover::before {
+    background-color: var(--color-surface-kraft);
   }
 
   /* The label sits above the fill layer. */
@@ -140,7 +154,42 @@
 
   .btn-cut-outline:focus-visible::before {
     outline: 2px solid var(--color-yellow);
-    outline-offset: -2px;
+    outline-offset: calc(-1 * var(--btn-cut-edge));
+  }
+
+  /* Corner-cut cards: the .btn-cut chamfer at card scale, cut on the top
+     right. Same trick — the element paints the edge, ::before the fill —
+     plus a drop-shadow, since a box-shadow would be clipped away. */
+  .card-cut {
+    --cut: 2.5rem;
+    position: relative;
+    background-color: var(--color-green-dark);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cut)) 0,
+      100% var(--cut),
+      100% 100%,
+      0 100%
+    );
+    filter: drop-shadow(6px 6px 0 rgb(27 35 29 / 0.18));
+  }
+
+  .card-cut::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background-color: var(--card-cut-fill, var(--color-surface-raised));
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cut) + 2px) 0,
+      100% calc(var(--cut) - 2px),
+      100% 100%,
+      0 100%
+    );
+  }
+
+  .card-cut > * {
+    position: relative;
   }
 
   /* Markdown sections on edition pages, in the LP voice. */
@@ -321,38 +370,61 @@ details[open] > .faq-answer {
   animation: faqOpen 0.25s ease-out;
 }
 
-/* Hero ticket: the perforation between body and stub is punched through the
-   border, and the left edge is torn off a roll — both cut with one mask. */
-.ticket-edge {
-  --ticket-stub: 3.25rem;
-  --ticket-notch: 8px;
+/* Hero ticket: the paper is die-cut on all four edges — one scallop mask per
+   edge, intersected, so the outline chews like a real perforation. The shadow
+   sits on the wrapper because a mask clips a box-shadow off its own element. */
+.ticket-paper {
+  --ticket-notch: 5px;
+  --ticket-pitch: 13px;
   mask-image:
-    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
-    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
-    radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
-  mask-size: 100% 100%, 100% 100%, 100% 26px;
-  mask-repeat: no-repeat, no-repeat, round;
+    radial-gradient(circle var(--ticket-notch) at 50% 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 50% 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 0 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 100% 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch));
+  mask-size: var(--ticket-pitch) 100%, var(--ticket-pitch) 100%, 100% var(--ticket-pitch), 100% var(--ticket-pitch);
+  mask-repeat: round no-repeat, round no-repeat, no-repeat round, no-repeat round;
   mask-composite: intersect;
   -webkit-mask-image:
-    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
-    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
-    radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
-  -webkit-mask-size: 100% 100%, 100% 100%, 100% 26px;
-  -webkit-mask-repeat: no-repeat, no-repeat, round;
+    radial-gradient(circle var(--ticket-notch) at 50% 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 50% 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 0 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 100% 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch));
+  -webkit-mask-size: var(--ticket-pitch) 100%, var(--ticket-pitch) 100%, 100% var(--ticket-pitch), 100% var(--ticket-pitch);
+  -webkit-mask-repeat: round no-repeat, round no-repeat, no-repeat round, no-repeat round;
   -webkit-mask-composite: source-in;
 }
 
 @media (min-width: 640px) {
-  .ticket-edge {
-    --ticket-stub: 4.5rem;
-    --ticket-notch: 10px;
+  .ticket-paper {
+    --ticket-notch: 6.5px;
+    --ticket-pitch: 16px;
   }
 }
 
-/* Uneven bars, so the barcode reads as printed rather than generated. */
-.ticket-barcode {
+/* The shadow has to follow the die-cut, so it is a filter on the wrapper. */
+.ticket-shadow {
+  filter: drop-shadow(0 16px 22px rgb(27 35 29 / 0.26));
+}
+
+/* The tear line: holes punched through to the cream, each with the burr the
+   punch leaves on the paper. */
+.ticket-holes {
+  background-image: radial-gradient(
+    circle 5.4px at 50% 50%,
+    var(--color-surface) 0 4.2px,
+    rgb(27 35 29 / 0.38) 4.2px 5px,
+    transparent 5.2px
+  );
+  background-size: 100% 20px;
+  background-repeat: no-repeat round;
+  background-position: center;
+}
+
+/* Uneven bars, so the barcode reads as printed rather than generated; it runs
+   bottom-up on the stub, so the gradient walks the y axis. */
+.ticket-barcode-v {
   background-image: repeating-linear-gradient(
-    90deg,
+    0deg,
     currentColor 0 2px,
     transparent 2px 4px,
     currentColor 4px 5px,
@@ -364,27 +436,10 @@ details[open] > .faq-answer {
   );
 }
 
-/* The postmark lands on the paper after the hero settles. */
-@keyframes ticketStamp {
-  0% { opacity: 0; transform: scale(1.6) rotate(-26deg); }
-  60% { opacity: 1; }
-  100% { opacity: 1; transform: scale(1) rotate(-14deg); }
-}
-.ticket-stamp {
-  opacity: 0;
-  transform-origin: center;
-  animation: ticketStamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s forwards;
-}
-
 
 @media (prefers-reduced-motion: reduce) {
   .animate-brand-fill {
     animation: none;
     clip-path: none;
-  }
-  .ticket-stamp {
-    animation: none;
-    opacity: 1;
-    transform: rotate(-14deg);
   }
 }
