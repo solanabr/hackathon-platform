@@ -70,7 +70,7 @@ function StepIndicator({ active }: { active: Step }) {
           >
             {step.n}
           </span>
-          <span className={step.n === active ? "text-ink" : ""}>{step.label}</span>
+          <span className={step.n === active ? "text-ink" : "hidden sm:inline"}>{step.label}</span>
           {i < STEPS.length - 1 && <span className="mx-1 h-px w-4 bg-green-dark/20" />}
         </span>
       ))}
