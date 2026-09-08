@@ -16,6 +16,14 @@ A self-hosted Evolution deployment needs persistent service operation and storag
 
 If self-hosting becomes necessary, provision an isolated service with a pinned supported release, PostgreSQL database/role separate from participant data, Redis, persistent volumes, HTTPS, server-held credentials, backup/restore, health monitoring and an operational owner. Size it after confirming provider mode and load. Do not run upstream migrations against the existing application schema. No installation, server purchase or production mutation was performed in this assessment.
 
+### Community CRM alternative, inspected later on September 8
+
+The supplied [EvoCRM Community v1.1.0 release](https://github.com/evolution-foundation/evo-crm-community/releases/tag/v1.1.0) is the complete self-hosted CRM, distinct from the Evolution API messaging gateway. Its umbrella repository was cloned separately at `3c19c2d`; submodules were not initialized. The release publishes `1.1.0` container images. The Community README describes a single-account installation without the SaaS plan limits; that does not remove WhatsApp provider conditions or establish portability of a paid subscription. [Repository](https://github.com/evolution-foundation/evo-crm-community)
+
+The checked-in development Compose resolves 14 services, including PostgreSQL/pgvector, Redis, RabbitMQ, ClickHouse, development email, application services and background workers. Configuration parsing passed; no containers ran because the local Docker daemon was unavailable. Several services build from submodules, while some image references remain `latest`; the Swarm example also uses `latest`. A reproducible deployment must pin compatible images and adapt development commands/volumes, not merely check out the tag. [Versioned Compose](https://github.com/evolution-foundation/evo-crm-community/blob/v1.1.0/docker-compose.yml)
+
+This makes self-hosting a feasible fallback, subject to a separate operational evaluation. It does not prove the hosted product's reported access problem will disappear in Community. Keep campaign delivery independent of hosted account provisioning, and promote a self-hosted CRM to a live dependency only after login, inbox, agent, provider callbacks and recovery are demonstrated.
+
 ## Purchased plan versus send readiness
 
 Felix reports purchasing Essential for R$297/month. On September 8, the public Essential offer advertises **10,000 campaign sends/month, one connected channel, five automations/journeys and 300 Darwin credits/month**. It also advertises bringing one's own AI provider key. These are commercial allowances, not proof of this tenant's activation, remaining balance or WhatsApp delivery capability. [Public plan](https://evolutionfoundation.com.br/)
