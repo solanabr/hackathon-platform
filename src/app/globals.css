@@ -83,6 +83,64 @@
            focus-visible:ring-green-dark/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
+  /* Corner-cut CTAs: square-ish corners with a chamfer on the bottom right.
+     clip-path removes the border along the diagonal, so the outline variant
+     paints its own edge — the element is the border, ::after is the fill. */
+  .btn-cut {
+    --cut: 0.7rem;
+    position: relative;
+    border-radius: 0.5rem;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%,
+      0 100%
+    );
+  }
+
+  .btn-cut-outline {
+    background-color: var(--color-green-dark);
+  }
+
+  .btn-cut-outline::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 0.375rem;
+    background-color: var(--color-surface);
+    transition: background-color 200ms;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--cut) + 2px),
+      calc(100% - var(--cut) + 2px) 100%,
+      0 100%
+    );
+  }
+
+  .btn-cut-outline:hover::before {
+    background-color: var(--color-green-dark);
+  }
+
+  /* The label sits above the fill layer. */
+  .btn-cut > span {
+    position: relative;
+  }
+
+  /* clip-path removes any ring drawn outside the box, so keyboard focus is an
+     inset outline instead. On the outline variant it rides the fill layer,
+     which paints above the element's own outline. */
+  .btn-cut:focus-visible {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: -4px;
+  }
+
+  .btn-cut-outline:focus-visible::before {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: -2px;
+  }
+
   /* Markdown sections on edition pages, in the LP voice. */
   .prose-lp {
     @apply leading-relaxed text-ink/85;
@@ -223,6 +281,15 @@
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+/* Without JS the IntersectionObserver never adds .reveal-in, so every section
+   below the hero would stay at opacity 0. */
+@media (scripting: none) {
   .reveal {
     opacity: 1;
     transform: none;

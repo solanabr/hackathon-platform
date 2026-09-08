@@ -44,3 +44,8 @@ branding/
 
 # supabase cli scratch
 supabase/.temp/
+
+# local tooling scratch
+.impeccable/
+.playwright-mcp/
+/hero-*.png

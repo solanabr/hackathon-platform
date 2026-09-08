@@ -7,10 +7,9 @@ import { trackClient } from "@/lib/analytics-browser";
 type Step = {
   title: string;
   body: string;
-  label: string;
-  href: string;
-  event: string;
-  properties: Record<string, unknown>;
+  // Step 1 carries no link: the hero's own CTA sits right above this list and
+  // goes to the same place.
+  cta?: { label: string; href: string; event: string; properties: Record<string, unknown> };
 };
 
 /** Phone-only digest of the jornada, placed right under the hero CTA so the
@@ -46,29 +45,29 @@ export function MobileSteps({
     {
       title: "Faça seu cadastro",
       body: "Leva dois minutos. Você recebe tudo sobre o hackathon e não perde nenhuma data.",
-      label: "Fazer cadastro",
-      href: "/pre-registro",
-      event: "cta_clicked",
-      properties: { cta: "cadastro", location: "hero_steps" },
     },
     {
       title: "Registre-se no Colosseum",
       body: "Crie sua conta e clique em “Register now” já, mesmo sem ideia ou time.",
-      label: "Abrir Colosseum",
-      href: registered && colosseumUrl ? colosseumUrl : "/pre-registro",
-      event: registered && colosseumUrl ? "campaign_link_clicked" : "cta_clicked",
-      properties:
-        registered && colosseumUrl
-          ? { target: "colosseum", location: "hero_steps" }
-          : { cta: "cadastro", location: "hero_steps_colosseum" },
+      cta: {
+        label: registered && colosseumUrl ? "Abrir Colosseum" : "Libera após o cadastro",
+        href: registered && colosseumUrl ? colosseumUrl : "/pre-registro",
+        event: registered && colosseumUrl ? "campaign_link_clicked" : "cta_clicked",
+        properties:
+          registered && colosseumUrl
+            ? { target: "colosseum", location: "hero_steps" }
+            : { cta: "cadastro", location: "hero_steps_colosseum" },
+      },
     },
     {
       title: "Construa com a comunidade",
       body: "Workshops, mentores e suporte no WhatsApp até o envio, de 14 set a 12 out.",
-      label: "Entrar no WhatsApp",
-      href: whatsappUrl,
-      event: "campaign_link_clicked",
-      properties: { target: "whatsapp", location: "hero_steps" },
+      cta: {
+        label: "Entrar no WhatsApp",
+        href: whatsappUrl,
+        event: "campaign_link_clicked",
+        properties: { target: "whatsapp", location: "hero_steps" },
+      },
     },
   ];
 
@@ -83,14 +82,16 @@ export function MobileSteps({
             <div className="min-w-0 flex-1">
               <h3 className="font-heading text-base font-bold leading-tight text-ink">{step.title}</h3>
               <p className="mt-1 text-pretty text-[13px] leading-snug text-green-dark/70">{step.body}</p>
-              <TrackedCta
-                href={step.href}
-                event={step.event}
-                properties={step.properties}
-                className="mt-1.5 inline-block font-mono text-[11px] font-bold uppercase tracking-widest text-emerald underline decoration-2 underline-offset-4"
-              >
-                {step.label} →
-              </TrackedCta>
+              {step.cta && (
+                <TrackedCta
+                  href={step.cta.href}
+                  event={step.cta.event}
+                  properties={step.cta.properties}
+                  className="mt-1 inline-flex min-h-11 items-center font-mono text-[11px] font-bold uppercase tracking-widest text-emerald underline decoration-2 underline-offset-4"
+                >
+                  {step.cta.label} →
+                </TrackedCta>
+              )}
             </div>
           </li>
         ))}

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./pre-registro/constants";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -14,9 +13,10 @@ import {
   WhatsappLogoIcon,
   YoutubeLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { Countdown } from "@/components/ui/countdown";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
-import { Tilt } from "@/components/ui/tilt";
+import { ColosseumBackdrop } from "@/components/home/colosseum-backdrop";
 import { MobileCtaBar } from "@/components/campaign/mobile-cta-bar";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
 
@@ -183,53 +183,58 @@ export default async function HomePage() {
   const cadastroHref = state ? "/pre-registro" : "/auth?next=/pre-registro";
   return (
     <div className="bg-surface text-ink">
-      {/* Hero: centered launch-announcement stack, the cheque as the single
-          visual below it with room to read like a real cheque. */}
-      <section className="relative flex min-h-[88dvh] flex-col justify-center overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          {/* Yellow field under the desk's left side, emerald behind its right. */}
-          <div
-            className="morth animate-float-a absolute hidden bg-yellow sm:block sm:-left-28 sm:bottom-6 sm:h-[22rem] sm:w-[22rem] md:h-[26rem] md:w-[26rem] lg:-left-44 lg:bottom-8 lg:h-[34rem] lg:w-[34rem] 2xl:-left-56 2xl:h-[40rem] 2xl:w-[40rem]"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-07.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-07.svg)", transform: "rotate(14deg)" }}
-          />
-          <div
-            className="morth animate-float-b absolute hidden bg-emerald sm:block sm:-right-40 sm:top-[44%] sm:h-[18rem] sm:w-[18rem] lg:-right-56 lg:top-[7%] lg:h-[26rem] lg:w-[26rem] 2xl:-right-64 2xl:h-[34rem] 2xl:w-[34rem]"
-            style={{ maskImage: "url(/brand/stbr/elements/morth-12.svg)", WebkitMaskImage: "url(/brand/stbr/elements/morth-12.svg)", transform: "rotate(-9deg)" }}
-          />
+      {/* Hero: one centred stack on the cream, the amphitheatre rising out of
+          the base and the cheque as the only object in front of it. */}
+      <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[44%] sm:h-[52%]">
+          <ColosseumBackdrop />
         </div>
 
-        <div className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:820px)]:py-6`}>
-          <h1 className="font-heading font-black uppercase leading-[1.04] tracking-tight text-ink [font-stretch:108%]">
-            <span className="block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">O próximo time a captar</span>
-            <span className="mt-1 block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">
-              <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">milhões</span> pode ser o seu.
+        <div className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:860px)]:py-6`}>
+          <h1 className="font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:text-[4.2rem] xl:text-[5rem]">
+            <span className="block">O próximo time</span>
+            <span className="mt-1 block">
+              a captar <span className="inline-block bg-yellow px-3 text-green-dark">milhões</span>
             </span>
+            <span className="mt-1 block">pode ser o seu.</span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg lg:hidden">
+          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:hidden">
             O maior hackathon online do mundo: prêmios milionários e capital anjo.
           </p>
-          <p className="mx-auto mt-5 hidden max-w-2xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg lg:block">
+          <p className="mx-auto mt-6 hidden max-w-2xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:block">
             O Colosseum é o maior hackathon online do mundo: prêmios milionários e capital anjo
             para as melhores equipes.
           </p>
 
-          <div id="hero-cta" className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+          <div id="hero-cta" className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <TrackedCta
               href={cadastroHref}
               event="cta_clicked"
               properties={{ cta: "cadastro", location: "hero" }}
-              className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-7 py-3.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-10 sm:text-lg"
+              className="btn-cut inline-flex items-center whitespace-nowrap bg-green-dark px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-200 hover:bg-emerald sm:px-10 sm:text-base"
             >
-              Fazer cadastro
+              <span>Fazer cadastro</span>
             </TrackedCta>
             <a
               href="#jornada"
-              className="hidden whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-3.5 lg:block text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-9 sm:text-lg"
+              className="btn-cut btn-cut-outline hidden whitespace-nowrap px-8 py-3.5 text-sm font-semibold text-ink transition-colors duration-200 hover:text-surface sm:px-9 sm:text-base lg:inline-flex lg:items-center"
             >
-              Como funciona
+              <span>Como funciona</span>
             </a>
           </div>
+
+          <ul
+            className="mx-auto mt-6 flex max-w-xl flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs text-ink/55 sm:text-sm"
+            aria-label="Fatos do hackathon"
+          >
+            {["100% online", "14 set a 12 out", "R$15M+ captados por times brasileiros"].map((fact, i) => (
+              <li key={fact} className="flex items-center gap-2.5">
+                {i > 0 && <span aria-hidden className="h-1 w-1 rounded-full bg-ink/25" />}
+                {fact}
+              </li>
+            ))}
+          </ul>
 
           <MobileSteps
             whatsappUrl={WHATSAPP_COMMUNITY_URL}
@@ -237,117 +242,82 @@ export default async function HomePage() {
             registered={registered}
           />
 
-          {/* The desk: the cheque is the main sticker, the facts are stickers
-              around it. The cheque fills itself out on load (globals.css).
-              Below lg the stickers are folded into a caption so the cheque
-              stays a compact visual instead of a second wall. */}
-          <div className="mx-auto mt-8 w-full max-w-sm md:max-w-xl lg:mt-10 lg:max-w-none">
-          <Tilt max={5} className="relative pt-2 text-left lg:h-[26rem] lg:pt-0 xl:h-[28rem]">
-            <div aria-hidden className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2 xl:w-[44rem]">
-            <div className="relative sm:[transform:rotate(-3deg)] lg:[transform:rotate(-4deg)]">
-              <div aria-hidden className="absolute inset-0 translate-y-6 rounded-xl bg-green-dark/25 blur-2xl" />
-              <div aria-hidden className="cheque-perf absolute inset-0 translate-x-3.5 translate-y-3.5 rounded-xl bg-green-dark" />
-              <div className="cheque-perf relative overflow-hidden rounded-xl border-4 border-green-dark bg-[linear-gradient(105deg,#eef3e2_0%,#fffdf6_40%,#fbf1d6_100%)]">
-                <div className="absolute inset-y-0 left-0 w-3 bg-yellow" />
-                <svg
-                  viewBox="0 0 140 100"
-                  className="absolute right-10 top-1/2 h-36 w-auto -translate-y-1/2 text-green-dark opacity-[0.06]"
-                  aria-hidden
-                >
-                  <path d="M30 0 H140 L110 26 H0 Z" fill="currentColor" />
-                  <path d="M0 37 H110 L140 63 H30 Z" fill="currentColor" />
-                  <path d="M30 74 H140 L110 100 H0 Z" fill="currentColor" />
-                </svg>
-                <div className="pointer-events-none absolute inset-2 rounded-lg border border-green-dark/15" />
+          {/* The cheque: the single object in the hero, flat and square to the
+              page. It fills itself out on load (globals.css). */}
+          <div aria-hidden className="mx-auto mt-9 w-full max-w-sm text-left md:max-w-xl lg:mt-11 lg:max-w-2xl">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-green-dark bg-[linear-gradient(105deg,#eef3e2_0%,#fffdf6_40%,#fbf1d6_100%)] shadow-[0_28px_70px_-32px_rgb(27_35_29_/_0.45)]">
+              <div className="absolute inset-y-0 left-0 w-3 bg-yellow" />
+              <svg
+                viewBox="0 0 140 100"
+                className="absolute right-10 top-1/2 h-36 w-auto -translate-y-1/2 text-green-dark opacity-[0.06]"
+                aria-hidden
+              >
+                <path d="M30 0 H140 L110 26 H0 Z" fill="currentColor" />
+                <path d="M0 37 H110 L140 63 H30 Z" fill="currentColor" />
+                <path d="M30 74 H140 L110 100 H0 Z" fill="currentColor" />
+              </svg>
+              <div className="pointer-events-none absolute inset-2 rounded-xl border border-green-dark/12" />
 
-                <div className="relative p-4 pl-7 sm:px-7 sm:py-4 sm:pl-9">
-                  <div className="flex items-start justify-between gap-4">
-                    <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
-                      Colosseum
-                      <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
-                        Prêmio do Crypto World&apos;s Fair
-                      </span>
-                    </p>
-                    <div className="shrink-0 whitespace-nowrap text-right font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
-                      <p>Nº 001417</p>
-                    </div>
+              <div className="relative p-4 pl-7 sm:px-8 sm:py-6 sm:pl-10">
+                <div className="flex items-start justify-between gap-4">
+                  <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
+                    Colosseum
+                    <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
+                      Prêmio do Crypto World&apos;s Fair
+                    </span>
+                  </p>
+                  <div className="shrink-0 whitespace-nowrap text-right font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
+                    <p>Nº 001417</p>
                   </div>
+                </div>
 
-                  <div className="mt-3 flex items-end gap-3 sm:mt-4 sm:gap-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
-                        Pague ao
-                      </p>
-                      <div className="border-b-2 border-dotted border-green-dark/50 pb-1">
-                        <p className="cheque-payee font-heading text-xl font-black uppercase leading-none text-ink [font-stretch:115%] sm:text-2xl">
-                          Seu time
-                        </p>
-                      </div>
-                    </div>
-                    <div className="cheque-amount flex shrink-0 items-baseline gap-1.5 rounded-lg border-2 border-green-dark bg-yellow px-3 py-1.5 sm:px-4 sm:py-2">
-                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">até</span>
-                      <span className="font-heading text-lg font-black leading-none tracking-tight text-green-dark sm:text-xl">USD 250k</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-2.5">
+                <div className="mt-3 flex items-end gap-3 sm:mt-5 sm:gap-4">
+                  <div className="min-w-0 flex-1">
                     <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
-                      A quantia de
+                      Pague ao
                     </p>
-                    <p className="border-b-2 border-dotted border-green-dark/50 pb-1 font-heading text-[0.75rem] font-black uppercase text-ink sm:text-base">
-                      <span className="cheque-quantia block">Milhões em prêmios e capital anjo</span>
-                    </p>
-                  </div>
-
-                  <div className="mt-3 flex items-end justify-between gap-4">
-                    <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/60 sm:text-xs sm:tracking-[0.35em]">
-                      ⑆001417 ⑆0914 ⑈1210 2026⑈
-                    </p>
-                    <div className="shrink-0 text-right">
-                      <svg viewBox="0 0 120 28" className="cheque-sign ml-auto h-5 w-24 text-ink" aria-hidden>
-                        <path
-                          d="M4 20 C 18 4, 26 26, 38 14 S 58 4, 66 16 S 88 26, 96 10 S 110 14, 116 8"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/60">
-                        Colosseum
+                    <div className="border-b-2 border-dotted border-green-dark/50 pb-1">
+                      <p className="cheque-payee font-heading text-xl font-black uppercase leading-none text-ink [font-stretch:115%] sm:text-2xl">
+                        Seu time
                       </p>
                     </div>
+                  </div>
+                  <div className="cheque-amount flex shrink-0 items-baseline gap-1.5 rounded-lg border-2 border-green-dark bg-yellow px-3 py-1.5 sm:px-4 sm:py-2">
+                    <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">até</span>
+                    <span className="font-heading text-lg font-black leading-none tracking-tight text-green-dark sm:text-xl">USD 250k</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 sm:mt-4">
+                  <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/70 sm:text-[10px]">
+                    A quantia de
+                  </p>
+                  <p className="border-b-2 border-dotted border-green-dark/50 pb-1 font-heading text-[0.75rem] font-black uppercase text-ink sm:text-base">
+                    <span className="cheque-quantia block">Milhões em prêmios e capital anjo</span>
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-end justify-between gap-4 sm:mt-5">
+                  <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/60 sm:text-xs sm:tracking-[0.35em]">
+                    ⑆001417 ⑆0914 ⑈1210 2026⑈
+                  </p>
+                  <div className="shrink-0 text-right">
+                    <svg viewBox="0 0 120 28" className="cheque-sign ml-auto h-5 w-24 text-ink" aria-hidden>
+                      <path
+                        d="M4 20 C 18 4, 26 26, 38 14 S 58 4, 66 16 S 88 26, 96 10 S 110 14, 116 8"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/60">
+                      Colosseum
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-            </div>
-            <div className="hidden lg:block left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark">
-              100% online
-            </div>
-            <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden lg:block">
-              14 set a 12 out
-            </div>
-            <div className="hidden lg:block -bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
-              R$15M+ captados
-              <span className="block font-mono text-[8px] font-bold normal-case tracking-wider text-surface/80 lg:text-[11px]">
-                por times brasileiros em edições anteriores
-              </span>
-            </div>
-            <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-green-dark text-yellow">
-              Solana
-            </div>
-          </Tilt>
-          <ul className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:hidden" aria-label="Fatos do hackathon">
-            {["100% online", "14 set a 12 out", "R$15M+ captados por times brasileiros"].map((fact) => (
-              <li
-                key={fact}
-                className="rounded-full border-2 border-green-dark bg-surface-raised px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-green-dark"
-              >
-                {fact}
-              </li>
-            ))}
-          </ul>
           </div>
         </div>
       </section>
@@ -443,7 +413,7 @@ export default async function HomePage() {
       </section>
 
       {/* A Jornada: mirrors the /pre-registro stepper, numbered like /h's steps. */}
-      <section id="jornada" className={LP_SECTION} aria-label="Como participar">
+      <section id="jornada" className={`${LP_SECTION} hidden lg:block`} aria-label="Como participar">
         <div className={LP_CONTAINER}>
           <Reveal>
             <h2 className="max-w-2xl text-balance font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] sm:text-5xl">
@@ -498,7 +468,7 @@ export default async function HomePage() {
                     }
                     className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
                   >
-                    Abrir Colosseum
+                    {registered ? "Abrir Colosseum" : "Libera após o cadastro"}
                   </TrackedCta>
                 ) : (
                   <p className="mt-auto font-mono text-xs font-bold uppercase tracking-widest text-muted">
@@ -712,16 +682,48 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 pb-0 pt-24 text-center sm:px-6 lg:pt-28 xl:pt-32" aria-label="Hackathons da Superteam Brasil">
-        <p className="text-sm text-muted">
-          Procurando os hackathons da Superteam Brasil?{" "}
-          <Link
-            href="/h"
-            className="font-bold text-ink underline decoration-yellow decoration-4 underline-offset-4 transition-colors hover:text-emerald"
-          >
-            Conheça nossos hackathons
-          </Link>
-        </p>
+      <section className={LP_SECTION} aria-label="Fazer cadastro">
+        <div className={LP_CONTAINER}>
+          <Reveal>
+            <div className="rounded-2xl border-2 border-green-dark bg-surface-raised p-7 text-center shadow-sticker sm:p-12">
+              <h2 className="mx-auto max-w-3xl font-heading font-black uppercase leading-[1.06] tracking-tight text-ink [font-stretch:108%]">
+                <span className="block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.2rem]">
+                  O próximo time a captar
+                </span>
+                <span className="mt-1 block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.2rem]">
+                  <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">
+                    milhões
+                  </span>{" "}
+                  pode ser o seu.
+                </span>
+              </h2>
+
+              {colosseum && (
+                <div className="mt-9">
+                  <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60">
+                    Prazo final de envio
+                  </p>
+                  <Countdown
+                    deadlineIso={colosseum.submission_deadline_at}
+                    variant="segments"
+                    size="md"
+                    className="mt-4"
+                  />
+                </div>
+              )}
+
+              <TrackedCta
+                href={cadastroHref}
+                event="cta_clicked"
+                properties={{ cta: "cadastro", location: "fechamento" }}
+                className="mt-9 inline-block whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-7 py-3.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-10 sm:text-lg"
+              >
+                Fazer cadastro
+              </TrackedCta>
+              <p className="mt-4 text-sm text-muted">Leva dois minutos · e-mail ou Google</p>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {!registered && (
@@ -731,8 +733,6 @@ export default async function HomePage() {
             watchId="hero-cta"
             href={cadastroHref}
             label="Fazer cadastro"
-            secondaryHref="#jornada"
-            secondaryLabel="Como funciona"
           />
         </>
       )}

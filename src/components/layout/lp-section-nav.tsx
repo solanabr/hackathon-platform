@@ -34,12 +34,12 @@ export function LpSectionNav() {
   if (!nav) return null;
 
   return (
-    <nav aria-label="Seções da página" className="hidden lg:flex lg:items-center lg:gap-1">
+    <nav aria-label="Seções da página" className="hidden lg:flex lg:items-center lg:gap-2">
       {nav.links.map((link) => (
         <a
           key={link.href}
           href={link.href}
-          className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-bold text-surface/80 transition-colors duration-150 hover:bg-surface/10 hover:text-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+          className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink/60 transition-colors duration-150 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           {link.label}
         </a>
@@ -47,7 +47,7 @@ export function LpSectionNav() {
       {nav.accent && (
         <Link
           href={nav.accent.href}
-          className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border-2 border-yellow px-3.5 py-1 text-sm font-bold text-yellow transition-colors duration-150 hover:bg-yellow hover:text-green-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+          className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-green-dark/25 px-3.5 py-1 text-sm font-medium text-ink transition-colors duration-150 hover:border-green-dark hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           {nav.accent.label}
           <ArrowRightIcon size={14} weight="bold" aria-hidden />

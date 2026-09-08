@@ -7,10 +7,11 @@ import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
 import { EntrarLink } from "./entrar-link";
 import { LpSectionNav } from "./lp-section-nav";
+import { TrackedCta } from "@/components/ui/tracked-cta";
 
 /**
- * Floating dark dock instead of a hairline bar: the cream page keeps its
- * canvas, the chrome reads as one object sitting on top of it.
+ * A hairline bar on the cream, not an object sitting on it: the page keeps the
+ * whole canvas and the chrome gets out of the way.
  *
  * Only the session claims (a local JWT check) resolve before the shell goes
  * out; the profile and roles reads stream into the menu slot behind a
@@ -18,21 +19,24 @@ import { LpSectionNav } from "./lp-section-nav";
  * on those two queries before the browser could even start on CSS and fonts.
  */
 const ENTRAR_CLASS =
-  "rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark";
+  "btn-cut btn-cut-outline inline-flex items-center px-3.5 py-1.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:text-surface sm:px-5 sm:py-2 sm:text-sm";
+
+const CADASTRO_CLASS =
+  "btn-cut inline-flex items-center whitespace-nowrap bg-green-dark px-3.5 py-1.5 text-[13px] font-semibold text-surface transition-colors duration-200 hover:bg-emerald sm:px-5 sm:py-2 sm:text-sm";
 
 export async function Header() {
   const claims = await resolveSessionClaims();
 
   return (
-    <header className="sticky top-3 z-50 px-3 sm:top-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-ink/10 bg-surface/80 backdrop-blur-md">
       {claims && <PostHogIdentify userId={claims.userId} />}
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-sticker sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 xl:max-w-7xl xl:px-12">
         <Link
           href="/"
-          className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+          className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
         >
           <Image
-            src="/brand/stbr/logo/horizontal-fwhite.svg"
+            src="/brand/stbr/logo/ST-DARK-GREEN-HORIZONTAL.svg"
             alt="Superteam Brasil"
             width={140}
             height={24}
@@ -49,13 +53,23 @@ export async function Header() {
           {claims ? (
             <Suspense
               fallback={
-                <span aria-hidden className="block h-9 w-9 rounded-xl bg-emerald ring-2 ring-surface/30" />
+                <span aria-hidden className="block h-9 w-9 rounded-xl bg-emerald ring-2 ring-ink/10" />
               }
             >
               <SignedInMenu />
             </Suspense>
           ) : (
-            <EntrarLink className={ENTRAR_CLASS} />
+            <>
+              <EntrarLink className={ENTRAR_CLASS} />
+              <TrackedCta
+                href="/auth?next=/pre-registro"
+                event="cta_clicked"
+                properties={{ cta: "cadastro", location: "header" }}
+                className={CADASTRO_CLASS}
+              >
+                <span>Fazer cadastro</span>
+              </TrackedCta>
+            </>
           )}
         </nav>
       </div>

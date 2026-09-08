@@ -10,7 +10,7 @@ export function EntrarLink({ className }: { className: string }) {
   const next = pathname && pathname !== "/" ? `?next=${encodeURIComponent(pathname)}` : "";
   return (
     <Link href={`/auth${next}`} className={className}>
-      Entrar
+      <span>Entrar</span>
     </Link>
   );
 }
