@@ -23,7 +23,7 @@ export default async function AuthPage({
 
   return (
     <main className="relative bg-surface">
-      <div className="relative z-10 flex justify-center px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28">
+      <div className="relative z-10 flex justify-center px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-10">
         <Suspense fallback={null}>
           <AuthForm
             intro={
