@@ -5,6 +5,7 @@
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
   --color-surface-deep: #efe0ba;
+  --color-surface-deeper: #e8d5a6;
   --color-ink: #1b231d;
   --color-muted: #5f6f60;
 
@@ -15,6 +16,7 @@
   --color-emerald-*: initial;
 
   --color-emerald: #008c4c;
+  --color-emerald-deep: #00703d;
   --color-green: #2f6b3f;
   --color-green-dark: #1b231d;
   --color-yellow: #ffd23f;
@@ -108,7 +110,7 @@
     position: absolute;
     inset: 2px;
     border-radius: 0.375rem;
-    background-color: var(--color-surface);
+    background-color: var(--btn-cut-fill, var(--color-surface));
     transition: background-color 200ms;
     clip-path: polygon(
       0 0,
@@ -120,7 +122,7 @@
   }
 
   .btn-cut-outline:hover::before {
-    background-color: var(--color-green-dark);
+    background-color: var(--color-emerald);
   }
 
   /* The label sits above the fill layer. */
@@ -236,6 +238,19 @@
   50% { transform: translateY(-10px); }
 }
 
+@keyframes authOverlayIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes authPanelIn {
+  0% { opacity: 0; transform: translateY(12px) scale(0.985); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.auth-overlay-in { animation: authOverlayIn 0.16s ease-out; }
+.auth-panel-in { animation: authPanelIn 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -306,52 +321,70 @@ details[open] > .faq-answer {
   animation: faqOpen 0.25s ease-out;
 }
 
-/* Campaign cheque: the check fills itself out on load — payee types in,
-   the amount stamps, the quantia types, the signature draws. */
-@keyframes chequeWrite {
-  from { clip-path: inset(-10% 100% -10% 0); }
-  to { clip-path: inset(-10% -2% -10% 0); }
-}
-@keyframes chequeStamp {
-  0% { opacity: 0; transform: scale(1.5) rotate(-5deg); }
-  60% { opacity: 1; }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-@keyframes chequeSign {
-  to { stroke-dashoffset: 0; }
-}
-.cheque-payee {
-  clip-path: inset(-10% 100% -10% 0);
-  animation: chequeWrite 0.9s cubic-bezier(0.4, 0, 0.3, 1) 0.4s forwards;
-}
-.cheque-quantia {
-  clip-path: inset(-10% 100% -10% 0);
-  animation: chequeWrite 1.5s cubic-bezier(0.4, 0, 0.3, 1) 1.7s forwards;
-}
-.cheque-amount {
-  opacity: 0;
-  animation: chequeStamp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1.25s forwards;
-}
-.cheque-sign path {
-  stroke-dasharray: 320;
-  stroke-dashoffset: 320;
-  animation: chequeSign 1s ease-in-out 3.3s forwards;
+/* Hero ticket: the perforation between body and stub is punched through the
+   border, and the left edge is torn off a roll — both cut with one mask. */
+.ticket-edge {
+  --ticket-stub: 3.25rem;
+  --ticket-notch: 8px;
+  mask-image:
+    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
+  mask-size: 100% 100%, 100% 100%, 100% 26px;
+  mask-repeat: no-repeat, no-repeat, round;
+  mask-composite: intersect;
+  -webkit-mask-image:
+    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at calc(100% - var(--ticket-stub)) 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
+  -webkit-mask-size: 100% 100%, 100% 100%, 100% 26px;
+  -webkit-mask-repeat: no-repeat, no-repeat, round;
+  -webkit-mask-composite: source-in;
 }
 
-/* Torn checkbook edge: half-circle punches down the left side. `round`
-   stretches the tile so the column always ends on a whole punch. */
-.cheque-perf {
-  mask-image: radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
-  mask-size: 100% 26px;
-  mask-repeat: round;
-  -webkit-mask-image: radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
-  -webkit-mask-size: 100% 26px;
-  -webkit-mask-repeat: round;
+@media (min-width: 640px) {
+  .ticket-edge {
+    --ticket-stub: 4.5rem;
+    --ticket-notch: 10px;
+  }
 }
+
+/* Uneven bars, so the barcode reads as printed rather than generated. */
+.ticket-barcode {
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 2px,
+    transparent 2px 4px,
+    currentColor 4px 5px,
+    transparent 5px 9px,
+    currentColor 9px 12px,
+    transparent 12px 13px,
+    currentColor 13px 14px,
+    transparent 14px 18px
+  );
+}
+
+/* The postmark lands on the paper after the hero settles. */
+@keyframes ticketStamp {
+  0% { opacity: 0; transform: scale(1.6) rotate(-26deg); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(-14deg); }
+}
+.ticket-stamp {
+  opacity: 0;
+  transform-origin: center;
+  animation: ticketStamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s forwards;
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .animate-brand-fill {
     animation: none;
     clip-path: none;
+  }
+  .ticket-stamp {
+    animation: none;
+    opacity: 1;
+    transform: rotate(-14deg);
   }
 }

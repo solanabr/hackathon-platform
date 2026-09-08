@@ -22,22 +22,31 @@ const PROVIDER_LABELS: Record<Provider, string> = {
 };
 
 const CALLBACK_ERRORS: Record<string, string> = {
-  link_invalid: "O link de acesso expirou ou já foi usado. Peça um novo código abaixo.",
-  provider_error: "O provedor de login recusou o acesso. Tente de novo ou use o código por e-mail.",
+  link_invalid:
+    "O link de acesso expirou ou já foi usado. Peça um novo código abaixo.",
+  provider_error:
+    "O provedor de login recusou o acesso. Tente de novo ou use o código por e-mail.",
   auth_failed:
     "Não foi possível concluir o login. Abra o link no mesmo navegador em que pediu o código, ou peça um novo.",
 };
 
-export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
+export function AuthForm({
+  defaultNext,
+  titleAs: Title = "h1",
+}: { defaultNext?: string; titleAs?: "h1" | "h2" } = {}) {
   const searchParams = useSearchParams();
   const callbackError = searchParams.get("error");
   const [loading, setLoading] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(
-    callbackError ? (CALLBACK_ERRORS[callbackError] ?? CALLBACK_ERRORS.auth_failed) : null,
+    callbackError
+      ? (CALLBACK_ERRORS[callbackError] ?? CALLBACK_ERRORS.auth_failed)
+      : null,
   );
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
+  const [stage, setStage] = useState<"idle" | "sending" | "sent" | "verifying">(
+    "idle",
+  );
   const [cooldown, setCooldown] = useState(0);
   const supabase = createClient();
 
@@ -49,7 +58,10 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
 
   useEffect(() => {
     if (callbackError) {
-      trackClient("auth_failed", { provider: "unknown", reason: callbackError });
+      trackClient("auth_failed", {
+        provider: "unknown",
+        reason: callbackError,
+      });
     }
     // Only relevant to the redirect that produced this page load.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,7 +96,9 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
       options: { redirectTo: redirectTarget() },
     });
     if (error) {
-      setError(`Não foi possível conectar com ${PROVIDER_LABELS[provider]}. Tente novamente.`);
+      setError(
+        `Não foi possível conectar com ${PROVIDER_LABELS[provider]}. Tente novamente.`,
+      );
       setLoading(null);
       trackClient("auth_failed", { provider, reason: "oauth_request_failed" });
     }
@@ -95,7 +109,10 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     setError(null);
     const previous = resend ? "sent" : "idle";
     setStage("sending");
-    trackClient("auth_provider_clicked", { provider: "email", next: postLoginPath });
+    trackClient("auth_provider_clicked", {
+      provider: "email",
+      next: postLoginPath,
+    });
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: redirectTarget() },
@@ -136,7 +153,10 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
     if (error) {
       setError("Código inválido ou expirado. Peça um novo.");
       setStage("sent");
-      trackClient("auth_failed", { provider: "email", reason: "otp_verify_failed" });
+      trackClient("auth_failed", {
+        provider: "email",
+        reason: "otp_verify_failed",
+      });
       return;
     }
     trackClient("auth_code_verified", { provider: "email" });
@@ -154,12 +174,14 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
           alt="Superteam Brasil"
           className="mx-auto h-14 w-14 -rotate-3 object-contain"
         />
-        <h1 className="mt-5 font-heading font-black uppercase leading-tight tracking-tight">
-          <span className="block text-2xl [font-stretch:118%] sm:text-3xl">Acessar a</span>
+        <Title className="mt-5 font-heading font-black uppercase leading-tight tracking-tight">
+          <span className="block text-2xl [font-stretch:118%] sm:text-3xl">
+            Acessar a
+          </span>
           <span className="mt-1.5 inline-block -rotate-1 bg-green-dark px-3 py-1 text-xl text-yellow [font-stretch:110%] sm:text-2xl">
             Plataforma
           </span>
-        </h1>
+        </Title>
         <p className="mt-4 text-sm leading-relaxed text-muted">
           Entre para participar dos hackathons da Superteam Brasil.
         </p>
@@ -181,10 +203,22 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
           className="gap-3 py-4"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            />
           </svg>
           {loading === "google" ? "Conectando..." : "Entrar com Google"}
         </Button>
@@ -211,7 +245,9 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
 
       <div className="mt-7 flex items-center gap-3">
         <span className="h-px flex-1 bg-green/15" />
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted">ou</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+          ou
+        </span>
         <span className="h-px flex-1 bg-green/15" />
       </div>
 
@@ -288,7 +324,8 @@ export function AuthForm({ defaultNext }: { defaultNext?: string } = {}) {
       )}
 
       <p className="mt-7 text-center text-xs text-muted">
-        Ao entrar você concorda com o regulamento dos hackathons da Superteam Brasil.
+        Ao entrar você concorda com o regulamento dos hackathons da Superteam
+        Brasil.
       </p>
     </div>
   );

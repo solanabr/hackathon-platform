@@ -5,9 +5,8 @@ import { resolveRoleState } from "@/lib/roles";
 import { resolveSessionClaims } from "@/lib/user-state";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
-import { EntrarLink } from "./entrar-link";
+import { AuthActions } from "./auth-actions";
 import { LpSectionNav } from "./lp-section-nav";
-import { TrackedCta } from "@/components/ui/tracked-cta";
 
 /**
  * A hairline bar on the cream, not an object sitting on it: the page keeps the
@@ -22,7 +21,7 @@ const ENTRAR_CLASS =
   "btn-cut btn-cut-outline inline-flex items-center px-3.5 py-1.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:text-surface sm:px-5 sm:py-2 sm:text-sm";
 
 const CADASTRO_CLASS =
-  "btn-cut inline-flex items-center whitespace-nowrap bg-green-dark px-3.5 py-1.5 text-[13px] font-semibold text-surface transition-colors duration-200 hover:bg-emerald sm:px-5 sm:py-2 sm:text-sm";
+  "btn-cut inline-flex items-center whitespace-nowrap bg-emerald px-3.5 py-1.5 text-[13px] font-semibold text-surface transition-colors duration-200 hover:bg-emerald-deep sm:px-5 sm:py-2 sm:text-sm";
 
 export async function Header() {
   const claims = await resolveSessionClaims();
@@ -53,23 +52,19 @@ export async function Header() {
           {claims ? (
             <Suspense
               fallback={
-                <span aria-hidden className="block h-9 w-9 rounded-xl bg-emerald ring-2 ring-ink/10" />
+                <span
+                  aria-hidden
+                  className="block h-9 w-9 rounded-xl bg-emerald ring-2 ring-ink/10"
+                />
               }
             >
               <SignedInMenu />
             </Suspense>
           ) : (
-            <>
-              <EntrarLink className={ENTRAR_CLASS} />
-              <TrackedCta
-                href="/auth?next=/pre-registro"
-                event="cta_clicked"
-                properties={{ cta: "cadastro", location: "header" }}
-                className={CADASTRO_CLASS}
-              >
-                <span>Fazer cadastro</span>
-              </TrackedCta>
-            </>
+            <AuthActions
+              entrarClassName={ENTRAR_CLASS}
+              cadastroClassName={CADASTRO_CLASS}
+            />
           )}
         </nav>
       </div>
@@ -79,7 +74,13 @@ export async function Header() {
 
 async function SignedInMenu() {
   const roles = await resolveRoleState();
-  if (!roles) return <EntrarLink className={ENTRAR_CLASS} />;
+  if (!roles)
+    return (
+      <AuthActions
+        entrarClassName={ENTRAR_CLASS}
+        cadastroClassName={CADASTRO_CLASS}
+      />
+    );
   const { state } = roles;
   const admin = roles.isAdmin || roles.adminFor.length > 0;
   // /judge only admits global admins and real judges; a scoped edition admin

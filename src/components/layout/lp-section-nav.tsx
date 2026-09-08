@@ -13,9 +13,7 @@ const NAV: Record<string, PageNav> = {
     links: [
       { href: "#jornada", label: "Como funciona" },
       { href: "#cases", label: "Cases" },
-      { href: "#calendario", label: "Calendário" },
-      { href: "#trilha-brasil", label: "Trilha Brasil" },
-      { href: "#recursos", label: "Recursos" },
+      { href: "#informacoes", label: "Informações" },
       { href: "#faq", label: "FAQ" },
     ],
   },
@@ -47,7 +45,7 @@ export function LpSectionNav() {
       {nav.accent && (
         <Link
           href={nav.accent.href}
-          className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-green-dark/25 px-3.5 py-1 text-sm font-medium text-ink transition-colors duration-150 hover:border-green-dark hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-green-dark/25 px-3.5 py-1 text-sm font-medium text-ink transition-colors duration-150 hover:border-emerald hover:bg-emerald hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           {nav.accent.label}
           <ArrowRightIcon size={14} weight="bold" aria-hidden />

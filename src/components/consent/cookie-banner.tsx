@@ -60,7 +60,7 @@ export function CookieBanner() {
   // field and button sit, so the banner docks under the header instead.
   return (
     <div className="fixed inset-x-3 top-[5.75rem] z-50 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:max-w-sm">
-      <div className="rounded-2xl border-2 border-green-dark bg-surface p-3 shadow-sticker sm:p-4">
+      <div className="rounded-2xl border-2 border-green-dark bg-surface-raised p-3 shadow-sticker sm:p-4">
         <p className="text-[13px] leading-snug text-ink sm:text-sm sm:leading-relaxed">
           Cookies essenciais pro login e, se você permitir, análise de uso.{" "}
           <Link href="/privacidade" className="font-semibold underline">
@@ -72,16 +72,16 @@ export function CookieBanner() {
           <button
             type="button"
             onClick={() => choose("all")}
-            className="min-h-11 flex-1 rounded-full bg-yellow px-4 py-2 text-sm font-bold text-green-dark transition-transform duration-150 hover:-translate-y-0.5 sm:flex-none"
+            className="btn-cut inline-flex min-h-11 flex-1 items-center justify-center bg-emerald px-4 py-2 text-sm font-semibold text-surface transition-colors duration-200 hover:bg-emerald-deep sm:flex-none sm:px-6"
           >
-            Aceitar
+            <span>Aceitar</span>
           </button>
           <button
             type="button"
             onClick={() => choose("essential")}
-            className="min-h-11 flex-1 rounded-full border-2 border-green-dark px-4 py-2 text-sm font-bold text-ink sm:flex-none"
+            className="btn-cut btn-cut-outline inline-flex min-h-11 flex-1 items-center justify-center px-4 py-2 text-sm font-semibold text-ink transition-colors duration-200 hover:text-surface sm:flex-none sm:px-6 [--btn-cut-fill:var(--color-surface-raised)]"
           >
-            Só o essencial
+            <span>Só o essencial</span>
           </button>
         </div>
       </div>

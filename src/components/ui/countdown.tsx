@@ -25,11 +25,14 @@ function formatCompact(seg: Segments | null): string {
 const pad = (n: number) => n.toString().padStart(2, "0");
 
 /**
- * Renders the time-until a deadline. Two variants:
+ * Renders the time-until a deadline. Three variants:
  *   - "compact" (default): single string like "2d 7h", ticks every 30s. Used
  *     in the dashboard and submission page.
  *   - "segments": four large mono digits (DIAS / HORAS / MIN / SEG), ticks
  *     every 1s. Used in the hero countdown card.
+ *   - "backdrop": one giant mono string (DD:HH:MM:SS), ticks every 1s, no
+ *     labels. Decorative watermark behind the closing CTA card, so it is
+ *     aria-hidden: the readable countdown lives inside the card.
  *
  * SSR renders the `placeholder` (compact) or zeroed tiles (segments) to
  * avoid hydration mismatch from Date.now() differing between server and
@@ -45,7 +48,7 @@ export function Countdown({
   deadlineIso: string;
   placeholder?: string;
   className?: string;
-  variant?: "compact" | "segments";
+  variant?: "compact" | "segments" | "backdrop";
   size?: "md" | "lg";
 }) {
   const deadlineMs = new Date(deadlineIso).getTime();
@@ -56,10 +59,23 @@ export function Countdown({
   useEffect(() => {
     const tick = () => setSeg(diffSegments(deadlineMs, Date.now()));
     tick();
-    const intervalMs = variant === "segments" ? 1_000 : 30_000;
+    const intervalMs = variant === "compact" ? 30_000 : 1_000;
     const id = setInterval(tick, intervalMs);
     return () => clearInterval(id);
   }, [deadlineMs, variant]);
+
+  if (variant === "backdrop") {
+    const parts = [seg?.days ?? 0, seg?.hours ?? 0, seg?.minutes ?? 0, seg?.seconds ?? 0];
+    return (
+      <p
+        aria-hidden
+        className={`select-none whitespace-nowrap font-mono font-black leading-none tabular-nums tracking-tighter ${className}`}
+        suppressHydrationWarning
+      >
+        {(seg !== undefined ? parts : [0, 0, 0, 0]).map(pad).join(":")}
+      </p>
+    );
+  }
 
   if (variant === "segments") {
     const tiles: Array<{ value: number; label: string }> = [
