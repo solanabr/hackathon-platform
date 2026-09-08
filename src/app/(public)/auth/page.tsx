@@ -28,7 +28,7 @@ export default async function AuthPage({
           <AuthForm
             intro={
               interestFunnel
-                ? "Para preencher o formulário de interesse, entre com Google ou receba um código por e-mail. Leva 1 minuto."
+                ? "Para se cadastrar no hackathon, entre com Google ou receba um código por e-mail. Leva 1 minuto."
                 : undefined
             }
           />
