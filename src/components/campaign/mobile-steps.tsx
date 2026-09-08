@@ -45,7 +45,7 @@ export function MobileSteps({
   const steps: Step[] = [
     {
       title: "Faça seu cadastro",
-      body: "Leva dois minutos. Você recebe tudo sobre o hackathon e não perde nenhuma data.",
+      body: "Leva um minuto. Você recebe tudo sobre o hackathon e não perde nenhuma data.",
       label: "Fazer cadastro",
       href: "/pre-registro",
       event: "cta_clicked",

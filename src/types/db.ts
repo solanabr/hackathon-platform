@@ -8,6 +8,8 @@ export type User = {
   telegram_handle: string | null;
   // Contact channel for the Colosseum campaign follow-up (00054).
   whatsapp: string | null;
+  // Cidade/Estado, free text from the Colosseum interest form (00063).
+  location: string | null;
   avatar_url: string | null;
   headline: string | null;
   bio: string | null;
@@ -217,6 +219,26 @@ export type HackathonRegistration = {
   utm_campaign: string | null;
   utm_content: string | null;
   referrer: string | null;
+};
+
+export type CampaignInterestHasProject = "yes" | "idea_no_team" | "no_want_team";
+export type CampaignInterestStage = "idea" | "prototype" | "mvp" | "users";
+
+export type CampaignInterest = {
+  hackathon_id: string;
+  user_id: string;
+  has_project: CampaignInterestHasProject | null;
+  looking_for_team: boolean | null;
+  project_name: string | null;
+  one_liner: string | null;
+  stage: CampaignInterestStage | null;
+  team_size: number | null;
+  project_url: string | null;
+  project_socials: string | null;
+  notes: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PlatformRole = {

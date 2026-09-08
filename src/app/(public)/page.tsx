@@ -463,7 +463,7 @@ export default async function HomePage() {
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Faça seu cadastro</h3>
                 <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">
-                  Leva dois minutos. Você recebe tudo que precisa sobre o hackathon e não perde
+                  Leva um minuto. Você recebe tudo que precisa sobre o hackathon e não perde
                   nenhuma data importante.
                 </p>
                 <TrackedCta
