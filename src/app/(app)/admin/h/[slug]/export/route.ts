@@ -117,8 +117,8 @@ async function usersCsv(hackathonId: string): Promise<CsvCell[][]> {
 const USERS_HEADER = [
   "nome", "email", "whatsapp", "titulo", "github", "twitter", "linkedin", "telegram",
   "time", "inscrito_em", "termos_aceitos_em", "colosseum_confirmado_em",
-  "location", "has_project", "looking_for_team", "project_name", "one_liner", "stage",
-  "team_size", "project_url", "project_socials", "notes", "interest_completed_at",
+  "cidade_estado", "tem_projeto", "procura_time", "nome_projeto", "resumo_projeto", "estagio",
+  "tamanho_time", "link_projeto", "redes_projeto", "observacoes", "formulario_concluido_em",
 ];
 
 async function teamsCsv(hackathonId: string): Promise<CsvCell[][]> {

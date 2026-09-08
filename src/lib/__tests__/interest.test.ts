@@ -104,10 +104,19 @@ describe("validateInterest — shape checks in both intents", () => {
     expect(validateInterest({ has_project: "yes", team_size: "2.5" }, intent)).toMatchObject({ ok: false, field: "team_size" });
   });
 
-  it.each(["complete", "later"] as const)("rejects an unsafe project url (%s)", (intent) => {
-    expect(validateInterest({ has_project: "yes", project_url: "javascript:alert(1)" }, intent)).toMatchObject({
+  it("rejects an unsafe project url on complete", () => {
+    expect(validateInterest({ has_project: "yes", project_url: "javascript:alert(1)" }, "complete")).toMatchObject({
       ok: false,
       field: "project_url",
     });
+  });
+
+  it("drops an unusable project url on later instead of blocking the save", () => {
+    for (const url of ["javascript:alert(1)", "meu repo no github"]) {
+      expect(validateInterest({ has_project: "yes", project_url: url, project_name: "Foo" }, "later")).toMatchObject({
+        ok: true,
+        values: { project_name: "Foo", project_url: null },
+      });
+    }
   });
 });

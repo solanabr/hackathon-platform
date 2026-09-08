@@ -19,7 +19,9 @@ describe("normalizeWhatsapp", () => {
     expect(normalizeWhatsapp("+1 415-555-0100")).toBe("+14155550100");
   });
 
-  it("leaves numbers with an unprefixed country code as digits only", () => {
-    expect(normalizeWhatsapp("55 11 91234-5678")).toBe("5511912345678");
+  it("gives an unprefixed country code the same shape as a prefixed one", () => {
+    expect(normalizeWhatsapp("55 11 91234-5678")).toBe("+5511912345678");
+    expect(normalizeWhatsapp("55 11 91234-5678")).toBe(normalizeWhatsapp("+55 11 91234-5678"));
+    expect(normalizeWhatsapp("351 912 345 678")).toBe("+351912345678");
   });
 });

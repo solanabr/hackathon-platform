@@ -78,7 +78,8 @@ function parseBoolean(raw: string | null | undefined): boolean | null {
 
 /**
  * `complete` enforces the questions the campaign needs; `later` keeps whatever
- * is filled, only refusing values the table itself would refuse. Project
+ * is filled, only refusing values the table itself would refuse (an unusable
+ * link is dropped, not refused). Project
  * fields are dropped unless the person said they have a project, so a
  * changed answer never leaves stale project data behind.
  */
@@ -98,7 +99,9 @@ export function validateInterest(fields: InterestFields, intent: InterestIntent)
   }
   const rawUrl = sanitizeText(fields.project_url, 500);
   const projectUrl = sanitizeUrl(rawUrl);
-  if (rawUrl && !projectUrl) {
+  // A half-written link must not block parking the form; it only has to be a
+  // real URL by the time the person says they are done.
+  if (rawUrl && !projectUrl && intent === "complete") {
     return { ok: false, error: "Informe um link válido (site ou repositório).", field: "project_url" };
   }
 
