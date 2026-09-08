@@ -4,7 +4,7 @@ Snapshot: `fae614a` on `main`, September 8, 2026. Working branch: `feat/felix-gr
 
 ## Deliverable and ownership
 
-Build a joint preview for Kuka: a clearer campaign and registration journey, Laura's visual design, reliable measurement, and an assistant with a WhatsApp handoff. Production release follows review of that preview. The first sprint should take 4–6 hours with Felix and Laura working concurrently, provided preview access and provider credentials are ready; a custom CRM automation pipeline may require a second sprint.
+Build a joint preview for Kuka: a clearer campaign and registration journey, Laura's visual design, reliable measurement, and an assistant with an optional WhatsApp handoff. Production release follows review of that preview. The first sprint targets a 4–6-hour fixture preview with Felix and Laura working concurrently and preview access ready. The website assistant will use OpenRouter independently of CRM; live retrieval, model evaluation and usage controls need an additional estimated block. CRM automation has its own scope and operational dependencies.
 
 | Owner | Work | Main integration boundary |
 | --- | --- | --- |
@@ -95,7 +95,7 @@ The first two analytics issues are source-level findings; they were not reproduc
 - [Tracking and UTM plan](2026-09-08-measurement-plan.md)
 - [Dated campaign facts and participant copy](2026-09-08-campaign-facts-and-copy.md)
 - [Evolution hosting and messaging feasibility](2026-09-08-evolution-feasibility.md)
-- [Assistant / Evolution integration design](../superpowers/specs/2026-09-08-campaign-assistant-design.md)
+- [Independent OpenRouter assistant design](../superpowers/specs/2026-09-08-openrouter-assistant-design.md)
 - [Implementation plan](../superpowers/plans/2026-09-08-colosseum-growth.md)
 
 The private Portuguese workroom and stakeholder questionnaire live outside this public repository. Do not commit private conversation screenshots, stakeholder responses, secrets or exports of participant data.

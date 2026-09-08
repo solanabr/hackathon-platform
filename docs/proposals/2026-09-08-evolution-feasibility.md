@@ -28,7 +28,7 @@ This makes self-hosting a feasible fallback, subject to a separate operational e
 
 Felix reports purchasing Essential for R$297/month. On September 8, the public Essential offer advertises **10,000 campaign sends/month, one connected channel, five automations/journeys and 300 Darwin credits/month**. It also advertises bringing one's own AI provider key. These are commercial allowances, not proof of this tenant's activation, remaining balance or WhatsApp delivery capability. [Public plan](https://evolutionfoundation.com.br/)
 
-The single-channel allowance matters: confirm whether website/API inboxes consume that slot in addition to WhatsApp. A separate public website assistant with a direct WhatsApp handoff may fit; two CRM channels may need a different allowance. Do not assume Darwin copilot credits are interchangeable with participant chatbot inference or that Meta template charges are included.
+The website assistant now uses OpenRouter directly through Next.js, independently of CRM, and does not create an EvoCRM website inbox or consume Darwin credits. Its optional direct WhatsApp link does not create a second CRM channel. If shared CRM website history is added later, confirm whether the new inbox consumes an additional channel. Do not assume Darwin copilot credits cover OpenRouter inference or that Meta template charges are included. See the [current assistant design](../superpowers/specs/2026-09-08-openrouter-assistant-design.md).
 
 | Check | Evidence needed | Current status |
 | --- | --- | --- |

@@ -4,33 +4,34 @@
 
 **Goal:** Produce a joint preview combining Laura's design, accurate campaign copy, reliable registration measurement and a bounded assistant with a clear WhatsApp handoff.
 
-**Architecture:** Keep Next.js, Supabase and the existing registration/qualification flow. Felix owns behavior, integration and measurement; Laura owns presentation and the final mount points. Prefer the purchased managed EvoCRM when its API/channel constraints fit; defer a persistent self-hosted gateway and bulk automation until operational requirements are verified.
+**Architecture:** Keep Next.js, Supabase and the existing registration/qualification flow. The website assistant uses OpenRouter through the Next.js server, with approved retrieval and bounded read-only tools. Felix owns behavior, integration and measurement; Laura owns presentation and the final mount points. CRM/WhatsApp is an independent workstream. Consider the purchased managed EvoCRM when its API/channel constraints fit; evaluate a separate host only if self-hosting is justified.
 
-**Tech Stack:** Next.js 16, React 19, TypeScript, Tailwind 4, Supabase, PostHog, GTM, Vitest, Vercel; conditional EvoCRM/LLM integration.
+**Tech Stack:** Next.js 16, React 19, TypeScript, Tailwind 4, Supabase, PostHog, GTM, Vitest, Vercel and server-side OpenRouter; optional EvoCRM/WhatsApp integration.
 
 ---
 
 ## Inputs, ownership and time box
 
-Read [audit](../../proposals/2026-09-08-growth-audit.md), [screen inventory](../../proposals/2026-09-08-route-inventory.md), [facts/copy](../../proposals/2026-09-08-campaign-facts-and-copy.md), [measurement plan](../../proposals/2026-09-08-measurement-plan.md), [assistant spec](../specs/2026-09-08-campaign-assistant-design.md) and [Evolution feasibility](../../proposals/2026-09-08-evolution-feasibility.md).
+Read [audit](../../proposals/2026-09-08-growth-audit.md), [screen inventory](../../proposals/2026-09-08-route-inventory.md), [facts/copy](../../proposals/2026-09-08-campaign-facts-and-copy.md), [measurement plan](../../proposals/2026-09-08-measurement-plan.md), [OpenRouter assistant spec](../specs/2026-09-08-openrouter-assistant-design.md), [technical readiness](../../proposals/2026-09-08-technical-readiness.md) and [Evolution feasibility](../../proposals/2026-09-08-evolution-feasibility.md).
 
 The initial assessment and private questionnaire are ready separately from implementation. A **4–6 hour joint preview** is feasible with two contributors, prompt owner answers and a ready preview environment. That estimate covers copy/design, targeted tracking fixes, and a demonstrable assistant surface/handoff. A custom live LLM plus CRM synchronization, durable queues, authenticated webhooks and production messaging validation needs a separately estimated second sprint. Do not silently count a fixture demonstration as live integration.
 
 | Elapsed time | Felix | Laura | Review evidence |
 | --- | --- | --- | --- |
-| 0:00–0:20 | Resolve urgent questionnaire items; select conversion/provider scope | Confirm visual direction and shared-file owner | Agreed scope and credible demo target |
+| 0:00–0:20 | Resolve urgent questionnaire items; confirm conversion and access owners | Confirm visual direction and shared-file owner | Agreed scope and credible demo target |
 | 0:20–1:40 | Atomic milestone/analytics fixes; approved copy handoff | Hero, page order, forms and responsive layout | Correct steps and stable event IDs |
 | 1:40–3:20 | Attribution/consent QA; assistant controller and safe fallback | Assistant panel, footer and mobile integration | One conversation across two entry points |
 | 3:20–4:30 | Conditional provider smoke test or labelled fixture; WhatsApp destination | Keyboard/mobile/error states | Demonstrable end-to-end preview |
 | 4:30–6:00 | Integrate branches, checks, event evidence and demo script | Joint visual verification | Preview ready for Kuka |
 
-Critical inputs: goal/target audience; official and Brazil-specific URLs/facts; correct WhatsApp number; preview Supabase access; analytics project/container ownership; live AI budget; EvoCRM API/channel allowance; person approving release. Missing provider access does not block copy, route inventory, questionnaire or fixture UI. It does block claiming a working live integration.
+Critical inputs for the preview: goal/target audience, official and Brazil-specific URLs/facts, preview Supabase access, analytics project/container ownership and person approving release. Live AI additionally needs its OpenRouter project key/budget, approved knowledge and a durable usage ledger. A WhatsApp number is needed only for that optional destination; CRM access and a VPS are not website AI dependencies. Missing provider access does not block copy, route inventory, questionnaire or fixture UI. It does block claiming a working live integration.
 
 ## Task 1: Agree boundaries and create integration workspace (15–20 min)
 
 **Files:** this plan; existing `src/app/(public)/page.tsx`, `src/app/(public)/pre-registro/prereg-form.tsx`, `src/app/globals.css` as shared boundaries.
 
 - [ ] Record owner answers in the private workroom, never in public git if they include private information.
+- [ ] Resolve the technical-readiness matrix: actual Supabase organization plan and project compute, Vercel preview ownership, staging database and secure credential handoff. Public source does not establish billing status. Record CRM/VPS ownership separately without delaying the page work.
 - [ ] Confirm Laura publishes `laura`. It returned 404 from GitHub on September 8 during the assessment; do not invent a remote ref or overwrite her work.
 - [ ] Agree Laura edits LP markup, CSS and assistant panel. Felix provides copy by stable section/CTA IDs and edits action/library/controller files. Coordinate the small `prereg-form.tsx` analytics change before either cherry-picks it.
 - [ ] Fetch and compare bases with `git fetch origin`, `git log --oneline --left-right origin/main...origin/laura` once published.
@@ -72,24 +73,27 @@ Critical inputs: goal/target audience; official and Brazil-specific URLs/facts; 
 - [ ] Run `npm test -- src/lib/__tests__/attribution.test.ts`, then the browser cases in the measurement plan. Record vendor delivery only when confirmed in the dedicated QA project/container.
 - [ ] Update `docs/TRACKING.md` with actual behavior and commit separately.
 
-## Task 5: Assistant surface and provider decision (60–100 min for preview)
+## Task 5: OpenRouter assistant surface (60–100 min for fixture preview)
 
-**Files:** create `src/components/campaign-assistant/assistant-controller.tsx`, `assistant-panel.tsx`, `src/lib/campaign-assistant/contracts.ts`, `knowledge.ts`; mount via `src/app/(public)/page.tsx`. For the custom live path only, create `src/lib/campaign-assistant/server.ts`, `src/app/api/campaign-assistant/route.ts`, `src/lib/__tests__/campaign-assistant.test.ts`.
+**Files:** create `src/components/campaign-assistant/{assistant-controller,assistant-panel}.tsx`, `src/lib/campaign-assistant/{contracts,knowledge}.ts`; mount via `src/app/(public)/page.tsx`. Live work adds `{retrieval,prompt,openrouter,controller,budget}.ts` in that library directory, `src/app/api/campaign-assistant/route.ts` and behavior tests under `src/lib/__tests__/`.
 
-- [ ] Select one path from the assistant spec based on verified widget methods, design fit and the one-channel plan allowance. Record the decision; do not guess provider method names.
-- [ ] Define the contract in the spec as the integration boundary and write a dated approved source map in `knowledge.ts`.
-- [ ] Build the shared controller with open/close/send/error/retry states. Laura implements the panel and two mount controls; only `/` receives the initial assistant.
-- [ ] Demonstrate shared state, keyboard focus, Escape, screen-reader completion announcements and mobile CTA/cookie coexistence using fixtures clearly labelled in preview.
-- [ ] If the managed widget path is available, initialize one widget instance and use only its verified controls. Test consent/loading/fallback and both entry points.
-- [ ] If the custom live path is selected, schedule server validation, safe source rendering, signed session binding, durable rate/budget controls, timeout and structured output tests before enabling paid generation. This extends the first sprint unless these dependencies are already available.
-- [ ] Test answer accuracy, unknown facts, prompt injection, provider timeout, invalid response, storage failure and budget exhaustion using the spec acceptance cases. Do not count fixture responses as a provider smoke test.
-- [ ] Add categorical assistant telemetry without user messages or identifiers. Commit the preview surface separately from live-provider enablement.
+- [ ] Use the OpenRouter spec's typed reply contract as the boundary with Laura. The user has selected direct website AI; no EvoCRM widget/channel decision remains for this surface.
+- [ ] Build the shared controller with open/close/send/error/retry states. Laura implements the panel and two entry controls; only `/` receives the initial assistant.
+- [ ] Demonstrate shared state, keyboard focus, Escape, screen-reader completion announcements and mobile CTA/cookie coexistence using fixtures clearly labelled in preview. Add categorical telemetry without message text or personal identifiers.
+- [ ] Prepare a versioned, approved public source bundle and a retriever interface. Do not ingest private stakeholder responses wholesale. Start with lexical/topic retrieval; introduce hybrid search only if evaluation demonstrates a need.
+- [ ] Version the system prompt and create 30 reviewed evaluation cases from the spec's categories. Keep exact dates and local offers pending until approved.
+- [ ] Before paid generation, implement server-only key handling, session/input validation, atomic durable usage reservations, idempotency, privacy-compatible provider routing and validated source/action rendering. Budget store failure must disable paid calls.
+- [ ] Implement the bounded controller: initial retrieval, at most one additional lookup, at most three application OpenRouter requests including fallback/repair, 20-second total deadline. Do not render unvalidated model text.
+- [ ] Compare the three catalog candidates on the same approved corpus and cases. Measure actual quality, P50/P95 latency and cost; select primary and fallback only after critical-case acceptance. Catalog availability and example cost arithmetic are not benchmark results.
+- [ ] Test no-evidence, injection, private-data requests, stale sources, duplicate submissions, provider timeout/429, invalid response, storage failure and budget exhaustion. Run concurrent ledger tests on a disposable store before enabling live access.
+- [ ] Commit the preview surface separately from live enablement. Live RAG/model evaluation is an additional estimated block unless its dependencies and acceptance evidence are already ready; a fixture is not a provider smoke test.
 
 ## Task 6: WhatsApp destination and account evidence (20–40 min; account dependent)
 
 **Files:** create `src/lib/campaign-assistant/handoff.ts`, test `src/lib/__tests__/campaign-handoff.test.ts`; modify Laura's assistant panel and campaign resource mount; update `docs/proposals/2026-09-08-evolution-feasibility.md` with non-sensitive verified status only.
 
 - [ ] Obtain the tenant panel URL and read subscription activation, available campaign sends, channel allowance, token entitlement and connected provider. QR alone does not prove unofficial mode.
+- [ ] Ask about an existing CRM and host before choosing installation. For Community, confirm region, capacity, architecture/image compatibility, Docker/admin access, DNS, isolated storage, backups and an operator; use the technical-readiness decision tree. An organization-controlled existing number may qualify for migration/coexistence; a new number is not inherently required.
 - [ ] Read actual Meta account/quality/limit and approved-template/billing state for the selected business number. Listing inboxes cannot prove these items.
 - [ ] Build a direct WhatsApp URL from an owner-confirmed E.164 business number with fixed nonpersonal greeting text; distinguish it from the existing community invite. Test invalid number, encoding and missing-number fallback.
 - [ ] Add `whatsapp_handoff_clicked` with placement/edition only. Do not send or import contacts during this read-only assessment.
@@ -122,7 +126,7 @@ Estimate this work after tenant API validation. It is not safely promised inside
 - **Production compile/build passed** with CI placeholder Supabase values; no live database or provider integration was exercised.
 - Existing build warnings: parent lockfile causes workspace-root inference; middleware and Sentry option deprecations. No unrelated dependency/framework refactor performed.
 - Grok Heavy advisory review completed via local Delegate, model `x-ai/grok-4.20-multi-agent`; follow-up API/plan evidence was checked independently.
-- Independent plan/spec review: approved with no blocking issues. The review retained the conditional time estimate and separate live-automation scope.
+- Independent review of the revised OpenRouter spec, implementation plan and technical-readiness matrix: approved with no blocking issues. The review explicitly limits the 4–6-hour estimate to the fixture preview; live inference and CRM retain separate dependencies and estimates.
 - No production database writes, infrastructure installation, outbound campaign or contact import performed.
 
 Future implementation checkboxes remain unchecked intentionally: this commit is the assessed work process and integration design, not a claim of a completed redesign or live assistant.

@@ -1,5 +1,7 @@
 # Campaign assistant and human handoff design
 
+**Superseded provider decision:** the user selected an independent OpenRouter website assistant. Use [the current OpenRouter/RAG design](2026-09-08-openrouter-assistant-design.md). The widget/provider options below are retained as historical assessment, not the implementation choice.
+
 Status: implementation proposal, September 8, 2026. Owner: Felix; visual integration: Laura (`laura`). This design is reviewable without provider credentials. Live assistant operation and WhatsApp account readiness have not been verified.
 
 ## Product behavior
