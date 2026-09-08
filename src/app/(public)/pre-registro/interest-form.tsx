@@ -105,8 +105,9 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
             <Input
               id="project_url"
               name="project_url"
-              type="url"
+              type="text"
               inputMode="url"
+              spellCheck={false}
               placeholder="https://"
               defaultValue={interest?.project_url ?? ""}
             />
