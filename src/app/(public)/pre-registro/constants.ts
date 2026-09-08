@@ -1,4 +1,8 @@
 export const COLOSSEUM_SLUG = "colosseum-2026";
+// The hackathon registration inside Colosseum, past the account sign-up.
+// Logged-out visitors get bounced to /signup without our referral, so it is
+// the second link, for people who already have an account.
+export const COLOSSEUM_ARENA_URL = "https://colosseum.com/arena/hackathon";
 export const WHATSAPP_COMMUNITY_URL = "https://chat.whatsapp.com/BVXYPlcB9R853QnvgzpCRT?mode=gi_t";
 
 export const ROLE_OPTIONS = [

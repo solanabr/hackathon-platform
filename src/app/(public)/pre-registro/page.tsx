@@ -10,7 +10,7 @@ import { resolveAuthenticatedUserState, resolveSessionClaims } from "@/lib/user-
 import { PreregForm } from "./prereg-form";
 import { InterestForm } from "./interest-form";
 import { confirmColosseumRegistration } from "./actions";
-import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
+import { COLOSSEUM_ARENA_URL, COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
 import { TrackedLink } from "./tracked-link";
 import type { CampaignInterest } from "@/types/db";
 
@@ -214,17 +214,17 @@ export default async function PreRegistroPage({
                   </div>
                   <p className="mt-1 text-sm text-muted">
                     O Colosseum é a plataforma oficial do hackathon: é por lá que seu time entra na
-                    competição e submete o projeto. O registro já está aberto e não precisa ter ideia
-                    nem time ainda.
+                    competição e submete o projeto. São duas etapas por lá: criar a conta e depois
+                    registrar no hackathon. Não precisa ter ideia nem time ainda.
                   </p>
                   <ol className="mt-3 space-y-1.5 text-sm text-muted">
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">1.</span>
-                      Crie sua conta no Colosseum e complete o perfil
+                      Crie sua conta no Colosseum (o botão amarelo abre a criação de conta, não o registro)
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">2.</span>
-                      Clique em &quot;Register now&quot;, escolha Brasil e sua cidade e marque Solana (print abaixo)
+                      Com a conta criada, abra Arena › Hackathon e clique em &quot;Register now&quot;: escolha Brasil e sua cidade e marque Solana (print abaixo)
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">3.</span>
@@ -239,7 +239,7 @@ export default async function PreRegistroPage({
                           target="colosseum"
                           className="inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
                         >
-                          Abrir Colosseum
+                          Criar conta no Colosseum
                         </TrackedLink>
                         <form action={confirmColosseumRegistration}>
                           <button
@@ -250,6 +250,16 @@ export default async function PreRegistroPage({
                           </button>
                         </form>
                       </div>
+                      <p className="mt-3 text-sm text-muted">
+                        Já tem conta?{" "}
+                        <TrackedLink
+                          href={COLOSSEUM_ARENA_URL}
+                          target="colosseum_arena"
+                          className="font-semibold text-ink underline underline-offset-4"
+                        >
+                          Ir direto para o registro do hackathon
+                        </TrackedLink>
+                      </p>
                       <Image
                         src="/brand/colosseum-registro.png"
                         alt="Formulário de registro do Colosseum preenchido com Brasil, cidade e Solana"
