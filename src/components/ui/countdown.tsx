@@ -25,14 +25,11 @@ function formatCompact(seg: Segments | null): string {
 const pad = (n: number) => n.toString().padStart(2, "0");
 
 /**
- * Renders the time-until a deadline. Three variants:
+ * Renders the time-until a deadline. Two variants:
  *   - "compact" (default): single string like "2d 7h", ticks every 30s. Used
  *     in the dashboard and submission page.
  *   - "segments": four large mono digits (DIAS / HORAS / MIN / SEG), ticks
- *     every 1s. Used in the hero countdown card.
- *   - "backdrop": giant mono digits (DD:HH:MM:SS) with small unit labels,
- *     ticks every 1s. Decorative watermark above the closing CTA card, so it
- *     is aria-hidden: the deadline itself is stated in the calendar and FAQ.
+ *     every 1s. `tone` switches it between the cream ground and a dark band.
  *
  * SSR renders the `placeholder` (compact) or zeroed tiles (segments) to
  * avoid hydration mismatch from Date.now() differing between server and
@@ -44,12 +41,14 @@ export function Countdown({
   className = "",
   variant = "compact",
   size = "lg",
+  tone = "ink",
 }: {
   deadlineIso: string;
   placeholder?: string;
   className?: string;
-  variant?: "compact" | "segments" | "backdrop";
+  variant?: "compact" | "segments";
   size?: "md" | "lg" | "xl";
+  tone?: "ink" | "surface";
 }) {
   const deadlineMs = new Date(deadlineIso).getTime();
   // undefined = no client tick yet (SSR and first paint), null = expired.
@@ -63,35 +62,6 @@ export function Countdown({
     const id = setInterval(tick, intervalMs);
     return () => clearInterval(id);
   }, [deadlineMs, variant]);
-
-  if (variant === "backdrop") {
-    const groups: Array<{ value: number; label: string }> = [
-      { value: seg?.days ?? 0, label: "dias" },
-      { value: seg?.hours ?? 0, label: "horas" },
-      { value: seg?.minutes ?? 0, label: "min" },
-      { value: seg?.seconds ?? 0, label: "seg" },
-    ];
-    return (
-      <div
-        aria-hidden
-        className={`flex select-none items-start justify-center whitespace-nowrap font-mono font-black leading-none tabular-nums tracking-tighter ${className}`}
-      >
-        {groups.map((group, i) => (
-          <Fragment key={group.label}>
-            {i > 0 && <span className="opacity-60">:</span>}
-            <div className="text-center">
-              <span className="block" suppressHydrationWarning>
-                {pad(seg !== undefined ? group.value : 0)}
-              </span>
-              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.3em] sm:mt-2 sm:text-xs lg:text-sm">
-                {group.label}
-              </span>
-            </div>
-          </Fragment>
-        ))}
-      </div>
-    );
-  }
 
   if (variant === "segments") {
     const tiles: Array<{ value: number; label: string }> = [
@@ -113,6 +83,7 @@ export function Countdown({
           ? "mt-2 text-[11px] tracking-[0.2em] sm:mt-3 sm:text-xs"
           : "mt-2 text-[11px]";
     const dotClass = size === "md" ? "mt-3 sm:mt-4" : size === "xl" ? "mt-7 sm:mt-12 lg:mt-16" : "mt-5 sm:mt-6";
+    const onDark = tone === "surface";
     return (
       <div
         className={`flex items-start justify-center ${size === "xl" ? "gap-4 sm:gap-8 lg:gap-10" : "gap-3 sm:gap-5"} ${className}`}
@@ -122,17 +93,17 @@ export function Countdown({
             {i > 0 && (
               <span
                 aria-hidden
-                className={`h-[2px] w-[2px] shrink-0 rounded-full bg-emerald/60 ${dotClass}`}
+                className={`h-[2px] w-[2px] shrink-0 rounded-full ${onDark ? "bg-yellow" : "bg-emerald/60"} ${dotClass}`}
               />
             )}
             <div className="text-center">
               <p
-                className={`font-mono font-bold tabular-nums leading-none tracking-tight text-ink ${digitClass}`}
+                className={`font-mono font-bold tabular-nums leading-none tracking-tight ${onDark ? "text-surface" : "text-ink"} ${digitClass}`}
                 suppressHydrationWarning
               >
                 {seg !== undefined ? pad(tile.value) : "00"}
               </p>
-              <p className={`font-mono uppercase tracking-wider text-muted ${labelClass}`}>
+              <p className={`font-mono uppercase tracking-wider ${onDark ? "text-surface/50" : "text-muted"} ${labelClass}`}>
                 {tile.label}
               </p>
             </div>

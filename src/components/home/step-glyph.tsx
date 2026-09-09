@@ -1,187 +1,120 @@
-type Shape = "badge" | "arena" | "community" | "question";
+import { halftoneMarks } from "./halftone";
 
-const STROKE = 3.5;
+type Shape = "badge" | "arena" | "community";
 
-/** Cadastro: o crachá que sai do formulário, com o carimbo de confirmado. */
-function Badge() {
-  return (
-    <g>
-      <rect
-        x="44"
-        y="32"
-        width="92"
-        height="84"
-        rx="10"
-        fill="var(--color-yellow)"
-        transform="rotate(-7 90 74)"
-      />
-      <rect
-        x="62"
-        y="24"
-        width="96"
-        height="88"
-        rx="10"
-        fill="var(--color-surface-raised)"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-      />
-      <circle cx="88" cy="52" r="12" fill="var(--color-emerald)" />
-      <path d="M74 78a14 14 0 0 1 28 0z" fill="var(--color-emerald)" />
-      <path
-        d="M114 46h30M114 60h22"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M78 96h64"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-        opacity="0.22"
-      />
-      <circle
-        cx="152"
-        cy="102"
-        r="15"
-        fill="var(--color-emerald)"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-      />
-      <path
-        d="M145 102l5 5 9-11"
-        fill="none"
-        stroke="var(--color-surface-raised)"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </g>
-  );
-}
+const GRID = { cols: 44, cellW: 200 / 44, cellH: 5 };
 
-/** Colosseum: a fachada elíptica em duas arcadas, o sol atrás. */
-function Arena() {
-  const arch = (cx: number, base: number, top: number) =>
-    `M${cx - 11} ${base}V${top + 11}a11 11 0 0 1 22 0V${base}z`;
-
-  return (
-    <g>
-      <circle cx="56" cy="40" r="21" fill="var(--color-yellow)" />
-      <path
-        d="M44 122V78a56 34 0 0 1 112 0v44z"
-        fill="var(--color-surface-raised)"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-        strokeLinejoin="round"
-      />
-      {[72, 100, 128].map((cx) => (
-        <path
-          key={`t1-${cx}`}
-          d={arch(cx, 92, 62)}
-          fill={cx === 100 ? "var(--color-emerald)" : "currentColor"}
-        />
-      ))}
-      <path d="M44 97h112" stroke="currentColor" strokeWidth="3" />
-      {[72, 100, 128].map((cx) => (
-        <path
-          key={`t2-${cx}`}
-          d={arch(cx, 122, 103)}
-          fill={cx === 100 ? "var(--color-emerald)" : "currentColor"}
-        />
-      ))}
-      <path
-        d="M26 122h148"
-        stroke="currentColor"
-        strokeWidth="4.5"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-/** Comunidade: o grupo dentro do balão. */
-function Community() {
-  const figure = (cx: number, cy: number, r: number, fill: string) => (
-    <g key={cx} fill={fill}>
-      <circle cx={cx} cy={cy} r={r} />
-      <path d={`M${cx - r - 5} 84a${r + 5} ${r + 5} 0 0 1 ${2 * r + 10} 0z`} />
-    </g>
-  );
-
-  return (
-    <g>
-      <rect x="66" y="14" width="106" height="60" rx="14" fill="var(--color-yellow)" />
-      <path
-        d="M60 28h84a14 14 0 0 1 14 14v40a14 14 0 0 1-14 14h-40l-30 20 10-20H60a14 14 0 0 1-14-14V42a14 14 0 0 1 14-14z"
-        fill="var(--color-surface-raised)"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-        strokeLinejoin="round"
-      />
-      {figure(76, 56, 9, "var(--color-emerald)")}
-      {figure(102, 50, 10, "currentColor")}
-      {figure(128, 56, 9, "var(--color-emerald)")}
-    </g>
-  );
-}
-
-/** FAQ: o balão da pergunta com a resposta chegando por trás. */
-function Question() {
-  return (
-    <g>
-      <rect
-        x="20"
-        y="34"
-        width="102"
-        height="76"
-        rx="16"
-        fill="var(--color-yellow)"
-        transform="rotate(-9 71 72)"
-      />
-      <path
-        d="M48 16h92a16 16 0 0 1 16 16v52a16 16 0 0 1-16 16H92l-26 20 7-20H48a16 16 0 0 1-16-16V32a16 16 0 0 1 16-16z"
-        fill="var(--color-surface-raised)"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-        strokeLinejoin="round"
-      />
-      <path
-        d="M78 50a16 16 0 1 1 16 16v8"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <circle cx="94" cy="86" r="5.5" fill="currentColor" />
-      <circle
-        cx="162"
-        cy="106"
-        r="21"
-        fill="var(--color-emerald)"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-      />
-      {[152, 162, 172].map((cx) => (
-        <circle key={cx} cx={cx} cy="106" r="2.8" fill="var(--color-surface-raised)" />
-      ))}
-    </g>
-  );
-}
-
-const SHAPES: Record<Shape, () => React.JSX.Element> = {
-  badge: Badge,
-  arena: Arena,
-  community: Community,
-  question: Question,
+const TONES: Record<Shape, string> = {
+  badge:
+    "00000000000000000000000000000000000000000000" +
+    "00000000000000000000000000000000000000000000" +
+    "000000000079aaaaaaaaaaaaaaaaa830000000000000" +
+    "000000001hqrrrrrrrrrrrrrrrrrrqo6000000000000" +
+    "00000000cuc8777877777777777779kt000000000000" +
+    "00000000oh799999999999999999987w400000000000" +
+    "00000000pg999979889999888888899t600000000000" +
+    "00000000pg8888nuuh8888beeeeee88u600000000000" +
+    "00000000pg888jzzzyb888pyyyyyxc8u600000000000" +
+    "00000000pg888mzzzzd8889aaaaaa98u600000000000" +
+    "00000000pg888cvxxr9888888888888u600000000000" +
+    "00000000pg8897cmk88888hooona888u600000000000" +
+    "00000000pg888eptsmb888kqqqqc888u600000000000" +
+    "00000000pg88cxzzzzr988655558888u600000000000" +
+    "00000000pg88mzyyyyzd88999999889u701100000000" +
+    "00000000pg88dffffffb88888888898t400000000000" +
+    "00000000pg88777777788888888888dxtrsk40000000" +
+    "00000000pg8899999998888888888jujedflta000000" +
+    "00000000pg889999999999999999fvc8777bgv500000" +
+    "00000000pg99affffffffffffffctg7788dxikn00000" +
+    "00000000oh788999999999999999y9bh8cxq9ax00000" +
+    "00000000ctdaaaaaaaaaaaaaaaacw8gzlvs999y00000" +
+    "000000000konnnnnnnnnnnnnnnnnzc8jzta98fr00000" +
+    "00000000007cccccccccccccccccit86gb879ub00000" +
+    "00000000010000000000000000000lsg769hti000000" +
+    "000000000001111111111111111101eotusnc0000000" +
+    "00000000000000000000000000000003676300000000" +
+    "00000000000000000000000000000000000000000000",
+  arena:
+    "00000000000000000000000000000000000000000000" +
+    "00000000255300000000000000000000000000000000" +
+    "0000000blpqme2000000000000000000000000000000" +
+    "000000htjcchsn100000000000000000000000000000" +
+    "000009va68877sg00000000000000000000000000000" +
+    "00000ni899999cv00000000000000000000000000000" +
+    "00000re9888899y00000000000000000000000000000" +
+    "00000mj888888du00000022000000000000000000000" +
+    "000007wb88889sf6gmsvuttuvsmg6000000000000000" +
+    "000000eujcafttttmhdaaaaaadimtth4000000000000" +
+    "00000007ntxwvmb88888877888888bnvi30000000000" +
+    "0000000005po98b988888bb888889b89ps8000000000" +
+    "000000006ui7apupa888htth888apupa7iu600000000" +
+    "00000001si79izzzj888xzzx888jzzzi97is10000000" +
+    "00000009t898lyzzm888yzzy888mzzyl898u90000000" +
+    "0000000hl988lzzzm888yzzy888mzzzl889lh0000000" +
+    "0000000kk888lzzzm888zzzz888mzzzl888kk0000000" +
+    "0000000kj888jwwwk888wwww888kwwwj888jk0000000" +
+    "0000000kj9999aaa9999aaaa9999aaa9999jk0000000" +
+    "0000000kjeeeeedeeeeeeeeeeeeeedeeeeejk0000000" +
+    "0000000kj88888a888888aa888888a88888jk0000000" +
+    "0000000kj9999lrm9999eqqe999amrl9999jk0000000" +
+    "0000000kk999izzzj999xzzx999jzzzh999kk0000000" +
+    "0000000kj888isssj888ssss888jsssi888jk0000000" +
+    "0000366lsoooqsssqooorssroooqsssqooosl6630000" +
+    "0000lvvxzzzzzzzzzzzzzzzzzzzzzzzzzzzzxvvl0000" +
+    "00005666555555555555555555555555555566650000" +
+    "00000000000000000000000000000000000000000000",
+  community:
+    "00000000000000000000000000000000000000000000" +
+    "00000000111111111111111111111111111100000000" +
+    "00000010000000000000000000000000000001000000" +
+    "00000006dggggggggggggggggggggggggggd60000000" +
+    "000000eppqqqqqqqqqqqqqqqqqqqqqqqqqqppe000000" +
+    "000009vf7555555555555445555555555557fu800000" +
+    "00000nj79999999999998dd89999999999997jm00000" +
+    "00000re9988888888888nwwn8888888888899er00000" +
+    "00000se888888888888czzzzc888888888888es00000" +
+    "00000se888889qxqa88ayzzya88aqxq988888es00000" +
+    "00000se88888jzzzk888gssf888kzzzi88888es00000" +
+    "00000se88888fyzyg8888778888gyzyf88888es00000" +
+    "00000se888888ini988987789888jni888888es00000" +
+    "00000se8888978a87987affa78978a8798888es00000" +
+    "00000se88888hruri88erwwre88irurh88888es00000" +
+    "00000se8888eyzzzzfawzzzzw9fzzzzye8888es00000" +
+    "00000qf8888isrsrsjctrssrtcjsrsrsi8888fq00000" +
+    "00000in888899999999aaaa99999999998888ni00000" +
+    "000002ulbaaa9999998877999aa99999aaablu200000" +
+    "0000003muttttttttv97ajsttttttttttttum3000000" +
+    "0000000002222222hp8gqq6222222222222000000000" +
+    "0000000000000001thnsg00000000000000000000000" +
+    "000000000000000ezqm4010000000000000000000000" +
+    "000000000000001wpb00100000000000000000000000" +
+    "000000000000001c2010000000000000000000000000" +
+    "00000000000000000100000000000000000000000000" +
+    "00000000000000010000000000000000000000000000" +
+    "00000000000000000000000000000000000000000000",
 };
 
-/** Ilustração de um passo da jornada — vetor no traço da marca, sem asset. */
+const MARKS: Record<Shape, { light: string; dark: string }> = {
+  badge: halftoneMarks(TONES.badge, GRID),
+  arena: halftoneMarks(TONES.arena, GRID),
+  community: halftoneMarks(TONES.community, GRID),
+};
+
+/** Ilustração de um passo da jornada — meio-tom no traço da marca, sem asset. */
 export function StepGlyph({ shape, className }: { shape: Shape; className?: string }) {
-  const Art = SHAPES[shape];
+  const { light, dark } = MARKS[shape];
   return (
-    <svg viewBox="0 0 200 140" aria-hidden role="presentation" className={className}>
-      <Art />
+    <svg
+      viewBox="0 0 200 140"
+      aria-hidden
+      role="presentation"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      className={className}
+    >
+      <path d={light} strokeWidth="1.5" />
+      <path d={dark} strokeWidth="2.9" />
     </svg>
   );
 }

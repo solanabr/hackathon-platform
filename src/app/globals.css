@@ -135,8 +135,20 @@
     --btn-cut-fill: var(--color-surface-deeper);
   }
 
+  /* Sunken: a hard inset shadow at the top left and a light lip at the bottom
+     right, so the button reads as pressed into the sheet. */
+  .btn-cut-outline.btn-cut-quiet::before {
+    box-shadow:
+      inset 3px 3px 0 rgb(27 35 29 / 0.14),
+      inset -1px -1px 0 rgb(255 253 246 / 0.55);
+    transition: background-color 200ms, box-shadow 200ms;
+  }
+
   .btn-cut-outline.btn-cut-quiet:hover::before {
     background-color: var(--color-surface-kraft);
+    box-shadow:
+      inset 4px 4px 0 rgb(27 35 29 / 0.2),
+      inset -1px -1px 0 rgb(255 253 246 / 0.4);
   }
 
   /* The label sits above the fill layer. */
@@ -336,9 +348,23 @@
 
 /* Scroll reveal: sections fade up once as they enter the viewport. */
 .reveal {
+  --reveal-x: 0px;
+  --reveal-y: 28px;
+  --reveal-rot: 0deg;
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transform: translate3d(var(--reveal-x), var(--reveal-y), 0) rotate(var(--reveal-rot));
+  transition: opacity 0.7s ease-out, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Cards that come up from alternating sides, one after the other. */
+.reveal-from-left {
+  --reveal-x: -64px;
+  --reveal-y: 52px;
+  --reveal-rot: -1.5deg;
+}
+.reveal-from-right {
+  --reveal-x: 64px;
+  --reveal-y: 52px;
+  --reveal-rot: 1.5deg;
 }
 .reveal-in {
   opacity: 1;
