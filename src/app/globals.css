@@ -186,6 +186,14 @@
     filter: drop-shadow(6px 6px 0 rgb(27 35 29 / 0.18));
   }
 
+  /* Dark variant: the 2px rim turns emerald so the card still reads as a
+     sticker against the cream, and the inner fill goes ink. */
+  .card-cut-dark {
+    --card-cut-fill: var(--color-green-dark);
+    background-color: var(--color-emerald-deep);
+    color: var(--color-surface-raised);
+  }
+
   .card-cut::before {
     content: "";
     position: absolute;
@@ -373,32 +381,53 @@
   }
 }
 
-/* Jornada: while the section is pinned, each card rides up from below and
-   from an alternating side. --t is scroll progress, written by JourneyPin. */
+/* Jornada: while the section is pinned, each card rides up from below the fold
+   and in from an alternating side, landing in the row. --t is per-card scroll
+   progress and --pp lifts the pitch out of the way, both written by JourneyPin.
+   --enter-x is the offset from the card's resting column to the centre of the
+   screen, in its own width: the trip is a straight line between the two. */
 .journey-card {
   --t: 0;
   --side: -1;
-  opacity: calc(var(--t) * 1.6);
+  --enter-x: 50%;
   transform: translate3d(
-      calc(var(--side) * 110px * (1 - var(--t))),
-      calc(62vh * (1 - var(--t))),
+      calc(var(--enter-x) * (1 - var(--t))),
+      calc(105vh * (1 - var(--t))),
       0
     )
-    rotate(calc(var(--side) * 2deg * (1 - var(--t))));
-  will-change: transform, opacity;
+    rotate(calc(var(--side) * 1.5deg * (1 - var(--t))));
+  will-change: transform;
 }
-.journey-card-right {
+.journey-card-mid {
   --side: 1;
+  --enter-x: calc(50% + 0.75rem);
 }
-@media (prefers-reduced-motion: reduce) {
-  .journey-card {
-    --t: 1;
+.journey-card-last {
+  --enter-x: calc(-150% - 2.25rem);
+}
+.journey-pin-pitch {
+  --pp: 0;
+  transform: translateY(calc((1 - var(--pp)) * 24vh));
+}
+
+/* Nothing drives --t or --pp in either case, so the pin unwinds into the
+   resting row it would have landed on. */
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .journey-pin {
+    height: auto;
   }
-}
-/* Without JS nothing writes --t, so the cards would never arrive. */
-@media (scripting: none) {
-  .journey-card {
-    --t: 1;
+  .journey-pin-panel {
+    position: static;
+    height: auto;
+    overflow: visible;
+    padding-block: 6rem;
+  }
+  .journey-pin-guides {
+    display: none;
+  }
+  .journey-card,
+  .journey-pin-pitch {
+    transform: none;
   }
 }
 

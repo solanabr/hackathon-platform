@@ -387,67 +387,75 @@ export default async function HomePage() {
 
   return (
     <div className="bg-surface text-ink">
-      {/* Hero: one centred stack on the cream, the amphitheatre rising out of
-          the base and the cheque as the only object in front of it. */}
-      <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden">
+      {/* Hero: on wide screens the copy holds the left column and the ticket
+          the right, with the amphitheatre rising behind it. */}
+      <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden lg:justify-start">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] sm:h-[52%] lg:h-[62%]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] sm:h-[56%] lg:left-auto lg:right-0 lg:h-[78%] lg:w-[58%]"
           style={FADE_UP}
         >
           <ColosseumBackdrop />
         </div>
 
         <div
-          className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:860px)]:py-6`}
+          className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:min-h-[calc(100dvh-4rem)] lg:items-start lg:gap-12 lg:pb-10 lg:pt-[9vh] lg:text-left lg:[@media(max-height:860px)]:pb-6 lg:[@media(max-height:860px)]:pt-[6vh]`}
         >
-          <h1 className="font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:text-[4.2rem] xl:text-[5rem]">
-            <span className="block">O próximo time</span>
-            <span className="mt-1 block">
-              a captar{" "}
-              <span className="inline-block bg-yellow px-3 text-green-dark">
-                milhões
+          <div>
+            <div className="mb-5 flex justify-center lg:justify-start">
+              <SectionHat>Hackathon Colosseum</SectionHat>
+            </div>
+
+            <h1 className="font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[2.9rem] xl:text-[3.6rem] 2xl:text-[4.2rem]">
+              <span className="block">O próximo time</span>
+              <span className="mt-1 block">
+                a captar{" "}
+                <span className="inline-block bg-yellow px-3 text-green-dark">
+                  milhões
+                </span>
               </span>
-            </span>
-            <span className="mt-1 block">pode ser o seu.</span>
-          </h1>
+              <span className="mt-1 block">pode ser o seu.</span>
+            </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:hidden">
-            O maior hackathon online do mundo: prêmios milionários e capital
-            anjo.
-          </p>
-          <p className="mx-auto mt-6 hidden max-w-2xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:block">
-            O Colosseum é o maior hackathon online do mundo: prêmios milionários
-            e capital anjo para as melhores equipes.
-          </p>
+            <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:hidden">
+              O maior hackathon online do mundo: prêmios milionários e capital
+              anjo.
+            </p>
+            <p className="mx-auto mt-6 hidden max-w-xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:mx-0 lg:block">
+              O Colosseum é o maior hackathon online do mundo: prêmios
+              milionários e capital anjo para as melhores equipes.
+            </p>
 
-          <div
-            id="hero-cta"
-            className="mt-8 flex flex-wrap items-center justify-center gap-3"
-          >
-            <TrackedCta
-              href={cadastroHref}
-              event="cta_clicked"
-              properties={{ cta: "cadastro", location: "hero" }}
-              className="btn-cut inline-flex items-center whitespace-nowrap bg-emerald px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-200 hover:bg-emerald-deep sm:px-10 sm:text-base"
+            <div
+              id="hero-cta"
+              className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
             >
-              <span>Fazer cadastro</span>
-            </TrackedCta>
-            <a
-              href="#jornada"
-              className="btn-cut btn-cut-outline btn-cut-quiet hidden whitespace-nowrap px-8 py-3.5 text-sm font-semibold text-ink sm:px-9 sm:text-base lg:inline-flex lg:items-center"
-            >
-              <span>Como funciona</span>
-            </a>
+              <TrackedCta
+                href={cadastroHref}
+                event="cta_clicked"
+                properties={{ cta: "cadastro", location: "hero" }}
+                className="btn-cut inline-flex items-center whitespace-nowrap bg-emerald px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-200 hover:bg-emerald-deep sm:px-10 sm:text-base"
+              >
+                <span>Fazer cadastro</span>
+              </TrackedCta>
+              <a
+                href="#jornada"
+                className="btn-cut btn-cut-outline btn-cut-quiet hidden whitespace-nowrap px-8 py-3.5 text-sm font-semibold text-ink sm:px-9 sm:text-base lg:inline-flex lg:items-center"
+              >
+                <span>Como funciona</span>
+              </a>
+            </div>
+
+            <MobileSteps
+              whatsappUrl={WHATSAPP_COMMUNITY_URL}
+              colosseumUrl={colosseum?.external_url ?? null}
+              registered={registered}
+            />
           </div>
 
-          <MobileSteps
-            whatsappUrl={WHATSAPP_COMMUNITY_URL}
-            colosseumUrl={colosseum?.external_url ?? null}
-            registered={registered}
-          />
-
-          <EventTicket />
+          <div className="lg:self-end">
+            <EventTicket />
+          </div>
         </div>
       </section>
 
@@ -573,10 +581,10 @@ export default async function HomePage() {
         header={
           <div>
             <SectionHat centered>Como participar</SectionHat>
-            <h2 className="mx-auto mt-4 max-w-3xl text-balance text-center font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] [@media(min-height:860px)]:text-5xl">
+            <h2 className="mt-4 text-balance text-center font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] xl:text-5xl">
               Entre no hackathon em 3 passos.
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-pretty text-center leading-relaxed text-ink/80 [@media(min-height:860px)]:mt-4 [@media(min-height:860px)]:text-lg">
+            <p className="mt-4 text-pretty text-center leading-relaxed text-ink/80">
               Faça o cadastro, registre-se no Colosseum e entre na comunidade
               para receber suporte, workshops e contexto durante toda a
               campanha.
@@ -585,76 +593,50 @@ export default async function HomePage() {
         }
       >
         {journey.map((step, i) => (
-          <div key={step.title} className="flex h-full flex-col">
-            <div className="flex justify-center">
-              <span
-                className={`inline-flex items-center rounded-full border-2 px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] ${
-                  i === 0
-                    ? "border-green-dark bg-yellow text-green-dark"
-                    : "border-green-dark/25 bg-surface-raised text-ink/55"
-                }`}
-              >
-                {step.marker}
-              </span>
-            </div>
-
-            <div className="relative mt-5 flex h-3 items-center justify-center">
-              {i > 0 && (
-                <span
-                  aria-hidden
-                  className="absolute left-[-12px] right-1/2 h-0 border-t-2 border-dotted border-green-dark/30"
-                />
-              )}
-              {i < journey.length - 1 && (
-                <span
-                  aria-hidden
-                  className="absolute left-1/2 right-[-12px] h-0 border-t-2 border-dotted border-green-dark/30"
-                />
-              )}
-              <span
-                aria-hidden
-                className={`relative h-3 w-3 rounded-full border-2 border-green-dark ${
-                  i === 0 ? "bg-yellow" : "bg-surface"
-                }`}
-              />
-            </div>
-
-            <div
-              data-journey-card
-              className={`journey-card mt-5 flex flex-1 flex-col ${
-                i % 2 === 0 ? "" : "journey-card-right"
-              }`}
-            >
-              <div className="card-cut flex flex-1 flex-col p-6 sm:p-7">
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/40">
+          <div
+            key={step.title}
+            data-journey-card
+            className={`journey-card ${
+              i === 1 ? "journey-card-mid" : i === 2 ? "journey-card-last" : ""
+            }`}
+          >
+            <div className="card-cut card-cut-dark flex h-full flex-col p-6 sm:p-7">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-surface-raised/45">
                   Passo {`0${i + 1}`}
                 </p>
-                <div className="mt-4 border-y border-green-dark/15 py-4 text-green-dark">
-                  <StepGlyph
-                    shape={step.glyph}
-                    className="mx-auto h-24 w-auto [@media(min-height:860px)]:h-32 [@media(min-height:960px)]:h-40"
-                  />
-                </div>
-                <h3 className="mt-6 font-heading text-xl font-bold">
-                  {step.title}
-                </h3>
-                <ul className="mb-6 mt-4 space-y-2.5">
-                  {step.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex gap-2.5 text-pretty text-sm leading-relaxed text-green-dark/70"
-                    >
-                      <CheckIcon
-                        aria-hidden
-                        weight="bold"
-                        className="mt-[3px] h-4 w-4 shrink-0 text-emerald"
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-auto">{step.cta}</div>
+                <span
+                  className={`inline-flex items-center rounded-full border-2 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] ${
+                    i === 0
+                      ? "border-yellow bg-yellow text-green-dark"
+                      : "border-surface-raised/25 bg-surface-raised/10 text-surface-raised/70"
+                  }`}
+                >
+                  {step.marker}
+                </span>
               </div>
+              <div className="mt-4 border-y border-surface-raised/15 py-4 text-yellow">
+                <StepGlyph shape={step.glyph} className="mx-auto h-32 w-auto" />
+              </div>
+              <h3 className="mt-6 font-heading text-xl font-bold">
+                {step.title}
+              </h3>
+              <ul className="mb-6 mt-4 space-y-2.5">
+                {step.items.map((item) => (
+                  <li
+                    key={item}
+                    className="flex gap-2.5 text-pretty text-sm leading-relaxed text-surface-raised/70"
+                  >
+                    <CheckIcon
+                      aria-hidden
+                      weight="bold"
+                      className="mt-[3px] h-4 w-4 shrink-0 text-yellow"
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto">{step.cta}</div>
             </div>
           </div>
         ))}
@@ -745,10 +727,10 @@ export default async function HomePage() {
                   )}
                   event="campaign_link_clicked"
                   properties={{ target: "earn", location: "lp" }}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-deep bg-[radial-gradient(circle,rgb(27_35_29/0.22)_1px,transparent_1px)] [background-size:9px_9px] shadow-sticker transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 >
                   <EarnPreview />
-                  <div className="flex flex-1 flex-col p-6 sm:p-8">
+                  <div className="flex flex-1 flex-col p-5 pt-6 sm:p-7 sm:pt-7">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
                       Superteam Earn
                     </p>
@@ -770,9 +752,9 @@ export default async function HomePage() {
               </Reveal>
 
               <Reveal delay={200} className="h-full">
-                <article className="flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
+                <article className="flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-deep bg-[radial-gradient(circle,rgb(27_35_29/0.22)_1px,transparent_1px)] [background-size:9px_9px] shadow-sticker">
                   <CommunityPreview />
-                  <div className="flex flex-1 flex-col p-6 sm:p-8">
+                  <div className="flex flex-1 flex-col p-5 pt-6 sm:p-7 sm:pt-7">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
                       Recursos
                     </p>

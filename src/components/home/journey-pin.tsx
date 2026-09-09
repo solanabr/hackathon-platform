@@ -1,14 +1,17 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 
-const START = 0.05;
-const STEP = 0.24;
-const SPAN = 0.4;
+const STEP = 0.21;
+const SPAN = 0.33;
 
-/** Pins the jornada while the three cards ride up into the rail, one at a
- * time and from alternating sides. Progress is the scroll position inside the
- * tall spacer, so the cards never move without the wheel moving. */
+/** Pins the jornada: the pitch starts centred and each card rides up through
+ * the screen from an alternating side, landing side by side in the row while
+ * the pitch settles at the top. Progress is the scroll position inside the
+ * tall spacer, so nothing moves on its own.
+ *
+ * Reduced motion and no-JS keep the resting layout — the pin unwinds in
+ * globals.css so both paths render the same markup. */
 export function JourneyPin({
   header,
   children,
@@ -19,28 +22,16 @@ export function JourneyPin({
   containerClassName?: string;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduced(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
 
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const cards = [
       ...node.querySelectorAll<HTMLElement>("[data-journey-card]"),
     ];
-
-    if (reduced) {
-      cards.forEach((el) => el.style.setProperty("--t", "1"));
-      return;
-    }
-
+    const pitch = node.querySelector<HTMLElement>(".journey-pin-pitch");
     let raf = 0;
     const paint = () => {
       raf = 0;
@@ -48,9 +39,12 @@ export function JourneyPin({
       const travel = rect.height - window.innerHeight;
       const p = travel <= 0 ? 1 : Math.min(1, Math.max(0, -rect.top / travel));
       cards.forEach((el, i) => {
-        const t = Math.min(1, Math.max(0, (p - (START + i * STEP)) / SPAN));
-        el.style.setProperty("--t", (1 - Math.pow(1 - t, 3)).toFixed(4));
+        const t = Math.min(1, Math.max(0, (p - i * STEP) / SPAN));
+        el.style.setProperty("--t", t.toFixed(4));
       });
+      // The pitch clears the way as the first card comes in to land.
+      const first = Math.min(1, Math.max(0, p / SPAN));
+      pitch?.style.setProperty("--pp", first.toFixed(4));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(paint);
@@ -64,31 +58,47 @@ export function JourneyPin({
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reduced]);
+  }, []);
 
   return (
     <section
       ref={sectionRef}
       aria-label="Como participar"
-      className={`relative hidden lg:block ${reduced ? "" : "h-[280vh]"}`}
+      className="journey-pin relative hidden h-[380vh] lg:block"
     >
-      {/* Landing on the very top of the pin would show an empty rail, so the
-          anchor sits far enough in that the first cards are already riding. */}
+      {/* Landing on the very top of the pin would show the pitch with no card
+          in sight, so the anchor sits where the first one is already rising. */}
       <span
         id="jornada"
         aria-hidden
-        className="absolute left-0 top-[26%] h-px w-px"
+        className="absolute left-0 top-[16%] h-px w-px"
       />
-      <div
-        className={`overflow-x-clip px-4 sm:px-6 lg:px-8 xl:px-12 ${
-          reduced
-            ? "pt-24 lg:pt-28"
-            : "sticky top-0 flex h-screen flex-col justify-center pt-14 [@media(min-height:900px)]:pt-16"
-        }`}
-      >
-        <div className={containerClassName}>
-          {header}
-          <div className="mt-6 grid grid-cols-3 gap-6 xl:mt-10">{children}</div>
+      <div className="journey-pin-panel sticky top-0 flex h-screen flex-col justify-center overflow-hidden px-4 pt-14 sm:px-6 lg:px-8 xl:px-12">
+        <div className={`journey-pin-stack relative ${containerClassName}`}>
+          <div
+            aria-hidden
+            className="journey-pin-guides pointer-events-none absolute -inset-y-[100vh] inset-x-0"
+          >
+            <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-green-dark/15" />
+            <span className="absolute inset-x-0 top-1/2 h-px bg-green-dark/15" />
+            <svg
+              viewBox="0 0 12 12"
+              className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 text-emerald"
+            >
+              <path
+                d="M6 0v12M0 6h12"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+            </svg>
+          </div>
+
+          <div className="journey-pin-pitch relative mx-auto max-w-2xl">
+            {header}
+          </div>
+          <div className="relative mt-6 grid grid-cols-3 gap-6 xl:mt-8">
+            {children}
+          </div>
         </div>
       </div>
     </section>

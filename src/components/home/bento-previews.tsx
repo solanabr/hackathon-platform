@@ -8,29 +8,12 @@ import {
   YoutubeLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-/* Palco dos previews: fundo pontilhado com as marcas de canto do papel, e o
-   mockup flutuando dentro sem caber inteiro — a UI parece recortada de dentro
-   da plataforma, não desenhada para o card. */
+/* Palco dos previews: sem fundo próprio — o papel pontilhado é do card inteiro,
+   e o mockup apenas se apoia nele, junto do texto. */
 function PreviewStage({ children }: { children: ReactNode }) {
   return (
-    <div className="relative h-[300px] overflow-hidden border-b-2 border-green-dark bg-surface-deep sm:h-[360px]">
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(circle,rgb(27_35_29/0.22)_1px,transparent_1px)] [background-size:9px_9px]"
-      />
-      {[
-        "left-2.5 top-2.5",
-        "right-2.5 top-2.5",
-        "bottom-2.5 left-2.5",
-        "bottom-2.5 right-2.5",
-      ].map((pos) => (
-        <span
-          key={pos}
-          aria-hidden
-          className={`absolute h-2 w-2 bg-green-dark/25 ${pos}`}
-        />
-      ))}
-      <div className="absolute inset-0">{children}</div>
+    <div className="flex flex-col gap-3 p-5 pb-0 sm:gap-3.5 sm:p-7 sm:pb-0">
+      {children}
     </div>
   );
 }
@@ -64,8 +47,8 @@ const EARN_LISTINGS = [
 export function EarnPreview() {
   return (
     <PreviewStage>
-      <div className="absolute inset-x-4 top-5 rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker sm:inset-x-7 sm:top-7">
-        <header className="flex items-center gap-2.5 border-b-2 border-green-dark/12 px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
+        <header className="flex items-center gap-2.5 border-b-2 border-green-dark/12 px-5 py-3.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-dark">
             <Image
               src="/brand/stbr/logo/symbol-fwhite.png"
@@ -87,7 +70,7 @@ export function EarnPreview() {
           {EARN_LISTINGS.map((l) => (
             <li
               key={l.title}
-              className={`flex items-center gap-3 px-4 py-3 ${l.featured ? "bg-yellow/25" : ""}`}
+              className={`flex items-center gap-3 px-5 py-2.5 ${l.featured ? "bg-yellow/25" : ""}`}
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-green-dark/15 bg-surface">
                 <Image
@@ -126,7 +109,7 @@ export function EarnPreview() {
         </ul>
       </div>
 
-      <div className="absolute bottom-5 left-4 right-10 rounded-xl border-2 border-green-dark bg-green px-4 py-3 shadow-sticker sm:bottom-6 sm:left-10 sm:right-16">
+      <div className="rounded-xl border-2 border-green-dark bg-green px-4 py-3 shadow-sticker">
         <p className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest text-yellow">
           <span className="rounded bg-yellow px-1.5 py-px text-green-dark">
             BR
@@ -172,13 +155,13 @@ const CHANNELS = [
   "workshops",
 ];
 
-/** Recorte da comunidade: servidor no Discord com o grupo do WhatsApp por cima. */
+/** Recorte da comunidade: servidor no Discord com o grupo do WhatsApp por baixo. */
 export function CommunityPreview() {
   return (
     <PreviewStage>
-      <div className="absolute bottom-8 left-4 top-5 flex w-[106%] overflow-hidden rounded-2xl border-2 border-green-dark bg-green-dark shadow-sticker sm:bottom-10 sm:left-7 sm:top-7 sm:w-[103%]">
-        <aside className="w-32 shrink-0 border-r border-surface/10 py-3 sm:w-40">
-          <p className="flex items-center gap-1.5 px-3 pb-2.5 font-heading text-[12px] font-bold text-surface-raised">
+      <div className="flex overflow-hidden rounded-2xl border-2 border-green-dark bg-green-dark shadow-sticker">
+        <aside className="flex w-32 shrink-0 flex-col border-r border-surface/10 py-3.5 sm:w-40">
+          <p className="flex items-center gap-1.5 px-4 pb-3 font-heading text-[12px] font-bold text-surface-raised">
             <DiscordLogoIcon weight="fill" className="h-4 w-4 text-yellow" />
             Superteam BR
           </p>
@@ -186,7 +169,7 @@ export function CommunityPreview() {
             {CHANNELS.map((c, i) => (
               <li
                 key={c}
-                className={`flex items-center gap-1 px-3 py-1.5 text-[11px] ${
+                className={`flex items-center gap-1 px-4 py-1.5 text-[11px] ${
                   i === 0
                     ? "bg-surface/12 font-bold text-surface-raised"
                     : "text-surface/55"
@@ -199,7 +182,7 @@ export function CommunityPreview() {
           </ul>
         </aside>
 
-        <ul className="min-w-0 flex-1 space-y-3 p-3.5">
+        <ul className="flex min-w-0 flex-1 flex-col justify-center gap-2.5 px-4 py-3.5">
           {MESSAGES.map((m) => (
             <li key={m.author} className="flex gap-2">
               <span
@@ -220,7 +203,7 @@ export function CommunityPreview() {
         </ul>
       </div>
 
-      <div className="absolute bottom-5 left-4 right-10 rounded-xl border-2 border-green-dark bg-surface-raised px-4 py-3 shadow-sticker sm:bottom-6 sm:left-10 sm:right-16">
+      <div className="rounded-xl border-2 border-green-dark bg-surface-raised px-4 py-3 shadow-sticker">
         <p className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest text-green-dark/60">
           <WhatsappLogoIcon weight="fill" className="h-4 w-4 text-emerald" />
           Grupo do WhatsApp
