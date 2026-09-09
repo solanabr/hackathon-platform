@@ -76,13 +76,43 @@ end.
 | Arena incl. podium wall | 87 m × 55 m |
 | Bays per level | 80 |
 
+### Ellipse or oval — resolved, with the discrepancy recorded
+
+The plan is often cited as a 527 m perimeter with 188 × 156 m axes, and the
+literature disputes whether the Romans laid out a true ellipse, a four-centre
+oval, or an eight-centre one. Those two published figures are **mutually
+inconsistent** and this was verified numerically rather than assumed:
+
+| Plan curve | Perimeter | Max deviation from the true ellipse |
+| --- | --- | --- |
+| True ellipse, a = 93.875, b = 77.80 | 540.52 m | — |
+| Best-fitting four-centre oval (d = 30, r = 63.88, R = 103.15) | 537.89 m | 1.10 m |
+| Four-centre oval, closest possible to 527 m | 529.07 m | 3.56 m (degenerate: 3.88 m corner arc) |
+
+No architecturally sensible four-centre oval on these axes reaches 527 m. The
+axes are far better attested than the perimeter figure, and the best-formed oval
+sits 1.10 m from the true ellipse — under a pixel at hero scale.
+
+**Decision: build on the true ellipse.** The oval question is recorded here so it
+is a decision, not an oversight. If the silhouette ever needs the historical
+layout, `ellipse.ts` swaps for a four-centre curve behind the same interface.
+
+Corroboration that the parametrisation is sound: an equal-arc bay pitch of
+6.756 m minus the documented 4.2 m arch leaves **2.556 m of pier**, which matches
+the real pier thickness. The numbers close on themselves.
+
 **Bays are spaced by equal arc length, not equal angle.** An ellipse divided
 into 80 equal angular steps produces bays that visibly stretch at the ends of
-the major axis — the single most common tell of an amateur Colosseum. The
-generator builds a cumulative arc-length table over the ellipse parameter and
-binary-searches it for each of the 80 stations, so bay width is constant and the
-angular step varies. Same technique already used for the tone lookup in
-`colosseum-backdrop.tsx` (`edges[]` + binary search).
+the major axis — the single most common tell of an amateur Colosseum. Measured:
+equal-angle spacing swings bay width from 6.11 m to 7.37 m, an **18.6% spread**,
+with the widest bays landing on the major-axis ends. Equal arc length holds width
+constant to within 0.03%.
+
+The generator builds a cumulative arc-length table over the ellipse parameter
+(Simpson over 200k sub-intervals) and binary-searches it for each of the 80
+stations, so bay width is constant and the angular step varies. Same technique
+already used for the tone lookup in `colosseum-backdrop.tsx` (`edges[]` + binary
+search). A unit test asserts the spread stays under 0.1%.
 
 ### Elevation — four registers
 
@@ -253,3 +283,9 @@ Four phases, each independently verifiable, each leaving the page shippable:
 - [Roman numerals on the arches](https://all-about-roman-numerals.com/roman-numerals-lesson-the-colosseum/)
 - [Collapse, soil and restoration](https://www.romevisitpass.com/rome-travel-guide/what-happened-to-the-colosseum-why-it-is-broken-and-the-history-of-its-restoration/)
 - [Hypogeum](https://www.througheternity.com/rome/colosseum-underground-a-history)
+- [Ellipse? — the-colosseum.net](https://the-colosseum.net/wp/en/ellipse/)
+- [Ovals with 4n centres: the ground plan of the Colosseum](https://link.springer.com/chapter/10.1007/978-3-030-28810-5_8)
+- [Rosin & Trucco, *The Amphitheatre Construction Problem*](https://the-colosseum.net/docs/Rosin%20-%20Trucco%20-%20The%20Amphitheatre%20Construction%20Problem.pdf)
+
+Plan-curve figures in this document were computed, not quoted; the scripts live
+in the session scratchpad and are reproduced by the phase-1 unit tests.
