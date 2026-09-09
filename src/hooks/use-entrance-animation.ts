@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export function useEntranceAnimation<T extends HTMLElement>(
-  { threshold = 0.2 }: { threshold?: number } = {},
+  { threshold = 0.2, rootMargin }: { threshold?: number; rootMargin?: string } = {},
 ) {
   const ref = useRef<T | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -19,12 +19,12 @@ export function useEntranceAnimation<T extends HTMLElement>(
           observer.disconnect();
         }
       },
-      { threshold },
+      { threshold, rootMargin },
     );
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [threshold]);
+  }, [threshold, rootMargin]);
 
   return { ref, isVisible };
 }

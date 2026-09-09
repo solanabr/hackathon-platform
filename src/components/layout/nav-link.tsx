@@ -19,7 +19,7 @@ export function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`whitespace-nowrap rounded-full px-3 py-1.5 font-semibold transition-colors duration-150 sm:px-3.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow ${
+      className={`whitespace-nowrap rounded-full px-3 py-1.5 font-semibold transition-colors duration-(--dur-instant) ease-entrada sm:px-3.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow ${
         active ? "bg-surface/10 text-yellow" : "text-surface/80 hover:bg-surface/10 hover:text-surface"
       } ${className}`}
     >

@@ -1,7 +1,8 @@
 # Colosseum 3D Hero — Design
 
 **Date:** 2026-09-09
-**Status:** approved (design), pending implementation plan
+**Status:** approved (design); rendering route revised 2026-09-09, see *Revision: baked
+geometry* below
 **Supersedes:** nothing. `colosseum-backdrop.tsx` is kept and repurposed as the poster/fallback.
 
 ## Goal
@@ -177,6 +178,90 @@ They are almost never modelled and they are instantly recognisable.
   halftone system: the holes are tone, and therefore they are glyph weight.
 - Base58 excludes `0`, `O`, `I` and `l` — the atlas is 58 glyphs, not 62.
 
+## Revision: baked geometry (2026-09-09)
+
+Everything above stands as the design. What changed is where the geometry comes
+from and when it is rendered. Two findings forced it, both measured.
+
+### The geometry is an asset, not a generator
+
+A Tripo-generated GLB of the monument (77 MB, 1.72M vertices, 1.87M triangles,
+109 unnamed parts, one baked basecolor JPEG) was rasterised and inspected. It is
+a real Colosseum, not an approximation of one: four registers, the intact north
+facade, the collapsed south, the exposed second arcade ring, the cavea
+substructure, and both 19th-century buttresses. That is rings 0–3 of the build
+order, already modelled — including the convincing ruin, which is the single
+hardest thing to generate procedurally.
+
+What it does not carry:
+
+- **No per-bay semantics.** 109 `tripo_part_*` blobs, no arch index. The keystone
+  panels — the signature replacing the Roman numeral, the one place the hash is
+  displayed at full legibility — have nothing to anchor to. That beat is deferred
+  and will be redesigned rather than forced onto inferred positions.
+- **It is not measured.** Plan aspect is 1.149 against the real 1.206; the ground
+  arches read slightly pointed rather than semicircular; the 240 velarium corbels
+  are absent. The equal-arc-length parametrisation, the 80-bay station table and
+  `survivalLevel()` are consequently *not built* — the asset's own proportions
+  are inherited. The arc-length analysis above is retained as the record of why
+  equal-angle spacing is wrong, in case the geometry is ever regenerated.
+
+### Tone comes from recess, not from shading
+
+The first halftone pass over a diffuse-lit render dissolved into noise. Diffuse
+luminance is the wrong tone source: it makes the facade a flat mid-grey field in
+which pier and void are indistinguishable, which is exactly the "collapses into
+dirt" failure this document set out to avoid.
+
+The existing 2D component already encodes the right answer — `STONE = 0.26`,
+`CORNICE = 0.62`, `VOID = 0.95`. **The arch void is the ink.** So the baker
+derives tone from local depth discontinuity: how far a fragment sits behind the
+nearest surface in a screen-space neighbourhood. A recess reads dark regardless
+of how the key light happens to fall on it, and standing stone stays light.
+
+Scan-mesh surface noise puts *every* fragment marginally behind its neighbourhood
+minimum, so the recess term needs a dead zone (`RECESS_DEAD_ZONE`) or the stone
+never resolves light and the whole facade saturates to black. This was the
+difference between an unreadable slab and a legible arcade.
+
+### Framing is part of the tone model
+
+At whole-monument framing the arcade is under one 8px cell per arch and cannot
+survive the halftone — 80 bays across 1600px is 20px per bay against `CELL = 8`.
+The existing SVG already solved this by showing only `BAYS = 21`. The bake uses
+the same discipline: a cropped stretch of facade, camera near facade level
+(`elevation: 0.045`). A higher camera looks into the ruined bowl, and the
+interior renders as an unreadable black mass.
+
+The composition change in the section above — the piece taking the ticket's slot
+in the right column — is therefore **deferred**. The bake targets the existing
+backdrop slot (`COLS = 200`, `ROWS = 78`, `CELL = 8`) so it is a drop-in
+replacement for the static `TONES` array, and ships without touching hero layout.
+
+### No mesh reaches the browser
+
+Since the motion is a slow orbit of a few degrees, the model does not need to be
+in the bundle at all. `scripts/bake-colosseum.mjs` rasterises N azimuths at build
+time and emits `src/components/home/colosseum/tones.generated.ts` — the same
+base36 tone strings `halftoneMarks()` already consumes.
+
+This replaces the entire Three.js pipeline described in the next section:
+
+| | Runtime WebGL | Baked |
+| --- | --- | --- |
+| Bundle | Three.js subset + decimated mesh (~2 MB) | tone strings only |
+| Renderer | WebGL, desktop only | SVG, everywhere |
+| Fallback | separate poster path | none needed — it *is* the SVG |
+| Motion | free orbit + pointer parallax | discrete frames along a fixed arc |
+
+The cost is that camera angles are fixed at build time: pointer parallax becomes
+a lookup into the baked arc rather than a free camera. Everything else is won.
+
+The GLB stays out of the repository — the baker takes its path as an argument.
+
+The pipeline described below is retained as the record of the rejected route and
+as the reference if free-camera motion is ever needed.
+
 ## Rendering pipeline
 
 **Approach: Three.js + a glyph-halftone post pass.** The alternative considered
@@ -232,18 +317,15 @@ today except that the backdrop stays SVG.
 
 ## Module layout
 
+Superseded by the baked route:
+
 ```
 src/components/home/colosseum/
-  ellipse.ts        arc-length parametrisation, bay stations
-  orders.ts         Tuscan / Ionic / Corinthian profiles, entablature bands
-  rings.ts          ring 0–4 geometry builders, survivalLevel()
-  hypogeum.ts       tunnel grid and shafts
-  glyph-atlas.ts    base58 SDF atlas baking
-  halftone.glsl.ts  the glyph post pass
-  signatures.ts     generated — do not edit by hand
-  scene.tsx         renderer, camera, motion, dispose on unmount
-  index.tsx         dynamic boundary + fallback to ColosseumBackdrop
+  tones.generated.ts   generated — do not edit by hand
+  signatures.ts        generated — do not edit by hand
+  index.tsx            frame selection, motion, marks
 scripts/
+  bake-colosseum.mjs
   fetch-solana-signatures.ts
 ```
 
@@ -256,16 +338,16 @@ azimuth, bay count exactly 80).
 
 Four phases, each independently verifiable, each leaving the page shippable:
 
-1. **Geometry, headless.** `ellipse.ts`, `orders.ts`, `rings.ts`, `hypogeum.ts`
-   plus unit tests. Verified by tests and a throwaway wireframe view — no
-   halftone, no page integration. This is the phase that decides whether the
-   model is serious, so it is the one that gets reviewed hardest.
-2. **Glyph halftone.** Atlas baking, the post pass, and A/B against the existing
-   `ColosseumBackdrop` output: at hero scale the density field must be
-   indistinguishable from the current SVG.
-3. **Signatures.** Fetch script, generated module, keystone panels.
-4. **Integration.** Hero layout change, dynamic boundary, fallback, motion
-   tokens, bundle measurement.
+1. ~~**Geometry, headless.**~~ Delivered by the GLB — see *Revision* above.
+2. **Bake.** `scripts/bake-colosseum.mjs`: rasteriser, recess tone model, framing,
+   generated tone module. Verified by preview renders and by A/B against the
+   existing `ColosseumBackdrop` output at the same slot dimensions.
+3. **Marks.** The glyph variant of `halftoneMarks()` — one base58 character per
+   cell, weight modulated by tone, glyph choice driven by signature position and
+   never by density.
+4. **Signatures.** Fetch script and generated module.
+5. **Integration.** Swap the static `TONES` for the baked frames, wire the orbit
+   to the motion tokens, reduced motion resolves to a single frame.
 
 ## Out of scope
 

@@ -2,7 +2,7 @@ import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import { forwardRef, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 const BASE =
-  "w-full rounded-xl border border-green-dark/15 bg-surface-raised px-4 py-3 text-ink placeholder:text-muted focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/30 transition-colors";
+  "w-full rounded-xl border border-green-dark/15 bg-surface-raised px-4 py-3 text-ink placeholder:text-muted focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/30 transition-colors ease-entrada";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement>;
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>;

@@ -43,14 +43,14 @@ export function MobileSteps({
 
   const steps: Step[] = [
     {
-      title: "Faça seu cadastro",
-      body: "Leva dois minutos. Você recebe tudo sobre o hackathon e não perde nenhuma data.",
+      title: "Crie sua conta",
+      body: "Leva dois minutos. Depois mostramos como concluir a inscrição oficial na Colosseum.",
     },
     {
-      title: "Registre-se no Colosseum",
-      body: "Crie sua conta e clique em “Register now” já, mesmo sem ideia ou time.",
+      title: "Conclua a inscrição oficial",
+      body: "Faça sua inscrição na Colosseum. Não precisa ter ideia nem time ainda.",
       cta: {
-        label: registered && colosseumUrl ? "Abrir Colosseum" : "Libera após o cadastro",
+        label: registered && colosseumUrl ? "Abrir Colosseum" : "Libera depois de criar a conta",
         href: registered && colosseumUrl ? colosseumUrl : "/pre-registro",
         event: registered && colosseumUrl ? "campaign_link_clicked" : "cta_clicked",
         properties:
@@ -63,7 +63,7 @@ export function MobileSteps({
       title: "Construa com a comunidade",
       body: "Workshops, mentores e suporte no WhatsApp até o envio, de 14 set a 12 out.",
       cta: {
-        label: "Entrar no WhatsApp",
+        label: "Entrar no grupo do WhatsApp",
         href: whatsappUrl,
         event: "campaign_link_clicked",
         properties: { target: "whatsapp", location: "hero_steps" },
@@ -72,7 +72,7 @@ export function MobileSteps({
   ];
 
   return (
-    <div ref={ref} className="mx-auto mt-7 w-full max-w-md text-left lg:hidden" aria-label="Como funciona em 3 passos">
+    <div ref={ref} className="mt-7 w-full max-w-md text-left lg:hidden" aria-label="Como funciona em 3 passos">
       <ol className="divide-y-2 divide-green-dark/15 rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
         {steps.map((step, i) => (
           <li key={step.title} className="flex items-start gap-3 px-4 py-3.5">
@@ -87,7 +87,7 @@ export function MobileSteps({
                   href={step.cta.href}
                   event={step.cta.event}
                   properties={step.cta.properties}
-                  className="mt-1 inline-flex min-h-11 items-center font-mono text-[11px] font-bold uppercase tracking-widest text-emerald underline decoration-2 underline-offset-4"
+                  className="mt-1 inline-flex min-h-11 items-center font-mono text-[11px] font-bold uppercase tracking-widest text-emerald-deep underline decoration-2 underline-offset-4"
                 >
                   {step.cta.label} →
                 </TrackedCta>

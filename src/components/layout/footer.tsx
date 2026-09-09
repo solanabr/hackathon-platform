@@ -66,14 +66,14 @@ export function Footer() {
                         href={l.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-semibold text-surface/70 transition-colors duration-150 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
+                        className="text-sm font-semibold text-surface/70 transition-colors duration-(--dur-instant) ease-entrada hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
                       >
                         {l.label}
                       </a>
                     ) : (
                       <Link
                         href={l.href}
-                        className="text-sm font-semibold text-surface/70 transition-colors duration-150 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
+                        className="text-sm font-semibold text-surface/70 transition-colors duration-(--dur-instant) ease-entrada hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
                       >
                         {l.label}
                       </Link>
@@ -85,7 +85,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-surface/15 py-6 text-sm text-surface/50">
+        <div className="border-t border-surface/15 py-6 text-sm text-surface/70">
           <p>© 2026 Superteam Brasil</p>
         </div>
       </div>

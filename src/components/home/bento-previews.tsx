@@ -102,7 +102,7 @@ export function EarnPreview() {
           <p className="font-heading text-[15px] font-bold text-ink">
             Superteam Earn
           </p>
-          <span className="ml-auto shrink-0 rounded-full bg-emerald/10 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-emerald">
+          <span className="ml-auto shrink-0 rounded-full bg-emerald/10 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-emerald-deep">
             Abertos
           </span>
         </header>
@@ -127,7 +127,7 @@ export function EarnPreview() {
                 />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-semibold leading-snug text-ink">
+                <p className="text-pretty text-[14px] font-semibold leading-snug text-ink">
                   {l.title}
                 </p>
                 <p className="mt-1 flex items-center gap-1.5 text-[12px] text-muted">
@@ -142,7 +142,7 @@ export function EarnPreview() {
                   <span className="hidden shrink-0 sm:inline">{l.due}</span>
                 </p>
               </div>
-              <span className="hidden shrink-0 rounded-full bg-surface px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-green-dark/60 sm:block">
+              <span className="hidden shrink-0 rounded-full bg-surface px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-green-dark/80 sm:block">
                 {l.tag}
               </span>
             </li>
@@ -178,7 +178,7 @@ const MESSAGES = [
   },
   {
     author: "Bia",
-    tone: "bg-emerald text-surface-raised",
+    tone: "bg-emerald-deep text-surface-raised",
     body: "Procuro alguém de front pro time, alguém topa?",
   },
   {
@@ -220,7 +220,7 @@ export function CommunityPreview() {
                 className={`flex items-center gap-1.5 px-3.5 py-2 text-[11px] sm:px-4 sm:text-[12px] ${
                   i === 0
                     ? "bg-surface/12 font-semibold text-surface-raised shadow-[inset_2px_0_0_var(--color-yellow)]"
-                    : "text-surface/50"
+                    : "text-surface/70"
                 }`}
               >
                 <HashIcon weight="bold" className="h-3.5 w-3.5 shrink-0" />
@@ -257,7 +257,7 @@ export function CommunityPreview() {
       <div
         className={`relative -mt-3 ml-auto w-[90%] bg-surface-raised px-5 py-4 ${CARD_OVER}`}
       >
-        <p className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/55">
+        <p className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/80">
           <WhatsappLogoIcon weight="fill" className="h-4 w-4 text-emerald" />
           Grupo do WhatsApp
           <YoutubeLogoIcon

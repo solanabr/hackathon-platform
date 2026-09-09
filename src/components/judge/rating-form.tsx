@@ -175,7 +175,7 @@ export function RatingForm({
           setSaved(false);
           scheduleAutosave();
         }}
-        className="mt-1.5 w-full rounded-xl border-2 border-green-dark/15 bg-surface-raised px-4 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
+        className="mt-1.5 w-full rounded-xl border-2 border-green-dark/15 bg-surface-raised px-4 py-3 text-sm leading-relaxed outline-none transition-colors ease-entrada placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30"
       />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -192,7 +192,7 @@ export function RatingForm({
             type="button"
             onClick={clear}
             disabled={pending}
-            className="min-h-11 rounded-full border border-ink/10 px-4 text-xs font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink disabled:opacity-50"
+            className="min-h-11 rounded-full border border-ink/10 px-4 text-xs font-semibold text-muted transition-colors ease-entrada hover:border-emerald/50 hover:text-ink disabled:opacity-50"
           >
             Limpar
           </button>

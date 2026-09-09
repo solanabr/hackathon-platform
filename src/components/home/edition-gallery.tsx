@@ -78,7 +78,7 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
         <ul className="-mx-4 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
           {filtered.map((e) => {
             const cardClass =
-              "group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-sticker transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-sticker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]";
+              "group block overflow-hidden rounded-2xl border-2 border-[#1b231d] bg-[#fffdf6] shadow-sticker transition-transform duration-(--dur-instant) ease-mola hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-sticker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1b231d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7eacb]";
             const inner = (
               <>
                 <div className="relative aspect-video overflow-hidden border-b-2 border-[#1b231d] bg-[#1b231d]">
@@ -90,7 +90,7 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
                       loading="lazy"
                       quality={90}
                       sizes="(min-width: 1024px) 550px, 100vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      className="object-cover transition-transform duration-(--dur-rapida) ease-inout group-hover:scale-[1.03]"
                     />
                   ) : (
                     <div
@@ -129,7 +129,7 @@ export function EditionGallery({ editions }: { editions: EditionCard[] }) {
                           : e.stage === "finished"
                             ? "Ver projetos"
                             : "Ver detalhes"}
-                      <span aria-hidden className="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-1">
+                      <span aria-hidden className="ml-1 inline-block transition-transform duration-(--dur-instant) ease-mola group-hover:translate-x-1">
                         {e.externalUrl && !e.landingPath ? "↗" : "→"}
                       </span>
                     </p>

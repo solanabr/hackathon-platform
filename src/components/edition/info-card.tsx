@@ -52,7 +52,7 @@ export function EditionInfoCard({ hackathon }: { hackathon: Hackathon }) {
                 href={hackathon.community_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark px-5 py-2 text-sm font-bold text-ink transition-colors duration-150 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark px-5 py-2 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               >
                 Tirar dúvida no grupo
               </a>
@@ -62,7 +62,7 @@ export function EditionInfoCard({ hackathon }: { hackathon: Hackathon }) {
                 href={hackathon.rules_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark/20 px-5 py-2 text-sm font-bold text-muted transition-colors duration-150 hover:border-green-dark hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark/20 px-5 py-2 text-sm font-bold text-muted transition-colors duration-(--dur-instant) ease-entrada hover:border-green-dark hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               >
                 Regulamento
               </a>

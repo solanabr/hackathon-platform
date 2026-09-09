@@ -113,7 +113,7 @@ export function AuthDialog({
           type="button"
           onClick={onClose}
           aria-label="Fechar"
-          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-green-dark/10 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark"
+          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark/10 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark"
         >
           <svg
             viewBox="0 0 24 24"

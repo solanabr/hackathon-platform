@@ -40,6 +40,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${archivo.variable} ${inter.variable}`}>
+      <head>
+        {/* A folha da prensa é o primeiro frame da LP, e só na primeira visita
+            da sessão. A marcação tem que acontecer ANTES da pintura, então o
+            script mora aqui e não na árvore de componentes — no corpo o React
+            19 o reposiciona na hidratação e leva a folha junto. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var k='stbr-press';if(sessionStorage.getItem(k)){document.documentElement.classList.add('press-done')}else{sessionStorage.setItem(k,'1')}}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <GoogleTagManagerNoScript />
         {children}

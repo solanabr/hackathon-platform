@@ -23,12 +23,12 @@ export function LabeledSwitch({
         aria-label={ariaLabel}
         onClick={() => onToggle(!active)}
         disabled={disabled}
-        className={`relative h-6 w-11 shrink-0 rounded-full border-2 border-green-dark transition-colors disabled:opacity-50 ${
+        className={`relative h-6 w-11 shrink-0 rounded-full border-2 border-green-dark transition-colors ease-entrada disabled:opacity-50 ${
           active ? "bg-yellow" : "bg-surface-deep"
         }`}
       >
         <span
-          className={`absolute left-0 top-0.5 h-4 w-4 rounded-full bg-green-dark transition-transform ${
+          className={`absolute left-0 top-0.5 h-4 w-4 rounded-full bg-green-dark transition-transform ease-inout ${
             active ? "translate-x-[22px]" : "translate-x-0.5"
           }`}
         />

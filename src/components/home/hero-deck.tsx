@@ -80,7 +80,7 @@ export function HeroDeck({ cards }: { cards: DeckCard[] }) {
             <div
               key={card.key}
               style={{ transform: pose.transform, zIndex: pose.zIndex, opacity: pose.opacity }}
-              className="absolute inset-0 transition-[transform,opacity] duration-600 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform motion-reduce:transition-none"
+              className="absolute inset-0 transition-[transform,opacity] duration-(--dur-media) ease-carimbo will-change-transform motion-reduce:transition-none"
             >
               {isFront && card.href ? (
                 // External editions open their LP in a new tab, matching the
@@ -136,7 +136,7 @@ export function HeroDeck({ cards }: { cards: DeckCard[] }) {
                 aria-selected={idx === front}
                 aria-label={card.label}
                 onClick={() => setFront(idx)}
-                className={`h-2.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+                className={`h-2.5 rounded-full transition-[width,background-color] duration-(--dur-rapida) ease-entrada focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
                   idx === front ? "w-8 bg-green-dark" : "w-2.5 bg-green-dark/30 hover:bg-green-dark/50"
                 }`}
               />

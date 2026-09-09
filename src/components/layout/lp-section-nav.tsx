@@ -11,10 +11,11 @@ type PageNav = { links: NavLink[]; accent?: NavLink };
 const NAV: Record<string, PageNav> = {
   "/": {
     links: [
-      { href: "#jornada", label: "Como funciona" },
-      { href: "#cases", label: "Cases" },
-      { href: "#informacoes", label: "Informações" },
-      { href: "#faq", label: "FAQ" },
+      { href: "#cases", label: "O hackathon" },
+      { href: "#jornada", label: "Como participar" },
+      { href: "#premiacoes", label: "Premiações" },
+      { href: "#comunidade", label: "Comunidade" },
+      { href: "#faq", label: "Dúvidas" },
     ],
   },
   "/h": {
@@ -37,7 +38,7 @@ export function LpSectionNav() {
         <a
           key={link.href}
           href={link.href}
-          className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink/60 transition-colors duration-150 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink/75 transition-colors duration-(--dur-instant) ease-entrada hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           {link.label}
         </a>
@@ -45,7 +46,7 @@ export function LpSectionNav() {
       {nav.accent && (
         <Link
           href={nav.accent.href}
-          className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-green-dark/25 px-3.5 py-1 text-sm font-medium text-ink transition-colors duration-150 hover:border-emerald hover:bg-emerald hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="ml-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-green-dark/25 px-3.5 py-1 text-sm font-medium text-ink transition-colors duration-(--dur-instant) ease-entrada hover:border-emerald-deep hover:bg-emerald-deep hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           {nav.accent.label}
           <ArrowRightIcon size={14} weight="bold" aria-hidden />

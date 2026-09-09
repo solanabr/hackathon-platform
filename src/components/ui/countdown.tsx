@@ -70,42 +70,99 @@ export function Countdown({
       { value: seg?.minutes ?? 0, label: "min" },
       { value: seg?.seconds ?? 0, label: "seg" },
     ];
+    /* Só o tamanho xl (a última chamada da LP) tem hierarquia interna. Quatro
+       números do mesmo corpo dão ao "05 SEG" — que muda a cada segundo e não
+       decide nada — o mesmo peso do "33 DIAS", que é a informação. O dia vira
+       o número da seção; hora, minuto e segundo viram o relógio de apoio ao
+       lado, alinhados pela base para o olho ler uma linha só. */
+    const hero = size === "xl";
     const digitClass =
       size === "md"
         ? "text-2xl sm:text-3xl"
-        : size === "xl"
-          ? "text-[3.25rem] sm:text-[5.5rem] lg:text-[7rem]"
+        : hero
+          ? "text-[2.1rem] sm:text-[3.1rem] lg:text-[3.9rem]"
           : "text-4xl sm:text-5xl";
+    const leadDigitClass = "text-[4rem] sm:text-[6.75rem] lg:text-[8.75rem]";
+    /* Sobre o esmeralda, creme com alpha não passa AA em corpo pequeno — o
+       teto do par é 5.21:1 e só com alpha cheio. E o amarelo do rótulo-líder
+       dá 4.30:1, que reprova como texto pequeno e passa como texto grande:
+       por isso "DIAS" é 19px bold, tamanho de legenda do número, não de nota
+       de rodapé. */
     const labelClass =
       size === "md"
         ? "mt-1 text-[10px]"
-        : size === "xl"
-          ? "mt-2 text-[11px] tracking-[0.2em] sm:mt-3 sm:text-xs"
+        : hero
+          ? "mt-2 text-[11px] tracking-[0.2em]"
           : "mt-2 text-[11px]";
-    const dotClass = size === "md" ? "mt-3 sm:mt-4" : size === "xl" ? "mt-7 sm:mt-12 lg:mt-16" : "mt-5 sm:mt-6";
+    const leadLabelClass = "mt-2 text-[19px] font-bold tracking-[0.2em]";
+    const dotClass =
+      size === "md" ? "mt-3 sm:mt-4" : hero ? "mb-7 sm:mb-9 lg:mb-11" : "mt-5 sm:mt-6";
     const onDark = tone === "surface";
+
+    const digits = (value: number, lead: boolean) => (
+      <p
+        className={`font-mono font-bold tabular-nums leading-none tracking-tight ${
+          onDark ? "text-surface" : "text-ink"
+        } ${lead ? leadDigitClass : digitClass}`}
+        suppressHydrationWarning
+      >
+        {seg !== undefined ? pad(value) : "00"}
+      </p>
+    );
+    const caption = (label: string, lead: boolean) => (
+      <p
+        className={`font-mono uppercase tracking-wider ${
+          onDark ? (lead ? "text-yellow" : "text-surface") : "text-muted"
+        } ${lead && hero ? leadLabelClass : labelClass}`}
+      >
+        {label}
+      </p>
+    );
+    const dot = (key: string) => (
+      <span
+        key={key}
+        aria-hidden
+        className={`h-[3px] w-[3px] shrink-0 rounded-full ${
+          onDark ? "bg-yellow" : "bg-emerald/60"
+        } ${dotClass}`}
+      />
+    );
+
+    if (hero) {
+      const [lead, ...rest] = tiles;
+      return (
+        <div
+          className={`flex items-end justify-center gap-5 sm:gap-8 lg:gap-10 ${className}`}
+        >
+          <div className="text-center">
+            {digits(lead.value, true)}
+            {caption(lead.label, true)}
+          </div>
+          <div className="flex items-end gap-3 sm:gap-5">
+            {rest.map((tile, i) => (
+              <Fragment key={tile.label}>
+                {i > 0 && dot(tile.label)}
+                <div className="text-center">
+                  {digits(tile.value, false)}
+                  {caption(tile.label, false)}
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div
-        className={`flex items-start justify-center ${size === "xl" ? "gap-4 sm:gap-8 lg:gap-10" : "gap-3 sm:gap-5"} ${className}`}
+        className={`flex items-start justify-center gap-3 sm:gap-5 ${className}`}
       >
         {tiles.map((tile, i) => (
           <Fragment key={tile.label}>
-            {i > 0 && (
-              <span
-                aria-hidden
-                className={`h-[2px] w-[2px] shrink-0 rounded-full ${onDark ? "bg-yellow" : "bg-emerald/60"} ${dotClass}`}
-              />
-            )}
+            {i > 0 && dot(tile.label)}
             <div className="text-center">
-              <p
-                className={`font-mono font-bold tabular-nums leading-none tracking-tight ${onDark ? "text-surface" : "text-ink"} ${digitClass}`}
-                suppressHydrationWarning
-              >
-                {seg !== undefined ? pad(tile.value) : "00"}
-              </p>
-              <p className={`font-mono uppercase tracking-wider ${onDark ? "text-surface/50" : "text-muted"} ${labelClass}`}>
-                {tile.label}
-              </p>
+              {digits(tile.value, false)}
+              {caption(tile.label, false)}
             </div>
           </Fragment>
         ))}

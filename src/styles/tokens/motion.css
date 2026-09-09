@@ -1,0 +1,95 @@
+/* ---------------------------------------------------------------------------
+ * TOKENS DE MOVIMENTO
+ *
+ * A camada de movimento do Design System. Cor, tipografia e espaçamento já
+ * eram token; easing, duração e stagger não eram — e é exatamente aí que o
+ * mediano entra sozinho, porque sem token o valor default do browser vence.
+ *
+ * A gramática vem da marca, não de um preset premium genérico: esta é uma
+ * identidade de impressão — sombra dura, corte de canto, halftone, adesivo.
+ * Papel não flutua. Papel é DEPOSITADO. Por isso o ataque é rápido e a cauda
+ * é longa, e só o que é objeto físico (card, ticket, selo) tem overshoot;
+ * tipografia nunca passa do ponto.
+ * ------------------------------------------------------------------------- */
+
+@theme {
+  /* Reveals de texto, seção e imagem. Ataque rápido, cauda longa: o elemento
+     chega quase inteiro no primeiro terço e depois só assenta. */
+  --ease-entrada: cubic-bezier(0.16, 1, 0.28, 1);
+
+  /* Saída. Espelho da entrada — sai devagar e some rápido, para o olho não
+     acompanhar o elemento até o fim e perder o próximo beat. */
+  --ease-saida: cubic-bezier(0.7, 0, 0.84, 0);
+
+  /* Loops, hovers longos, câmera, parallax. Simétrica dos dois lados. */
+  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* O CARIMBO. Overshoot curto e seco, sem balanço de retorno: o card bate,
+     recua um fio e para. É o gesto de estampar, não o de pendurar numa mola.
+     Só em objeto físico — sticker card, ticket, selo, badge. Nunca em texto. */
+  --ease-carimbo: cubic-bezier(0.2, 1.32, 0.36, 1);
+
+  /* Overshoot macio para levantar no hover, onde o carimbo seria agressivo. */
+  --ease-mola: cubic-bezier(0.34, 1.24, 0.64, 1);
+}
+
+:root {
+  /* HIERARQUIA DE TEMPO — o ponto inteiro dos tokens de duração. Um site em
+     que tudo dura o mesmo não tem ritmo: tem metrônomo. Cada degrau é ~2x o
+     anterior, e os valores são deliberadamente não-redondos porque 200/400/
+     600 é a assinatura de quem não mediu nada. */
+  --dur-toque: 0.13s;   /* :active — confirma o toque antes do resultado    */
+  --dur-instant: 0.19s; /* hover de cor, foco, troca de estado              */
+  --dur-rapida: 0.37s;  /* micro-interação com deslocamento                 */
+  --dur-media: 0.82s;   /* reveal de seção                                  */
+  --dur-lenta: 1.25s;   /* hero e transições narrativas                     */
+
+  /* STAGGER — o intervalo entre um elemento e o próximo da mesma família.
+     Linha de título é mais apertado que card: o olho lê texto mais rápido
+     do que reconhece um objeto. */
+  --stagger-texto: 0.065s;
+  --stagger-lista: 0.11s;
+  --stagger-tile: 0.045s; /* peças pequenas dentro de um mesmo bloco */
+
+  /* DISTÂNCIA de entrada. Três degraus, porque distância é hierarquia:
+     o que vem de mais longe é o que a seção quer que você olhe. */
+  --dist-curta: 12px;
+  --dist-entrada: 26px;
+  --dist-longa: 44px;
+
+  /* Rotação de repouso dos objetos de papel — o desalinho que faz o card
+     parecer colado à mão em vez de posicionado por CSS. */
+  --tilt-papel: 1.4deg;
+}
+
+/* ---------------------------------------------------------------------------
+ * MOVIMENTO REDUZIDO — uma versão pensada, não um interruptor.
+ *
+ * O que causa desconforto vestibular é deslocamento grande, rotação e escala,
+ * não opacidade. Então o modo reduzido mantém a orquestração inteira — a
+ * ordem, o stagger, a hierarquia de tempo, a curva — e troca APENAS o vetor:
+ * o que viajava passa a aparecer no lugar. A pessoa continua vendo a página
+ * se montar na ordem que o conteúdo pede; só não é levada junto.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dist-curta: 0px;
+    --dist-entrada: 0px;
+    --dist-longa: 0px;
+    --tilt-papel: 0deg;
+
+    /* Sem deslocamento, o mesmo tempo fica lento demais — a percepção de
+       duração de um fade é maior que a de um movimento. Encurta a escala
+       inteira mantendo as proporções entre os degraus. */
+    --dur-toque: 0.1s;
+    --dur-instant: 0.15s;
+    --dur-rapida: 0.24s;
+    --dur-media: 0.42s;
+    --dur-lenta: 0.6s;
+
+    /* Overshoot é deslocamento por definição: sem vetor não sobra nada dele.
+       As curvas de objeto físico caem para a curva de entrada. */
+    --ease-carimbo: cubic-bezier(0.16, 1, 0.28, 1);
+    --ease-mola: cubic-bezier(0.16, 1, 0.28, 1);
+  }
+}

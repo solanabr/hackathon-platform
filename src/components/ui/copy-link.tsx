@@ -64,7 +64,7 @@ export function CopyLink({ href }: { href: string }) {
       <button
         type="button"
         onClick={copy}
-        className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+        className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ease-entrada ${
           state === "copied"
             ? "bg-emerald text-surface"
             : state === "error"

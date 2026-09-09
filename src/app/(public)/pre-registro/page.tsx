@@ -12,8 +12,8 @@ import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
 import { TrackedLink } from "./tracked-link";
 
 export const metadata = {
-  title: "Cadastro Colosseum",
-  description: "Garanta sua vaga na campanha brasileira para o Colosseum Crypto World's Fair 2026.",
+  title: "Criar conta | Hackathon Colosseum",
+  description: "Crie sua conta na Superteam Brasil e conclua sua inscrição no hackathon da Colosseum.",
   openGraph: { images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }] },
 };
 
@@ -33,8 +33,8 @@ async function loadRegistration(userId: string, hackathonId: string) {
 
 const STEPS = [
   { n: 1, label: "Conta" },
-  { n: 2, label: "Perfil" },
-  { n: 3, label: "Jornada" },
+  { n: 2, label: "Seus dados" },
+  { n: 3, label: "Próximos passos" },
 ] as const;
 
 function StepIndicator({ active }: { active: 1 | 2 | 3 }) {
@@ -92,10 +92,10 @@ export default async function PreRegistroPage() {
         {activeStep === 2 && (
           <Card sticker className="p-8 sm:p-10">
             <h1 className="font-heading text-2xl font-black uppercase tracking-tight text-ink">
-              Complete seu cadastro
+              Conte um pouco sobre você.
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Crypto World&apos;s Fair.
+              Preencha seus dados de contato para continuar. Depois, você poderá contar mais sobre sua ideia e sua equipe.
             </p>
             <div className="mt-6">
               <PreregForm profile={state.profile} />
@@ -108,7 +108,7 @@ export default async function PreRegistroPage() {
             <div className="text-center">
               <p className="inline-flex items-center gap-2 rounded-full bg-emerald/10 px-4 py-1.5 text-sm font-bold text-emerald">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald text-xs text-surface">✓</span>
-                Cadastro confirmado
+                Seus dados foram salvos
               </p>
               <h1 className="mt-4 font-heading text-3xl font-black uppercase tracking-tight text-ink sm:text-4xl">
                 Próximos passos
@@ -121,8 +121,8 @@ export default async function PreRegistroPage() {
                   ✓
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-emerald/40 bg-emerald/5 p-5">
-                  <p className="font-heading text-base font-bold uppercase text-emerald">Cadastro feito</p>
-                  <p className="mt-1 text-sm text-muted">Avisamos as novidades por e-mail e WhatsApp.</p>
+                  <p className="font-heading text-base font-bold uppercase text-emerald">Conta criada</p>
+                  <p className="mt-1 text-sm text-muted">Seus dados foram salvos. Avisamos as novidades por e-mail e WhatsApp.</p>
                 </div>
               </li>
 
@@ -132,8 +132,19 @@ export default async function PreRegistroPage() {
                     ✓
                   </span>
                   <div className="flex-1 rounded-2xl border-2 border-emerald/40 bg-emerald/5 p-5">
-                    <p className="font-heading text-base font-bold uppercase text-emerald">Registro no Colosseum feito</p>
-                    <p className="mt-1 text-sm text-muted">A partir de 14 de setembro você cadastra o projeto e o time por lá. Submissão até 12 de outubro.</p>
+                    <p className="font-heading text-base font-bold uppercase text-emerald">Inscrição declarada</p>
+                    <p className="mt-1 text-sm text-muted">
+                      Registramos a informação de que você concluiu a inscrição. Consulte a Colosseum para verificar a situação oficial. A partir de 14 de setembro você cadastra o projeto e o time por lá; a submissão vai até 12 de outubro.
+                    </p>
+                    {hackathon?.external_url && (
+                      <TrackedLink
+                        href={withPlatformUtm(hackathon.external_url, { content: "pre_registro_confirmado", campaign: "colosseum-2026" })}
+                        target="colosseum"
+                        className="mt-3 inline-block text-sm font-semibold text-muted underline underline-offset-4 hover:text-ink"
+                      >
+                        Consultar minha inscrição na Colosseum
+                      </TrackedLink>
+                    )}
                   </div>
                 </li>
               ) : (
@@ -143,7 +154,7 @@ export default async function PreRegistroPage() {
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-heading text-base font-bold uppercase text-ink">Registre-se no Colosseum</p>
+                    <p className="font-heading text-base font-bold uppercase text-ink">Conclua sua inscrição na Colosseum</p>
                     {!hackathon?.external_url && (
                       <span className="rounded-full bg-yellow px-2.5 py-0.5 text-xs font-bold uppercase text-green-dark">
                         Em breve
@@ -151,9 +162,7 @@ export default async function PreRegistroPage() {
                     )}
                   </div>
                   <p className="mt-1 text-sm text-muted">
-                    O Colosseum é a plataforma oficial do hackathon: é por lá que seu time entra na
-                    competição e submete o projeto. O registro já está aberto e não precisa ter ideia
-                    nem time ainda.
+                    Agora, conclua sua inscrição no hackathon pela plataforma oficial da Colosseum. É por lá que seu time entra na competição e submete o projeto. Cada integrante precisa ter uma conta na plataforma oficial.
                   </p>
                   <ol className="mt-3 space-y-1.5 text-sm text-muted">
                     <li className="flex gap-2">
@@ -175,16 +184,16 @@ export default async function PreRegistroPage() {
                         <TrackedLink
                           href={withPlatformUtm(hackathon.external_url, { content: "pre_registro_step3", campaign: "colosseum-2026" })}
                           target="colosseum"
-                          className="inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
+                          className="inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5"
                         >
                           Abrir Colosseum
                         </TrackedLink>
                         <form action={confirmColosseumRegistration}>
                           <button
                             type="submit"
-                            className="whitespace-nowrap rounded-full border-2 border-green-dark px-5 py-2 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+                            className="rounded-full border-2 border-green-dark px-5 py-2 text-left text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark hover:text-surface"
                           >
-                            Já me registrei
+                            Já concluí minha inscrição na Colosseum
                           </button>
                         </form>
                       </div>
@@ -212,14 +221,14 @@ export default async function PreRegistroPage() {
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <p className="font-heading text-base font-bold uppercase text-ink">Entre na comunidade</p>
                   <p className="mt-1 text-sm text-muted">
-                    Updates, mentorias e formação de times acontecem no grupo.
+                    Entre no grupo do WhatsApp para acompanhar as conversas, apresentar sua ideia e conhecer possíveis parceiros de equipe.
                   </p>
                   <TrackedLink
                     href={WHATSAPP_COMMUNITY_URL}
                     target="whatsapp"
-                    className="mt-4 inline-block whitespace-nowrap rounded-full bg-green-dark px-6 py-2.5 text-sm font-bold text-surface transition-transform duration-200 hover:-translate-y-0.5"
+                    className="mt-4 inline-block whitespace-nowrap rounded-full bg-green-dark px-6 py-2.5 text-sm font-bold text-surface transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5"
                   >
-                    Entrar no WhatsApp
+                    Entrar no grupo do WhatsApp
                   </TrackedLink>
                 </div>
               </li>

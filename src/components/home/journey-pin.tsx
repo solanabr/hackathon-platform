@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useEffect, useRef } from "react";
+import { useSfx } from "@/components/campaign/sound-toggle";
 
 const STEP = 0.21;
 const SPAN = 0.33;
@@ -22,6 +23,13 @@ export function JourneyPin({
   containerClassName?: string;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const cue = useSfx();
+  /* O paint roda em rAF e não pode fechar sobre um cue velho: o toggle troca
+     a função a cada mudança de estado e o loop nunca é recriado. */
+  const cueRef = useRef(cue);
+  useEffect(() => {
+    cueRef.current = cue;
+  }, [cue]);
 
   useEffect(() => {
     const node = sectionRef.current;
@@ -32,6 +40,7 @@ export function JourneyPin({
       ...node.querySelectorAll<HTMLElement>("[data-journey-card]"),
     ];
     const pitch = node.querySelector<HTMLElement>(".journey-pin-pitch");
+    const struck = cards.map(() => false);
     let raf = 0;
     const paint = () => {
       raf = 0;
@@ -41,6 +50,15 @@ export function JourneyPin({
       cards.forEach((el, i) => {
         const t = Math.min(1, Math.max(0, (p - i * STEP) / SPAN));
         el.style.setProperty("--t", t.toFixed(4));
+        /* O carimbo soa quando a carta ENCOSTA, não quando começa a viajar —
+           0.88 é onde a curva já entregou o overshoot e o papel bate. Dispara
+           uma vez por carta e rearma se a pessoa subir de volta, para que
+           rolar a seção de novo soe de novo em vez de emudecer. */
+        const landed = t > 0.88;
+        if (landed !== struck[i]) {
+          struck[i] = landed;
+          if (landed) cueRef.current("carimbo");
+        }
       });
       // The pitch clears the way as the first card comes in to land.
       const first = Math.min(1, Math.max(0, p / SPAN));
@@ -64,7 +82,7 @@ export function JourneyPin({
     <section
       ref={sectionRef}
       aria-label="Como participar"
-      className="journey-pin relative isolate hidden h-[380vh] lg:block"
+      className="journey-pin relative isolate -mt-20 hidden h-[380vh] lg:block xl:-mt-24"
     >
       {/* Kraft bleeds past the section so it meets the Informações sheet with
           no cream stripe in the margin between them. */}

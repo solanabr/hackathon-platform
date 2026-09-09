@@ -45,7 +45,7 @@ export function AuthActions({
           setNext("/pre-registro");
         }}
       >
-        <span>Fazer cadastro</span>
+        <span>Criar conta</span>
       </button>
       <AuthDialog
         open={next !== null}

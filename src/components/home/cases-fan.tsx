@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { Reveal } from "@/components/ui/reveal";
 
 export type CaseCard = {
   name: string;
@@ -47,10 +48,15 @@ export function HeadTile({
   );
 }
 
-const FAN = [
-  "lg:z-10 lg:-mr-5 lg:translate-y-7 lg:-rotate-[3.5deg]",
-  "lg:z-20 lg:-mr-5 lg:-translate-y-1 lg:rotate-[1.5deg]",
-  "lg:z-30 lg:translate-y-8 lg:rotate-[4deg]",
+/* O leque é dois transforms empilhados, não um: a entrada carimbada mora no
+   Reveal e a pose de repouso (mais o endireitar do hover) mora na carta.
+   Um transform só, e a carta entraria já torta ou perderia a rotação. */
+const FAN_SLOT = ["lg:z-10 lg:-mr-5", "lg:z-20 lg:-mr-5", "lg:z-30"];
+
+const FAN_POSE = [
+  "lg:translate-y-7 lg:-rotate-[3.5deg]",
+  "lg:-translate-y-1 lg:rotate-[1.5deg]",
+  "lg:translate-y-8 lg:rotate-[4deg]",
 ];
 
 function CaseTile({ item }: { item: CaseCard }) {
@@ -66,7 +72,7 @@ function CaseTile({ item }: { item: CaseCard }) {
       </p>
       <p
         className={`mt-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] ${
-          dark ? "text-surface/70" : "text-ink/55"
+          dark ? "text-surface/75" : "text-ink/70"
         }`}
       >
         {item.result}
@@ -150,14 +156,20 @@ export function CasesFan({
 
       <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:mt-20 lg:flex lg:items-stretch lg:gap-0">
         {cases.map((item, i) => (
-          <div
+          <Reveal
             key={item.name}
-            className={`relative transition-transform duration-300 ease-out lg:min-w-0 lg:flex-1 lg:hover:z-30 lg:hover:translate-y-0 lg:hover:rotate-0 ${
-              FAN[i] ?? ""
-            }`}
+            index={i + 1}
+            tone="papel"
+            className={`relative ${i === 2 ? "sm:col-span-2 lg:col-auto" : ""} lg:min-w-0 lg:flex-1 ${FAN_SLOT[i] ?? ""}`}
           >
-            <CaseTile item={item} />
-          </div>
+            <div
+              className={`h-full transition-transform duration-(--dur-rapida) ease-mola lg:hover:translate-y-0 lg:hover:rotate-0 ${
+                FAN_POSE[i] ?? ""
+              }`}
+            >
+              <CaseTile item={item} />
+            </div>
+          </Reveal>
         ))}
       </div>
     </div>

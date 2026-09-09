@@ -94,12 +94,12 @@ export function RoleManager({
             aria-label="E-mail"
             required
             placeholder="e-mail"
-            className="min-h-11 min-w-0 flex-1 basis-56 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors placeholder:text-muted/60 focus:border-emerald"
+            className="min-h-11 min-w-0 flex-1 basis-56 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors ease-entrada placeholder:text-muted/60 focus:border-emerald"
           />
           <select
             name="role"
             aria-label="Papel"
-            className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
+            className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors ease-entrada focus:border-emerald"
           >
             <option value="admin">Admin</option>
             <option value="judge">Jurado</option>
@@ -107,7 +107,7 @@ export function RoleManager({
           <select
             name="hackathon_id"
             aria-label="Edição"
-            className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors focus:border-emerald"
+            className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-deep px-4 py-2 text-ink outline-none transition-colors ease-entrada focus:border-emerald"
           >
             <option value="">Toda a plataforma</option>
             {hackathons.map((h) => (
@@ -164,7 +164,7 @@ export function RoleManager({
                             disabled={pending}
                             onClick={() => remove(role.id)}
                             aria-label={`Remover ${label} de ${person.email}`}
-                            className={`rounded-full px-1.5 py-0.5 font-sans text-xs font-bold normal-case transition-colors disabled:opacity-50 ${
+                            className={`rounded-full px-1.5 py-0.5 font-sans text-xs font-bold normal-case transition-colors ease-entrada disabled:opacity-50 ${
                               confirmingThis
                                 ? "bg-red-700 text-white"
                                 : "bg-black/10 hover:bg-red-700/20 hover:text-red-700"

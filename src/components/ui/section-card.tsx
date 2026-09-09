@@ -24,7 +24,7 @@ export function SectionCard({
         {action && (
           <Link
             href={action.href}
-            className="shrink-0 rounded-full border border-green-dark/15 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-emerald/40 hover:bg-emerald/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            className="shrink-0 rounded-full border border-green-dark/15 px-3.5 py-1.5 text-sm font-semibold text-ink transition-colors ease-entrada hover:border-emerald/40 hover:bg-emerald/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             {action.label}
           </Link>

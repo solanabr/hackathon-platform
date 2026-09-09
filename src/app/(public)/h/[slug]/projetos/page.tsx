@@ -147,7 +147,7 @@ export default async function ProjectsGalleryPage({
                         <li key={p.id}>
                           <Link
                             href={`/h/${slug}/projetos/${p.id}`}
-                            className={`block h-full rounded-2xl border-2 p-5 transition-colors duration-200 ${
+                            className={`block h-full rounded-2xl border-2 p-5 transition-colors duration-(--dur-instant) ease-entrada ${
                               place === 1
                                 ? "border-yellow bg-yellow/10 hover:bg-yellow/20"
                                 : "border-surface/15 bg-surface/[0.04] hover:border-yellow/50"
@@ -197,7 +197,7 @@ export default async function ProjectsGalleryPage({
                 <li key={p.id}>
                   <Link
                     href={`/h/${slug}/projetos/${p.id}`}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface-raised shadow-[0_8px_32px_rgba(0,140,76,0.08)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-emerald/50 hover:ring-2 hover:ring-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface-raised shadow-[0_8px_32px_rgba(0,140,76,0.08)] transition-[transform,border-color,box-shadow] duration-(--dur-rapida) ease-mola hover:-translate-y-1 hover:border-emerald/50 hover:ring-2 hover:ring-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   >
                     <div className="relative h-44 overflow-hidden bg-green-dark">
                       {placement !== undefined && (
@@ -210,7 +210,7 @@ export default async function ProjectsGalleryPage({
                           src={imageUrl}
                           alt=""
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-cover transition-transform duration-(--dur-media) ease-inout group-hover:scale-105"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                       ) : (

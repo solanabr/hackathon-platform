@@ -10,7 +10,7 @@ import { updateEdition } from "@/app/(app)/admin/h/[slug]/actions";
 import type { Hackathon } from "@/types/db";
 
 const inputClass =
-  "mt-1.5 w-full rounded-xl border border-green/25 bg-surface-raised px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30";
+  "mt-1.5 w-full rounded-xl border border-green/25 bg-surface-raised px-4 py-2.5 text-sm outline-none transition-colors ease-entrada placeholder:text-muted/60 focus:border-emerald focus-visible:ring-2 focus-visible:ring-emerald/30";
 
 export function EditionForm({ hackathon }: { hackathon: Hackathon }) {
   const router = useRouter();

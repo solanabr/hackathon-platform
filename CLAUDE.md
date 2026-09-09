@@ -29,6 +29,13 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
 - **Brand:** the LP language — cream ground, ink, emerald, Superteam yellow; sticker cards (`border-2 border-green-dark` + `shadow-sticker`), pill navs via `PillLink`. Tokens are in `@theme` in `src/app/globals.css`.
 - **Typography:** Archivo headings, Inter body — both via `next/font/google`.
 - **Query errors are never swallowed:** destructure `error` and route it through `unwrap()` (log + throw) or `logQueryError()` from `src/lib/supabase/unwrap.ts`; mutations return `{ ok: false }`.
+- **Motion:** every easing, duration, stagger and entrance distance is a token in
+  `src/styles/tokens/motion.css` — `ease-entrada` / `ease-carimbo` / `ease-mola` /
+  `ease-inout` / `ease-saida` and `duration-(--dur-instant|rapida|media|lenta|toque)`.
+  A raw ms value, a hand-written `cubic-bezier` or a bare `ease-out` anywhere in `src`
+  is a bug; `docs/MOTION.md` has the table and the reasoning. `<Reveal>` takes
+  `index` + `tone`, never a delay in ms. Reduced motion zeroes the distance tokens
+  and keeps the orchestration — never disable animation wholesale.
 - **Date formatting:** named `Intl` formatters live in `src/lib/dates.ts` (`DAY_MONTH`, `TIME_HM`, `stripPeriods`, …) — don't hand-roll new ones.
 - **Supabase queries:** use `.maybeSingle()` over `.single()` — `.single()` throws on 0 rows.
 - **Dynamic pages:** every `(app)/` page exports `dynamic = 'force-dynamic'`.

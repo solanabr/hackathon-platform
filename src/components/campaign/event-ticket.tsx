@@ -1,20 +1,25 @@
 import Image from "next/image";
 
+/* O canhoto que atravessa a página carrega este mesmo número. Se ele existisse
+   nos dois lugares como literal, um dia divergiria — e o número igual é
+   justamente a prova de que é o mesmo ticket, não dois objetos parecidos. */
+export const TICKET_SERIAL = "001417";
+
 export function EventTicket() {
   return (
-    <div className="ticket-shadow mx-auto mt-8 w-full max-w-sm text-left md:max-w-xl lg:mt-0 lg:max-w-none">
+    <div className="ticket-shadow mt-8 w-full max-w-sm text-left md:max-w-xl lg:mt-0 lg:max-w-none">
       <div className="ticket-paper relative flex items-stretch overflow-hidden rounded-[4px] border-2 border-green-dark bg-[linear-gradient(105deg,#fffdf6_0%,#fbf3dd_55%,#f2e3bf_100%)]">
         <div className="min-w-0 flex-1 px-4 py-4 sm:px-7 sm:py-6">
           <div className="flex items-baseline justify-between gap-3">
-            <p className="flex min-w-0 items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/65 sm:text-[10px]">
+            <p className="flex min-w-0 items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/80 sm:text-[10px]">
               <span
                 aria-hidden
                 className="h-[7px] w-[14px] shrink-0 rounded-[2px] bg-emerald"
               />
-              <span className="truncate">Hackathon global</span>
+              <span className="truncate">Hackathon Colosseum</span>
             </p>
-            <p className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/65 sm:text-[10px]">
-              Nº 001417
+            <p className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/80 sm:text-[10px]">
+              Nº {TICKET_SERIAL}
             </p>
           </div>
 
@@ -22,7 +27,7 @@ export function EventTicket() {
 
           <dl className="flex flex-wrap items-end">
             <div className="min-w-0">
-              <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-green-dark/60 sm:text-[9px]">
+              <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-green-dark/80 sm:text-[9px]">
                 Período
               </dt>
               <dd className="mt-2 whitespace-nowrap font-heading text-base font-black uppercase leading-none tracking-tight text-ink [font-stretch:112%] sm:text-lg lg:text-2xl">
@@ -31,12 +36,12 @@ export function EventTicket() {
             </div>
 
             <div className="mt-3 w-full min-w-0 sm:ml-auto sm:mt-0 sm:w-auto sm:border-l sm:border-dotted sm:border-green-dark/40 sm:pl-5 sm:text-right">
-              <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-green-dark/60 sm:text-[9px]">
-                Prêmios
+              <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-green-dark/80 sm:text-[9px]">
+                Prêmios e investimento
               </dt>
               <dd className="mt-1.5">
                 <span className="inline-block whitespace-nowrap bg-yellow px-2 font-heading text-base font-black uppercase leading-tight tracking-tight text-green-dark [font-stretch:112%] sm:text-lg lg:text-2xl">
-                  USD 250k
+                  A anunciar
                 </span>
               </dd>
             </div>
@@ -47,7 +52,7 @@ export function EventTicket() {
             className="my-3 border-t border-dotted border-green-dark/40 sm:my-5"
           />
 
-          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/60 sm:text-[10px]">
+          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/80 sm:text-[10px]">
             100% online · inscrição gratuita
           </p>
         </div>

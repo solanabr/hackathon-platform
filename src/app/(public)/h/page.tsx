@@ -190,13 +190,13 @@ export default async function HomePage() {
                 href="#edicoes"
                 event="cta_clicked"
                 properties={{ cta: "edicoes", location: "hero" }}
-                className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-3 text-sm font-bold sm:text-base text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-8"
+                className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-3 text-sm font-bold sm:text-base text-green-dark transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-8"
               >
                 Explorar edições
               </TrackedCta>
               <a
                 href="#como-funciona"
-                className="whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-5 py-3 text-sm font-bold sm:text-base text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-7"
+                className="whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-5 py-3 text-sm font-bold sm:text-base text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-7"
               >
                 Como funciona
               </a>
@@ -232,11 +232,11 @@ export default async function HomePage() {
           <ol className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((step, i) => {
               const cls = step.action.primary
-                ? "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
-                : "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface";
+                ? "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5"
+                : "mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark hover:text-surface";
               return (
                 <li key={step.title} className="h-full">
-                  <Reveal delay={i * 130} className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
+                  <Reveal index={i} tone="papel" className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
                     <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
                       Passo {String(i + 1).padStart(2, "0")}
                     </span>
@@ -292,7 +292,7 @@ export default async function HomePage() {
                   href="#edicoes"
                   event="cta_clicked"
                   properties={{ cta: "edicoes", location: "closing" }}
-                  className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-9 py-4 text-lg font-bold text-green-dark shadow-sticker transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 >
                   Ver edições abertas
                 </TrackedCta>

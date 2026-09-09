@@ -72,14 +72,14 @@ export function CookieBanner() {
           <button
             type="button"
             onClick={() => choose("all")}
-            className="btn-cut inline-flex min-h-11 flex-1 items-center justify-center bg-emerald px-4 py-2 text-sm font-semibold text-surface transition-colors duration-200 hover:bg-emerald-deep sm:flex-none sm:px-6"
+            className="btn-cut inline-flex min-h-11 flex-1 items-center justify-center bg-emerald px-4 py-2 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-emerald-deep sm:flex-none sm:px-6"
           >
             <span>Aceitar</span>
           </button>
           <button
             type="button"
             onClick={() => choose("essential")}
-            className="btn-cut btn-cut-outline inline-flex min-h-11 flex-1 items-center justify-center px-4 py-2 text-sm font-semibold text-ink transition-colors duration-200 hover:text-surface sm:flex-none sm:px-6 [--btn-cut-fill:var(--color-surface-raised)]"
+            className="btn-cut btn-cut-outline inline-flex min-h-11 flex-1 items-center justify-center px-4 py-2 text-sm font-semibold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface sm:flex-none sm:px-6 [--btn-cut-fill:var(--color-surface-raised)]"
           >
             <span>Só o essencial</span>
           </button>

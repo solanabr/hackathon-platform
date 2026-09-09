@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/tokens/motion.css";
 
 @theme {
   --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
@@ -8,7 +9,7 @@
   --color-surface-kraft: #d1c09f;
   --color-surface-deeper: #e8d5a6;
   --color-ink: #1b231d;
-  --color-muted: #5f6f60;
+  --color-muted: #5a6a5b;
 
   /* Keep Tailwind's built-in scales out of the brand greens/emeralds.
      The wildcard resets must precede the bare tokens, or they wipe the
@@ -74,14 +75,14 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-semibold text-green-dark transition-[background-color,transform] duration-200
-           hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
+           font-semibold text-green-dark transition-[background-color,transform]
+           duration-(--dur-instant) ease-mola hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-green-dark
-           bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-200
+           bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-(--dur-instant) ease-entrada
            hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
@@ -113,7 +114,7 @@
     inset: var(--btn-cut-edge);
     border-radius: 0.375rem;
     background-color: var(--btn-cut-fill, var(--color-surface));
-    transition: background-color 200ms;
+    transition: background-color var(--dur-instant) var(--ease-entrada);
     clip-path: polygon(
       0 0,
       100% 0,
@@ -141,7 +142,9 @@
     box-shadow:
       inset 3px 3px 0 rgb(27 35 29 / 0.14),
       inset -1px -1px 0 rgb(255 253 246 / 0.55);
-    transition: background-color 200ms, box-shadow 200ms;
+    transition:
+      background-color var(--dur-instant) var(--ease-entrada),
+      box-shadow var(--dur-instant) var(--ease-entrada);
   }
 
   .btn-cut-outline.btn-cut-quiet:hover::before {
@@ -264,7 +267,7 @@
   }
 
   .card-hover {
-    @apply transition-[transform,border-color] duration-300 ease-out;
+    @apply transition-[transform,border-color] duration-(--dur-rapida) ease-mola;
   }
 
   .card-hover:hover {
@@ -300,11 +303,13 @@
     @apply bg-gradient-to-r from-yellow to-emerald bg-clip-text text-transparent;
   }
 
-  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-  .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
-  .animate-float-a { animation: floatA 6s ease-in-out infinite; }
-  .animate-float-b { animation: floatA 6s ease-in-out -2s infinite; }
-  .animate-float-c { animation: floatA 6s ease-in-out -4s infinite; }
+  .animate-fade-in { animation: fadeIn var(--dur-rapida) var(--ease-entrada) forwards; }
+  .animate-slide-up { animation: slideUp var(--dur-media) var(--ease-entrada) forwards; }
+  /* Os três flutuam com períodos que não reencontram a mesma fase, então o
+     conjunto não pulsa em bloco como se fosse um objeto só. */
+  .animate-float-a { animation: floatA 6s var(--ease-inout) infinite; }
+  .animate-float-b { animation: floatA 7s var(--ease-inout) -2.3s infinite; }
+  .animate-float-c { animation: floatA 8s var(--ease-inout) -4.7s infinite; }
 }
 
 @keyframes fadeIn {
@@ -313,13 +318,13 @@
 }
 
 @keyframes slideUp {
-  0% { opacity: 0; transform: translateY(20px); }
+  0% { opacity: 0; transform: translateY(var(--dist-entrada)); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes floatA {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(calc(var(--dist-curta) * -1)); }
 }
 
 @keyframes authOverlayIn {
@@ -328,18 +333,25 @@
 }
 
 @keyframes authPanelIn {
-  0% { opacity: 0; transform: translateY(12px) scale(0.985); }
+  0% { opacity: 0; transform: translateY(var(--dist-curta)) scale(0.985); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.auth-overlay-in { animation: authOverlayIn 0.16s ease-out; }
-.auth-panel-in { animation: authPanelIn 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
+/* O fundo escurece antes de o painel chegar, senão os dois disputam o olho. */
+.auth-overlay-in { animation: authOverlayIn var(--dur-instant) var(--ease-entrada); }
+.auth-panel-in { animation: authPanelIn var(--dur-rapida) var(--ease-carimbo); }
 
+/* Movimento reduzido não é um interruptor: a escala de tempo, as distâncias e
+   as curvas já foram reescritas em tokens/motion.css, e toda a orquestração
+   continua rodando lá. O que sobra aqui é o único caso que nenhum token
+   resolve — o loop decorativo infinito, que não tem estado final para onde
+   convergir e por isso precisa parar no seu quadro de repouso. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .animate-float-a,
+  .animate-float-b,
+  .animate-float-c,
+  .animate-brand-fill {
+    animation: none;
   }
 }
 
@@ -360,6 +372,69 @@
   }
 }
 
+/* A FOLHA NA PRENSA — o primeiro frame.
+ *
+ * Duas metades do mesmo gesto: a tinta sobe no símbolo (--dur-media) e, no
+ * instante em que ela fecha, a folha é PUXADA para fora (--dur-rapida, curva
+ * de saída — sai devagar e some rápido, que é exatamente o gesto de arrancar
+ * papel da prensa). Total 1.19s, e nem um valor fora de token.
+ *
+ * A manchete do hero começa a imprimir junto com o load, embaixo da folha,
+ * então o que aparece quando ela levanta não é uma página parada: é tipografia
+ * ainda saindo do rolo. Os dois movimentos se encavalam de propósito.        */
+.press-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-surface);
+  animation: pressLift var(--dur-rapida) var(--ease-saida) var(--dur-media)
+    forwards;
+}
+/* A folha sai para BAIXO, como na bandeja de saída da prensa — e não para
+   cima. A direção é o ponto: saindo para baixo o topo é liberado primeiro, e
+   a manchete aparece ENQUANTO está sendo estampada, na mesma ordem em que a
+   página é lida. Subindo, a manchete era a última coisa a surgir e chegava
+   pronta, o que anula o único momento autoral da primeira dobra. */
+@keyframes pressLift {
+  to {
+    transform: translate3d(0, 100%, 0);
+    visibility: hidden;
+  }
+}
+
+.press-sheet-mark {
+  position: relative;
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.press-sheet-ink {
+  clip-path: inset(100% 0 0 0);
+  animation: pressInk var(--dur-media) var(--ease-inout) forwards;
+}
+@keyframes pressInk {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Já viu nesta sessão: a folha nem entra no jogo. */
+.press-done .press-sheet {
+  display: none;
+}
+
+/* Movimento reduzido. Aqui "versão pensada" é NÃO acontecer: a folha não
+   carrega informação nenhuma — ela é inteiramente transição. Preservar a
+   orquestração de algo cujo único conteúdo é o movimento seria só atrasar a
+   página de quem pediu menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  .press-sheet {
+    display: none;
+  }
+}
+
 /* Brand loader: the symbol colors itself in from the bottom, then resets. */
 @keyframes brandFill {
   0% { clip-path: inset(100% 0 0 0); }
@@ -367,24 +442,43 @@
   82% { clip-path: inset(0 0 0 0); }
   100% { clip-path: inset(100% 0 0 0); }
 }
-.animate-brand-fill { animation: brandFill 1.9s ease-in-out infinite; }
+.animate-brand-fill { animation: brandFill 1.9s var(--ease-inout) infinite; }
 
-/* Scroll reveal: sections fade up once as they enter the viewport. */
+/* Scroll reveal. A opacidade sobe um pouco mais rápido que o deslocamento:
+   o elemento termina de aparecer antes de terminar de chegar, e é essa
+   defasagem que faz a entrada parecer assentar em vez de frear.
+
+   --reveal-i é o índice do elemento na sua família; quem escreve o índice é
+   o componente, e o stagger sai do token, não de um delay digitado à mão. */
 .reveal {
+  --reveal-i: 0;
+  --reveal-stagger: var(--stagger-lista);
+  --reveal-dist: var(--dist-entrada);
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transform: translate3d(0, var(--reveal-dist), 0);
+  transition:
+    opacity calc(var(--dur-media) * 0.75) var(--ease-entrada)
+      calc(var(--reveal-i) * var(--reveal-stagger)),
+    transform var(--dur-media) var(--ease-entrada)
+      calc(var(--reveal-i) * var(--reveal-stagger));
 }
 .reveal-in {
   opacity: 1;
   transform: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+/* Texto anda menos e mais junto que objeto: o olho varre uma linha mais
+   rápido do que reconhece um card. */
+.reveal-texto {
+  --reveal-stagger: var(--stagger-texto);
+  --reveal-dist: var(--dist-curta);
+}
+/* O que a seção quer que você olhe vem de mais longe. */
+.reveal-longe {
+  --reveal-dist: var(--dist-longa);
+}
+/* Objeto de papel entra carimbado, não flutuando. */
+.reveal-papel {
+  transition-timing-function: var(--ease-carimbo);
 }
 /* Without JS the IntersectionObserver never adds .reveal-in, so every section
    below the hero would stay at opacity 0. */
@@ -400,14 +494,26 @@
    and in from an alternating side, landing in the row. --t is per-card scroll
    progress and --pp lifts the pitch out of the way, both written by JourneyPin.
    --enter-x is the offset from the card's resting column to the centre of the
-   screen, in its own width: the trip is a straight line between the two. */
+   screen, in its own width: the trip is a straight line between the two.
+
+   A distância vertical é 58vh e não 105vh porque --pp e --t compartilham a
+   mesma fórmula de progresso: com o pitch andando 24vh e a carta 105vh, a
+   carta ficava sempre 4x atrás e abria um rasgo de kraft vazio entre os dois
+   no meio do voo. 50vh põe a borda da primeira carta dentro do quadro já
+   na entrada do pin — você vê a chegada começar em vez de esperar por ela. */
 .journey-card {
   --t: 0;
   --side: -1;
-  --enter-x: 50%;
+  /* As três convergem no centro do container, como um baralho fanado antes de
+     ser distribuído — e não em x arbitrários, que faziam a 03 pousar em cima
+     da 01 e o visitante ver o passo errado chegando primeiro. O empilhamento
+     segue a ordem de chegada: 01 na frente. Cada coluna dista uma largura de
+     carta mais o gap do centro, então o deslocamento é 100% + 1.5rem. */
+  --enter-x: calc(100% + 1.5rem);
+  z-index: 3;
   transform: translate3d(
       calc(var(--enter-x) * (1 - var(--t))),
-      calc(105vh * (1 - var(--t))),
+      calc(50vh * (1 - var(--t))),
       0
     )
     rotate(calc(var(--side) * 1.5deg * (1 - var(--t))));
@@ -415,10 +521,12 @@
 }
 .journey-card-mid {
   --side: 1;
-  --enter-x: calc(50% + 0.75rem);
+  --enter-x: 0px;
+  z-index: 2;
 }
 .journey-card-last {
-  --enter-x: calc(-150% - 2.25rem);
+  --enter-x: calc(-100% - 1.5rem);
+  z-index: 1;
 }
 .journey-pin-pitch {
   --pp: 0;
@@ -445,11 +553,11 @@
 
 /* FAQ answers ease in when a row opens. */
 @keyframes faqOpen {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(calc(var(--dist-curta) / -3)); }
   to { opacity: 1; transform: none; }
 }
 details[open] > .faq-answer {
-  animation: faqOpen 0.25s ease-out;
+  animation: faqOpen var(--dur-rapida) var(--ease-entrada);
 }
 
 /* Hero ticket: the paper is die-cut on all four edges — one scallop mask per
@@ -483,6 +591,51 @@ details[open] > .faq-answer {
   }
 }
 
+/* O CANHOTO QUE ATRAVESSA A PÁGINA.
+ *
+ * Objeto de papel, então entra DEPOSITADO — sobe da borda de baixo com um giro
+ * a mais e assenta no ângulo de repouso, com a curva de carimbo. A saída é o
+ * espelho: mesma família de curva, mais curta, porque ao chegar na última
+ * chamada o olho tem que ir para o ticket inteiro e não acompanhar o canhoto
+ * saindo de cena. Duas durações diferentes por hierarquia, nunca a mesma.    */
+.ticket-stub {
+  transition:
+    transform var(--dur-instant) var(--ease-saida),
+    opacity var(--dur-instant) var(--ease-saida);
+}
+.ticket-stub-in {
+  transform: rotate(calc(var(--tilt-papel) * -1));
+  opacity: 1;
+  transition:
+    transform var(--dur-rapida) var(--ease-carimbo),
+    opacity var(--dur-rapida) var(--ease-entrada);
+}
+.ticket-stub-out {
+  --stub-travel: calc(100% + 1.25rem);
+  transform: translate3d(0, var(--stub-travel), 0)
+    rotate(calc(var(--tilt-papel) * 2.5));
+  opacity: 0;
+}
+
+/* O contrato do sistema é trocar o VETOR, não desligar: em movimento reduzido
+   o canhoto aparece e some no lugar, com a mesma ordem e a mesma hierarquia
+   de tempo. A rotação já zera sozinha porque --tilt-papel vira 0deg; o
+   deslocamento é próprio deste componente, então ele zera aqui. */
+@media (prefers-reduced-motion: reduce) {
+  .ticket-stub-out {
+    --stub-travel: 0px;
+  }
+}
+
+/* O corpo do canhoto é recortado duas vezes — overflow e máscara die-cut —
+   então um anel por fora do link some na borda. Mesma solução do .btn-cut:
+   o foco de teclado vira um contorno por dentro. */
+.ticket-stub a:focus-visible {
+  outline: 2px solid var(--color-green-dark);
+  outline-offset: -5px;
+  border-radius: 2px;
+}
+
 /* The shadow has to follow the die-cut, so it is a filter on the wrapper. */
 .ticket-shadow {
   filter: drop-shadow(0 16px 22px rgb(27 35 29 / 0.26));
@@ -493,7 +646,7 @@ details[open] > .faq-answer {
 .ticket-holes {
   background-image: radial-gradient(
     circle 5.4px at 50% 50%,
-    var(--color-surface) 0 4.2px,
+    var(--ticket-hole-fill, var(--color-surface)) 0 4.2px,
     rgb(27 35 29 / 0.38) 4.2px 5px,
     transparent 5.2px
   );
@@ -734,4 +887,120 @@ details[open] > .faq-answer {
 .coin-mark-lit path {
   fill: color-mix(in srgb, var(--coin-sheen) 74%, #fff);
   transform: translate(-6px, -6px);
+}
+
+/* --- a impressão do hero ---------------------------------------------- *
+ * O único momento inesquecível da primeira dobra. A manchete não aparece:
+ * ela é IMPRESSA. Cada linha sobe de trás de uma borda — clip-path, não
+ * opacidade — porque a marca é tipografia estampada, e tipografia estampada
+ * não desbota para dentro da página: ela sai de baixo do rolo.
+ *
+ * Roda no load, sem observer e sem JS: o conteúdo já vem do servidor, e um
+ * hero que espera hidratar para se mover pisca. --hero-i é a posição na
+ * sequência; o intervalo sai do token, como em todo o resto.               */
+.hero-print > * {
+  --hero-i: 0;
+  animation: heroPrint var(--dur-lenta) var(--ease-entrada) backwards;
+  animation-delay: calc(var(--hero-cue) + var(--hero-i) * var(--stagger-texto));
+}
+
+@keyframes heroPrint {
+  from {
+    opacity: 0;
+    clip-path: var(--hero-clip);
+    transform: translate3d(0, var(--dist-entrada), 0);
+  }
+  to {
+    opacity: 1;
+    /* Folga em cima também: com leading 1.02 o til de MILHÕES e o acento de
+       PRÓXIMO saem para fora da caixa de linha, e um clip em 0 come os dois.
+       A borda que revela continua sendo a de cima — ela só termina o curso
+       acima do topo do texto em vez de exatamente nele. */
+    clip-path: inset(-30% 0 -30% 0);
+    transform: none;
+  }
+}
+
+:root {
+  /* -30% embaixo para o clip nunca cortar descendente nem a sombra da
+     tarja amarela; a borda que interessa é só a de cima. */
+  --hero-clip: inset(108% 0 -30% 0);
+
+  /* A DEIXA. Sem folha na prensa a impressão começa no load, como sempre. Com
+     a folha, ela tem que começar no instante em que a folha é puxada — senão
+     a manchete é estampada debaixo de um plano opaco e o que aparece é uma
+     página parada. A deixa desloca a sequência inteira sem tocar em nenhuma
+     relação interna dela: mesma ordem, mesmo stagger, mesma hierarquia.     */
+  --hero-cue: 0s;
+}
+html:not(.press-done) {
+  /* A deixa não é o INÍCIO do puxão, é o ponto em que a folha já liberou a
+     faixa da manchete. Começando junto com o puxão, a impressão chegava 78%
+     pronta ao ser descoberta e o gesto se perdia; somando --dur-instant ela
+     chega ~35%, e o que aparece embaixo da folha é tipografia subindo. Soma
+     de tokens, não um número escolhido no olho. */
+  --hero-cue: calc(var(--dur-media) + var(--dur-instant));
+}
+
+/* Depois da manchete o ritmo desacelera: o que vem abaixo dela é leitura,
+   não impacto, e entra com o passo de lista, não com o de título. */
+.hero-after {
+  --hero-i: 0;
+  animation: heroPrint var(--dur-media) var(--ease-entrada) backwards;
+  animation-delay: calc(var(--hero-cue) + 0.34s + var(--hero-i) * var(--stagger-lista));
+}
+
+/* A tarja amarela é a palavra que paga a promessa, então ela é a última coisa
+   a acontecer e a única com overshoot: varre da esquerda como um marca-texto
+   passado com a mão, depois de a linha já ter assentado. */
+.hero-marca {
+  position: relative;
+  isolation: isolate;
+}
+.hero-marca::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-yellow);
+  transform-origin: left center;
+  animation: heroMarca var(--dur-rapida) var(--ease-carimbo)
+    calc(var(--hero-cue) + 0.52s) backwards;
+}
+@keyframes heroMarca {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* O ticket é objeto de papel: não sobe, é DEPOSITADO — chega girado e assenta
+   no ângulo de repouso, com a curva de carimbo. */
+.hero-ticket {
+  /* O ângulo de repouso não é decoração: é o que separa "colado à mão" de
+     "posicionado por CSS", e é o que dá tensão à coluna direita agora que o
+     ticket subiu para a altura da linha que promete o dinheiro. */
+  transform: rotate(calc(var(--tilt-papel) * -1));
+  animation: heroTicket var(--dur-lenta) var(--ease-carimbo)
+    calc(var(--hero-cue) + 0.28s) backwards;
+}
+@keyframes heroTicket {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--dist-longa), 0) rotate(calc(var(--tilt-papel) * 2.5));
+  }
+  to {
+    opacity: 1;
+    transform: rotate(calc(var(--tilt-papel) * -1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Sem vetor, o clip vira um fade: a ordem e o ritmo da impressão
+       continuam legíveis, só que nada viaja. */
+    --hero-clip: inset(-30% 0 -30% 0);
+  }
+  /* A folha não existe aqui, então esperar por ela seria só atraso. */
+  html:not(.press-done) {
+    --hero-cue: 0s;
+  }
 }
