@@ -30,7 +30,7 @@ import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
 import { EventTicket } from "@/components/campaign/event-ticket";
-import { CasesRail } from "@/components/home/cases-rail";
+import { CasesFan, HeadTile } from "@/components/home/cases-fan";
 import {
   CommunityPreview,
   EarnPreview,
@@ -63,7 +63,8 @@ const CASES = [
     name: "Cloak",
     url: "https://www.cloak.ag/",
     logo: "/brand/cases/cloak.png",
-    result: "R$1,5 milhão de investimento anjo",
+    figure: "R$1,5 mi",
+    result: "Investimento anjo",
     tagline: "Infraestrutura de privacidade para empresas que usam blockchain",
     body: (
       <>
@@ -78,9 +79,18 @@ const CASES = [
     name: "Bido",
     url: "https://www.usebido.com/",
     logo: "/brand/cases/bido.png",
-    result: "Rodada de R$10 milhões",
+    figure: "R$10 mi",
+    result: "Rodada levantada",
     tagline: "Camada de pagamentos para agentes de IA",
     body: "Dois amigos de vinte e poucos anos. Chegaram ao último hackathon sem ideia, participaram de todas as mentorias, pivotaram e saíram direto para uma das melhores incubadoras do Vale do Silício.",
+  },
+  {
+    name: "Pode ser você",
+    figure: "?",
+    result: "Próxima edição",
+    tagline: "Seu time, daqui a um mês",
+    tone: "dark" as const,
+    body: "O próximo time brasileiro a sair do Colosseum com capital confirmado ainda não se inscreveu. Nenhum dos dois acima tinha produto pronto quando começou.",
   },
 ];
 
@@ -582,13 +592,15 @@ export default async function HomePage() {
         aria-label="O hackathon global"
       >
         <div className={PAGE_SHELL}>
-          <CasesRail cases={CASES}>
+          <CasesFan cases={CASES}>
             <Reveal>
-              <SectionHat>Colosseum</SectionHat>
-              <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-                O hackathon global
+              <SectionHat centered>Colosseum</SectionHat>
+              <h2 className="mx-auto mt-5 max-w-5xl text-balance text-center font-heading text-[clamp(2.5rem,8.5vw,6.25rem)] font-black uppercase leading-[0.86] tracking-[-0.035em] [font-stretch:118%]">
+                <HeadTile src="/brand/cases/cloak.png" /> O hackathon global{" "}
+                <HeadTile src="/brand/cases/bido.png" tilt="rotate-3" /> da
+                Solana <HeadTile />
               </h2>
-              <p className="mt-4 text-pretty leading-relaxed text-ink/80">
+              <p className="mx-auto mt-8 max-w-2xl text-pretty text-center leading-relaxed text-ink/80">
                 Todo ano, a Solana coloca builders do mundo inteiro para
                 competir, 100% remoto, com prêmios em dinheiro e investimento
                 anjo direto para os melhores times.{" "}
@@ -598,7 +610,7 @@ export default async function HomePage() {
                 </strong>
               </p>
             </Reveal>
-          </CasesRail>
+          </CasesFan>
         </div>
       </section>
 
@@ -614,7 +626,7 @@ export default async function HomePage() {
               hackathon
               <br />
               em{" "}
-              <span className="inline-block bg-green-dark px-3 pb-[0.1em] text-surface [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
+              <span className="inline-block bg-green-dark px-3 pb-[0.1em] text-white [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
                 3 passos
               </span>
             </h2>
@@ -635,7 +647,7 @@ export default async function HomePage() {
           >
             <div
               className={`card-cut flex h-full flex-col p-6 sm:p-7 ${
-                i === 0 ? "" : "card-cut-kraft"
+                i === 0 ? "" : "card-cut-kraft card-cut-open"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
@@ -696,10 +708,10 @@ export default async function HomePage() {
         <div className={`${PAGE_SHELL} py-16 lg:pb-28 lg:pt-14`}>
           <Reveal>
             <SectionHat>Antes de começar</SectionHat>
-            <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
+            <h2 className="mt-4 font-heading text-[clamp(3.25rem,12.5vw,9rem)] font-black uppercase leading-[0.78] tracking-[-0.045em] text-ink [font-stretch:125%]">
               Informações
             </h2>
-            <p className="mt-3 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
+            <p className="mt-5 max-w-2xl border-t-2 border-green-dark pt-4 text-pretty text-lg leading-relaxed text-ink/80">
               As datas que não podem passar batido, a trilha extra para
               brasileiros e tudo que você precisa para chegar pronto na arena.
             </p>
@@ -707,16 +719,16 @@ export default async function HomePage() {
 
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <Reveal delay={100} className="h-full min-w-0">
-              <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface shadow-sticker">
-                <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-green-dark/25 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
+              <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-emerald-deep shadow-sticker">
+                <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-surface/20 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
                 <header className="relative px-6 pt-5 sm:px-8 sm:pt-6">
-                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-surface/65">
                     Calendário
                   </p>
-                  <h3 className="mt-1.5 font-heading text-xl font-black uppercase text-ink [font-stretch:115%] sm:text-2xl">
+                  <h3 className="mt-1.5 font-heading text-xl font-black uppercase text-surface-raised [font-stretch:115%] sm:text-2xl">
                     Calendário do hackathon
                   </h3>
-                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-green-dark/70">
+                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-surface/80">
                     Da abertura do Colosseum ao anúncio dos vencedores.
                   </p>
                 </header>
