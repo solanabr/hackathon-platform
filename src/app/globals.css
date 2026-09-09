@@ -348,23 +348,9 @@
 
 /* Scroll reveal: sections fade up once as they enter the viewport. */
 .reveal {
-  --reveal-x: 0px;
-  --reveal-y: 28px;
-  --reveal-rot: 0deg;
   opacity: 0;
-  transform: translate3d(var(--reveal-x), var(--reveal-y), 0) rotate(var(--reveal-rot));
-  transition: opacity 0.7s ease-out, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-/* Cards that come up from alternating sides, one after the other. */
-.reveal-from-left {
-  --reveal-x: -64px;
-  --reveal-y: 52px;
-  --reveal-rot: -1.5deg;
-}
-.reveal-from-right {
-  --reveal-x: 64px;
-  --reveal-y: 52px;
-  --reveal-rot: 1.5deg;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
 }
 .reveal-in {
   opacity: 1;
@@ -384,6 +370,35 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* Jornada: while the section is pinned, each card rides up from below and
+   from an alternating side. --t is scroll progress, written by JourneyPin. */
+.journey-card {
+  --t: 0;
+  --side: -1;
+  opacity: calc(var(--t) * 1.6);
+  transform: translate3d(
+      calc(var(--side) * 110px * (1 - var(--t))),
+      calc(62vh * (1 - var(--t))),
+      0
+    )
+    rotate(calc(var(--side) * 2deg * (1 - var(--t))));
+  will-change: transform, opacity;
+}
+.journey-card-right {
+  --side: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-card {
+    --t: 1;
+  }
+}
+/* Without JS nothing writes --t, so the cards would never arrive. */
+@media (scripting: none) {
+  .journey-card {
+    --t: 1;
   }
 }
 

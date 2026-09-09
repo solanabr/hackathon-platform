@@ -27,6 +27,7 @@ import { CtaHalftone } from "@/components/home/cta-halftone";
 import { NetworkHalo } from "@/components/home/network-halo";
 import { MobileCtaBar } from "@/components/campaign/mobile-cta-bar";
 import { StepGlyph } from "@/components/home/step-glyph";
+import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
 import { EventTicket } from "@/components/campaign/event-ticket";
@@ -40,8 +41,8 @@ import {
 // diferente em cada largura, e só uma máscara relativa à viewport garante que
 // o topo do que aparece sempre esmaece em vez de cortar reto.
 const FADE_UP: CSSProperties = {
-  maskImage: "linear-gradient(to bottom, transparent, #000 38%)",
-  WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 38%)",
+  maskImage: "linear-gradient(to bottom, transparent, #000 30%)",
+  WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 30%)",
 };
 
 export const metadata = {
@@ -391,7 +392,7 @@ export default async function HomePage() {
       <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[34%] sm:h-[42%] lg:h-[46%]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] sm:h-[52%] lg:h-[62%]"
           style={FADE_UP}
         >
           <ColosseumBackdrop />
@@ -567,101 +568,97 @@ export default async function HomePage() {
       </section>
 
       {/* A Jornada: trilho horizontal — pílula de tempo, marcador e cartão por passo. */}
-      <section
-        id="jornada"
-        className={`${LP_SECTION} hidden overflow-x-clip lg:block`}
-        aria-label="Como participar"
-      >
-        <div className={LP_CONTAINER}>
-          <Reveal>
+      <JourneyPin
+        containerClassName={LP_CONTAINER}
+        header={
+          <div>
             <SectionHat centered>Como participar</SectionHat>
-            <h2 className="mx-auto mt-4 max-w-3xl text-balance text-center font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] sm:text-5xl">
+            <h2 className="mx-auto mt-4 max-w-3xl text-balance text-center font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] [@media(min-height:860px)]:text-5xl">
               Entre no hackathon em 3 passos.
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-pretty text-center text-lg leading-relaxed text-ink/80">
+            <p className="mx-auto mt-3 max-w-2xl text-pretty text-center leading-relaxed text-ink/80 [@media(min-height:860px)]:mt-4 [@media(min-height:860px)]:text-lg">
               Faça o cadastro, registre-se no Colosseum e entre na comunidade
               para receber suporte, workshops e contexto durante toda a
               campanha.
             </p>
-          </Reveal>
-
-          <div className="mt-14 grid grid-cols-3 gap-6">
-            {journey.map((step, i) => (
-              <Reveal
-                key={step.title}
-                delay={i * 280}
-                className={`h-full ${i % 2 === 0 ? "reveal-from-left" : "reveal-from-right"}`}
-              >
-                <div className="flex h-full flex-col">
-                  <div className="flex justify-center">
-                    <span
-                      className={`inline-flex items-center rounded-full border-2 px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] ${
-                        i === 0
-                          ? "border-green-dark bg-yellow text-green-dark"
-                          : "border-green-dark/25 bg-surface-raised text-ink/55"
-                      }`}
-                    >
-                      {step.marker}
-                    </span>
-                  </div>
-
-                  <div className="relative mt-5 flex h-3 items-center justify-center">
-                    {i > 0 && (
-                      <span
-                        aria-hidden
-                        className="absolute left-[-12px] right-1/2 h-0 border-t-2 border-dotted border-green-dark/30"
-                      />
-                    )}
-                    {i < journey.length - 1 && (
-                      <span
-                        aria-hidden
-                        className="absolute left-1/2 right-[-12px] h-0 border-t-2 border-dotted border-green-dark/30"
-                      />
-                    )}
-                    <span
-                      aria-hidden
-                      className={`relative h-3 w-3 rounded-full border-2 border-green-dark ${
-                        i === 0 ? "bg-yellow" : "bg-surface"
-                      }`}
-                    />
-                  </div>
-
-                  <div className="card-cut mt-5 flex flex-1 flex-col p-6 sm:p-7">
-                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/40">
-                      Passo {`0${i + 1}`}
-                    </p>
-                    <div className="mt-4 border-y border-green-dark/15 py-4 text-green-dark">
-                      <StepGlyph
-                        shape={step.glyph}
-                        className="mx-auto h-40 w-auto"
-                      />
-                    </div>
-                    <h3 className="mt-6 font-heading text-xl font-bold">
-                      {step.title}
-                    </h3>
-                    <ul className="mb-6 mt-4 space-y-2.5">
-                      {step.items.map((item) => (
-                        <li
-                          key={item}
-                          className="flex gap-2.5 text-pretty text-sm leading-relaxed text-green-dark/70"
-                        >
-                          <CheckIcon
-                            aria-hidden
-                            weight="bold"
-                            className="mt-[3px] h-4 w-4 shrink-0 text-emerald"
-                          />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-auto">{step.cta}</div>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
           </div>
-        </div>
-      </section>
+        }
+      >
+        {journey.map((step, i) => (
+          <div key={step.title} className="flex h-full flex-col">
+            <div className="flex justify-center">
+              <span
+                className={`inline-flex items-center rounded-full border-2 px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] ${
+                  i === 0
+                    ? "border-green-dark bg-yellow text-green-dark"
+                    : "border-green-dark/25 bg-surface-raised text-ink/55"
+                }`}
+              >
+                {step.marker}
+              </span>
+            </div>
+
+            <div className="relative mt-5 flex h-3 items-center justify-center">
+              {i > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute left-[-12px] right-1/2 h-0 border-t-2 border-dotted border-green-dark/30"
+                />
+              )}
+              {i < journey.length - 1 && (
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 right-[-12px] h-0 border-t-2 border-dotted border-green-dark/30"
+                />
+              )}
+              <span
+                aria-hidden
+                className={`relative h-3 w-3 rounded-full border-2 border-green-dark ${
+                  i === 0 ? "bg-yellow" : "bg-surface"
+                }`}
+              />
+            </div>
+
+            <div
+              data-journey-card
+              className={`journey-card mt-5 flex flex-1 flex-col ${
+                i % 2 === 0 ? "" : "journey-card-right"
+              }`}
+            >
+              <div className="card-cut flex flex-1 flex-col p-6 sm:p-7">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/40">
+                  Passo {`0${i + 1}`}
+                </p>
+                <div className="mt-4 border-y border-green-dark/15 py-4 text-green-dark">
+                  <StepGlyph
+                    shape={step.glyph}
+                    className="mx-auto h-24 w-auto [@media(min-height:860px)]:h-32 [@media(min-height:960px)]:h-40"
+                  />
+                </div>
+                <h3 className="mt-6 font-heading text-xl font-bold">
+                  {step.title}
+                </h3>
+                <ul className="mb-6 mt-4 space-y-2.5">
+                  {step.items.map((item) => (
+                    <li
+                      key={item}
+                      className="flex gap-2.5 text-pretty text-sm leading-relaxed text-green-dark/70"
+                    >
+                      <CheckIcon
+                        aria-hidden
+                        weight="bold"
+                        className="mt-[3px] h-4 w-4 shrink-0 text-emerald"
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto">{step.cta}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </JourneyPin>
 
       {/* Informações: folha pardo sangrando até as bordas — bento com
           calendário, trilha e recursos. */}

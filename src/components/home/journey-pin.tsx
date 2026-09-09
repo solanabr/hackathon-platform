@@ -32,7 +32,9 @@ export function JourneyPin({
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
-    const cards = [...node.querySelectorAll<HTMLElement>("[data-journey-card]")];
+    const cards = [
+      ...node.querySelectorAll<HTMLElement>("[data-journey-card]"),
+    ];
 
     if (reduced) {
       cards.forEach((el) => el.style.setProperty("--t", "1"));
@@ -67,18 +69,26 @@ export function JourneyPin({
   return (
     <section
       ref={sectionRef}
-      id="jornada"
       aria-label="Como participar"
       className={`relative hidden lg:block ${reduced ? "" : "h-[280vh]"}`}
     >
+      {/* Landing on the very top of the pin would show an empty rail, so the
+          anchor sits far enough in that the first cards are already riding. */}
+      <span
+        id="jornada"
+        aria-hidden
+        className="absolute left-0 top-[26%] h-px w-px"
+      />
       <div
         className={`overflow-x-clip px-4 sm:px-6 lg:px-8 xl:px-12 ${
-          reduced ? "pt-24 lg:pt-28" : "sticky top-0 flex h-screen flex-col justify-center"
+          reduced
+            ? "pt-24 lg:pt-28"
+            : "sticky top-0 flex h-screen flex-col justify-center pt-14 [@media(min-height:900px)]:pt-16"
         }`}
       >
         <div className={containerClassName}>
           {header}
-          <div className="mt-10 grid grid-cols-3 gap-6 xl:mt-14">{children}</div>
+          <div className="mt-6 grid grid-cols-3 gap-6 xl:mt-10">{children}</div>
         </div>
       </div>
     </section>
