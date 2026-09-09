@@ -52,7 +52,7 @@ const { light, dark } = halftoneMarks(TONES, { cols: COLS, cellW: CELL_W, cellH:
 export function FaqHalftone({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 12 240 178"
+      viewBox="0 13 240 169"
       aria-hidden
       role="presentation"
       fill="none"

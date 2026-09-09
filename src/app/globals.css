@@ -194,6 +194,21 @@
     color: var(--color-surface-raised);
   }
 
+  /* Kraft variant: the deepest cream as fill under an ink rim, so the card
+     still reads as a sticker without going dark. */
+  .card-cut-kraft {
+    --card-cut-fill: var(--color-surface-kraft);
+    background-color: var(--color-green-dark);
+    color: var(--color-ink);
+  }
+
+  /* Open variant: the same rim with the page ground as fill, so the card reads
+     as an outline. Pairs with .card-cut-kraft to rank cards in a set — the
+     filled one is the step you act on now. Must follow it: same specificity. */
+  .card-cut-open {
+    --card-cut-fill: var(--color-surface);
+  }
+
   .card-cut::before {
     content: "";
     position: absolute;
@@ -422,9 +437,6 @@
     overflow: visible;
     padding-block: 6rem;
   }
-  .journey-pin-guides {
-    display: none;
-  }
   .journey-card,
   .journey-pin-pitch {
     transform: none;
@@ -512,4 +524,214 @@ details[open] > .faq-answer {
     animation: none;
     clip-path: none;
   }
+}
+
+/* --- the Solana coin ------------------------------------------------- *
+ * A minted cylinder, not a disc with gradients on it: two faces and 36 rim
+ * panels standing in `preserve-3d`, each surface shaded by its own Lambert
+ * term (`--b`, written by the component from one fixed light at upper-left).
+ * The turn of light around the collar is the other half — flat-shading every
+ * surface on its own is what makes a CSS coin read as paint.
+ *
+ * Nothing inside `.coin-scene` may use `filter`: it creates a compositing
+ * group, forces `transform-style: flat`, and that is how a preserve-3d scene
+ * collapses with no obvious cause. Depth goes through `color-mix` on `--b`.  */
+.coin-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  /* The piece is measured against its own box, never the viewport: every
+     length below is in `cqw`, because `translateZ()` rejects percentages and
+     a fixed px thickness would make the coin a different object on mobile. */
+  container-type: size;
+}
+
+/* Containment lives on the stage, never on the scene: keeping it on an
+   ancestor of the cylinder is what leaves `preserve-3d` intact below. */
+.coin-scene {
+  --coin-thick: 11cqw;
+  --coin-apothem: 49.81cqw;   /* cos(5°) × 50% — half a panel off the flat */
+  --coin-seg: 11cqw;          /* 2·sin(5°) × 50%, ×1.26 of overlap: at the
+                                 silhouette the panels stand edge-on, and only
+                                 an overlap this wide keeps the next corner
+                                 from showing as a sawtooth */
+  --coin-base: #0b130e;
+  --coin-sheen: #b9d8bf;
+
+  position: absolute;
+  inset: 0;
+  /* ~3.4 diameters of lens. Anything shorter bends the far rim into a lumpy
+     skirt at the bottom — the coin stops being a turned object and becomes a
+     funnel. */
+  perspective: 340cqw;
+}
+
+/* The piece sits ON the section instead of floating over it. */
+.coin-cast {
+  position: absolute;
+  inset: 12% 12% -3% 12%;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.45);
+  filter: blur(5cqw);
+}
+
+.coin {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* enough tilt to put the bottom rim in view, not enough to turn the disc
+     into an ellipse — the hub sits at the centre of the wire diagram and has
+     to read as a circle at a glance */
+  transform: rotateX(8deg);
+}
+
+/* The faces sit INSIDE the rim, as on a struck piece where the rim is the
+   widest part. Without that step the edge hides under the silhouette, which
+   is why the old hub had no thickness at all. */
+.coin-face {
+  position: absolute;
+  inset: 1.8%;
+  border-radius: 50%;
+  /* without this the front face punches through and paints over the back */
+  backface-visibility: hidden;
+  background: color-mix(
+    in srgb,
+    var(--coin-sheen) calc(6% + var(--b, 0.35) * 26%),
+    var(--coin-base)
+  );
+  box-shadow: 0 8cqw 15cqw -8cqw rgb(0 0 0 / 0.9);
+}
+
+.coin-face-front {
+  transform: translateZ(calc(var(--coin-thick) / 2));
+}
+
+.coin-face-back {
+  transform: rotateY(180deg) translateZ(calc(var(--coin-thick) / 2));
+}
+
+/* THE COLLAR — the raised rim, and the one surface that carries the turn of
+   light. A single Lambert term per element gives every point of a ring the
+   same value, and a ring of even value reads as a circle drawn in pen; the
+   metal only appears once the light walks around it. `from 135deg` puts the
+   dark at lower-right, so the bright lands at upper-left, on the source. */
+.coin-collar {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 135deg,
+    color-mix(in srgb, var(--coin-sheen) 2%, var(--coin-base)) 0deg,
+    color-mix(in srgb, var(--coin-sheen) 9%, var(--coin-base)) 55deg,
+    color-mix(in srgb, var(--coin-sheen) 36%, var(--coin-base)) 140deg,
+    color-mix(in srgb, var(--coin-sheen) 58%, var(--coin-base)) 185deg,
+    color-mix(in srgb, var(--coin-sheen) 31%, var(--coin-base)) 240deg,
+    color-mix(in srgb, var(--coin-sheen) 8%, var(--coin-base)) 310deg,
+    color-mix(in srgb, var(--coin-sheen) 2%, var(--coin-base)) 360deg
+  );
+  /* the chamfer where the collar meets the air, and the one where it drops
+     into the field */
+  box-shadow:
+    inset 0 0 0 0.5cqw color-mix(in srgb, var(--coin-sheen) 18%, transparent),
+    inset 0 1cqw 1.6cqw -0.8cqw rgb(255 255 255 / 0.22),
+    inset 0 -1cqw 1.6cqw -0.8cqw rgb(0 0 0 / 0.55);
+}
+
+/* The struck field: a coin is a raised collar around a recessed centre, and
+   that step is what makes the mark read as pressed INTO the metal. */
+.coin-field {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(
+    120% 120% at 26% 18%,
+    color-mix(in srgb, var(--coin-sheen) 21%, var(--coin-base)) 0%,
+    color-mix(in srgb, var(--coin-sheen) 8%, var(--coin-base)) 46%,
+    var(--coin-base) 100%
+  );
+  box-shadow:
+    inset 0 1cqw 2cqw -0.4cqw rgb(0 0 0 / 0.65),
+    inset 0 -0.5cqw 0 -0.2cqw color-mix(in srgb, var(--coin-sheen) 22%, transparent),
+    0 0.4cqw 0 color-mix(in srgb, var(--coin-sheen) 14%, transparent);
+}
+
+/* The one broad highlight flat shading cannot give: matte metal still gathers
+   light where the source faces it. */
+.coin-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 58% at 27% 19%,
+    rgb(255 255 255 / 0.16) 0%,
+    rgb(255 255 255 / 0.05) 44%,
+    transparent 72%
+  );
+}
+
+/* The wrapper tips the cylinder: `rotateY·translateZ` builds the ring on a
+   vertical axis, and `rotateX(90deg)` lays that axis toward the viewer. */
+.coin-rim {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(90deg);
+  transform-style: preserve-3d;
+}
+
+.coin-seg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--coin-seg);
+  height: var(--coin-thick);
+  margin-left: calc(var(--coin-seg) / -2);
+  margin-top: calc(var(--coin-thick) / -2);
+  transform: rotateY(calc(var(--i) * 10deg)) translateZ(var(--coin-apothem));
+  /* the rim is the surface whose orientation varies most — every panel faces
+     a different point of the circle — so it is where the light has the most
+     to say. Twice the tonal range of the faces. */
+  background: color-mix(
+    in srgb,
+    var(--coin-sheen) calc(7% + var(--b, 0.2) * 46%),
+    var(--coin-base)
+  );
+  /* the milling. 36 panels is the count that holds both ends: one seam every
+     10° is a reed the pixel grid can draw, and the flat of each chord sits
+     half a pixel off the true circle, so the silhouette keeps no corners. The
+     old hub drew this as a 1.1° conic repeat, which aliases into a black
+     fringe at every width. */
+  box-shadow: inset 0.3cqw 0 0 rgb(0 0 0 / 0.4);
+  /* the chamfer runs on BOTH edges of the rim, as on a struck piece. Tied to
+     `--b` for the same reason as everything else: a highlight of even weight
+     all the way round reads as a drawn line; one that lights and dies with
+     the source reads as a bevel. */
+  border-top: 0.45cqw solid
+    color-mix(in srgb, var(--color-yellow) calc(5% + var(--b, 0.2) * 78%), transparent);
+  border-bottom: 0.3cqw solid
+    color-mix(in srgb, var(--color-yellow) calc(3% + var(--b, 0.2) * 40%), transparent);
+}
+
+/* --- the relief ------------------------------------------------------ *
+ * Two copies of the same contour offset along the light: the dark one falls
+ * down-right, the light one rises up-left, and the sliver of dark left
+ * showing IS the relief. The old hub pasted the full-colour PNG on top, which
+ * is a sticker on a disc — a struck piece carries its device in its own metal.
+ *
+ * px inside a 397.7-wide viewBox is a user unit, not a screen one: at 300px
+ * of coin, 9 units ≈ 2 real px — the depth of a shallow strike.             */
+.coin-mark {
+  position: absolute;
+  inset: 33% 27%;
+  overflow: visible;
+}
+
+.coin-mark-shade path {
+  fill: rgb(0 0 0 / 0.72);
+  transform: translate(9px, 9px);
+}
+
+.coin-mark-lit path {
+  fill: color-mix(in srgb, var(--coin-sheen) 74%, #fff);
+  transform: translate(-6px, -6px);
 }

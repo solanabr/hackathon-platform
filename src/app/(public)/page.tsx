@@ -1,5 +1,4 @@
 import type { CSSProperties, ReactNode } from "react";
-import Image from "next/image";
 import {
   COLOSSEUM_DEADLINE_FALLBACK,
   COLOSSEUM_SLUG,
@@ -36,6 +35,8 @@ import {
   CommunityPreview,
   EarnPreview,
 } from "@/components/home/bento-previews";
+import { SolanaCoin } from "@/components/home/solana-coin";
+import { PAGE_SHELL } from "@/components/layout/container";
 
 // A dissolução mora no container, não no SVG: a faixa é recortada de forma
 // diferente em cada largura, e só uma máscara relativa à viewport garante que
@@ -97,7 +98,8 @@ const SOLANA_STATS = [
 ];
 
 type CalendarItem = {
-  date: string;
+  day?: string;
+  label: string;
   title: string;
   body: string;
   highlight?: boolean;
@@ -106,28 +108,30 @@ type CalendarItem = {
 
 const CALENDAR: CalendarItem[] = [
   {
-    date: "Agora",
+    label: "Agora",
     title: "Registro aberto no Colosseum",
     body: "Crie sua conta e registre-se. Não precisa de ideia nem de time, e dá para começar a construir já.",
     highlight: true,
   },
   {
-    date: "14 set",
+    day: "14",
+    label: "set",
     title: "Início da competição",
     body: "Abre o cadastro de projeto e time na plataforma. Só o que for construído a partir daqui conta.",
   },
   {
-    date: "set a out",
+    label: "Set a out",
     title: "Workshops e mentorias",
     body: "Conteúdo ao vivo e suporte da comunidade durante toda a campanha.",
   },
   {
-    date: "12 out",
+    day: "12",
+    label: "out",
     title: "Deadline de envio",
     body: "Submissões fecham às 23h59 no horário da Califórnia, 3h59 do dia 13 em Brasília. Trilhas Brasil e Global.",
   },
   {
-    date: "Em breve",
+    label: "Em breve",
     title: "Anúncio dos vencedores",
     body: "Resultado das trilhas Brasil e Global. Avisamos por e-mail e WhatsApp.",
   },
@@ -211,11 +215,10 @@ const FAQ_ITEMS = [
   },
 ];
 
-// Shared stage width for section containers so the LP stops looking like a
-// narrow mobile column once there's room at xl/2xl — narrow text measures
-// (max-w-2xl paragraphs etc.) stay as they are.
-const LP_CONTAINER = "mx-auto w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem]";
-const LP_SECTION = "px-4 pt-24 sm:px-6 lg:px-8 lg:pt-28 xl:px-12 xl:pt-32";
+// Vertical rhythm only — the stage width and gutters come from PAGE_SHELL,
+// the same rails the header and footer ride. Narrow text measures
+// (max-w-2xl paragraphs etc.) stay local to their block.
+const LP_SECTION = "pt-24 lg:pt-28 xl:pt-32";
 
 function SectionHat({
   children,
@@ -239,48 +242,71 @@ function SectionHat({
   );
 }
 
-// One side of the Solana hub: cards on the outside, dotted wire running in
-// towards the centre. Below lg the wires disappear and the four cards fall
-// back into a plain grid.
-function StatColumn({
-  stats,
-  side,
-}: {
-  stats: typeof SOLANA_STATS;
-  side: "left" | "right";
-}) {
+// The Solana hub, drawn as a network: one chip in the middle of a particle
+// sphere, the four numbers hanging off it on dotted wires. Coordinates below
+// live in the 1200x620 viewBox the lg+ diagram is locked to, so the wires and
+// the absolutely placed cards land on the same points at any width.
+const WIRES = [
+  { d: "M 262 120 H 352 L 452 216", cx: 262, cy: 120 },
+  { d: "M 262 360 H 352 L 452 264", cx: 262, cy: 360 },
+  { d: "M 938 120 H 848 L 748 216", cx: 938, cy: 120 },
+  { d: "M 938 360 H 848 L 748 264", cx: 938, cy: 360 },
+];
+
+const STAT_SLOTS = [
+  "left-0 top-[25%]",
+  "left-0 top-[75%]",
+  "right-0 top-[25%]",
+  "right-0 top-[75%]",
+];
+
+function StatWires() {
   return (
-    <dl className="grid grid-cols-2 gap-4 sm:gap-5 lg:flex lg:flex-col lg:gap-12">
-      {stats.map((stat, i) => (
-        <Reveal
-          key={stat.value}
-          delay={i * 120}
-          className={
-            i === 0 ? (side === "left" ? "lg:pl-12" : "lg:pr-12") : undefined
-          }
-        >
-          <div
-            className={`flex h-full items-center ${side === "right" ? "lg:flex-row-reverse" : ""}`}
-          >
-            <div className="h-full w-full rounded-xl border-2 border-green-dark bg-surface-raised px-5 py-4 shadow-sticker lg:w-[15rem] lg:shrink-0">
-              <dt className="font-heading text-3xl font-black uppercase leading-none tracking-tight text-green-dark [font-stretch:115%] sm:text-4xl">
-                <CountUp value={stat.value} />
-              </dt>
-              <dd className="mt-2 text-pretty text-xs leading-snug text-muted sm:text-sm">
-                {stat.label}
-              </dd>
-            </div>
-            <span
-              aria-hidden
-              className={`hidden flex-1 items-center lg:flex ${side === "right" ? "flex-row-reverse" : ""}`}
-            >
-              <span className="h-2 w-2 shrink-0 rounded-full border-2 border-yellow bg-yellow" />
-              <span className="h-0 flex-1 border-t-2 border-dotted border-surface/25" />
-            </span>
-          </div>
-        </Reveal>
+    <svg
+      aria-hidden
+      focusable="false"
+      viewBox="0 0 1200 480"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+    >
+      {WIRES.map((wire) => (
+        <g key={wire.d}>
+          <path
+            d={wire.d}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeDasharray="2 7"
+            strokeLinecap="round"
+            className="text-surface/25"
+          />
+          <circle cx={wire.cx} cy={wire.cy} r={5} className="fill-yellow" />
+        </g>
       ))}
-    </dl>
+    </svg>
+  );
+}
+
+function StatCard({ stat }: { stat: (typeof SOLANA_STATS)[number] }) {
+  return (
+    <div className="h-full rounded-xl border-2 border-green-dark bg-surface-raised px-5 py-4 shadow-sticker">
+      <dt className="font-heading text-3xl font-black uppercase leading-none tracking-tight text-green-dark [font-stretch:115%] sm:text-4xl">
+        <CountUp value={stat.value} />
+      </dt>
+      <dd className="mt-2 text-pretty text-xs leading-snug text-muted sm:text-sm">
+        {stat.label}
+      </dd>
+    </div>
+  );
+}
+
+function NetworkSphere({ className }: { className: string }) {
+  return (
+    <div
+      aria-hidden
+      className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-surface [mask-image:radial-gradient(closest-side,black_58%,transparent)] ${className}`}
+    >
+      <NetworkHalo className="h-auto w-full" />
+    </div>
   );
 }
 
@@ -399,7 +425,7 @@ export default async function HomePage() {
         </div>
 
         <div
-          className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:min-h-[calc(100dvh-4rem)] lg:items-start lg:gap-12 lg:pb-10 lg:pt-[9vh] lg:text-left lg:[@media(max-height:860px)]:pb-6 lg:[@media(max-height:860px)]:pt-[6vh]`}
+          className={`relative ${PAGE_SHELL} py-10 text-center lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:min-h-[calc(100dvh-4rem)] lg:items-start lg:gap-12 lg:pb-10 lg:pt-[9vh] lg:text-left lg:[@media(max-height:860px)]:pb-6 lg:[@media(max-height:860px)]:pt-[6vh]`}
         >
           <div>
             <div className="mb-5 flex justify-center lg:justify-start">
@@ -459,82 +485,83 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Why Solana: the network drawn as a network — one hub, the numbers
-          orbiting it on dotted wires. */}
+      {/* Why Solana: the pitch stays on the cream ground, and the network
+          banner below it rides the same stage as the rest of the page. */}
       <section
-        className="px-4 pt-24 sm:px-6 lg:px-8 lg:pt-28 xl:px-12 xl:pt-32"
+        className={`${LP_SECTION} relative isolate`}
         id="solana"
         aria-label="O que é a Solana"
       >
-        <div
-          className="card-cut px-5 py-12 sm:px-8 sm:py-14 lg:px-10 lg:py-16 xl:px-14"
-          style={
-            {
-              "--cut": "3.5rem",
-              "--card-cut-fill": "var(--color-green-dark)",
-            } as CSSProperties
-          }
-        >
-          <div className="mx-auto w-full max-w-[100rem]">
+        <div className={PAGE_SHELL}>
+          <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
             <Reveal>
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-14">
-                <div>
-                  <SectionHat onDark>Por que Solana</SectionHat>
-                  <h2 className="mt-4 max-w-xl text-balance font-heading text-4xl font-black leading-[1.05] tracking-tight text-surface [font-stretch:105%] sm:text-5xl">
-                    <span className="block">
-                      Uma nova infraestrutura financeira.
-                    </span>
-                    <span className="mt-2 block">
-                      <span className="inline-block -rotate-1 border-2 border-yellow bg-yellow px-3 text-green-dark">
-                        Global.
-                      </span>
-                    </span>
-                  </h2>
-                </div>
-                <p className="text-pretty text-base leading-relaxed text-surface/80 sm:text-lg lg:pt-10">
-                  A Solana é a rede blockchain mais rápida do mundo: milhares de
-                  transações por segundo com taxas de frações de centavo. Em
-                  poucos anos virou a plataforma número 1 para startups e
-                  grandes corporações construírem os produtos financeiros do
-                  futuro.
-                </p>
-              </div>
+              <SectionHat>Por que Solana</SectionHat>
+              <h2 className="mt-5 text-balance font-heading text-4xl font-black leading-[1.02] tracking-tight text-ink [font-stretch:105%] sm:text-5xl xl:text-[3.6rem]">
+                Uma nova infraestrutura financeira.{" "}
+                <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark shadow-sticker">
+                  Global.
+                </span>
+              </h2>
             </Reveal>
 
-            <div className="relative mt-10 lg:mt-4">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 text-surface [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_84%,transparent)] lg:block"
-              >
-                <NetworkHalo className="h-[26rem] w-[26rem] xl:h-[28rem] xl:w-[28rem]" />
-              </div>
+            <Reveal delay={120}>
+              <p className="text-pretty text-base leading-relaxed text-muted sm:text-lg lg:pb-2">
+                A Solana é a rede blockchain mais rápida do mundo: milhares de
+                transações por segundo com taxas de frações de centavo. Em
+                poucos anos virou a plataforma número 1 para startups e grandes
+                corporações construírem os produtos financeiros do futuro.
+              </p>
+            </Reveal>
+          </div>
+        </div>
 
-              <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center lg:gap-x-0">
-                <StatColumn stats={SOLANA_STATS.slice(0, 2)} side="left" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-[-6rem] -z-10 h-44 bg-surface-kraft lg:bottom-[-7rem] lg:h-48"
+        />
 
-                <Reveal className="order-first lg:order-none lg:px-6">
-                  <div className="mx-auto w-[16rem] rounded-3xl border-2 border-surface/20 bg-green-dark p-3 sm:w-[18rem]">
-                    <div className="rounded-2xl border border-surface/15 bg-[radial-gradient(120%_130%_at_50%_0%,#2f6b3f_0%,#1b231d_72%)] px-6 py-8 text-center">
-                      <Image
-                        src="/brand/events/solana-light.png"
-                        alt="Solana"
-                        width={2584}
-                        height={384}
-                        className="mx-auto h-6 w-auto sm:h-7"
-                      />
-                      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-yellow">
-                        a rede mais rápida do mundo
-                      </p>
-                    </div>
-                  </div>
-                </Reveal>
+        <div className={`${PAGE_SHELL} mt-12 xl:mt-16`}>
+          <div className="rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
+            <div className="relative hidden aspect-[1200/480] w-full lg:block">
+              <NetworkSphere className="w-[52%]" />
+              <StatWires />
 
-                <StatColumn stats={SOLANA_STATS.slice(2)} side="right" />
-              </div>
+              <Reveal className="absolute left-1/2 top-1/2 w-[25%] -translate-x-1/2 -translate-y-1/2">
+                <SolanaCoin />
+              </Reveal>
+
+              <dl>
+                {SOLANA_STATS.map((stat, i) => (
+                  <Reveal
+                    key={stat.value}
+                    delay={i * 120}
+                    className={`absolute w-[21%] -translate-y-1/2 ${STAT_SLOTS[i]}`}
+                  >
+                    <StatCard stat={stat} />
+                  </Reveal>
+                ))}
+              </dl>
+            </div>
+
+            <div className="lg:hidden">
+              <Reveal className="relative mx-auto flex max-w-xs justify-center">
+                <NetworkSphere className="w-[125%]" />
+                <div className="relative w-[76%]">
+                  <SolanaCoin />
+                </div>
+              </Reveal>
+
+              <dl className="mt-8 grid grid-cols-2 gap-4 sm:gap-5">
+                {SOLANA_STATS.map((stat, i) => (
+                  <Reveal key={stat.value} delay={i * 100}>
+                    <StatCard stat={stat} />
+                  </Reveal>
+                ))}
+              </dl>
             </div>
 
             <Reveal delay={120}>
-              <p className="mx-auto mt-10 max-w-3xl text-pretty text-center text-sm leading-relaxed text-surface/80 sm:text-base">
+              <p className="mx-auto mt-12 max-w-3xl text-pretty text-center text-sm leading-relaxed text-surface/80 sm:text-base">
                 Não é só hype:{" "}
                 <span className="font-semibold text-surface">
                   Visa, Mastercard, Stripe, PayPal, BlackRock, J.P. Morgan,
@@ -554,7 +581,7 @@ export default async function HomePage() {
         className={`${LP_SECTION} mt-24 bg-surface-kraft pb-24 lg:mt-28 lg:pb-28`}
         aria-label="O hackathon global"
       >
-        <div className={LP_CONTAINER}>
+        <div className={PAGE_SHELL}>
           <CasesRail cases={CASES}>
             <Reveal>
               <SectionHat>Colosseum</SectionHat>
@@ -577,17 +604,23 @@ export default async function HomePage() {
 
       {/* A Jornada: trilho horizontal — pílula de tempo, marcador e cartão por passo. */}
       <JourneyPin
-        containerClassName={LP_CONTAINER}
+        containerClassName={PAGE_SHELL}
         header={
           <div>
             <SectionHat centered>Como participar</SectionHat>
-            <h2 className="mt-4 text-balance text-center font-heading text-4xl font-black leading-[1.1] tracking-tight [font-stretch:105%] xl:text-5xl">
-              Entre no hackathon em 3 passos.
+            <h2 className="mt-4 text-center font-heading text-[3.75rem] font-black uppercase leading-[0.82] tracking-[-0.035em] [font-stretch:112%] [@media(min-height:840px)]:text-[4.75rem] xl:[@media(min-height:900px)]:text-[5.75rem]">
+              Entre no
+              <br />
+              hackathon
+              <br />
+              em{" "}
+              <span className="inline-block bg-green-dark px-3 pb-[0.1em] text-surface [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
+                3 passos
+              </span>
             </h2>
-            <p className="mt-4 text-pretty text-center leading-relaxed text-ink/80">
-              Faça o cadastro, registre-se no Colosseum e entre na comunidade
-              para receber suporte, workshops e contexto durante toda a
-              campanha.
+            <p className="mx-auto mt-5 max-w-lg text-pretty text-center font-mono text-[13px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65">
+              Cadastro, registro no Colosseum e comunidade. Suporte, workshops e
+              contexto durante toda a campanha.
             </p>
           </div>
         }
@@ -600,23 +633,30 @@ export default async function HomePage() {
               i === 1 ? "journey-card-mid" : i === 2 ? "journey-card-last" : ""
             }`}
           >
-            <div className="card-cut card-cut-dark flex h-full flex-col p-6 sm:p-7">
+            <div
+              className={`card-cut flex h-full flex-col p-6 sm:p-7 ${
+                i === 0 ? "" : "card-cut-kraft"
+              }`}
+            >
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-surface-raised/45">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/45">
                   Passo {`0${i + 1}`}
                 </p>
                 <span
                   className={`inline-flex items-center rounded-full border-2 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] ${
                     i === 0
-                      ? "border-yellow bg-yellow text-green-dark"
-                      : "border-surface-raised/25 bg-surface-raised/10 text-surface-raised/70"
+                      ? "border-green-dark bg-yellow text-green-dark"
+                      : "border-green-dark/25 bg-green-dark/5 text-ink/60"
                   }`}
                 >
                   {step.marker}
                 </span>
               </div>
-              <div className="mt-4 border-y border-surface-raised/15 py-4 text-yellow">
-                <StepGlyph shape={step.glyph} className="mx-auto h-32 w-auto" />
+              <div className="mt-4 border-y border-green-dark/15 py-4 text-green-dark">
+                <StepGlyph
+                  shape={step.glyph}
+                  className="mx-auto h-24 w-auto [@media(min-height:860px)]:h-32"
+                />
               </div>
               <h3 className="mt-6 font-heading text-xl font-bold">
                 {step.title}
@@ -625,12 +665,12 @@ export default async function HomePage() {
                 {step.items.map((item) => (
                   <li
                     key={item}
-                    className="flex gap-2.5 text-pretty text-sm leading-relaxed text-surface-raised/70"
+                    className="flex gap-2.5 text-pretty text-sm leading-relaxed text-ink/75"
                   >
                     <CheckIcon
                       aria-hidden
                       weight="bold"
-                      className="mt-[3px] h-4 w-4 shrink-0 text-yellow"
+                      className="mt-[3px] h-4 w-4 shrink-0 text-green-dark"
                     />
                     <span>{item}</span>
                   </li>
@@ -647,176 +687,212 @@ export default async function HomePage() {
       <section
         id="informacoes"
         aria-label="Informações"
-        className="mt-24 lg:mt-28"
+        className="relative isolate mt-24 lg:mt-28"
       >
-        <div className="bg-surface-kraft">
-          <div
-            className={`${LP_CONTAINER} px-4 py-16 sm:px-6 lg:px-8 lg:pb-28 lg:pt-14 xl:px-12`}
-          >
-            <Reveal>
-              <SectionHat>Antes de começar</SectionHat>
-              <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-                Informações
-              </h2>
-              <p className="mt-3 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
-                As datas que não podem passar batido, a trilha extra para
-                brasileiros e tudo que você precisa para chegar pronto na arena.
-              </p>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-surface-kraft [mask-image:linear-gradient(to_bottom,black_0,black_calc(100%-20rem),rgba(0,0,0,0.82)_calc(100%-16rem),rgba(0,0,0,0.45)_calc(100%-11rem),rgba(0,0,0,0.12)_calc(100%-5rem),transparent_100%)]"
+        />
+        <div className={`${PAGE_SHELL} py-16 lg:pb-28 lg:pt-14`}>
+          <Reveal>
+            <SectionHat>Antes de começar</SectionHat>
+            <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
+              Informações
+            </h2>
+            <p className="mt-3 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
+              As datas que não podem passar batido, a trilha extra para
+              brasileiros e tudo que você precisa para chegar pronto na arena.
+            </p>
+          </Reveal>
+
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            <Reveal delay={100} className="h-full min-w-0">
+              <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface shadow-sticker">
+                <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-green-dark/25 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
+                <header className="relative px-6 pt-5 sm:px-8 sm:pt-6">
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
+                    Calendário
+                  </p>
+                  <h3 className="mt-1.5 font-heading text-xl font-black uppercase text-ink [font-stretch:115%] sm:text-2xl">
+                    Calendário do hackathon
+                  </h3>
+                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-green-dark/70">
+                    Da abertura do Colosseum ao anúncio dos vencedores.
+                  </p>
+                </header>
+                <ol className="relative mx-6 mb-6 mt-5 flex flex-1 flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-2 sm:mx-8 sm:mb-8 sm:mt-6 sm:px-6 sm:py-3">
+                  {CALENDAR.map((item, i) => (
+                    <li
+                      key={item.title}
+                      className={`relative flex grow gap-5 py-4 ${
+                        i > 0 ? "border-t border-green-dark/15" : ""
+                      }`}
+                    >
+                      {/* O trilho costura as etapas: sem ele as datas
+                          leem como cinco blocos soltos, não como uma sequência. */}
+                      <span
+                        aria-hidden
+                        className={`absolute left-[5.25rem] w-px -translate-x-1/2 bg-green-dark/15 ${
+                          i === 0
+                            ? "bottom-0 top-[2.125rem]"
+                            : i === CALENDAR.length - 1
+                              ? "top-0 h-[2.125rem]"
+                              : "inset-y-0"
+                        }`}
+                      />
+                      <span
+                        aria-hidden
+                        className={`absolute left-[5.25rem] top-[2.125rem] h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${
+                          item.highlight
+                            ? "bg-emerald ring-4 ring-emerald/15"
+                            : "border border-green-dark/30 bg-surface-raised"
+                        }`}
+                      />
+                      <div className="w-16 shrink-0 text-right">
+                        {item.day ? (
+                          <>
+                            <p
+                              className={`flex h-9 items-center justify-end font-heading text-4xl font-black leading-none tabular-nums [font-stretch:112%] ${
+                                item.highlight ? "text-emerald" : "text-ink"
+                              }`}
+                            >
+                              {item.day}
+                            </p>
+                            <p className="mt-1 font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/50">
+                              {item.label}
+                            </p>
+                          </>
+                        ) : (
+                          <p
+                            className={`flex h-9 items-center justify-end text-balance font-heading text-base font-black uppercase leading-tight [font-stretch:112%] ${
+                              item.highlight
+                                ? "text-emerald"
+                                : "text-green-dark/45"
+                            }`}
+                          >
+                            {item.label}
+                          </p>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 pl-5 pt-1.5">
+                        <p className="font-heading text-base font-bold text-ink">
+                          {item.href ? (
+                            <a
+                              href={item.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald"
+                            >
+                              {item.title}
+                            </a>
+                          ) : (
+                            item.title
+                          )}
+                        </p>
+                        <p className="mt-1 text-pretty text-sm leading-snug text-muted">
+                          {item.body}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </article>
             </Reveal>
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-2">
-              <Reveal delay={100} className="lg:col-span-2">
-                <article className="relative overflow-hidden rounded-2xl border-2 border-green-dark bg-surface shadow-sticker">
-                  <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-green-dark/25 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
-                  <header className="relative px-6 pt-5 sm:px-8 sm:pt-6">
-                    <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
-                      Calendário
-                    </p>
-                    <h3 className="mt-1.5 font-heading text-xl font-black uppercase text-ink [font-stretch:115%] sm:text-2xl">
-                      Calendário do hackathon
-                    </h3>
-                    <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-green-dark/70">
-                      Da abertura do Colosseum ao anúncio dos vencedores.
-                    </p>
-                  </header>
-                  <ol className="relative mx-6 mt-5 overflow-hidden rounded-t-2xl border-2 border-b-0 border-green-dark bg-surface-raised divide-y-2 divide-green-dark/15 sm:mx-16 sm:mt-6 lg:mx-28 xl:mx-40">
-                    {CALENDAR.map((item) => (
-                      <li
-                        key={item.title}
-                        className={`grid gap-0.5 px-5 py-3.5 sm:grid-cols-12 sm:items-baseline sm:gap-6 sm:px-6 sm:py-4 ${
-                          item.highlight ? "bg-green text-surface" : "text-ink"
-                        }`}
-                      >
-                        <p
-                          className={`font-heading text-xl font-black uppercase leading-none [font-stretch:115%] sm:col-span-3 sm:text-2xl ${item.highlight ? "text-yellow" : ""}`}
-                        >
-                          {item.date}
-                        </p>
-                        <div className="sm:col-span-9">
-                          <p className="font-heading text-base font-bold">
-                            {item.href ? (
-                              <a
-                                href={item.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald"
-                              >
-                                {item.title}
-                              </a>
-                            ) : (
-                              item.title
-                            )}
-                          </p>
-                          <p
-                            className={`mt-0.5 text-pretty text-sm leading-snug ${item.highlight ? "text-surface/85" : "text-muted"}`}
-                          >
-                            {item.body}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
-                </article>
-              </Reveal>
+            <Reveal delay={150} className="h-full min-w-0">
+              <article className="flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark relative bg-surface shadow-sticker">
+                <header className="relative p-5 pb-0 sm:p-6 sm:pb-0">
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
+                    Superteam Earn
+                  </p>
+                  <h3 className="mt-2 font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
+                    Trilha Brasil
+                  </h3>
+                  <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
+                    Além dos prêmios e investimentos da competição Global, os
+                    brasileiros têm uma trilha extra com prêmios adicionais,
+                    publicados no Superteam Earn. Dá para concorrer nas duas ao
+                    mesmo tempo, com apoio da Superteam Brasil do cadastro à
+                    submissão.
+                  </p>
+                </header>
+                <EarnPreview />
+                <div className="relative mt-auto flex p-5 pt-6 sm:p-6 sm:pt-7">
+                  <TrackedCta
+                    href={withPlatformUtm(
+                      "https://superteam.fun/earn/s/superteambr",
+                      {
+                        content: "lp_trilha_brasil",
+                        campaign: "colosseum-2026",
+                      },
+                    )}
+                    event="campaign_link_clicked"
+                    properties={{ target: "earn", location: "lp" }}
+                    className="btn-cut btn-cut-outline inline-flex w-fit items-center whitespace-nowrap px-6 py-3 text-sm font-bold text-ink transition-colors duration-200 hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"
+                  >
+                    <span className="relative">Ver oportunidades no Earn</span>
+                  </TrackedCta>
+                </div>
+              </article>
+            </Reveal>
 
-              <Reveal delay={150} className="h-full">
-                <TrackedCta
-                  href={withPlatformUtm(
-                    "https://superteam.fun/earn/s/superteambr",
-                    { content: "lp_trilha_brasil", campaign: "colosseum-2026" },
-                  )}
-                  event="campaign_link_clicked"
-                  properties={{ target: "earn", location: "lp" }}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-deep bg-[radial-gradient(circle,rgb(27_35_29/0.22)_1px,transparent_1px)] [background-size:9px_9px] shadow-sticker transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                >
-                  <EarnPreview />
-                  <div className="flex flex-1 flex-col p-5 pt-6 sm:p-7 sm:pt-7">
-                    <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
-                      Superteam Earn
-                    </p>
-                    <h3 className="mt-2 font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
-                      Trilha Brasil
-                    </h3>
-                    <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
-                      Além dos prêmios e investimentos da competição Global, os
-                      brasileiros têm uma trilha extra com prêmios adicionais,
-                      publicados no Superteam Earn. Dá para concorrer nas duas
-                      ao mesmo tempo, com apoio da Superteam Brasil do cadastro
-                      à submissão.
-                    </p>
-                    <p className="mt-auto pt-6 text-sm font-bold text-emerald underline decoration-yellow decoration-2 underline-offset-4 group-hover:decoration-emerald">
-                      Ver oportunidades no Earn
-                    </p>
-                  </div>
-                </TrackedCta>
-              </Reveal>
-
-              <Reveal delay={200} className="h-full">
-                <article className="flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-deep bg-[radial-gradient(circle,rgb(27_35_29/0.22)_1px,transparent_1px)] [background-size:9px_9px] shadow-sticker">
-                  <CommunityPreview />
-                  <div className="flex flex-1 flex-col p-5 pt-6 sm:p-7 sm:pt-7">
+            <Reveal delay={200} className="min-w-0 lg:col-span-2">
+              <article className="relative grid overflow-hidden rounded-2xl border-2 border-green-dark bg-surface shadow-sticker lg:grid-cols-2 lg:items-stretch">
+                <div className="relative flex flex-col p-5 sm:p-6 lg:pr-0">
+                  <header className="relative">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60">
                       Recursos
                     </p>
-                    <h3 className="mt-2 font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
-                      Onde aprender e pedir ajuda
+                    <h3 className="mt-2 font-heading text-[clamp(1.9rem,3.4vw,2.75rem)] font-black uppercase leading-[0.95] text-ink [font-stretch:115%]">
+                      Onde aprender
+                      <br />e pedir ajuda
                     </h3>
                     <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
                       A comunidade fica no Discord e no WhatsApp, e as aulas, a
                       wiki e a Academy cobrem o caminho do zero até a submissão.
                       Todo canal abaixo é aberto e gratuito.
                     </p>
-                    <ul className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-                      {RESOURCES.map((r) => {
-                        const Icon = r.icon;
-                        return (
-                          <li key={r.label}>
-                            <TrackedCta
-                              href={r.href}
-                              event="campaign_link_clicked"
-                              properties={{
-                                target: r.label,
-                                location: "recursos",
-                              }}
-                              className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-green-dark/25 bg-surface px-3 py-4 text-center text-[13px] font-bold text-ink transition-colors duration-200 hover:border-emerald hover:bg-emerald hover:text-surface sm:inline-flex sm:h-auto sm:flex-row sm:gap-2.5 sm:rounded-full sm:px-5 sm:py-2.5 sm:text-left sm:text-sm"
-                            >
-                              <Icon
-                                size={22}
-                                weight="bold"
-                                aria-hidden
-                                className="sm:size-[18px]"
-                              />
-                              {r.label}
-                            </TrackedCta>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </article>
-              </Reveal>
-            </div>
+                  </header>
+                  <ul className="mt-6 grid flex-1 auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-xl border-2 border-green-dark bg-green-dark shadow-sticker sm:grid-cols-3">
+                    {RESOURCES.map((r) => {
+                      const Icon = r.icon;
+                      return (
+                        <li key={r.label} className="bg-surface-raised">
+                          <TrackedCta
+                            href={r.href}
+                            event="campaign_link_clicked"
+                            properties={{
+                              target: r.label,
+                              location: "recursos",
+                            }}
+                            className="flex h-full flex-col items-center justify-center gap-2.5 px-3 py-7 text-center text-[13px] font-bold leading-tight text-ink transition-colors duration-200 hover:bg-emerald hover:text-surface sm:py-8 sm:text-sm"
+                          >
+                            <Icon size={24} weight="bold" aria-hidden />
+                            {r.label}
+                          </TrackedCta>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+                <div className="pb-4 sm:pb-6">
+                  <CommunityPreview />
+                </div>
+              </article>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* FAQ: sobre o creme, com a aba pardo saindo no topo. */}
       <section
         id="faq"
         aria-label="Perguntas frequentes"
-        className="mt-16 pb-10 lg:mt-20 lg:pb-14"
+        className="mt-8 overflow-hidden pb-10 lg:mt-10 lg:pb-14"
       >
-        <div className={`${LP_CONTAINER} px-4 sm:px-6 lg:px-8 xl:px-12`}>
-          <span className="ml-4 inline-block rounded-t-xl bg-surface-kraft px-10 pb-1 pt-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-green-dark/70 sm:ml-[8%]">
-            FAQ
-          </span>
-        </div>
-
-        <div className={`${LP_CONTAINER} px-4 pt-8 sm:px-6 lg:px-8 xl:px-12`}>
+        <div className={`${PAGE_SHELL} pt-6 lg:pt-8`}>
           <div className="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
             <Reveal>
-              <SectionHat>Alguma dúvida?</SectionHat>
-              <h2 className="mt-5 font-heading text-[clamp(2.4rem,6.4vw,3.6rem)] font-black uppercase leading-[0.95] tracking-tight text-ink [font-stretch:112%] xl:text-[4rem]">
+              <h2 className="font-heading text-[clamp(2.4rem,6.4vw,3.6rem)] font-black uppercase leading-[0.95] tracking-tight text-ink [font-stretch:112%] xl:text-[4rem]">
                 Perguntas
                 <br />
                 frequentes
@@ -826,8 +902,8 @@ export default async function HomePage() {
               </p>
             </Reveal>
             <Reveal delay={90}>
-              <div className="flex flex-col items-start gap-1 lg:items-end">
-                <FaqHalftone className="hidden w-[18rem] text-ink lg:block xl:w-[21rem]" />
+              <div className="flex flex-col items-start gap-0 lg:items-end">
+                <FaqHalftone className="hidden -mb-4 w-[19rem] text-ink lg:block xl:w-[23rem]" />
                 <TrackedCta
                   href={WHATSAPP_COMMUNITY_URL}
                   event="campaign_link_clicked"
@@ -873,56 +949,60 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* -mb-24 cancels the footer's mt-24: the green band has to run straight
-          into the footer, so the extra pb replaces the padding the footer
-          then covers. */}
-      <section
-        className={`${LP_SECTION} relative -mb-24 overflow-hidden bg-emerald-deep pb-28 lg:pb-32`}
-        aria-label="Fazer cadastro"
-      >
-        <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-surface/35 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
-        <div className={`${LP_CONTAINER} relative`}>
-          <Reveal>
-            <div className="text-center">
-              <SectionHat centered onDark>
-                Última chamada
-              </SectionHat>
-              <h2 className="mt-5 mx-auto max-w-4xl font-heading font-black uppercase leading-[1.06] tracking-tight text-surface [font-stretch:108%]">
-                <span className="block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.1rem]">
-                  O próximo time a captar
-                </span>
-                <span className="mt-1 block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.1rem]">
-                  <span className="inline-block bg-yellow px-3 text-green-dark">
-                    milhões
-                  </span>{" "}
-                  pode ser o seu.
-                </span>
-              </h2>
-            </div>
-          </Reveal>
+      <section className={LP_SECTION} aria-label="Fazer cadastro">
+        <div className="mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
+            <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-surface/35 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
+            <div className="relative mx-auto max-w-5xl">
+              <Reveal>
+                <div className="text-center">
+                  <SectionHat centered onDark>
+                    Última chamada
+                  </SectionHat>
+                  <h2 className="mt-5 mx-auto max-w-4xl font-heading font-black uppercase leading-[1.06] tracking-tight text-surface [font-stretch:108%]">
+                    <span className="block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.1rem]">
+                      O próximo time a captar
+                    </span>
+                    <span className="mt-1 block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.1rem]">
+                      <span className="inline-block bg-yellow px-3 text-green-dark">
+                        milhões
+                      </span>{" "}
+                      pode ser o seu.
+                    </span>
+                  </h2>
+                </div>
+              </Reveal>
 
-          <div className="mt-20 lg:mt-24">
-            <p className="flex items-center justify-center gap-4 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-surface/55 sm:gap-6">
-              <span aria-hidden className="h-px w-8 bg-surface/25 sm:w-20" />
-              Inscrições encerram em
-              <span aria-hidden className="h-px w-8 bg-surface/25 sm:w-20" />
-            </p>
-            <Countdown
-              deadlineIso={submissionDeadline}
-              variant="segments"
-              size="xl"
-              tone="surface"
-              className="mt-7 sm:mt-9"
-            />
-            <div className="mt-9 text-center sm:mt-11">
-              <TrackedCta
-                href={cadastroHref}
-                event="cta_clicked"
-                properties={{ cta: "cadastro", location: "fechamento" }}
-                className="btn-cut inline-flex items-center whitespace-nowrap bg-yellow px-8 py-3.5 text-sm font-semibold text-green-dark transition-colors duration-200 hover:bg-yellow-strong sm:px-10 sm:text-base"
-              >
-                <span>Fazer cadastro</span>
-              </TrackedCta>
+              <div className="mt-14 lg:mt-16">
+                <p className="flex items-center justify-center gap-4 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-surface/55 sm:gap-6">
+                  <span
+                    aria-hidden
+                    className="h-px w-8 bg-surface/25 sm:w-20"
+                  />
+                  Inscrições encerram em
+                  <span
+                    aria-hidden
+                    className="h-px w-8 bg-surface/25 sm:w-20"
+                  />
+                </p>
+                <Countdown
+                  deadlineIso={submissionDeadline}
+                  variant="segments"
+                  size="xl"
+                  tone="surface"
+                  className="mt-7 sm:mt-9"
+                />
+                <div className="mt-9 text-center sm:mt-11">
+                  <TrackedCta
+                    href={cadastroHref}
+                    event="cta_clicked"
+                    properties={{ cta: "cadastro", location: "fechamento" }}
+                    className="btn-cut inline-flex items-center whitespace-nowrap bg-yellow px-8 py-3.5 text-sm font-semibold text-green-dark transition-colors duration-200 hover:bg-yellow-strong sm:px-10 sm:text-base"
+                  >
+                    <span>Fazer cadastro</span>
+                  </TrackedCta>
+                </div>
+              </div>
             </div>
           </div>
         </div>

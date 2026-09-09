@@ -7,6 +7,7 @@ import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
 import { AuthActions } from "./auth-actions";
 import { LpSectionNav } from "./lp-section-nav";
+import { PAGE_SHELL } from "./container";
 
 /**
  * A hairline bar on the cream, not an object sitting on it: the page keeps the
@@ -29,7 +30,7 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-ink/10 bg-surface/80 backdrop-blur-md">
       {claims && <PostHogIdentify userId={claims.userId} />}
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 xl:max-w-7xl xl:px-12">
+      <div className={`${PAGE_SHELL} flex h-16 items-center justify-between gap-4`}>
         <Link
           href="/"
           className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"

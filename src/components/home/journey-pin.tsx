@@ -64,8 +64,14 @@ export function JourneyPin({
     <section
       ref={sectionRef}
       aria-label="Como participar"
-      className="journey-pin relative hidden h-[380vh] lg:block"
+      className="journey-pin relative isolate hidden h-[380vh] lg:block"
     >
+      {/* Kraft bleeds past the section so it meets the Informações sheet with
+          no cream stripe in the margin between them. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -bottom-28 top-0 -z-10 bg-surface-kraft"
+      />
       {/* Landing on the very top of the pin would show the pitch with no card
           in sight, so the anchor sits where the first one is already rising. */}
       <span
@@ -73,27 +79,9 @@ export function JourneyPin({
         aria-hidden
         className="absolute left-0 top-[16%] h-px w-px"
       />
-      <div className="journey-pin-panel sticky top-0 flex h-screen flex-col justify-center overflow-hidden px-4 pt-14 sm:px-6 lg:px-8 xl:px-12">
+      <div className="journey-pin-panel sticky top-0 flex h-screen flex-col justify-center overflow-hidden pt-14">
         <div className={`journey-pin-stack relative ${containerClassName}`}>
-          <div
-            aria-hidden
-            className="journey-pin-guides pointer-events-none absolute -inset-y-[100vh] inset-x-0"
-          >
-            <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-green-dark/15" />
-            <span className="absolute inset-x-0 top-1/2 h-px bg-green-dark/15" />
-            <svg
-              viewBox="0 0 12 12"
-              className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 text-emerald"
-            >
-              <path
-                d="M6 0v12M0 6h12"
-                stroke="currentColor"
-                strokeWidth="1.4"
-              />
-            </svg>
-          </div>
-
-          <div className="journey-pin-pitch relative mx-auto max-w-2xl">
+          <div className="journey-pin-pitch relative mx-auto max-w-4xl">
             {header}
           </div>
           <div className="relative mt-6 grid grid-cols-3 gap-6 xl:mt-8">

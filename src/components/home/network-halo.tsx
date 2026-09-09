@@ -1,4 +1,4 @@
-const POINTS = 440;
+const POINTS = 720;
 const RADIUS = 250;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 
@@ -13,8 +13,8 @@ const DOTS = Array.from({ length: POINTS }, (_, i) => {
   return {
     cx: (RADIUS + Math.cos(theta) * ring * RADIUS).toFixed(1),
     cy: (RADIUS + y * RADIUS).toFixed(1),
-    r: (0.7 + depth * 1.7).toFixed(2),
-    o: (0.08 + depth * 0.3).toFixed(2),
+    r: (0.7 + depth * 1.6).toFixed(2),
+    o: (0.1 + depth * 0.42).toFixed(2),
   };
 });
 

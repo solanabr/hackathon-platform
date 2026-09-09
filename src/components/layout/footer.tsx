@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { withPlatformUtm } from "@/lib/attribution";
+import { PAGE_SHELL } from "./container";
 
 const COLUMNS = [
   {
@@ -39,7 +40,7 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer className="mt-24 overflow-hidden bg-green-dark">
-      <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+      <div className={`${PAGE_SHELL} pt-14`}>
         <div className="grid gap-12 pb-14 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Image
