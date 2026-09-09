@@ -110,7 +110,7 @@ export default async function SubmissionPage({
             )}
             {!windowOpen && (
               <p className="mt-1 text-sm font-medium text-red-300">
-                Prazo encerrado. As edições estão bloqueadas; o rascunho atual será considerado.
+                Prazo encerrado. Rascunhos completos foram enviados automaticamente; rascunhos incompletos não entram na avaliação.
               </p>
             )}
           </header>
