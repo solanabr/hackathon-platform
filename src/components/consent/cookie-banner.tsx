@@ -59,7 +59,7 @@ export function CookieBanner() {
   // On phones the bottom of the viewport is where the auth form's e-mail
   // field and button sit, so the banner docks under the header instead.
   return (
-    <div className="fixed inset-x-3 top-[5.75rem] z-50 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:max-w-sm">
+    <div className="fixed inset-x-3 top-[5.75rem] z-50 sm:inset-x-auto sm:bottom-[4.75rem] sm:left-5 sm:top-auto sm:max-w-sm">
       <div className="rounded-2xl border-2 border-green-dark bg-surface-raised p-3 shadow-sticker sm:p-4">
         <p className="text-[13px] leading-snug text-ink sm:text-sm sm:leading-relaxed">
           Cookies essenciais pro login e, se você permitir, análise de uso.{" "}
