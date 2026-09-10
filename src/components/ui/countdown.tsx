@@ -90,24 +90,18 @@ export function Countdown({
     const labelClass = size === "md" ? "mt-1 text-[10px]" : "mt-2 text-[11px]";
     const dotClass = size === "md" ? "mt-3 sm:mt-4" : "mt-5 sm:mt-6";
 
-    /* O tamanho xl (a última chamada da LP) é um PAINEL DE RELÓGIO: quatro
-       pás iguais e o algarismo TRANSBORDANDO a aresta de cima, porque quem
-       manda no bloco é o número, não a caixa. Nenhuma peça é maior que a
-       outra — a leitura vem do tamanho do dígito, e a pá é só o papel atrás.
-       O algarismo é condensado (eixo wdth do Archivo) e leve: é o único lugar
-       da marca onde o peso preto atrapalharia: em corpo de 8rem o black vira
-       mancha. */
+    /* O tamanho xl (a última chamada da LP) é BRUTALISTA: quatro blocos de
+       papel de canto vivo, aresta de 2px e sombra dura, cada um com o
+       algarismo em peso preto ocupando toda a caixa e uma tarja sólida com o
+       rótulo embaixo. Nada é translúcido e nada transborda — a força vem do
+       contraste do bloco contra o fundo, não de sutileza. */
     if (hero) {
       const chars = (value: number) => (seg !== undefined ? pad(value) : "00").split("");
-      const panelBg = onDark ? "bg-surface/10" : "bg-ink/[0.06]";
-      const seamBg = onDark ? "bg-ink/15" : "bg-ink/[0.05]";
-      const numTone = onDark ? "text-surface-raised" : "text-ink";
-      const labelTone = onDark ? "text-surface/70" : "text-muted";
 
       return (
         <div
           role="timer"
-          className={`mx-auto grid max-w-2xl grid-cols-4 gap-2 pt-4 sm:gap-3 sm:pt-6 lg:gap-4 ${className}`}
+          className={`mx-auto grid max-w-3xl grid-cols-4 gap-2 sm:gap-3 lg:gap-4 ${className}`}
         >
           <span className="sr-only" suppressHydrationWarning>
             {seg === undefined
@@ -118,19 +112,16 @@ export function Countdown({
             <div
               key={tile.label}
               aria-hidden
-              className={`relative h-[58px] rounded-[3px] sm:h-[104px] lg:h-[132px] ${panelBg}`}
+              className={`flex flex-col overflow-hidden border-2 border-green-dark bg-surface-raised ${
+                onDark ? "shadow-[6px_6px_0_var(--color-green-dark)]" : "shadow-sticker"
+              }`}
             >
-              <span className={`absolute inset-x-0 top-0 h-[18%] rounded-t-[3px] ${seamBg}`} />
-              <span
-                className={`absolute inset-x-0 bottom-[24%] flex justify-center font-heading text-[3.6rem] font-light leading-none tracking-tight [font-stretch:74%] sm:text-[6.4rem] lg:text-[8.25rem] ${numTone}`}
-              >
+              <span className="flex flex-1 items-center justify-center px-1 pb-1.5 pt-2 font-heading text-[clamp(2.1rem,9.4vw,6.5rem)] font-black leading-[0.82] tracking-[-0.03em] text-ink [font-stretch:112%] sm:pb-2 sm:pt-3">
                 {chars(tile.value).map((c, i) => (
                   <TickDigit key={`${tile.label}-${i}`} char={c} />
                 ))}
               </span>
-              <span
-                className={`absolute inset-x-0 bottom-[7%] text-center font-mono text-[8px] uppercase leading-none tracking-[0.18em] sm:text-[10px] ${labelTone}`}
-              >
+              <span className="border-t-2 border-green-dark bg-green-dark py-1 text-center font-mono text-[8px] font-bold uppercase leading-none tracking-[0.2em] text-surface sm:py-1.5 sm:text-[10px]">
                 {tile.label}
               </span>
             </div>

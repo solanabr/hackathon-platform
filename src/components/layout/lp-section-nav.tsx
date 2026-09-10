@@ -13,7 +13,6 @@ const NAV: Record<string, PageNav> = {
     links: [
       { href: "#cases", label: "O hackathon" },
       { href: "#jornada", label: "Como participar" },
-      { href: "#premiacoes", label: "Premiações" },
       { href: "#comunidade", label: "Comunidade" },
       { href: "#faq", label: "Dúvidas" },
     ],

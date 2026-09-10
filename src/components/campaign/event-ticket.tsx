@@ -9,7 +9,7 @@ export function EventTicket() {
   return (
     <div className="ticket-shadow mt-8 w-full max-w-sm text-left md:max-w-xl lg:mt-0 lg:max-w-none">
       <div className="ticket-paper relative flex items-stretch overflow-hidden rounded-[4px] border-2 border-green-dark bg-[linear-gradient(105deg,#fffdf6_0%,#fbf3dd_55%,#f2e3bf_100%)]">
-        <div className="min-w-0 flex-1 px-4 py-4 sm:px-7 sm:py-6">
+        <div className="min-w-0 flex-1 px-4 py-4 sm:px-7 sm:py-6 lg:pb-12 lg:pt-5">
           <div className="flex items-baseline justify-between gap-3">
             <p className="flex min-w-0 items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/80 sm:text-[10px]">
               <span
@@ -23,7 +23,7 @@ export function EventTicket() {
             </p>
           </div>
 
-          <div aria-hidden className="my-3 h-px bg-green-dark/25 sm:my-5" />
+          <div aria-hidden className="my-3 h-px bg-green-dark/25 sm:my-5 lg:my-3.5" />
 
           <dl className="flex flex-wrap items-end">
             <div className="min-w-0">
@@ -49,7 +49,7 @@ export function EventTicket() {
 
           <div
             aria-hidden
-            className="my-3 border-t border-dotted border-green-dark/40 sm:my-5"
+            className="my-3 border-t border-dotted border-green-dark/40 sm:my-5 lg:my-3.5"
           />
 
           <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-green-dark/80 sm:text-[10px]">

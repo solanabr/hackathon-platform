@@ -601,11 +601,12 @@
    --enter-x is the offset from the card's resting column to the centre of the
    screen, in its own width: the trip is a straight line between the two.
 
-   A distância vertical é 58vh e não 105vh porque --pp e --t compartilham a
-   mesma fórmula de progresso: com o pitch andando 24vh e a carta 105vh, a
-   carta ficava sempre 4x atrás e abria um rasgo de kraft vazio entre os dois
-   no meio do voo. 50vh põe a borda da primeira carta dentro do quadro já
-   na entrada do pin — você vê a chegada começar em vez de esperar por ela. */
+   As duas distâncias verticais descem juntas porque --pp e --t compartilham a
+   mesma fórmula de progresso: se a carta viaja muito mais que o pitch, ela
+   fica para trás e abre um rasgo de kraft vazio entre os dois no meio do voo.
+   12vh e 38vh são o par anterior menos a mesma sobra — a entrada inteira
+   começa mais alta, sem espaço morto no topo do quadro, e a borda da primeira
+   carta já está dentro dele: você vê a chegada começar em vez de esperá-la. */
 .journey-card {
   --t: 0;
   --side: -1;
@@ -618,7 +619,7 @@
   z-index: 3;
   transform: translate3d(
       calc(var(--enter-x) * (1 - var(--t))),
-      calc(50vh * (1 - var(--t))),
+      calc(38vh * (1 - var(--t))),
       0
     )
     rotate(calc(var(--side) * 1.5deg * (1 - var(--t))));
@@ -635,7 +636,7 @@
 }
 .journey-pin-pitch {
   --pp: 0;
-  transform: translateY(calc((1 - var(--pp)) * 24vh));
+  transform: translateY(calc((1 - var(--pp)) * 12vh));
 }
 
 /* Nothing drives --t or --pp in either case, so the pin unwinds into the
@@ -1141,13 +1142,11 @@ html:not(.press-done) {
   to { transform: scaleX(1); }
 }
 
-/* O ticket é objeto de papel: não sobe, é DEPOSITADO — chega girado e assenta
-   no ângulo de repouso, com a curva de carimbo. */
+/* O ticket é objeto de papel: não sobe, é DEPOSITADO — chega girado e assenta,
+   com a curva de carimbo. O repouso é reto: agora ele sangra pela margem
+   direita, e uma peça inclinada não encosta na borda — ou o canto entra na
+   página, ou a base sai dela. O giro fica só na entrada. */
 .hero-ticket {
-  /* O ângulo de repouso não é decoração: é o que separa "colado à mão" de
-     "posicionado por CSS", e é o que dá tensão à coluna direita agora que o
-     ticket assenta no pé da dobra, na mesma linha dos botões. */
-  transform: rotate(calc(var(--tilt-papel) * -1));
   animation: heroTicket var(--dur-lenta) var(--ease-carimbo)
     calc(var(--hero-cue) + 0.28s) backwards;
 }
@@ -1158,7 +1157,7 @@ html:not(.press-done) {
   }
   to {
     opacity: 1;
-    transform: rotate(calc(var(--tilt-papel) * -1));
+    transform: none;
   }
 }
 
@@ -1177,10 +1176,8 @@ html:not(.press-done) {
 /* ---------------------------------------------------------------------------
  * PAINEL DE RELÓGIO — o contador da última chamada.
  *
- * A pá de papel é só o fundo; quem manda no bloco é o ALGARISMO, que
- * transborda a aresta de cima da pá. É por isso que o número não tem caixa
- * que o contenha: contido, ele viraria um widget; transbordando, ele vira o
- * assunto da seção.
+ * O bloco é brutalista: papel de canto vivo, aresta dura e o algarismo em
+ * peso preto ocupando a caixa inteira. Quem carrega a seção é o número.
  *
  * A troca não pisca — o dígito novo é DEPOSITADO de cima, na curva de
  * entrada, e só o algarismo que de fato mudou reanima (a `key` é o próprio
@@ -1245,8 +1242,8 @@ html:not(.press-done) {
   contain: paint;
 
   --prizes-blur: 72px;
-  --prizes-line: color-mix(in oklab, var(--color-green-dark) 40%, transparent);
-  --prizes-cell: 58px;
+  --prizes-line: color-mix(in oklab, var(--color-emerald-deep) 62%, transparent);
+  --prizes-cell: 28px;
 }
 
 /* AURORA. Três manchas em emerald, amarelo e verde — a paleta da marca, não o
@@ -1345,39 +1342,62 @@ html:not(.press-done) {
 
 @keyframes prizesRespiro {
   from {
-    opacity: 0.4;
+    opacity: var(--respiro-min, 0.4);
   }
   to {
-    opacity: 0.78;
+    opacity: var(--respiro-max, 0.78);
   }
 }
 
-/* O PLANO EM FUGA, pendurado no alto e ACESO — a cor mora aqui.
-   O ponto de fuga fica acima do quadro de propósito: dentro dele as colunas se
-   encontram num ponto único e a malha vira estrela de raios em vez de
-   superfície. E a máscara mora no pai, que não gira: aplicada no plano
-   inclinado ela iria embora junto com a perspectiva e a dissolução deixaria de
-   acontecer na distância certa. */
-.prizes-floor {
+/* O FUNIL — a malha invertida, e o lugar onde a cor mora.
+ *
+ * A grade DESCE e se fecha num ponto atrás da base do pódio: o portal de onde
+ * a peça sai. O que faz o funil não é a rotação — é onde mora o ponto de fuga.
+ * `perspective-origin` colado na base do container põe o vértice exatamente na
+ * borda de baixo dele, então reposicionar o container é reposicionar a
+ * garganta. O plano fica pendurado pela borda de CIMA (`transform-origin`) e
+ * foge para baixo: a boca larga é a aresta ancorada, e tudo abaixo dela
+ * converge.
+ *
+ * Por que a garganta fica ATRÁS do pódio e não no vazio: vértice exposto vira
+ * estrela de raios em vez de superfície. Escondido atrás da peça, o que se lê
+ * são as colunas se fechando ao redor dela.
+ *
+ * A cor segue a PROFUNDIDADE e não a tela: fraca na boca larga, cheia lá no
+ * fundo. É a superfície que está acesa — as linhas só provam que ela tem
+ * fundo. E as linhas são verdes de marca, não pretas: sobre creme o
+ * `emerald-deep` ainda tem valor suficiente para desenhar. */
+.prizes-funnel {
   position: absolute;
   inset-inline: -30%;
-  top: -22%;
-  height: 74%;
-  perspective: 620px;
+  top: -5%;
+  bottom: 34%;
+  perspective: 900px;
+  perspective-origin: 50% 100%;
 }
 
-.prizes-floor-plane {
+.prizes-funnel-plane {
   position: absolute;
   inset: 0;
-  transform: rotateX(-58deg);
+  transform: rotateX(-55deg) translate3d(0, 0, 0) scale(1);
   transform-origin: 50% 0;
   mix-blend-mode: multiply;
-  /* A dissolução na distância é no espaço do PLANO, não no da tela: a máscara
-     é aplicada antes da transformada, então descer nela é ir para o fundo da
-     cena. Colocada no pai, ela corta em y de tela — e o horizonte, que na tela
-     é uma linha só, sai com aresta dura em vez de sumir na bruma. */
-  mask-image: linear-gradient(to bottom, #000 0%, #000 42%, rgb(0 0 0 / 0.5) 64%, transparent 90%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, rgb(0 0 0 / 0.5) 64%, transparent 90%);
+  will-change: transform;
+  animation: prizesFunil var(--dur-ambiente) var(--ease-inout) infinite alternate;
+  /* Duas máscaras, as duas no espaço do PLANO e não no da tela. A primeira
+     dissolve a distância: descer nela é ir para o fundo da cena, e sem ela a
+     aresta final do plano sai como um risco reto em vez de sumir na bruma. A
+     segunda tira as paredes laterais — em espaço de plano elas convergem
+     junto com o resto, então o funil afina de forma limpa; em espaço de tela
+     cada lado sumiria a uma distância diferente do vértice. */
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 30%, #000 52%, rgb(0 0 0 / 0.5) 76%, transparent 96%),
+    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 30%, #000 52%, rgb(0 0 0 / 0.5) 76%, transparent 96%),
+    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
+  -webkit-mask-composite: source-in;
   /* As linhas vêm PRIMEIRO na pilha (topo do desenho) e a chapa de cor por
      baixo delas: invertido, o gradiente lava a grade e sobra só o borrão. */
   background-image:
@@ -1385,11 +1405,44 @@ html:not(.press-done) {
     linear-gradient(to bottom, var(--prizes-line) 1px, transparent 1px),
     linear-gradient(
       to bottom,
-      color-mix(in oklab, var(--color-emerald) 8%, transparent) 0%,
-      color-mix(in oklab, var(--color-emerald) 34%, transparent) 58%,
-      color-mix(in oklab, var(--color-emerald) 62%, transparent) 100%
+      transparent 0%,
+      color-mix(in oklab, var(--color-emerald) 10%, transparent) 20%,
+      color-mix(in oklab, var(--color-emerald) 30%, transparent) 58%,
+      color-mix(in oklab, var(--color-emerald) 54%, transparent) 100%
     );
   background-size: var(--prizes-cell) var(--prizes-cell), var(--prizes-cell) var(--prizes-cell), 100% 100%;
+}
+
+/* A deriva anda no espaço do PLANO — descer nele é afundar no corredor, não
+   escorregar na tela. Duas células de curso, para o loop fechar sem costura. */
+@keyframes prizesFunil {
+  from {
+    transform: rotateX(-55deg) translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: rotateX(-55deg) translate3d(0, calc(var(--prizes-cell) * 2), 0) scale(1.04);
+  }
+}
+
+/* A LUZ DA GARGANTA. O funil não é desenho furado no papel: ele emite. Multiply
+   de novo, porque sobre creme "aceso" é cor SATURADA, não branco — clarear um
+   fundo claro não produz brilho, produz lavagem. */
+.prizes-vertex {
+  position: absolute;
+  inset-inline: 30%;
+  bottom: 22%;
+  height: 30%;
+  --respiro-min: 0.34;
+  --respiro-max: 0.56;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-emerald) 74%, transparent) 0%,
+    color-mix(in oklab, var(--color-emerald) 32%, transparent) 46%,
+    transparent 76%
+  );
+  mix-blend-mode: multiply;
+  filter: blur(72px);
+  animation: prizesRespiro var(--dur-respiro) var(--ease-inout) infinite alternate;
 }
 
 /* O VÉU. Devolve papel embaixo do chapéu e embaixo da faixa de texto — e só
@@ -1451,7 +1504,11 @@ html:not(.press-done) {
 @media (max-width: 640px) {
   .prizes-atmos {
     --prizes-blur: 46px;
-    --prizes-cell: 40px;
+    --prizes-cell: 38px;
+  }
+
+  .prizes-vertex {
+    filter: blur(44px);
   }
 
   .prizes-blob {
@@ -1465,11 +1522,22 @@ html:not(.press-done) {
   /* Deriva e respiro são o movimento inteiro desta camada: sem eles sobra o
      estado estático, que já é o desenho — nada some. */
   .prizes-blob,
-  .prizes-glow {
+  .prizes-glow,
+  .prizes-funnel-plane,
+  .prizes-vertex {
     animation: none;
   }
 
   .prizes-glow {
     opacity: 0.6;
   }
+
+  .prizes-vertex {
+    opacity: 0.46;
+  }
+}
+
+/* Lab hero: the fold is what is being judged, so the public footer stays off. */
+body:has([data-lab-hero]) footer {
+  display: none;
 }

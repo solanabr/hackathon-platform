@@ -24,13 +24,12 @@ import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
 import { CtaHalftone } from "@/components/home/cta-halftone";
 import { NetworkHalo } from "@/components/home/network-halo";
-import { PrizesAtmosphere } from "@/components/home/prizes-atmosphere";
 import { StepGlyph } from "@/components/home/step-glyph";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
 import { EventTicket } from "@/components/campaign/event-ticket";
-import { CasesFan, HeadTile } from "@/components/home/cases-fan";
+import { CasesFan } from "@/components/home/cases-fan";
 import {
   CommunityPreview,
   EarnPreview,
@@ -41,8 +40,7 @@ import {
 } from "@/components/home/calendar-track";
 import { SolanaCoin } from "@/components/home/solana-coin";
 import { PressSheet } from "@/components/home/press-sheet";
-import { SectionRails, StageRule } from "@/components/home/rails";
-import { PrizePedestal } from "@/components/home/prize-pedestal";
+import { SectionRails } from "@/components/home/rails";
 import { SoundToggle } from "@/components/campaign/sound-toggle";
 import { PAGE_SHELL } from "@/components/layout/container";
 
@@ -89,11 +87,9 @@ const CASES = [
   },
   {
     name: "Pode ser você",
-    figure: "?",
-    result: "Próxima edição",
     tagline: "Seu time, daqui a um mês",
     tone: "dark" as const,
-    body: "O próximo time brasileiro a sair da Colosseum com capital confirmado ainda não criou a conta. Nenhum dos dois acima tinha produto pronto quando começou.",
+    glyph: "?",
   },
 ];
 
@@ -466,29 +462,30 @@ export default async function HomePage() {
   return (
     <div className="bg-surface text-ink">
       <PressSheet />
-      {/* Hero: on wide screens the copy holds the left column and the ticket
-          the right, with the amphitheatre rising behind it. */}
+      {/* Hero: on wide screens the copy is centred over the fold, the
+          amphitheatre rises from the lower left and bleeds past that margin,
+          and the ticket rests against the opposite corner. */}
       <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden lg:justify-start">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]"
         >
           <div
-            className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:left-auto lg:right-0 lg:h-[68%] lg:w-[86%]"
+            className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:right-auto lg:bottom-[-12%] lg:left-[-10%] lg:h-[70%] lg:w-[72%]"
           >
             <ColosseumScene />
           </div>
         </div>
 
         <div
-          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-stretch lg:gap-12 lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:6vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
+          className={`relative ${PAGE_SHELL} py-10 lg:flex lg:min-h-[calc(100dvh-4rem)] lg:flex-col lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:3vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
         >
-          <div>
-            <div className="hero-print mb-5 flex">
+          <div className="lg:mx-auto lg:my-auto lg:w-full lg:max-w-4xl lg:text-center">
+            <div className="hero-print mb-5 flex lg:justify-center">
               <SectionHat>Hackathon Colosseum</SectionHat>
             </div>
 
-            <h1 className="hero-print font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[2.9rem] xl:text-[3.6rem] 2xl:text-[4.2rem]">
+            <h1 className="hero-print font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[clamp(3rem,4.6vw,4.8rem)]">
               <span className="block" style={{ "--hero-i": 1 } as CSSProperties}>
                 O próximo time
               </span>
@@ -507,14 +504,14 @@ export default async function HomePage() {
               Tire sua ideia do papel, construa um produto e dispute prêmios e
               oportunidades de investimento.
             </p>
-            <p className="hero-after mt-6 hidden max-w-xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:block">
+            <p className="hero-after mt-6 hidden max-w-xl text-pretty text-base leading-relaxed text-ink/70 sm:text-lg lg:mx-auto lg:block lg:max-w-2xl">
               Um hackathon online para tirar sua ideia do papel, construir um
               produto e disputar prêmios e oportunidades de investimento.
             </p>
 
             <div
               id="hero-cta"
-              className="hero-after mt-8 flex flex-wrap items-center gap-3"
+              className="hero-after mt-8 flex flex-wrap items-center gap-3 lg:justify-center"
               style={{ "--hero-i": 1 } as CSSProperties}
             >
               <TrackedCta
@@ -537,7 +534,7 @@ export default async function HomePage() {
 
           </div>
 
-          <div className="lg:flex lg:flex-col lg:justify-end lg:pb-3">
+          <div className="lg:mt-6 lg:flex lg:w-full lg:max-w-[min(44vw,44rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[margin-right:calc(50%-50vw-1.75rem)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90">
             <div id="hero-ticket" className="hero-ticket">
               <EventTicket />
             </div>
@@ -553,129 +550,45 @@ export default async function HomePage() {
 
       <section
         id="cases"
-        className={`${LP_SECTION} relative isolate bg-surface pb-8 lg:pb-10`}
+        className={`${LP_SECTION} relative isolate overflow-x-clip bg-surface pb-8 lg:pb-28 xl:pb-32`}
         aria-label="O hackathon"
       >
         <SectionRails />
         <div className={PAGE_SHELL}>
-          <CasesFan cases={CASES}>
-            <Reveal>
-              <SectionHat>Colosseum</SectionHat>
-              {/* Os adesivos entram no meio da frase, em ângulos e tamanhos
-                  diferentes, e cada linha desanda um pouco da anterior: o
-                  bloco é colado à mão, não composto. Alinhar tudo na borda e
-                  igualar os ângulos devolve o cartaz certinho de agência. */}
-              <h2 className="mt-6 font-heading text-[clamp(1.5rem,7.5vw,6rem)] font-black uppercase leading-[0.88] tracking-[-0.04em] [font-stretch:118%]">
-                <span className="block origin-left -rotate-[0.4deg] whitespace-nowrap">
-                  Uma ideia{" "}
-                  <HeadTile
-                    src="/brand/cases/cloak.png"
-                    tilt="-rotate-[8deg]"
-                    size="0.82em"
-                    nudge="-mx-[0.03em] -translate-y-[0.05em]"
-                  />{" "}
-                  pode
-                </span>
-                <span className="block origin-left rotate-[0.5deg] whitespace-nowrap pl-[8%]">
-                  ser o{" "}
-                  <HeadTile
-                    src="/brand/cases/bido.png"
-                    tilt="rotate-[7deg]"
-                    size="0.74em"
-                    nudge="-mx-[0.02em] translate-y-[0.1em]"
-                  />{" "}
-                  começo
-                </span>
-                <span className="block origin-left -rotate-[0.25deg] whitespace-nowrap pl-[2%]">
-                  da sua empresa{" "}
-                  <HeadTile
-                    tilt="-rotate-[6deg]"
-                    size="0.9em"
-                    nudge="-ml-[0.05em] translate-y-[0.08em]"
-                  />
-                </span>
-              </h2>
-              <div className="mt-9 grid max-w-4xl gap-x-10 gap-y-4 text-pretty leading-relaxed text-ink/80 lg:grid-cols-2 lg:gap-x-14 lg:[&>p:last-child]:mt-7">
-                <p>
-                  Um hackathon é uma competição em que você desenvolve uma ideia
-                  e apresenta o resultado. Na Colosseum, a proposta é construir
-                  um produto com potencial para virar um negócio. Esta edição se
-                  chama Crypto World&apos;s Fair e acontece online.
-                </p>
-                <p>
-                  Durante quatro semanas, você pode testar sua ideia, trabalhar
-                  com outras pessoas e mostrar o que criou.{" "}
-                  <strong className="text-ink">
-                    Nas duas últimas edições, times brasileiros saíram de lá com
-                    capital confirmado.
-                  </strong>
-                </p>
-              </div>
-            </Reveal>
-          </CasesFan>
-        </div>
-      </section>
-
-      {/* Prêmios: um palco só — a taça no meio do quadro, o texto na faixa de
-          baixo e nada depois dela. */}
-      <section
-        id="premiacoes"
-        className="relative overflow-hidden bg-surface pt-24 pb-12 lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pt-20 lg:pb-[6.5rem] lg:[@media(max-height:820px)]:pt-[4.75rem] lg:[@media(max-height:820px)]:pb-[5rem]"
-        aria-label="Prêmios e oportunidades de investimento"
-      >
-        <PrizesAtmosphere />
-
-        <div className={`${PAGE_SHELL} relative z-10 flex w-full min-h-0 flex-1 flex-col`}>
-          <StageRule className="mb-7 hidden md:block" />
-          <Reveal tone="texto" className="mb-11 lg:mb-14">
-            <SectionHat centered>Prêmios e investimento</SectionHat>
-          </Reveal>
-
-          <PrizePedestal />
-
-          <div className="mt-8 grid gap-9 lg:mt-14 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start lg:gap-12 xl:gap-16 lg:[@media(max-height:820px)]:mt-5">
-            <Reveal tone="texto">
-              <h2 className="max-w-[21ch] text-balance font-heading text-[1.7rem] font-black leading-[1.06] tracking-tight text-ink [font-stretch:105%] sm:text-[1.9rem] xl:text-[2.1rem]">
-                Seu projeto pode conquistar{" "}
-                <span className="inline-block bg-yellow px-2.5 pb-[0.08em] text-green-dark [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
-                  mais
-                </span>{" "}
-                do que os primeiros usuários.
-              </h2>
-              <p className="mt-3 max-w-[36ch] text-pretty text-sm leading-relaxed text-muted">
-                O hackathon reúne oportunidades de premiação e investimento para
-                projetos selecionados.
-              </p>
-            </Reveal>
-
-            <Reveal
-              index={1}
-              tone="texto"
-              className="order-last flex justify-center lg:order-none lg:pt-2"
-            >
-              <TrackedCta
-                href={cadastroHref}
-                event="cta_clicked"
-                properties={{ cta: "cadastro", location: "premiacoes" }}
-                className="btn-cut inline-flex items-center whitespace-nowrap bg-emerald-deep px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-10 sm:text-base"
-              >
-                <span>{ctaLabel}</span>
-              </TrackedCta>
-            </Reveal>
-
-            <Reveal index={2} tone="texto" className="lg:justify-self-end lg:text-right">
-              <span className="inline-flex items-center rounded-full bg-yellow px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-green-dark">
-                A divulgar
-              </span>
-              <p className="mt-3 font-heading text-lg font-black tracking-tight text-ink sm:text-xl">
-                Valores e condições
-              </p>
-              <p className="mt-2 max-w-[36ch] text-pretty text-sm leading-relaxed text-muted lg:ml-auto">
-                Prêmios, categorias e a avaliação para programas de aceleração
-                aparecem aqui após a divulgação oficial.
-              </p>
-            </Reveal>
-          </div>
+          <CasesFan
+            cases={CASES}
+            title={
+              <Reveal>
+                <SectionHat>Colosseum</SectionHat>
+                <h2 className="mt-6 font-heading text-[clamp(2rem,5.2vw,4.25rem)] font-black uppercase leading-[0.95] tracking-[-0.04em] [font-stretch:118%]">
+                  <span className="block">Uma ideia pode</span>
+                  <span className="block">ser o começo</span>
+                  <span className="block">da sua empresa</span>
+                </h2>
+              </Reveal>
+            }
+            intro={
+              <Reveal tone="texto">
+                <div className="max-w-[48ch] space-y-4 text-pretty text-[0.95rem] leading-relaxed text-ink/80">
+                  <p>
+                    Um hackathon é uma competição em que você desenvolve uma
+                    ideia e apresenta o resultado. Na Colosseum, a proposta é
+                    construir um produto com potencial para virar um negócio.
+                    Esta edição se chama Crypto World&apos;s Fair e acontece
+                    online.
+                  </p>
+                  <p>
+                    Durante quatro semanas, você pode testar sua ideia,
+                    trabalhar com outras pessoas e mostrar o que criou.{" "}
+                    <strong className="text-ink">
+                      Nas duas últimas edições, times brasileiros saíram de lá
+                      com capital confirmado.
+                    </strong>
+                  </p>
+                </div>
+              </Reveal>
+            }
+          />
         </div>
       </section>
 
@@ -691,7 +604,7 @@ export default async function HomePage() {
               hackathon
               <br />
               em{" "}
-              <span className="inline-block bg-green-dark px-3 pb-[0.1em] text-white [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
+              <span className="inline-block bg-green-dark px-3 pb-[0.1em] text-yellow [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
                 3 passos
               </span>
             </h2>
@@ -712,7 +625,7 @@ export default async function HomePage() {
             }`}
           >
             <div
-              className={`card-cut flex h-full flex-col p-6 sm:p-7 ${
+              className={`card-cut flex h-full flex-col p-5 sm:p-6 ${
                 i === 0 ? "" : "card-cut-kraft card-cut-open"
               }`}
             >
@@ -730,16 +643,16 @@ export default async function HomePage() {
                   {step.marker}
                 </span>
               </div>
-              <div className="mt-4 border-y border-green-dark/15 py-4 text-green-dark">
+              <div className="mt-3 border-y border-green-dark/15 py-3 text-green-dark">
                 <StepGlyph
                   shape={step.glyph}
-                  className="mx-auto h-24 w-auto [@media(min-height:960px)]:h-32"
+                  className="mx-auto h-20 w-auto [@media(min-height:960px)]:h-24"
                 />
               </div>
-              <h3 className="mt-6 font-heading text-xl font-bold">
+              <h3 className="mt-4 font-heading text-xl font-bold">
                 {step.title}
               </h3>
-              <ul className="mb-6 mt-4 space-y-2.5">
+              <ul className="mb-4 mt-3 space-y-2">
                 {step.items.map((item) => (
                   <li
                     key={item}
@@ -868,7 +781,7 @@ export default async function HomePage() {
         <div className={`${PAGE_SHELL} py-16 lg:pb-28 lg:pt-14`}>
           <Reveal>
             <SectionHat>Antes de começar</SectionHat>
-            <h2 className="mt-4 font-heading text-[clamp(2.4rem,9.2vw,9rem)] font-black uppercase leading-[0.78] tracking-[-0.045em] text-ink [font-stretch:125%] lg:text-[clamp(6rem,12.5vw,9rem)]">
+            <h2 className="mt-4 font-heading text-[clamp(2.1rem,6.6vw,5.25rem)] font-black uppercase leading-[0.84] tracking-[-0.04em] text-ink [font-stretch:120%] lg:text-[clamp(3.6rem,7.2vw,5.25rem)]">
               Informações
             </h2>
             <p className="mt-5 max-w-2xl border-t-2 border-green-dark pt-4 text-pretty text-lg leading-relaxed text-ink/80">

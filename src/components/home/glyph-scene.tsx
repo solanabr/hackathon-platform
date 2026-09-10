@@ -163,9 +163,16 @@ export default function GlyphScene({
   const onReadyRef = useRef(onReady);
   const onLostRef = useRef(onLost);
 
+  /* A lente também entra por referência. Mudar enquadramento é mover a câmera,
+     não reconstruir a peça: com estes cinco na lista de dependências, um
+     grau de giro derrubava a cena, regerava os 80 vãos e realocava os render
+     targets. O laço lê daqui a cada quadro e os valores saem das deps. */
+  const lensRef = useRef({ target, radius, elevation, fovRadians, azimuth });
+
   useEffect(() => {
     onReadyRef.current = onReady;
     onLostRef.current = onLost;
+    lensRef.current = { target, radius, elevation, fovRadians, azimuth };
   });
 
   useEffect(() => {
@@ -379,17 +386,27 @@ export default function GlyphScene({
         travel = THREE.MathUtils.clamp(through, 0, 1) * 2 - 1;
       }
 
+      const lens = lensRef.current;
+      focus.set(lens.target[0], lens.target[1], lens.target[2]);
+
+      const fovDegrees = THREE.MathUtils.radToDeg(lens.fovRadians);
+      if (camera.fov !== fovDegrees) {
+        camera.fov = fovDegrees;
+        camera.updateProjectionMatrix();
+      }
+
       const heading =
-        azimuth +
+        lens.azimuth +
         spun +
         sway +
         pointer.current * azimuthSwing +
         (scrollAxis === "azimuth" ? travel * scrollBound : 0);
-      const rise = elevation + (scrollAxis === "elevation" ? travel * scrollBound : 0);
+      const rise =
+        lens.elevation + (scrollAxis === "elevation" ? travel * scrollBound : 0);
       camera.position.set(
-        focus.x + radius * Math.cos(rise) * Math.sin(heading),
-        focus.y + radius * Math.sin(rise),
-        focus.z + radius * Math.cos(rise) * Math.cos(heading),
+        focus.x + lens.radius * Math.cos(rise) * Math.sin(heading),
+        focus.y + lens.radius * Math.sin(rise),
+        focus.z + lens.radius * Math.cos(rise) * Math.cos(heading),
       );
       camera.lookAt(focus);
 
@@ -573,16 +590,11 @@ export default function GlyphScene({
     };
     // Arrays entram por valor: um literal novo a cada render do pai não pode
     // derrubar e reconstruir a cena inteira.
+    // `target`, `radius`, `elevation`, `fovRadians` e `azimuth` ficam de fora
+    // de propósito: vivem em lensRef e são lidos por quadro.
   }, [
     modelUrl,
     build,
-    target[0],
-    target[1],
-    target[2],
-    radius,
-    elevation,
-    fovRadians,
-    azimuth,
     azimuthSwing,
     spin,
     swayRadians,
