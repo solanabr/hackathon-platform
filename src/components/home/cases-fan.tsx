@@ -13,21 +13,30 @@ export type CaseCard = {
   tone?: "light" | "dark";
 };
 
+/* Adesivo colado no meio da frase: tamanho, ângulo e recuo entram por prop
+   porque cada um foi posicionado à mão contra as letras vizinhas. Um valor
+   único para os três devolveria a fileira certinha que a marca não é. */
 export function HeadTile({
   src,
   label,
   tilt = "-rotate-3",
+  size = "0.72em",
+  nudge = "",
 }: {
   src?: string;
   label?: string;
   tilt?: string;
+  size?: string;
+  nudge?: string;
 }) {
-  const base = `inline-block h-[0.72em] w-[0.72em] shrink-0 translate-y-[0.06em] rounded-2xl border-2 border-green-dark shadow-sticker ${tilt}`;
+  const base = `inline-block shrink-0 rounded-2xl border-2 border-green-dark shadow-sticker ${tilt} ${nudge}`;
+  const box = { height: size, width: size };
 
   if (!src) {
     return (
       <span
         aria-hidden
+        style={box}
         className={`${base} inline-flex items-center justify-center bg-yellow font-heading leading-none text-green-dark`}
       >
         <span className="translate-y-[-0.02em] text-[0.62em]">
@@ -43,6 +52,7 @@ export function HeadTile({
       alt=""
       width={160}
       height={160}
+      style={box}
       className={`${base} object-cover`}
     />
   );
@@ -53,10 +63,12 @@ export function HeadTile({
    Um transform só, e a carta entraria já torta ou perderia a rotação. */
 const FAN_SLOT = ["lg:z-10 lg:-mr-5", "lg:z-20 lg:-mr-5", "lg:z-30"];
 
+/* A pose sobe da esquerda para a direita e o ângulo gira com ela: é o que faz
+   as três lerem como um leque aberto na mão, e não como um zigue-zague. */
 const FAN_POSE = [
-  "lg:translate-y-7 lg:-rotate-[3.5deg]",
-  "lg:-translate-y-1 lg:rotate-[1.5deg]",
-  "lg:translate-y-8 lg:rotate-[4deg]",
+  "lg:translate-y-10 lg:-rotate-[4deg]",
+  "lg:translate-y-1 lg:rotate-[1.5deg]",
+  "lg:-translate-y-4 lg:rotate-[3.5deg]",
 ];
 
 function CaseTile({ item }: { item: CaseCard }) {
@@ -154,7 +166,7 @@ export function CasesFan({
     <div>
       {children}
 
-      <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:mt-20 lg:flex lg:items-stretch lg:gap-0">
+      <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:mt-16 lg:flex lg:items-stretch lg:gap-0">
         {cases.map((item, i) => (
           <Reveal
             key={item.name}

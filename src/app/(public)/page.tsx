@@ -21,7 +21,7 @@ import {
 import { Countdown } from "@/components/ui/countdown";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
-import { ColosseumBackdrop } from "@/components/home/colosseum-backdrop";
+import { ColosseumScene } from "@/components/home/colosseum";
 import { CtaHalftone } from "@/components/home/cta-halftone";
 import { NetworkHalo } from "@/components/home/network-halo";
 import { TicketStub } from "@/components/campaign/ticket-stub";
@@ -35,8 +35,14 @@ import {
   CommunityPreview,
   EarnPreview,
 } from "@/components/home/bento-previews";
+import {
+  CalendarTrack,
+  type CalendarItem,
+} from "@/components/home/calendar-track";
 import { SolanaCoin } from "@/components/home/solana-coin";
 import { PressSheet } from "@/components/home/press-sheet";
+import { PrizePedestal } from "@/components/home/prize-pedestal";
+import { PrizeBoard } from "@/components/home/prize-board";
 import { SoundToggle } from "@/components/campaign/sound-toggle";
 import { PAGE_SHELL } from "@/components/layout/container";
 
@@ -109,36 +115,30 @@ const SOLANA_STATS = [
   { value: "$972B", label: "em volume de stablecoins em fevereiro de 2026" },
 ];
 
-type CalendarItem = {
-  day?: string;
-  label: string;
-  title: string;
-  body: string;
-  highlight?: boolean;
-  href?: string;
-};
-
 const CALENDAR: CalendarItem[] = [
   {
     label: "Agora",
     title: "Registro aberto na Colosseum",
     body: "Crie sua conta, conheça as regras e converse com quem pode construir com você.",
-    highlight: true,
   },
   {
     day: "14",
     label: "set",
+    startsAt: "2026-09-14T00:00:00-03:00",
     title: "Início do hackathon",
     body: "Começa a competição. Cadastre projeto e time na plataforma oficial. Só o que for construído a partir daqui conta.",
   },
   {
     label: "Set a out",
+    startsAt: "2026-09-15T00:00:00-03:00",
     title: "Construa e prepare a apresentação",
     body: "Workshops e mentorias ao vivo. Construa seu produto e prepare o vídeo de apresentação.",
   },
   {
     day: "12",
     label: "out",
+    startsAt: "2026-10-12T00:00:00-03:00",
+    isDeadline: true,
     title: "Encerramento do evento",
     body: "Envie o projeto pela plataforma oficial até 23h59 no horário da Califórnia, 3h59 do dia 13 em Brasília. Confira o horário e o fuso por lá.",
   },
@@ -476,34 +476,42 @@ export default async function HomePage() {
       <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden lg:justify-start">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] sm:h-[56%] lg:left-auto lg:right-0 lg:h-[46%] lg:w-[74%]"
-          style={FADE_UP}
+          className="pointer-events-none absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]"
         >
-          <ColosseumBackdrop />
+          <div
+            className="absolute inset-x-0 bottom-0 h-[38%] sm:h-[56%] lg:left-auto lg:right-0 lg:h-[46%] lg:w-[74%]"
+            style={FADE_UP}
+          >
+            <ColosseumScene />
+          </div>
         </div>
 
         <div
-          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:min-h-[calc(100dvh-4rem)] lg:items-start lg:gap-12 lg:pb-10 lg:pt-[9vh] lg:[@media(max-height:860px)]:pb-6 lg:[@media(max-height:860px)]:pt-[6vh]`}
+          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-12 lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:6vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
         >
-          <div>
-            <div className="hero-print mb-5 flex">
-              <SectionHat>Hackathon Colosseum</SectionHat>
-            </div>
+          <div className="lg:flex lg:flex-col">
+            {/* O bloco da dobra: chapéu no topo, h1 empurrado pela base. Tudo
+                que vem depois nasce abaixo da linha da dobra, de propósito. */}
+            <div className="lg:flex lg:min-h-[calc(100dvh-4rem-var(--hero-pt)-var(--hero-pb))] lg:flex-col">
+              <div className="hero-print mb-5 flex">
+                <SectionHat>Hackathon Colosseum</SectionHat>
+              </div>
 
-            <h1 className="hero-print font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[2.9rem] xl:text-[3.6rem] 2xl:text-[4.2rem]">
-              <span className="block" style={{ "--hero-i": 1 } as CSSProperties}>
-                O próximo time
-              </span>
-              <span className="mt-1 block" style={{ "--hero-i": 2 } as CSSProperties}>
-                a captar{" "}
-                <span className="hero-marca inline-block px-3 text-green-dark">
-                  milhões
+              <h1 className="hero-print lg:mt-auto font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[2.9rem] xl:text-[3.6rem] 2xl:text-[4.2rem]">
+                <span className="block" style={{ "--hero-i": 1 } as CSSProperties}>
+                  O próximo time
                 </span>
-              </span>
-              <span className="mt-1 block" style={{ "--hero-i": 3 } as CSSProperties}>
-                pode ser o seu.
-              </span>
-            </h1>
+                <span className="mt-1 block" style={{ "--hero-i": 2 } as CSSProperties}>
+                  a captar{" "}
+                  <span className="hero-marca inline-block px-3 text-green-dark">
+                    milhões
+                  </span>
+                </span>
+                <span className="mt-1 block" style={{ "--hero-i": 3 } as CSSProperties}>
+                  pode ser o seu.
+                </span>
+              </h1>
+            </div>
 
             <p className="hero-after mt-5 max-w-[19rem] text-pretty text-base leading-relaxed text-ink/70 sm:max-w-2xl sm:text-lg lg:hidden">
               Tire sua ideia do papel, construa um produto e dispute prêmios e
@@ -565,32 +573,56 @@ export default async function HomePage() {
           <CasesFan cases={CASES}>
             <Reveal>
               <SectionHat>Colosseum</SectionHat>
-              <h2 className="mt-5 max-w-5xl font-heading text-[clamp(1.75rem,8.5vw,6.25rem)] font-black uppercase leading-[0.86] tracking-[-0.035em] [font-stretch:118%]">
-                <span className="block">
-                  <HeadTile src="/brand/cases/cloak.png" /> Uma ideia
+              {/* Os adesivos entram no meio da frase, em ângulos e tamanhos
+                  diferentes, e cada linha desanda um pouco da anterior: o
+                  bloco é colado à mão, não composto. Alinhar tudo na borda e
+                  igualar os ângulos devolve o cartaz certinho de agência. */}
+              <h2 className="mt-6 font-heading text-[clamp(1.5rem,7.5vw,6rem)] font-black uppercase leading-[0.88] tracking-[-0.04em] [font-stretch:118%]">
+                <span className="block origin-left -rotate-[0.4deg] whitespace-nowrap">
+                  Uma ideia{" "}
+                  <HeadTile
+                    src="/brand/cases/cloak.png"
+                    tilt="-rotate-[8deg]"
+                    size="0.82em"
+                    nudge="-mx-[0.03em] -translate-y-[0.05em]"
+                  />{" "}
+                  pode
                 </span>
-                <span className="block pl-[7%]">
-                  pode ser o começo{" "}
-                  <HeadTile src="/brand/cases/bido.png" tilt="rotate-3" />
+                <span className="block origin-left rotate-[0.5deg] whitespace-nowrap pl-[8%]">
+                  ser o{" "}
+                  <HeadTile
+                    src="/brand/cases/bido.png"
+                    tilt="rotate-[7deg]"
+                    size="0.74em"
+                    nudge="-mx-[0.02em] translate-y-[0.1em]"
+                  />{" "}
+                  começo
                 </span>
-                <span className="block pl-[19%]">
-                  da sua empresa <HeadTile />
+                <span className="block origin-left -rotate-[0.25deg] whitespace-nowrap pl-[2%]">
+                  da sua empresa{" "}
+                  <HeadTile
+                    tilt="-rotate-[6deg]"
+                    size="0.9em"
+                    nudge="-ml-[0.05em] translate-y-[0.08em]"
+                  />
                 </span>
               </h2>
-              <p className="mt-8 max-w-2xl text-pretty leading-relaxed text-ink/80 lg:ml-[26%]">
-                Um hackathon é uma competição em que você desenvolve uma ideia e
-                apresenta o resultado. Na Colosseum, a proposta é construir um
-                produto com potencial para virar um negócio. Esta edição se chama
-                Crypto World&apos;s Fair e acontece online.
-              </p>
-              <p className="mt-5 max-w-2xl text-pretty leading-relaxed text-ink/80 lg:ml-[26%]">
-                Durante quatro semanas, você pode testar sua ideia, trabalhar
-                com outras pessoas e mostrar o que criou.{" "}
-                <strong className="text-ink">
-                  Nas duas últimas edições, times brasileiros saíram de lá com
-                  capital confirmado.
-                </strong>
-              </p>
+              <div className="mt-9 grid max-w-4xl gap-x-10 gap-y-4 text-pretty leading-relaxed text-ink/80 lg:grid-cols-2 lg:gap-x-14 lg:[&>p:last-child]:mt-7">
+                <p>
+                  Um hackathon é uma competição em que você desenvolve uma ideia
+                  e apresenta o resultado. Na Colosseum, a proposta é construir
+                  um produto com potencial para virar um negócio. Esta edição se
+                  chama Crypto World&apos;s Fair e acontece online.
+                </p>
+                <p>
+                  Durante quatro semanas, você pode testar sua ideia, trabalhar
+                  com outras pessoas e mostrar o que criou.{" "}
+                  <strong className="text-ink">
+                    Nas duas últimas edições, times brasileiros saíram de lá com
+                    capital confirmado.
+                  </strong>
+                </p>
+              </div>
             </Reveal>
           </CasesFan>
         </div>
@@ -598,62 +630,45 @@ export default async function HomePage() {
 
       <section
         id="premiacoes"
-        className={`${LP_SECTION} bg-surface`}
+        className={`${LP_SECTION} relative overflow-hidden bg-surface pb-16 lg:pb-36`}
         aria-label="Prêmios e oportunidades de investimento"
       >
-        <div className={PAGE_SHELL}>
-          <Reveal>
-            <SectionHat>Prêmios e investimento</SectionHat>
-            <h2 className="mt-5 text-balance font-heading text-4xl font-black leading-[1.02] tracking-tight text-ink [font-stretch:105%] sm:text-5xl xl:text-[3.6rem]">
-              Seu projeto pode conquistar mais do que os primeiros usuários.
+        <div className={`${PAGE_SHELL} relative`}>
+          <PrizePedestal />
+
+          <Reveal className="mt-10 lg:mt-12">
+            <SectionHat centered>Prêmios e investimento</SectionHat>
+            <h2 className="mx-auto mt-5 max-w-4xl text-balance text-center font-heading text-4xl font-black leading-[1.02] tracking-tight text-ink [font-stretch:105%] sm:text-5xl xl:text-[3.6rem]">
+              Seu projeto pode conquistar{" "}
+              <span className="inline-block bg-yellow px-3 pb-[0.08em] text-green-dark [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
+                mais
+              </span>{" "}
+              do que os primeiros usuários.
             </h2>
-            <p className="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted sm:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-pretty text-center text-base leading-relaxed text-muted sm:text-lg">
               O hackathon reúne oportunidades de premiação e investimento para
               projetos selecionados. É uma chance de apresentar o que você
               construiu e buscar recursos para desenvolver sua empresa.
             </p>
           </Reveal>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
-            <Reveal index={1} tone="papel">
-              <article className="h-full rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/80">
-                  Prêmios da competição
-                </p>
-                <p className="mt-4 text-pretty text-sm leading-relaxed text-ink/80 sm:text-base">
-                  Projetos selecionados podem receber prêmios conforme os
-                  critérios do hackathon. Valores, categorias e condições serão
-                  apresentados nesta seção após a divulgação oficial.
-                </p>
-              </article>
-            </Reveal>
-            <Reveal index={2} tone="papel">
-              <article className="h-full rounded-2xl border-2 border-green-dark bg-surface-kraft p-6 shadow-sticker sm:p-7">
-                <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/80">
-                  Investimento para desenvolver o negócio
-                </p>
-                <p className="mt-4 text-pretty text-sm leading-relaxed text-ink/80 sm:text-base">
-                  Equipes selecionadas podem ser avaliadas para programas de
-                  aceleração e investimento. Essas oportunidades têm critérios
-                  próprios e dependem da seleção do projeto.
-                </p>
-              </article>
-            </Reveal>
-          </div>
-
-          <Reveal index={3} tone="texto">
-            <p className="mt-6 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink/65">
-              Valores e condições após a divulgação oficial
-            </p>
-            <TrackedCta
-              href={cadastroHref}
-              event="cta_clicked"
-              properties={{ cta: "cadastro", location: "premiacoes" }}
-              className="btn-cut mt-8 inline-flex items-center whitespace-nowrap bg-emerald-deep px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-10 sm:text-base"
-            >
-              <span>{ctaLabel}</span>
-            </TrackedCta>
+          <Reveal index={1} tone="texto">
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <TrackedCta
+                href={cadastroHref}
+                event="cta_clicked"
+                properties={{ cta: "cadastro", location: "premiacoes" }}
+                className="btn-cut inline-flex items-center whitespace-nowrap bg-emerald-deep px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-10 sm:text-base"
+              >
+                <span>{ctaLabel}</span>
+              </TrackedCta>
+              <p className="text-center font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink/65">
+                Valores e condições após a divulgação oficial
+              </p>
+            </div>
           </Reveal>
+
+          <PrizeBoard />
         </div>
       </section>
 
@@ -739,7 +754,7 @@ export default async function HomePage() {
       </JourneyPin>
 
       <section
-        className={`${LP_SECTION} relative isolate`}
+        className="relative isolate pt-40 lg:pt-48 xl:pt-56"
         id="solana"
         aria-label="Onde a gente constrói"
       >
@@ -873,83 +888,20 @@ export default async function HomePage() {
                   <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-surface">
                     Da abertura das inscrições ao anúncio dos vencedores.
                   </p>
+                  {/* O card abre com o único número que muda sozinho: sem ele
+                      o calendário é uma tabela, com ele é um relógio. */}
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-surface/25 bg-green-dark/25 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-surface-raised">
+                    <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-yellow bento-pulse bento-pulse-yellow" />
+                    Faltam
+                    <Countdown
+                      deadlineIso={submissionDeadline}
+                      placeholder="—"
+                      className="text-yellow tabular-nums"
+                    />
+                    para o envio
+                  </p>
                 </header>
-                <ol className="relative mx-6 mb-6 mt-5 flex flex-1 flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised px-5 py-2 sm:mx-8 sm:mb-8 sm:mt-6 sm:px-6 sm:py-3">
-                  {CALENDAR.map((item, i) => (
-                    <li
-                      key={item.title}
-                      className={`relative flex grow gap-5 py-4 ${
-                        i > 0 ? "border-t border-green-dark/15" : ""
-                      }`}
-                    >
-                      {/* O trilho costura as etapas: sem ele as datas
-                          leem como cinco blocos soltos, não como uma sequência. */}
-                      <span
-                        aria-hidden
-                        className={`absolute left-[5.25rem] w-px -translate-x-1/2 bg-green-dark/15 ${
-                          i === 0
-                            ? "bottom-0 top-[2.125rem]"
-                            : i === CALENDAR.length - 1
-                              ? "top-0 h-[2.125rem]"
-                              : "inset-y-0"
-                        }`}
-                      />
-                      <span
-                        aria-hidden
-                        className={`absolute left-[5.25rem] top-[2.125rem] h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${
-                          item.highlight
-                            ? "bg-emerald ring-4 ring-emerald/15"
-                            : "border border-green-dark/30 bg-surface-raised"
-                        }`}
-                      />
-                      <div className="w-16 shrink-0 text-right">
-                        {item.day ? (
-                          <>
-                            <p
-                              className={`flex h-9 items-center justify-end font-heading text-4xl font-black leading-none tabular-nums [font-stretch:112%] ${
-                                item.highlight ? "text-emerald-deep" : "text-ink"
-                              }`}
-                            >
-                              {item.day}
-                            </p>
-                            <p className="mt-1 font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/70">
-                              {item.label}
-                            </p>
-                          </>
-                        ) : (
-                          <p
-                            className={`flex h-9 items-center justify-end text-balance font-heading text-base font-black uppercase leading-tight [font-stretch:112%] ${
-                              item.highlight
-                                ? "text-emerald-deep"
-                                : "text-green-dark/70"
-                            }`}
-                          >
-                            {item.label}
-                          </p>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1 pl-5 pt-1.5">
-                        <p className="font-heading text-base font-bold text-ink">
-                          {item.href ? (
-                            <a
-                              href={item.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald-deep"
-                            >
-                              {item.title}
-                            </a>
-                          ) : (
-                            item.title
-                          )}
-                        </p>
-                        <p className="mt-1 text-pretty text-sm leading-snug text-muted">
-                          {item.body}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
+                <CalendarTrack items={CALENDAR} deadlineIso={submissionDeadline} />
                 <div className="relative px-6 pb-6 sm:px-8 sm:pb-8">
                   <TrackedCta
                     href="https://colosseum.com/hackathon"
@@ -1082,33 +1034,37 @@ export default async function HomePage() {
             </Reveal>
           </div>
 
-          <div className="mt-10 grid border-t border-dashed border-green-dark/35 lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-[repeat(6,auto)] lg:gap-x-14 xl:gap-x-24">
-            {FAQ_ITEMS.map((f, i) => (
-              <Reveal key={f.q} index={i % 6} tone="texto">
-                <details className="group border-b border-dashed border-green-dark/35">
-                  <summary className="flex cursor-pointer list-none items-start gap-4 py-5 sm:gap-5 [&::-webkit-details-marker]:hidden">
-                    <span
-                      aria-hidden
-                      className="mt-1.5 w-7 shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-green-dark/65"
-                    >
-                      Q{i + 1}
-                    </span>
-                    <span className="flex-1 text-pretty font-heading text-base font-bold leading-snug text-ink transition-colors duration-(--dur-instant) ease-entrada group-hover:text-emerald-deep sm:text-lg">
-                      {f.q}
-                    </span>
-                    <span
-                      aria-hidden
-                      className="relative mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border-2 border-green-dark/60 text-green-dark transition-colors duration-(--dur-instant) ease-entrada group-hover:border-green-dark group-hover:bg-yellow"
-                    >
-                      <span className="h-[2px] w-3 rounded-full bg-current" />
-                      <span className="absolute h-3 w-[2px] rounded-full bg-current transition-transform duration-(--dur-instant) ease-inout group-open:scale-y-0" />
-                    </span>
-                  </summary>
-                  <p className="faq-answer pb-6 pl-11 pr-10 text-pretty leading-relaxed text-green-dark/75 sm:pl-12">
-                    {f.a}
-                  </p>
-                </details>
-              </Reveal>
+          <div className="mt-10 grid border-t border-dashed border-green-dark/35 lg:grid-cols-2 lg:gap-x-14 xl:gap-x-24">
+            {[FAQ_ITEMS.slice(0, 6), FAQ_ITEMS.slice(6)].map((column, c) => (
+              <div key={c}>
+                {column.map((f, i) => (
+                  <Reveal key={f.q} index={i} tone="texto">
+                    <details className="group border-b border-dashed border-green-dark/35">
+                      <summary className="flex cursor-pointer list-none items-start gap-4 py-5 sm:gap-5 [&::-webkit-details-marker]:hidden">
+                        <span
+                          aria-hidden
+                          className="mt-1.5 w-7 shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-green-dark/65"
+                        >
+                          Q{c * 6 + i + 1}
+                        </span>
+                        <span className="flex-1 text-pretty font-heading text-base font-bold leading-snug text-ink transition-colors duration-(--dur-instant) ease-entrada group-hover:text-emerald-deep sm:text-lg">
+                          {f.q}
+                        </span>
+                        <span
+                          aria-hidden
+                          className="relative mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border-2 border-green-dark/60 text-green-dark transition-colors duration-(--dur-instant) ease-entrada group-hover:border-green-dark group-hover:bg-yellow"
+                        >
+                          <span className="h-[2px] w-3 rounded-full bg-current" />
+                          <span className="absolute h-3 w-[2px] rounded-full bg-current transition-transform duration-(--dur-instant) ease-inout group-open:scale-y-0" />
+                        </span>
+                      </summary>
+                      <p className="faq-answer pb-6 pl-11 pr-10 text-pretty leading-relaxed text-green-dark/75 sm:pl-12">
+                        {f.a}
+                      </p>
+                    </details>
+                  </Reveal>
+                ))}
+              </div>
             ))}
           </div>
 

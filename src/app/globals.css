@@ -444,6 +444,52 @@
 }
 .animate-brand-fill { animation: brandFill 1.9s var(--ease-inout) infinite; }
 
+/* ---------------------------------------------------------------------------
+ * BENTO — os recortes de produto do bloco Informações.
+ *
+ * Um mock parado é uma captura de tela; o que faz o recorte ler como produto
+ * é ele responder. As três peças abaixo são o mínimo para isso: o sinal de
+ * "ao vivo", a entrada escalonada quando a lista troca de filtro ou de canal,
+ * e o "está digitando". Todas são loop decorativo ou micro-interação, então
+ * seguem a mesma regra dos floats: escala de tempo em token e parada seca no
+ * modo reduzido.
+ * ------------------------------------------------------------------------- */
+@keyframes bentoPulse {
+  0% { box-shadow: 0 0 0 0 rgb(var(--pulse-rgb) / 0.45); }
+  70%, 100% { box-shadow: 0 0 0 6px rgb(var(--pulse-rgb) / 0); }
+}
+.bento-pulse {
+  --pulse-rgb: 0 140 76;
+  animation: bentoPulse 2.1s var(--ease-inout) infinite;
+}
+/* Sobre o verde escuro o halo esmeralda some; o sinal herda o amarelo. */
+.bento-pulse-yellow { --pulse-rgb: 255 210 63; }
+
+@keyframes bentoRowIn {
+  from { opacity: 0; transform: translate3d(0, calc(var(--dist-curta) / 2), 0); }
+  to { opacity: 1; transform: none; }
+}
+/* --row-i é a posição da linha na lista; quem escreve o índice é o
+   componente, e o intervalo entre uma e a próxima sai do token. */
+.bento-row {
+  animation: bentoRowIn var(--dur-rapida) var(--ease-entrada) both;
+  animation-delay: calc(var(--row-i, 0) * var(--stagger-tile));
+}
+
+@keyframes bentoTyping {
+  0%, 60%, 100% { opacity: 0.3; transform: none; }
+  30% { opacity: 1; transform: translateY(calc(var(--dist-curta) / -6)); }
+}
+.bento-typing > span { animation: bentoTyping 1.4s var(--ease-inout) infinite; }
+.bento-typing > span:nth-child(2) { animation-delay: var(--stagger-lista); }
+.bento-typing > span:nth-child(3) { animation-delay: calc(var(--stagger-lista) * 2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-pulse,
+  .bento-typing > span { animation: none; }
+  .bento-typing > span { opacity: 0.6; }
+}
+
 /* Scroll reveal. A opacidade sobe um pouco mais rápido que o deslocamento:
    o elemento termina de aparecer antes de terminar de chegar, e é essa
    defasagem que faz a entrada parecer assentar em vez de frear.
@@ -681,10 +727,21 @@ details[open] > .faq-answer {
 
 /* --- the Solana coin ------------------------------------------------- *
  * A minted cylinder, not a disc with gradients on it: two faces and 36 rim
- * panels standing in `preserve-3d`, each surface shaded by its own Lambert
- * term (`--b`, written by the component from one fixed light at upper-left).
- * The turn of light around the collar is the other half — flat-shading every
- * surface on its own is what makes a CSS coin read as paint.
+ * panels standing in `preserve-3d`. The pose is live — the component writes
+ * `--yaw/--pitch` and their cosines every frame — and the shading is finished
+ * HERE, per surface, from those cosines. That order is the whole point: bake
+ * the Lambert term into the markup and the highlight turns with the metal,
+ * which is a painted coin. Solve it from the pose and the light stays nailed
+ * to the room while the piece moves under it.
+ *
+ * The metal is Solana black and the mark is struck in white: the piece is a
+ * token of the chain, not a medal of the brand. The network's violet and
+ * green ride only the rim chamfer — on the field they tint the whole piece
+ * and it stops reading as metal.
+ *
+ * One light, fixed at upper-left-front: L = (-0.5, -0.5, 0.707), y pointing
+ * DOWN as everywhere in CSS. Two sources on one object is how a struck piece
+ * starts looking painted.
  *
  * Nothing inside `.coin-scene` may use `filter`: it creates a compositing
  * group, forces `transform-style: flat`, and that is how a preserve-3d scene
@@ -699,6 +756,15 @@ details[open] > .faq-answer {
   container-type: size;
 }
 
+/* The affordance appears only once the tracking is actually running — no
+   `cursor: pointer` on a piece that reduced motion left standing still. */
+.coin-stage[data-live] {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Containment lives on the stage, never on the scene: keeping it on an
    ancestor of the cylinder is what leaves `preserve-3d` intact below. */
 .coin-scene {
@@ -708,8 +774,23 @@ details[open] > .faq-answer {
                                  silhouette the panels stand edge-on, and only
                                  an overlap this wide keeps the next corner
                                  from showing as a sawtooth */
-  --coin-base: #0b130e;
-  --coin-sheen: #b9d8bf;
+  /* O disco é o token da Solana, não uma peça da marca da Superteam: metal
+     preto e prata frio, marca branca. As duas cores da rede aparecem só no
+     chanfro do serrilhado — a cor no campo tingia a peça inteira e ela
+     deixava de ser metal. */
+  --coin-base: #08080d;
+  --coin-sheen: #e7eaf5;
+  --coin-violet: #9945ff;
+  --coin-teal: #14f195;
+
+  /* The rest pose, and the values every shading term falls back to before
+     hydration and under reduced motion: yaw 0, pitch 8°. */
+  --yaw: 0;
+  --pitch: 8;
+  --cy: 1;
+  --sy: 0;
+  --cp: 0.9903;
+  --sp: 0.1392;
 
   position: absolute;
   inset: 0;
@@ -719,23 +800,38 @@ details[open] > .faq-answer {
   perspective: 340cqw;
 }
 
-/* The piece sits ON the section instead of floating over it. */
+/* The piece sits ON the section instead of floating over it, so the contact
+   shadow has to travel with the lean — a shadow that stays put under a coin
+   that tips is a sticker with a blur behind it. */
 .coin-cast {
   position: absolute;
   inset: 12% 12% -3% 12%;
   border-radius: 50%;
-  background: rgb(0 0 0 / 0.45);
-  filter: blur(5cqw);
+  background: rgb(0 0 0 / 0.38);
+  filter: blur(6.5cqw);
+  /* It travels with the lean and narrows as the piece turns edge-on — a coin
+     standing on its rim casts a stripe, not a disc. `max(x, -x)` is |cos|:
+     past 90° the pose flips sign and a bare `--cy` would mirror the pool. */
+  transform: translate3d(calc(var(--sy) * -4cqw), calc(var(--sp) * 3.5cqw), 0)
+    scaleX(calc(0.52 + max(var(--cy), var(--cy) * -1) * 0.48));
 }
 
 .coin {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  /* enough tilt to put the bottom rim in view, not enough to turn the disc
-     into an ellipse — the hub sits at the centre of the wire diagram and has
-     to read as a circle at a glance */
-  transform: rotateX(8deg);
+  /* enough tilt at rest to put the bottom rim in view, not enough to turn the
+     disc into an ellipse — the hub sits at the centre of the wire diagram and
+     has to read as a circle at a glance. Yaw is the axis the flick spins. */
+  transform: rotateY(calc(var(--yaw) * 1deg)) rotateX(calc(var(--pitch) * 1deg));
+  /* the give of a struck piece taking a shove */
+  transition: scale var(--dur-rapida) var(--ease-mola);
+  will-change: transform;
+}
+
+.coin-stage[data-struck] .coin {
+  scale: 0.955;
+  transition-duration: var(--dur-toque);
 }
 
 /* The faces sit INSIDE the rim, as on a struck piece where the rim is the
@@ -749,17 +845,29 @@ details[open] > .faq-answer {
   backface-visibility: hidden;
   background: color-mix(
     in srgb,
-    var(--coin-sheen) calc(6% + var(--b, 0.35) * 26%),
+    var(--coin-sheen) calc(6% + var(--b) * 26%),
     var(--coin-base)
   );
   box-shadow: 0 8cqw 15cqw -8cqw rgb(0 0 0 / 0.9);
 }
 
+/* n = (0,0,1) carried through rotateX(pitch) then rotateY(yaw), dotted with L */
 .coin-face-front {
+  --b: max(
+    0,
+    var(--cp) * var(--sy) * -0.5 + var(--sp) * 0.5 +
+      var(--cp) * var(--cy) * 0.707
+  );
   transform: translateZ(calc(var(--coin-thick) / 2));
 }
 
+/* the same for n = (0,0,-1): the reverse only lights once it comes round */
 .coin-face-back {
+  --b: max(
+    0,
+    var(--cp) * var(--sy) * 0.5 + var(--sp) * -0.5 +
+      var(--cp) * var(--cy) * -0.707
+  );
   transform: rotateY(180deg) translateZ(calc(var(--coin-thick) / 2));
 }
 
@@ -767,18 +875,19 @@ details[open] > .faq-answer {
    light. A single Lambert term per element gives every point of a ring the
    same value, and a ring of even value reads as a circle drawn in pen; the
    metal only appears once the light walks around it. `from 135deg` puts the
-   dark at lower-right, so the bright lands at upper-left, on the source. */
+   dark at lower-right, so the bright lands at upper-left, on the source — and
+   the yaw drags that turn a few degrees, the way a real collar does. */
 .coin-collar {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background: conic-gradient(
-    from 135deg,
+    from calc(135deg + var(--sy) * 20deg),
     color-mix(in srgb, var(--coin-sheen) 2%, var(--coin-base)) 0deg,
     color-mix(in srgb, var(--coin-sheen) 9%, var(--coin-base)) 55deg,
-    color-mix(in srgb, var(--coin-sheen) 36%, var(--coin-base)) 140deg,
-    color-mix(in srgb, var(--coin-sheen) 58%, var(--coin-base)) 185deg,
-    color-mix(in srgb, var(--coin-sheen) 31%, var(--coin-base)) 240deg,
+    color-mix(in srgb, var(--coin-sheen) 34%, var(--coin-base)) 140deg,
+    color-mix(in srgb, var(--coin-sheen) 60%, var(--coin-base)) 185deg,
+    color-mix(in srgb, var(--coin-sheen) 29%, var(--coin-base)) 240deg,
     color-mix(in srgb, var(--coin-sheen) 8%, var(--coin-base)) 310deg,
     color-mix(in srgb, var(--coin-sheen) 2%, var(--coin-base)) 360deg
   );
@@ -797,9 +906,9 @@ details[open] > .faq-answer {
   inset: 8%;
   border-radius: 50%;
   background: radial-gradient(
-    120% 120% at 26% 18%,
-    color-mix(in srgb, var(--coin-sheen) 21%, var(--coin-base)) 0%,
-    color-mix(in srgb, var(--coin-sheen) 8%, var(--coin-base)) 46%,
+    120% 120% at calc(26% - var(--sy) * 22%) calc(18% + var(--sp) * 20%),
+    color-mix(in srgb, var(--coin-sheen) 19%, var(--coin-base)) 0%,
+    color-mix(in srgb, var(--coin-sheen) 7%, var(--coin-base)) 46%,
     var(--coin-base) 100%
   );
   box-shadow:
@@ -809,14 +918,15 @@ details[open] > .faq-answer {
 }
 
 /* The one broad highlight flat shading cannot give: matte metal still gathers
-   light where the source faces it. */
+   light where the source faces it — and the gather slides across the face as
+   the face turns, because the source does not move with it. */
 .coin-sheen {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
   background: radial-gradient(
-    58% 58% at 27% 19%,
+    58% 58% at calc(27% - var(--sy) * 26%) calc(19% + var(--sp) * 22%),
     rgb(255 255 255 / 0.16) 0%,
     rgb(255 255 255 / 0.05) 44%,
     transparent 72%
@@ -841,12 +951,22 @@ details[open] > .faq-answer {
   margin-left: calc(var(--coin-seg) / -2);
   margin-top: calc(var(--coin-thick) / -2);
   transform: rotateY(calc(var(--i) * 10deg)) translateZ(var(--coin-apothem));
+  /* The panel normal (--a, --n, 0) carried through the live pose and dotted
+     with L. This is what makes the flick worth the code: the milling lights
+     up panel by panel as it passes the source, instead of a lit ring being
+     dragged round with the coin. */
+  --b: max(
+    0,
+    (var(--a) * var(--cy) + var(--n) * var(--sp) * var(--sy)) * -0.5 +
+      var(--n) * var(--cp) * -0.5 +
+      (var(--n) * var(--sp) * var(--cy) - var(--a) * var(--sy)) * 0.707
+  );
   /* the rim is the surface whose orientation varies most — every panel faces
      a different point of the circle — so it is where the light has the most
      to say. Twice the tonal range of the faces. */
   background: color-mix(
     in srgb,
-    var(--coin-sheen) calc(7% + var(--b, 0.2) * 46%),
+    var(--coin-sheen) calc(7% + var(--b) * 46%),
     var(--coin-base)
   );
   /* the milling. 36 panels is the count that holds both ends: one seam every
@@ -860,15 +980,18 @@ details[open] > .faq-answer {
      all the way round reads as a drawn line; one that lights and dies with
      the source reads as a bevel. */
   border-top: 0.45cqw solid
-    color-mix(in srgb, var(--color-yellow) calc(5% + var(--b, 0.2) * 78%), transparent);
+    color-mix(in srgb, var(--coin-teal) calc(5% + var(--b) * 78%), transparent);
   border-bottom: 0.3cqw solid
-    color-mix(in srgb, var(--color-yellow) calc(3% + var(--b, 0.2) * 40%), transparent);
+    color-mix(in srgb, var(--coin-violet) calc(4% + var(--b) * 52%), transparent);
 }
 
 /* --- the relief ------------------------------------------------------ *
- * Two copies of the same contour offset along the light: the dark one falls
- * down-right, the light one rises up-left, and the sliver of dark left
- * showing IS the relief. The old hub pasted the full-colour PNG on top, which
+ * Two copies of the same contour offset along the light: the shaded one falls
+ * down-right, the light one rises up-left, and the sliver left showing IS the
+ * relief. On black metal that under-copy can no longer be black — a black
+ * sliver on a black field is nothing, and the mark goes back to reading as a
+ * sticker. It is a dimmed grey instead: the chamfer of the strike, the only
+ * value between the white device and the dark field. The old hub pasted the full-colour PNG on top, which
  * is a sticker on a disc — a struck piece carries its device in its own metal.
  *
  * px inside a 397.7-wide viewBox is a user unit, not a screen one: at 300px
@@ -880,13 +1003,45 @@ details[open] > .faq-answer {
 }
 
 .coin-mark-shade path {
-  fill: rgb(0 0 0 / 0.72);
+  fill: color-mix(in srgb, var(--coin-sheen) 26%, var(--coin-base));
   transform: translate(9px, 9px);
 }
 
 .coin-mark-lit path {
-  fill: color-mix(in srgb, var(--coin-sheen) 74%, #fff);
+  fill: #fff;
   transform: translate(-6px, -6px);
+}
+
+/* THE REVERSE. A piece you can flip has to have a back — same strike, same
+   two-copy relief, legend around the collar and the edition in the middle.
+   4 units of a 200-wide viewBox is the same 2% of diameter as the 9 above. */
+.coin-reverse {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.coin-reverse .coin-mark-shade {
+  fill: color-mix(in srgb, var(--coin-sheen) 22%, var(--coin-base));
+  transform: translate(2.5px, 2.5px);
+}
+
+.coin-reverse .coin-mark-lit {
+  fill: color-mix(in srgb, var(--coin-sheen) 55%, #fff);
+  transform: translate(-1.8px, -1.8px);
+}
+
+.coin-legend {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.coin-year {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 
 /* --- a impressão do hero ---------------------------------------------- *
