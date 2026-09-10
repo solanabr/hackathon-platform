@@ -226,6 +226,9 @@ uniform vec2 uCellResolution;
 uniform float uCell;
 uniform vec3 uInk;
 uniform vec3 uSurface;
+/* 1 = a passada pinta o papel dela mesma; 0 = só o traço sai, em alfa
+   pré-multiplicado, e o que estiver atrás da tela atravessa. */
+uniform float uPaper;
 uniform float uFadeStart;
 uniform float uFadeEnd;
 uniform float uRecessDeadZone;
@@ -245,7 +248,7 @@ void main() {
 
   vec4 packed = texture2D(tCell, cellUv);
   if (packed.b < 0.5) {
-    gl_FragColor = vec4(uSurface, 1.0);
+    gl_FragColor = vec4(uSurface * uPaper, uPaper);
     return;
   }
 
@@ -267,7 +270,7 @@ void main() {
   tone *= 0.5 + 0.5 * pow(ramp, 1.2);
 
   if (tone < 0.05 + hash(cell, 0.0) * 0.11) {
-    gl_FragColor = vec4(uSurface, 1.0);
+    gl_FragColor = vec4(uSurface * uPaper, uPaper);
     return;
   }
 
@@ -289,7 +292,11 @@ void main() {
   float aa = 0.5 / uCell;
   float ink = 1.0 - smoothstep(weight01 * 0.5 - aa, weight01 * 0.5 + aa, dist);
 
-  gl_FragColor = vec4(mix(uSurface, uInk, ink), 1.0);
+  gl_FragColor = mix(
+    vec4(uInk * ink, ink),
+    vec4(mix(uSurface, uInk, ink), 1.0),
+    uPaper
+  );
 }
 `;
 

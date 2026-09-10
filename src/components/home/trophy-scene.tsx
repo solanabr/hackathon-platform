@@ -12,20 +12,22 @@ const GlyphScene = dynamic(() => import("@/components/home/glyph-scene"), {
    a metade dessa altura e o raio é o que faz as alças caberem na largura do
    quadro no formato retrato em que a peça é enquadrada. */
 const TARGET: [number, number, number] = [0, 0.45, 0];
-const RADIUS = 3.02;
+const RADIUS = 2.32;
 const ELEVATION = 0.15;
 const FOV_RADIANS = 0.46;
 const AZIMUTH = 0;
 const AZIMUTH_SWING = Math.PI * 0.05;
-/* Uma volta a cada ~40s: rápido o bastante para o relevo mudar enquanto se lê
-   a seção, lento o bastante para não pedir atenção. */
-const SPIN = 0.16;
+/* Vaivém, não volta completa: de perfil a taça perde as alças e vira vaso —
+   este é o arco em que ela continua sendo uma taça o tempo todo. */
+const SWAY_RADIANS = 0.3;
+const SWAY_SECONDS = 16;
 
-/* Numa taça não existe vão: o que desenha o volume aqui é a luz, não o
-   recesso — invertido em relação ao Colosseum. */
-const TONE_FLOOR = 0.22;
-const RECESS_GAIN = 0.1;
-const FORM_GAIN = 0.78;
+/* Numa taça não existe vão: o volume vem da luz e o ornamento vem da pintura,
+   não do recesso — invertido em relação ao Colosseum. */
+const TONE_FLOOR = 0.2;
+const RECESS_GAIN = 0.12;
+const FORM_GAIN = 0.82;
+const ALBEDO_MIX = 0.85;
 
 export function TrophyScene({ className = "" }: { className?: string }) {
   const showScene = useSceneEligible();
@@ -44,13 +46,18 @@ export function TrophyScene({ className = "" }: { className?: string }) {
           fovRadians={FOV_RADIANS}
           azimuth={AZIMUTH}
           azimuthSwing={AZIMUTH_SWING}
-          spin={SPIN}
+          swayRadians={SWAY_RADIANS}
+          swaySeconds={SWAY_SECONDS}
+          lightTracksCamera
           toneFloor={TONE_FLOOR}
           recessGain={RECESS_GAIN}
           formGain={FORM_GAIN}
+          cell={3}
+          albedoMix={ALBEDO_MIX}
           fadeStart={-1}
           fadeEnd={0}
-          className="h-full w-full bg-surface text-ink"
+          paper={false}
+          className="h-full w-full text-ink"
         />
       ) : null}
     </div>

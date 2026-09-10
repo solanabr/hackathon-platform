@@ -15,8 +15,10 @@ import {
 
 const SHADE_VERT = /* glsl */ `
 varying vec3 vNormal;
+varying vec2 vUv;
 void main() {
   vNormal = normalize(normalMatrix * normal);
+  vUv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
@@ -28,6 +30,26 @@ uniform vec3 uLight;
 void main() {
   float lambert = max(dot(normalize(vNormal), uLight), 0.0);
   gl_FragColor = vec4(vec3(lambert), 1.0);
+}
+`;
+
+/* Onde o ornamento está pintado e não esculpido — filigrana, canelura, voluta —
+   a luz sozinha devolve uma peça lisa. A albedo entra como tinta: onde a
+   pintura escurece, o meio-tom engrossa o traço. */
+const PAINTED_FRAG = /* glsl */ `
+precision highp float;
+varying vec3 vNormal;
+varying vec2 vUv;
+uniform vec3 uLight;
+uniform sampler2D tAlbedo;
+uniform float uAlbedoMix;
+void main() {
+  float lambert = max(dot(normalize(vNormal), uLight), 0.0);
+  float albedo = dot(texture2D(tAlbedo, vUv).rgb, vec3(0.299, 0.587, 0.114));
+  // Normalizado no cinza médio: a textura entra como desvio em torno de 1.0,
+  // senão ela só rebaixa a peça inteira em vez de desenhar nela.
+  float paint = mix(1.0, albedo / 0.5, uAlbedoMix);
+  gl_FragColor = vec4(vec3(clamp(lambert * paint, 0.0, 1.0)), 1.0);
 }
 `;
 
@@ -55,16 +77,30 @@ export type GlyphSceneProps = {
   azimuthSwing?: number;
   /** Giro contínuo, em radianos por segundo. Zero deixa a peça parada. */
   spin?: number;
+  /** Vaivém em torno do azimute: amplitude em radianos e período em segundos.
+   * Mostra que a peça é volume sem nunca levá-la a um ângulo em que ela deixa
+   * de se reconhecer — o que um giro completo faz. */
+  swayRadians?: number;
+  swaySeconds?: number;
   /** Lado da célula do meio-tom, em px de CSS. */
   cell?: number;
   light?: [number, number, number];
+  /** Luz presa à câmera, e não ao mundo: numa peça que gira, luz fixa no mundo
+   * atravessa o ângulo frontal e chapa o volume por alguns segundos. */
+  lightTracksCamera?: boolean;
   /** Piso de tinta, ganho do recesso e ganho da luz — a assinatura da peça. */
+  /** Quanto da albedo do modelo vira tinta, de 0 a 1. Zero mantém a peça só
+   * com a luz — é o que o Colosseum usa, onde o relevo é geometria. */
+  albedoMix?: number;
   toneFloor?: number;
   recessGain?: number;
   formGain?: number;
   recessDeadZone?: number;
   recessDepth?: number;
   minRadiusCells?: number;
+  /** Se a passada pinta o próprio papel. Falso deixa a tela transparente e só
+   * o traço sai — é o que permite pôr desenho atrás da peça. */
+  paper?: boolean;
   /** Dissolve medido do topo do quadro: 0..1 do começo ao fim da rampa. */
   fadeStart?: number;
   fadeEnd?: number;
@@ -84,14 +120,19 @@ export default function GlyphScene({
   azimuthSwing = 0,
   azimuth,
   spin = 0,
+  swayRadians = 0,
+  swaySeconds = 14,
   cell = 8,
   light = [-0.55, 0.52, 0.65],
+  lightTracksCamera = false,
+  albedoMix = 0,
   toneFloor = 0.26,
   recessGain = 0.69,
   formGain = 0.08,
   recessDeadZone = 0.004,
   recessDepth = 0.09,
   minRadiusCells = 2,
+  paper = true,
   fadeStart = 0,
   fadeEnd = 0.5,
   className = "h-full w-full bg-surface text-ink",
@@ -106,7 +147,7 @@ export default function GlyphScene({
     canvas.className = "block h-full w-full";
     host.appendChild(canvas);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: !paper });
     // Linear, não sRGB: o shader já quantiza a luminância, e qualquer gama
     // aplicada antes dele torce a rampa de tom contra o meio-tom 2D.
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
@@ -121,12 +162,17 @@ export default function GlyphScene({
       12,
     );
 
+    const lightUniform = { value: new THREE.Vector3(...light).normalize() };
     const shadeMaterial = new THREE.ShaderMaterial({
       vertexShader: SHADE_VERT,
       fragmentShader: SHADE_FRAG,
-      uniforms: { uLight: { value: new THREE.Vector3(...light).normalize() } },
+      uniforms: { uLight: lightUniform },
     });
-    scene.overrideMaterial = shadeMaterial;
+    // Com albedo cada malha precisa do seu próprio mapa, então o material sai
+    // de override e passa a ser trocado peça a peça — dividindo o mesmo objeto
+    // de uniform da luz, que muda a cada quadro.
+    const paintedMaterials: THREE.ShaderMaterial[] = [];
+    if (!albedoMix) scene.overrideMaterial = shadeMaterial;
 
     const style = getComputedStyle(host);
     const ink = readRgb(style.color, [0.106, 0.137, 0.114]);
@@ -191,6 +237,7 @@ export default function GlyphScene({
         uCell: { value: cell },
         uInk: { value: new THREE.Vector3(...ink) },
         uSurface: { value: new THREE.Vector3(...surface) },
+        uPaper: { value: paper ? 1 : 0 },
         uFadeStart: { value: fadeStart },
         uFadeEnd: { value: fadeEnd },
         uRecessDeadZone: { value: recessDeadZone },
@@ -260,6 +307,9 @@ export default function GlyphScene({
 
     let spun = 0;
     let last = 0;
+    const toCamera = new THREE.Vector3();
+    const sideways = new THREE.Vector3();
+    const WORLD_UP = new THREE.Vector3(0, 1, 0);
 
     function frame(now: number) {
       if (disposed) return;
@@ -271,15 +321,31 @@ export default function GlyphScene({
       const delta = last ? Math.min((now - last) / 1000, 1 / 15) : 0;
       last = now;
       spun += spin * delta;
+      const sway = swayRadians
+        ? Math.sin((now / 1000) * ((Math.PI * 2) / swaySeconds)) * swayRadians
+        : 0;
 
       pointer.current += (pointer.target - pointer.current) * smoothing;
-      const heading = azimuth + spun + pointer.current * azimuthSwing;
+      const heading = azimuth + spun + sway + pointer.current * azimuthSwing;
       camera.position.set(
         focus.x + radius * Math.cos(elevation) * Math.sin(heading),
         focus.y + radius * Math.sin(elevation),
         focus.z + radius * Math.cos(elevation) * Math.cos(heading),
       );
       camera.lookAt(focus);
+
+      if (lightTracksCamera) {
+        // Chave alta à esquerda de quem olha: a mesma posição de luz de um
+        // estúdio de produto, mantida enquanto a peça roda.
+        toCamera.subVectors(camera.position, focus).normalize();
+        sideways.crossVectors(WORLD_UP, toCamera).normalize();
+        lightUniform.value
+          .copy(toCamera)
+          .multiplyScalar(0.3)
+          .addScaledVector(sideways, 0.8)
+          .addScaledVector(WORLD_UP, 0.5)
+          .normalize();
+      }
 
       renderer.setRenderTarget(sceneTarget);
       renderer.setClearColor(0x000000, 1);
@@ -303,6 +369,9 @@ export default function GlyphScene({
 
       quad.material = glyphMaterial;
       renderer.setRenderTarget(null);
+      // Sem papel, o quadro sai em alfa: o limpa tem que ir a zero, senão o
+      // preto do alvo de cena volta como fundo da tela.
+      renderer.setClearColor(0x000000, paper ? 1 : 0);
       quad.render(renderer);
     }
 
@@ -316,6 +385,26 @@ export default function GlyphScene({
       .then((gltf) => {
         if (disposed) return;
         model = gltf.scene;
+        if (albedoMix) {
+          model.traverse((node) => {
+            if (!(node instanceof THREE.Mesh)) return;
+            const map = (node.material as THREE.MeshStandardMaterial).map ?? null;
+            // Sem conversão de espaço de cor: o shader quer o valor tal como
+            // pintado, e é o meio-tom que decide o que é escuro.
+            if (map) map.colorSpace = THREE.NoColorSpace;
+            const painted = new THREE.ShaderMaterial({
+              vertexShader: SHADE_VERT,
+              fragmentShader: map ? PAINTED_FRAG : SHADE_FRAG,
+              uniforms: {
+                uLight: lightUniform,
+                tAlbedo: { value: map },
+                uAlbedoMix: { value: albedoMix },
+              },
+            });
+            paintedMaterials.push(painted);
+            node.material = painted;
+          });
+        }
         scene.add(model);
         raf = requestAnimationFrame(frame);
       })
@@ -330,6 +419,7 @@ export default function GlyphScene({
       window.removeEventListener("pointermove", onPointerMove);
       quad.dispose();
       shadeMaterial.dispose();
+      paintedMaterials.forEach((material) => material.dispose());
       reduceMaterial.dispose();
       minMaterial.dispose();
       glyphMaterial.dispose();
@@ -358,7 +448,11 @@ export default function GlyphScene({
     azimuth,
     azimuthSwing,
     spin,
+    swayRadians,
+    swaySeconds,
     cell,
+    albedoMix,
+    lightTracksCamera,
     light[0],
     light[1],
     light[2],
@@ -368,6 +462,7 @@ export default function GlyphScene({
     recessDeadZone,
     recessDepth,
     minRadiusCells,
+    paper,
     fadeStart,
     fadeEnd,
   ]);
