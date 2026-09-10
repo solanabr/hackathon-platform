@@ -44,6 +44,13 @@
   --dur-media: 0.82s;   /* reveal de seção                                  */
   --dur-lenta: 1.25s;   /* hero e transições narrativas                     */
 
+  /* LOOPS DE AMBIENTE — fora da hierarquia de interação de propósito. Isto
+     não responde a ninguém: é o fundo respirando. Se entrasse na escala acima
+     viraria animação, e animação em camada decorativa grande é o que faz uma
+     página parecer que está piscando para você. */
+  --dur-ambiente: 26s;  /* deriva da aurora — lenta a ponto de não se notar  */
+  --dur-respiro: 7.4s;  /* pulso do brilho no horizonte                     */
+
   /* STAGGER — o intervalo entre um elemento e o próximo da mesma família.
      Linha de título é mais apertado que card: o olho lê texto mais rápido
      do que reconhece um objeto. */

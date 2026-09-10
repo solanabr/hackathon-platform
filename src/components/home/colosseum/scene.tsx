@@ -1,46 +1,56 @@
 "use client";
 
 import GlyphScene from "@/components/home/glyph-scene";
+import { buildColosseum } from "@/components/home/colosseum/geometry";
 
-/* Enquadramento medido, não olhado: é o único azimute em que a fachada íntegra
-   atravessa o quadro inteiro — a ponta do arco sobrevivente não preenche. O
-   raio é o mais curto em que a arcada inteira ainda cabe na altura do bloco. */
-const TARGET: [number, number, number] = [0, 0.138, 0];
-const RADIUS = 0.98;
-const ELEVATION = 0.045;
-const FOV_RADIANS = 0.46;
-const AZIMUTH = Math.PI * 1.8;
-const AZIMUTH_SWING = Math.PI * 0.033;
-/* Vaivém curto: o azimute acima é o único em que a fachada íntegra preenche o
-   quadro, então o arco tem que caber dentro dele — 7°, não os 17° da taça. */
-const SWAY_RADIANS = 0.12;
-const SWAY_SECONDS = 22;
+/* Enquadramento de três quartos: a fachada íntegra ocupa a esquerda, o anel
+   curva para dentro do quadro e sangra na direita, e o degrau da ruína cai
+   junto com ele. É o único ângulo em que os três dados do monumento — arcada
+   sobreposta, planta elíptica e parede caída — cabem na mesma leitura; de
+   frente vira muro furado, de cima vira prato.
 
-/* Medidos no harness isolado (scratchpad), não estimados: delta entre pedra e
-   vão varia por um fator de ~30, daí a normalização log entre estes dois. */
-const RECESS_DEAD_ZONE = 0.004;
-const RECESS_DEPTH = 0.09;
+   A câmera sobe até onde o aro do fundo passa por cima da parede da frente:
+   abaixo de 0.26 rad o anel oposto se esconde atrás dela e o monumento lê como
+   muro; acima de 0.36 a cávea abre demais e vira prato. Nesta faixa a arcada
+   de trás e o degrau interno entram no quadro sem que a fachada perca o arco.
 
-/* Grade da taça, não a de 8: o traço fica fino o bastante para o arco ter borda
-   em vez de virar bloco. O raio do mínimo sobe junto — ele é medido em células,
-   e a 3px o raio 2 cobre 6px de vizinhança, longe demais do vão para achar a
-   pedra da frente. 5 células devolvem os mesmos ~15px do enquadramento antigo. */
-const CELL = 3;
-const MIN_RADIUS_CELLS = 5;
+   Medidas do modelo, não do olho: a peça é gerada em geometry.ts com o eixo
+   maior em 1.88 e o topo em 0.485, e o alvo fica na altura da terceira arcada
+   para a linha do horizonte cruzar a fachada, não o céu. O alvo também anda
+   para a esquerda do eixo da câmera — é o que empurra a peça para fora da
+   margem direita em vez de centralizá-la atrás do ticket. */
+const TARGET: [number, number, number] = [-0.274, 0.06, -0.261];
+const RADIUS = 3.5;
+const ELEVATION = 0.3;
+const FOV_RADIANS = 0.22;
+const AZIMUTH = Math.PI * 1.78;
+const AZIMUTH_SWING = Math.PI * 0.006;
+/* Vaivém curtíssimo: a lente é longa (FOV de 12,6°), então 4° de giro seriam
+   um terço do quadro. Aqui 1,4° já basta para a arcada respirar como volume. */
+const SWAY_RADIANS = 0.025;
+const SWAY_SECONDS = 26;
 
-/* A assinatura da taça — luz presa à câmera e a albedo entrando como tinta —
-   com o recesso mantido alto: aqui o arco é vão de verdade, e zerá-lo como na
-   taça devolve uma parede lisa com arco pintado. Medidos contra o render, não
-   estimados: abaixo de 0.6 de recesso a arcada superior fecha. */
-const TONE_FLOOR = 0.3;
-const RECESS_GAIN = 0.62;
-const FORM_GAIN = 0.38;
-const ALBEDO_MIX = 0.62;
+/* Calibrados contra o render nesta escala: abaixo de 0.006 a curvatura do
+   próprio anel entra como recesso e o campo satura; acima de 0.08 o vão perde
+   a borda e o arco vira retângulo. */
+const RECESS_DEAD_ZONE = 0.006;
+const RECESS_DEPTH = 0.075;
+
+/* Grade fina com raio de mínimo curto: o vão tem ~28px de largura no quadro do
+   hero, e a 5 células o filtro atravessava o pilar e comia a aduela do arco. */
+const CELL = 2;
+const MIN_RADIUS_CELLS = 3;
+
+/* Aqui o relevo é geometria, não pintura: a peça não tem albedo. O tom vem do
+   vão (recesso) com a luz apenas modelando a pedra que sobrou. */
+const TONE_FLOOR = 0.24;
+const RECESS_GAIN = 0.74;
+const FORM_GAIN = 0.3;
 
 export default function ColosseumCanvas() {
   return (
     <GlyphScene
-      modelUrl="/models/colosseum.glb"
+      build={buildColosseum}
       target={TARGET}
       radius={RADIUS}
       elevation={ELEVATION}
@@ -52,7 +62,6 @@ export default function ColosseumCanvas() {
       lightTracksCamera
       cell={CELL}
       minRadiusCells={MIN_RADIUS_CELLS}
-      albedoMix={ALBEDO_MIX}
       toneFloor={TONE_FLOOR}
       recessGain={RECESS_GAIN}
       formGain={FORM_GAIN}

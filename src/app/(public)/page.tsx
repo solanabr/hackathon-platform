@@ -24,6 +24,7 @@ import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
 import { CtaHalftone } from "@/components/home/cta-halftone";
 import { NetworkHalo } from "@/components/home/network-halo";
+import { PrizesAtmosphere } from "@/components/home/prizes-atmosphere";
 import { StepGlyph } from "@/components/home/step-glyph";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
@@ -40,6 +41,7 @@ import {
 } from "@/components/home/calendar-track";
 import { SolanaCoin } from "@/components/home/solana-coin";
 import { PressSheet } from "@/components/home/press-sheet";
+import { SectionRails, StageRule } from "@/components/home/rails";
 import { PrizePedestal } from "@/components/home/prize-pedestal";
 import { SoundToggle } from "@/components/campaign/sound-toggle";
 import { PAGE_SHELL } from "@/components/layout/container";
@@ -472,7 +474,7 @@ export default async function HomePage() {
           className="pointer-events-none absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]"
         >
           <div
-            className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:left-auto lg:right-0 lg:h-[56%] lg:w-[86%]"
+            className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:left-auto lg:right-0 lg:h-[68%] lg:w-[86%]"
           >
             <ColosseumScene />
           </div>
@@ -551,9 +553,10 @@ export default async function HomePage() {
 
       <section
         id="cases"
-        className={`${LP_SECTION} bg-surface pb-8 lg:pb-10`}
+        className={`${LP_SECTION} relative isolate bg-surface pb-8 lg:pb-10`}
         aria-label="O hackathon"
       >
+        <SectionRails />
         <div className={PAGE_SHELL}>
           <CasesFan cases={CASES}>
             <Reveal>
@@ -617,17 +620,20 @@ export default async function HomePage() {
           baixo e nada depois dela. */}
       <section
         id="premiacoes"
-        className="relative overflow-hidden bg-surface pt-24 pb-14 lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pt-20 lg:pb-[7rem] lg:[@media(max-height:820px)]:pt-[4.75rem] lg:[@media(max-height:820px)]:pb-[6rem]"
+        className="relative overflow-hidden bg-surface pt-24 pb-12 lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pt-20 lg:pb-[6.5rem] lg:[@media(max-height:820px)]:pt-[4.75rem] lg:[@media(max-height:820px)]:pb-[5rem]"
         aria-label="Prêmios e oportunidades de investimento"
       >
-        <div className={`${PAGE_SHELL} relative flex w-full min-h-0 flex-1 flex-col`}>
-          <Reveal tone="texto" className="mb-4">
+        <PrizesAtmosphere />
+
+        <div className={`${PAGE_SHELL} relative z-10 flex w-full min-h-0 flex-1 flex-col`}>
+          <StageRule className="mb-7 hidden md:block" />
+          <Reveal tone="texto" className="mb-11 lg:mb-14">
             <SectionHat centered>Prêmios e investimento</SectionHat>
           </Reveal>
 
           <PrizePedestal />
 
-          <div className="mt-7 grid gap-9 lg:mt-6 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-end lg:gap-12 xl:gap-16">
+          <div className="mt-8 grid gap-9 lg:mt-14 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start lg:gap-12 xl:gap-16 lg:[@media(max-height:820px)]:mt-5">
             <Reveal tone="texto">
               <h2 className="max-w-[21ch] text-balance font-heading text-[1.7rem] font-black leading-[1.06] tracking-tight text-ink [font-stretch:105%] sm:text-[1.9rem] xl:text-[2.1rem]">
                 Seu projeto pode conquistar{" "}
@@ -645,7 +651,7 @@ export default async function HomePage() {
             <Reveal
               index={1}
               tone="texto"
-              className="order-last flex justify-center lg:order-none lg:pb-1"
+              className="order-last flex justify-center lg:order-none lg:pt-2"
             >
               <TrackedCta
                 href={cadastroHref}
@@ -759,6 +765,7 @@ export default async function HomePage() {
         id="solana"
         aria-label="Onde a gente constrói"
       >
+        <SectionRails crossOffset="top-24" />
         <div className={PAGE_SHELL}>
           <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
             <Reveal>
@@ -1014,8 +1021,9 @@ export default async function HomePage() {
       <section
         id="faq"
         aria-label="Perguntas frequentes"
-        className="mt-8 overflow-hidden pb-10 lg:mt-10 lg:pb-14"
+        className="relative isolate mt-8 overflow-hidden pb-10 lg:mt-10 lg:pb-14"
       >
+        <SectionRails crossOffset="top-8" />
         <div className={`${PAGE_SHELL} pt-6 lg:pt-8`}>
           <div className="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
             <Reveal>

@@ -3,6 +3,9 @@
 
 @theme {
   --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
+  /* Mesma sombra, na escala das peças pequenas: 6px numa pá de 30px de largura
+     não é adesivo, é borrão. */
+  --shadow-sticker-sm: 3px 3px 0 rgb(27 35 29 / 0.22);
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
   --color-surface-deep: #efe0ba;
@@ -1112,5 +1115,305 @@ html:not(.press-done) {
   /* A folha não existe aqui, então esperar por ela seria só atraso. */
   html:not(.press-done) {
     --hero-cue: 0s;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * PAINEL DE RELÓGIO — o contador da última chamada.
+ *
+ * A pá de papel é só o fundo; quem manda no bloco é o ALGARISMO, que
+ * transborda a aresta de cima da pá. É por isso que o número não tem caixa
+ * que o contenha: contido, ele viraria um widget; transbordando, ele vira o
+ * assunto da seção.
+ *
+ * A troca não pisca — o dígito novo é DEPOSITADO de cima, na curva de
+ * entrada, e só o algarismo que de fato mudou reanima (a `key` é o próprio
+ * caractere). O segundo bate sozinho enquanto a dezena da hora fica parada.
+ * ------------------------------------------------------------------------- */
+.tique {
+  display: block;
+  animation: tique var(--dur-rapida) var(--ease-entrada) both;
+}
+@keyframes tique {
+  from {
+    transform: translate3d(0, -0.1em, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Cair é deslocamento. O que sobra é a troca em si — mesma duração, mesma
+     curva, sem nada viajando no espaço. */
+  @keyframes tique {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+ * ATMOSFERA DA PREMIAÇÃO — o ar em volta do pódio.
+ *
+ * A lição da referência: a MALHA CARREGA A COR. O gradiente não fica atrás da
+ * grade, ele está em cima do plano — é a superfície que está acesa, e as linhas
+ * são o que prova que ela tem profundidade. Grade fininha sobre fundo chapado
+ * com um borrão difuso por trás não é o efeito: é a média de tudo, e média de
+ * cor grande num quadro grande dá exatamente nada.
+ *
+ * Por isso a ordem aqui é: aurora (manchas com FORMA, não névoa), brilho, e o
+ * plano em fuga pintado por cima — pendurado no alto, que é onde a referência
+ * põe o dele e onde o poço já joga duas linhas para fora do quadro.
+ *
+ * Duas decisões que vão contra o preset genérico de "aurora dark":
+ *
+ * 1. O chão é claro, então as linhas são ESCURAS. Linha branca sobre creme é
+ *    linha invisível; a grade herda a mesma tinta do wireframe do poço.
+ * 2. O véu (`.prizes-scrim`) é de CREME, não de preto. Num fundo claro com
+ *    texto escuro, escurecer o fundo derruba o contraste do `muted` em vez de
+ *    salvá-lo — o que devolve legibilidade é trazer o papel de volta. E ele
+ *    trabalha SÓ na faixa de texto: no meio do quadro o véu é o inimigo.
+ *
+ * O grupo pinta o próprio creme por baixo: os blobs multiplicam, e multiplicar
+ * contra um fundo transparente não faz nada. Sem essa base a cor sai chapada.
+ * ------------------------------------------------------------------------- */
+.prizes-atmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--color-surface);
+  contain: paint;
+
+  --prizes-blur: 72px;
+  --prizes-line: color-mix(in oklab, var(--color-green-dark) 40%, transparent);
+  --prizes-cell: 58px;
+}
+
+/* AURORA. Três manchas em emerald, amarelo e verde — a paleta da marca, não o
+   roxo/ciano de stock. Multiply porque sobre papel a cor TINGE; normal por
+   cima do creme viraria adesivo de gradiente.
+   Elas são MENORES que o quadro de propósito: uma mancha que cobre a tela
+   inteira não tem borda, e sem borda não há forma — só um tom a mais no creme. */
+.prizes-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(var(--prizes-blur));
+  mix-blend-mode: multiply;
+  will-change: transform;
+  animation: prizesDeriva var(--dur-ambiente) var(--ease-inout) infinite alternate;
+}
+
+.prizes-blob-a {
+  left: -8%;
+  top: -14%;
+  width: 46%;
+  height: 78%;
+  opacity: 0.62;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-emerald) 78%, transparent) 0%,
+    color-mix(in oklab, var(--color-emerald) 34%, transparent) 52%,
+    transparent 100%
+  );
+  --drift-x: 11%;
+  --drift-y: 6%;
+  --drift-scale: 1.12;
+}
+
+.prizes-blob-b {
+  right: -10%;
+  top: 6%;
+  width: 44%;
+  height: 84%;
+  opacity: 0.58;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-yellow-strong) 82%, transparent) 0%,
+    color-mix(in oklab, var(--color-yellow-strong) 36%, transparent) 52%,
+    transparent 100%
+  );
+  /* Atrasos negativos: as três já entram em pontos diferentes do ciclo, senão
+     respiram juntas e o fundo vira um pisca-pisca sincronizado. */
+  animation-delay: -9.5s;
+  --drift-x: -9%;
+  --drift-y: 8%;
+  --drift-scale: 1.09;
+}
+
+.prizes-blob-c {
+  left: 30%;
+  top: 34%;
+  width: 48%;
+  height: 76%;
+  opacity: 0.5;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-green) 72%, transparent) 0%,
+    color-mix(in oklab, var(--color-green) 30%, transparent) 54%,
+    transparent 100%
+  );
+  animation-delay: -17s;
+  --drift-x: -7%;
+  --drift-y: -7%;
+  --drift-scale: 1.14;
+}
+
+@keyframes prizesDeriva {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(var(--drift-scale));
+  }
+}
+
+/* O BRILHO no horizonte, atrás da grade. Só opacidade pulsa — escala ou blur
+   animados numa camada deste tamanho custam repaint a cada frame. */
+.prizes-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    52% 42% at 50% 44%,
+    color-mix(in oklab, var(--color-emerald) 52%, transparent) 0%,
+    color-mix(in oklab, var(--color-emerald) 18%, transparent) 46%,
+    transparent 74%
+  );
+  mix-blend-mode: multiply;
+  filter: blur(30px);
+  animation: prizesRespiro var(--dur-respiro) var(--ease-inout) infinite alternate;
+}
+
+@keyframes prizesRespiro {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 0.78;
+  }
+}
+
+/* O PLANO EM FUGA, pendurado no alto e ACESO — a cor mora aqui.
+   O ponto de fuga fica acima do quadro de propósito: dentro dele as colunas se
+   encontram num ponto único e a malha vira estrela de raios em vez de
+   superfície. E a máscara mora no pai, que não gira: aplicada no plano
+   inclinado ela iria embora junto com a perspectiva e a dissolução deixaria de
+   acontecer na distância certa. */
+.prizes-floor {
+  position: absolute;
+  inset-inline: -30%;
+  top: -22%;
+  height: 74%;
+  perspective: 620px;
+}
+
+.prizes-floor-plane {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(-58deg);
+  transform-origin: 50% 0;
+  mix-blend-mode: multiply;
+  /* A dissolução na distância é no espaço do PLANO, não no da tela: a máscara
+     é aplicada antes da transformada, então descer nela é ir para o fundo da
+     cena. Colocada no pai, ela corta em y de tela — e o horizonte, que na tela
+     é uma linha só, sai com aresta dura em vez de sumir na bruma. */
+  mask-image: linear-gradient(to bottom, #000 0%, #000 42%, rgb(0 0 0 / 0.5) 64%, transparent 90%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, rgb(0 0 0 / 0.5) 64%, transparent 90%);
+  /* As linhas vêm PRIMEIRO na pilha (topo do desenho) e a chapa de cor por
+     baixo delas: invertido, o gradiente lava a grade e sobra só o borrão. */
+  background-image:
+    linear-gradient(to right, var(--prizes-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--prizes-line) 1px, transparent 1px),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-emerald) 8%, transparent) 0%,
+      color-mix(in oklab, var(--color-emerald) 34%, transparent) 58%,
+      color-mix(in oklab, var(--color-emerald) 62%, transparent) 100%
+    );
+  background-size: var(--prizes-cell) var(--prizes-cell), var(--prizes-cell) var(--prizes-cell), 100% 100%;
+}
+
+/* O VÉU. Devolve papel embaixo do chapéu e embaixo da faixa de texto — e só
+   ali. O meio do quadro fica com a cor cheia, porque é o único lugar onde ela
+   tem espaço para ser vista.
+   Os degraus de baixo não são estéticos: medidos na tela, o `muted` (#5a6a5b,
+   14px) cai de 4,82 para 4,10 sobre a aurora crua — abaixo do mínimo AA. Com
+   esta rampa volta para ~4,7 sem apagar a cor do meio. Mexer nela é mexer no
+   contraste do texto. */
+.prizes-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--color-surface) 0%,
+      color-mix(in oklab, var(--color-surface) 62%, transparent) 6%,
+      color-mix(in oklab, var(--color-surface) 22%, transparent) 15%,
+      transparent 26%
+    ),
+    linear-gradient(
+      to top,
+      var(--color-surface) 0%,
+      color-mix(in oklab, var(--color-surface) 96%, transparent) 18%,
+      color-mix(in oklab, var(--color-surface) 74%, transparent) 28%,
+      color-mix(in oklab, var(--color-surface) 34%, transparent) 42%,
+      transparent 58%
+    );
+}
+
+/* O GRÃO. feTurbulence embutido — soft-light em vez de overlay porque sobre
+   creme o overlay estoura o meio-tom e o grão vira sujeira. */
+.prizes-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.075;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 190px 190px;
+}
+
+/* Tela larga espalha a mesma mancha por mais pixel e ela volta a virar média.
+   As manchas encolhem em proporção para manter a BORDA dentro do quadro. */
+@media (min-width: 1600px) {
+  .prizes-atmos {
+    --prizes-blur: 88px;
+  }
+
+  .prizes-blob-a,
+  .prizes-blob-b,
+  .prizes-blob-c {
+    width: 38%;
+  }
+}
+
+/* No telefone o blur é o custo, não o desenho: 72px numa camada que ocupa a
+   tela inteira é composição cara em GPU móvel. Amplitude menor pelo mesmo
+   motivo de sempre — a mesma distância numa tela estreita lê como salto. */
+@media (max-width: 640px) {
+  .prizes-atmos {
+    --prizes-blur: 46px;
+    --prizes-cell: 40px;
+  }
+
+  .prizes-blob {
+    --drift-x: 6%;
+    --drift-y: 5%;
+    --drift-scale: 1.06;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Deriva e respiro são o movimento inteiro desta camada: sem eles sobra o
+     estado estático, que já é o desenho — nada some. */
+  .prizes-blob,
+  .prizes-glow {
+    animation: none;
+  }
+
+  .prizes-glow {
+    opacity: 0.6;
   }
 }

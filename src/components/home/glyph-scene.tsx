@@ -64,7 +64,11 @@ function readRgb(value: string, fallback: [number, number, number]) {
 }
 
 export type GlyphSceneProps = {
-  modelUrl: string;
+  /** Peça baixada. Exclusivo com `build`. */
+  modelUrl?: string;
+  /** Peça construída em código — a arcada do Colosseum é gerada, não baixada.
+   * Tem que ser uma referência estável: um literal novo remonta a cena. */
+  build?: () => THREE.BufferGeometry;
   /** Ponto que a câmera olha, em unidades do modelo. */
   target: [number, number, number];
   /** Distância da câmera ao alvo. */
@@ -113,6 +117,7 @@ export type GlyphSceneProps = {
    enquadramento e os três ganhos de tom — não o caminho de render. */
 export default function GlyphScene({
   modelUrl,
+  build,
   target,
   radius,
   elevation,
@@ -376,17 +381,29 @@ export default function GlyphScene({
     }
 
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath("/draco/");
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
 
-    loader
-      .loadAsync(modelUrl)
+    function mount(loaded: THREE.Group) {
+      model = loaded;
+      scene.add(model);
+      raf = requestAnimationFrame(frame);
+    }
+
+    if (build) {
+      const group = new THREE.Group();
+      group.add(new THREE.Mesh(build(), shadeMaterial));
+      mount(group);
+    } else {
+      dracoLoader.setDecoderPath("/draco/");
+      const loader = new GLTFLoader();
+      loader.setDRACOLoader(dracoLoader);
+
+      loader
+      .loadAsync(modelUrl!)
       .then((gltf) => {
         if (disposed) return;
-        model = gltf.scene;
+        const loaded = gltf.scene;
         if (albedoMix) {
-          model.traverse((node) => {
+          loaded.traverse((node) => {
             if (!(node instanceof THREE.Mesh)) return;
             const map = (node.material as THREE.MeshStandardMaterial).map ?? null;
             // Sem conversão de espaço de cor: o shader quer o valor tal como
@@ -405,12 +422,12 @@ export default function GlyphScene({
             node.material = painted;
           });
         }
-        scene.add(model);
-        raf = requestAnimationFrame(frame);
+        mount(loaded);
       })
       .catch(() => {
         /* O desenho 2D continua atrás: falha de carga degrada para ele. */
       });
+    }
 
     return () => {
       disposed = true;
@@ -439,6 +456,7 @@ export default function GlyphScene({
     // derrubar e reconstruir a cena inteira.
   }, [
     modelUrl,
+    build,
     target[0],
     target[1],
     target[2],

@@ -25,11 +25,25 @@ function formatCompact(seg: Segments | null): string {
 const pad = (n: number) => n.toString().padStart(2, "0");
 
 /**
+ * Um algarismo do painel. A troca é uma remontagem: a `key` é o próprio
+ * caractere, então o dígito só reanima quando MUDA — o "1" de 18 fica parado
+ * enquanto o "8" vira 9. Sem isso o placar inteiro pulsaria a cada segundo.
+ */
+function TickDigit({ char }: { char: string }) {
+  return (
+    <span key={char} className="tique" suppressHydrationWarning>
+      {char}
+    </span>
+  );
+}
+
+/**
  * Renders the time-until a deadline. Two variants:
  *   - "compact" (default): single string like "2d 7h", ticks every 30s. Used
  *     in the dashboard and submission page.
- *   - "segments": four large mono digits (DIAS / HORAS / MIN / SEG), ticks
- *     every 1s. `tone` switches it between the cream ground and a dark band.
+ *   - "segments": DIAS / HORAS / MIN / SEG. Sizes md and lg são quatro números
+ *     mono; size xl é o painel de relógio da última chamada. `tone`
+ *     switches it between the cream ground and a dark band.
  *
  * SSR renders the `placeholder` (compact) or zeroed tiles (segments) to
  * avoid hydration mismatch from Date.now() differing between server and
@@ -70,50 +84,76 @@ export function Countdown({
       { value: seg?.minutes ?? 0, label: "min" },
       { value: seg?.seconds ?? 0, label: "seg" },
     ];
-    /* Só o tamanho xl (a última chamada da LP) tem hierarquia interna. Quatro
-       números do mesmo corpo dão ao "05 SEG" — que muda a cada segundo e não
-       decide nada — o mesmo peso do "33 DIAS", que é a informação. O dia vira
-       o número da seção; hora, minuto e segundo viram o relógio de apoio ao
-       lado, alinhados pela base para o olho ler uma linha só. */
     const hero = size === "xl";
-    const digitClass =
-      size === "md"
-        ? "text-2xl sm:text-3xl"
-        : hero
-          ? "text-[2.1rem] sm:text-[3.1rem] lg:text-[3.9rem]"
-          : "text-4xl sm:text-5xl";
-    const leadDigitClass = "text-[4rem] sm:text-[6.75rem] lg:text-[8.75rem]";
-    /* Sobre o esmeralda, creme com alpha não passa AA em corpo pequeno — o
-       teto do par é 5.21:1 e só com alpha cheio. E o amarelo do rótulo-líder
-       dá 4.30:1, que reprova como texto pequeno e passa como texto grande:
-       por isso "DIAS" é 19px bold, tamanho de legenda do número, não de nota
-       de rodapé. */
-    const labelClass =
-      size === "md"
-        ? "mt-1 text-[10px]"
-        : hero
-          ? "mt-2 text-[11px] tracking-[0.2em]"
-          : "mt-2 text-[11px]";
-    const leadLabelClass = "mt-2 text-[19px] font-bold tracking-[0.2em]";
-    const dotClass =
-      size === "md" ? "mt-3 sm:mt-4" : hero ? "mb-7 sm:mb-9 lg:mb-11" : "mt-5 sm:mt-6";
     const onDark = tone === "surface";
+    const digitClass = size === "md" ? "text-2xl sm:text-3xl" : "text-4xl sm:text-5xl";
+    const labelClass = size === "md" ? "mt-1 text-[10px]" : "mt-2 text-[11px]";
+    const dotClass = size === "md" ? "mt-3 sm:mt-4" : "mt-5 sm:mt-6";
 
-    const digits = (value: number, lead: boolean) => (
+    /* O tamanho xl (a última chamada da LP) é um PAINEL DE RELÓGIO: quatro
+       pás iguais e o algarismo TRANSBORDANDO a aresta de cima, porque quem
+       manda no bloco é o número, não a caixa. Nenhuma peça é maior que a
+       outra — a leitura vem do tamanho do dígito, e a pá é só o papel atrás.
+       O algarismo é condensado (eixo wdth do Archivo) e leve: é o único lugar
+       da marca onde o peso preto atrapalharia: em corpo de 8rem o black vira
+       mancha. */
+    if (hero) {
+      const chars = (value: number) => (seg !== undefined ? pad(value) : "00").split("");
+      const panelBg = onDark ? "bg-surface/10" : "bg-ink/[0.06]";
+      const seamBg = onDark ? "bg-ink/15" : "bg-ink/[0.05]";
+      const numTone = onDark ? "text-surface-raised" : "text-ink";
+      const labelTone = onDark ? "text-surface/70" : "text-muted";
+
+      return (
+        <div
+          role="timer"
+          className={`mx-auto grid max-w-2xl grid-cols-4 gap-2 pt-4 sm:gap-3 sm:pt-6 lg:gap-4 ${className}`}
+        >
+          <span className="sr-only" suppressHydrationWarning>
+            {seg === undefined
+              ? "Carregando a contagem regressiva"
+              : `Faltam ${tiles[0].value} dias, ${tiles[1].value} horas, ${tiles[2].value} minutos e ${tiles[3].value} segundos`}
+          </span>
+          {tiles.map((tile) => (
+            <div
+              key={tile.label}
+              aria-hidden
+              className={`relative h-[58px] rounded-[3px] sm:h-[104px] lg:h-[132px] ${panelBg}`}
+            >
+              <span className={`absolute inset-x-0 top-0 h-[18%] rounded-t-[3px] ${seamBg}`} />
+              <span
+                className={`absolute inset-x-0 bottom-[24%] flex justify-center font-heading text-[3.6rem] font-light leading-none tracking-tight [font-stretch:74%] sm:text-[6.4rem] lg:text-[8.25rem] ${numTone}`}
+              >
+                {chars(tile.value).map((c, i) => (
+                  <TickDigit key={`${tile.label}-${i}`} char={c} />
+                ))}
+              </span>
+              <span
+                className={`absolute inset-x-0 bottom-[7%] text-center font-mono text-[8px] uppercase leading-none tracking-[0.18em] sm:text-[10px] ${labelTone}`}
+              >
+                {tile.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    const digits = (value: number) => (
       <p
         className={`font-mono font-bold tabular-nums leading-none tracking-tight ${
           onDark ? "text-surface" : "text-ink"
-        } ${lead ? leadDigitClass : digitClass}`}
+        } ${digitClass}`}
         suppressHydrationWarning
       >
         {seg !== undefined ? pad(value) : "00"}
       </p>
     );
-    const caption = (label: string, lead: boolean) => (
+    const caption = (label: string) => (
       <p
         className={`font-mono uppercase tracking-wider ${
-          onDark ? (lead ? "text-yellow" : "text-surface") : "text-muted"
-        } ${lead && hero ? leadLabelClass : labelClass}`}
+          onDark ? "text-surface" : "text-muted"
+        } ${labelClass}`}
       >
         {label}
       </p>
@@ -128,31 +168,6 @@ export function Countdown({
       />
     );
 
-    if (hero) {
-      const [lead, ...rest] = tiles;
-      return (
-        <div
-          className={`flex items-end justify-center gap-5 sm:gap-8 lg:gap-10 ${className}`}
-        >
-          <div className="text-center">
-            {digits(lead.value, true)}
-            {caption(lead.label, true)}
-          </div>
-          <div className="flex items-end gap-3 sm:gap-5">
-            {rest.map((tile, i) => (
-              <Fragment key={tile.label}>
-                {i > 0 && dot(tile.label)}
-                <div className="text-center">
-                  {digits(tile.value, false)}
-                  {caption(tile.label, false)}
-                </div>
-              </Fragment>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div
         className={`flex items-start justify-center gap-3 sm:gap-5 ${className}`}
@@ -161,8 +176,8 @@ export function Countdown({
           <Fragment key={tile.label}>
             {i > 0 && dot(tile.label)}
             <div className="text-center">
-              {digits(tile.value, false)}
-              {caption(tile.label, false)}
+              {digits(tile.value)}
+              {caption(tile.label)}
             </div>
           </Fragment>
         ))}

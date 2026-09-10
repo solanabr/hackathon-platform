@@ -24,7 +24,7 @@ const SWAY_SECONDS = 16;
 
 /* Numa taça não existe vão: o volume vem da luz e o ornamento vem da pintura,
    não do recesso — invertido em relação ao Colosseum. */
-const TONE_FLOOR = 0.2;
+const TONE_FLOOR = 0.3;
 const RECESS_GAIN = 0.12;
 const FORM_GAIN = 0.82;
 const ALBEDO_MIX = 0.85;
@@ -33,7 +33,7 @@ export function TrophyScene({ className = "" }: { className?: string }) {
   const showScene = useSceneEligible();
 
   return (
-    <div className={`relative flex items-center justify-center ${className}`}>
+    <div className={`flex items-center justify-center ${className}`}>
       {showScene ? null : (
         <Trophy className="h-full w-auto drop-shadow-[8px_10px_0_rgb(27_35_29/0.16)]" />
       )}
@@ -57,7 +57,7 @@ export function TrophyScene({ className = "" }: { className?: string }) {
           fadeStart={-1}
           fadeEnd={0}
           paper={false}
-          className="h-full w-full text-ink"
+          className="h-full w-full text-surface"
         />
       ) : null}
     </div>
