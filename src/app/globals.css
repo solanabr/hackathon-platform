@@ -637,51 +637,6 @@ details[open] > .faq-answer {
   }
 }
 
-/* O CANHOTO QUE ATRAVESSA A PÁGINA.
- *
- * Objeto de papel, então entra DEPOSITADO — sobe da borda de baixo com um giro
- * a mais e assenta no ângulo de repouso, com a curva de carimbo. A saída é o
- * espelho: mesma família de curva, mais curta, porque ao chegar na última
- * chamada o olho tem que ir para o ticket inteiro e não acompanhar o canhoto
- * saindo de cena. Duas durações diferentes por hierarquia, nunca a mesma.    */
-.ticket-stub {
-  transition:
-    transform var(--dur-instant) var(--ease-saida),
-    opacity var(--dur-instant) var(--ease-saida);
-}
-.ticket-stub-in {
-  transform: rotate(calc(var(--tilt-papel) * -1));
-  opacity: 1;
-  transition:
-    transform var(--dur-rapida) var(--ease-carimbo),
-    opacity var(--dur-rapida) var(--ease-entrada);
-}
-.ticket-stub-out {
-  --stub-travel: calc(100% + 1.25rem);
-  transform: translate3d(0, var(--stub-travel), 0)
-    rotate(calc(var(--tilt-papel) * 2.5));
-  opacity: 0;
-}
-
-/* O contrato do sistema é trocar o VETOR, não desligar: em movimento reduzido
-   o canhoto aparece e some no lugar, com a mesma ordem e a mesma hierarquia
-   de tempo. A rotação já zera sozinha porque --tilt-papel vira 0deg; o
-   deslocamento é próprio deste componente, então ele zera aqui. */
-@media (prefers-reduced-motion: reduce) {
-  .ticket-stub-out {
-    --stub-travel: 0px;
-  }
-}
-
-/* O corpo do canhoto é recortado duas vezes — overflow e máscara die-cut —
-   então um anel por fora do link some na borda. Mesma solução do .btn-cut:
-   o foco de teclado vira um contorno por dentro. */
-.ticket-stub a:focus-visible {
-  outline: 2px solid var(--color-green-dark);
-  outline-offset: -5px;
-  border-radius: 2px;
-}
-
 /* The shadow has to follow the die-cut, so it is a filter on the wrapper. */
 .ticket-shadow {
   filter: drop-shadow(0 16px 22px rgb(27 35 29 / 0.26));
@@ -1132,7 +1087,7 @@ html:not(.press-done) {
 .hero-ticket {
   /* O ângulo de repouso não é decoração: é o que separa "colado à mão" de
      "posicionado por CSS", e é o que dá tensão à coluna direita agora que o
-     ticket subiu para a altura da linha que promete o dinheiro. */
+     ticket assenta no pé da dobra, na mesma linha dos botões. */
   transform: rotate(calc(var(--tilt-papel) * -1));
   animation: heroTicket var(--dur-lenta) var(--ease-carimbo)
     calc(var(--hero-cue) + 0.28s) backwards;

@@ -24,12 +24,11 @@ import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
 import { CtaHalftone } from "@/components/home/cta-halftone";
 import { NetworkHalo } from "@/components/home/network-halo";
-import { TicketStub } from "@/components/campaign/ticket-stub";
 import { StepGlyph } from "@/components/home/step-glyph";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
-import { EventTicket, TICKET_SERIAL } from "@/components/campaign/event-ticket";
+import { EventTicket } from "@/components/campaign/event-ticket";
 import { CasesFan, HeadTile } from "@/components/home/cases-fan";
 import {
   CommunityPreview,
@@ -42,18 +41,12 @@ import {
 import { SolanaCoin } from "@/components/home/solana-coin";
 import { PressSheet } from "@/components/home/press-sheet";
 import { PrizePedestal } from "@/components/home/prize-pedestal";
-import { PrizeBoard } from "@/components/home/prize-board";
 import { SoundToggle } from "@/components/campaign/sound-toggle";
 import { PAGE_SHELL } from "@/components/layout/container";
 
 // A dissolução mora no container, não no SVG: a faixa é recortada de forma
 // diferente em cada largura, e só uma máscara relativa à viewport garante que
 // o topo do que aparece sempre esmaece em vez de cortar reto.
-const FADE_UP: CSSProperties = {
-  maskImage: "linear-gradient(to bottom, transparent, #000 30%)",
-  WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 30%)",
-};
-
 export const metadata = {
   title: "Hackathon Colosseum | Tire sua ideia do papel",
   description:
@@ -479,15 +472,14 @@ export default async function HomePage() {
           className="pointer-events-none absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]"
         >
           <div
-            className="absolute inset-x-0 bottom-0 h-[38%] sm:h-[56%] lg:left-auto lg:right-0 lg:h-[46%] lg:w-[74%]"
-            style={FADE_UP}
+            className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:left-auto lg:right-0 lg:h-[56%] lg:w-[86%]"
           >
             <ColosseumScene />
           </div>
         </div>
 
         <div
-          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-12 lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:6vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
+          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-stretch lg:gap-12 lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:6vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
         >
           <div>
             <div className="hero-print mb-5 flex">
@@ -541,15 +533,12 @@ export default async function HomePage() {
               </TrackedCta>
             </div>
 
-            <p className="hero-after mt-4 max-w-md text-pretty text-sm leading-relaxed text-ink/60">
-              Sua conta na Superteam Brasil é o primeiro passo. Depois,
-              mostramos como concluir a inscrição oficial na Colosseum.
-            </p>
-
           </div>
 
-          <div id="hero-ticket" className="hero-ticket lg:mt-[4.2rem] lg:[@media(max-height:860px)]:mt-[2.6rem]">
-            <EventTicket />
+          <div className="lg:flex lg:flex-col lg:justify-end lg:pb-3">
+            <div id="hero-ticket" className="hero-ticket">
+              <EventTicket />
+            </div>
           </div>
 
           <MobileSteps
@@ -624,32 +613,40 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Prêmios: um palco só — a taça no meio do quadro, o texto na faixa de
+          baixo e nada depois dela. */}
       <section
         id="premiacoes"
-        className={`${LP_SECTION} relative overflow-hidden bg-surface pb-16 lg:pb-36`}
+        className="relative overflow-hidden bg-surface pt-24 pb-14 lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pt-20 lg:pb-[7rem] lg:[@media(max-height:820px)]:pt-[4.75rem] lg:[@media(max-height:820px)]:pb-[6rem]"
         aria-label="Prêmios e oportunidades de investimento"
       >
-        <div className={`${PAGE_SHELL} relative`}>
-          <PrizePedestal />
-
-          <Reveal className="mt-10 lg:mt-12">
+        <div className={`${PAGE_SHELL} relative flex w-full min-h-0 flex-1 flex-col`}>
+          <Reveal tone="texto" className="mb-4">
             <SectionHat centered>Prêmios e investimento</SectionHat>
-            <h2 className="mx-auto mt-5 max-w-4xl text-balance text-center font-heading text-4xl font-black leading-[1.02] tracking-tight text-ink [font-stretch:105%] sm:text-5xl xl:text-[3.6rem]">
-              Seu projeto pode conquistar{" "}
-              <span className="inline-block bg-yellow px-3 pb-[0.08em] text-green-dark [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
-                mais
-              </span>{" "}
-              do que os primeiros usuários.
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-pretty text-center text-base leading-relaxed text-muted sm:text-lg">
-              O hackathon reúne oportunidades de premiação e investimento para
-              projetos selecionados. É uma chance de apresentar o que você
-              construiu e buscar recursos para desenvolver sua empresa.
-            </p>
           </Reveal>
 
-          <Reveal index={1} tone="texto">
-            <div className="mt-8 flex flex-col items-center gap-4">
+          <PrizePedestal />
+
+          <div className="mt-7 grid gap-9 lg:mt-6 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-end lg:gap-12 xl:gap-16">
+            <Reveal tone="texto">
+              <h2 className="max-w-[21ch] text-balance font-heading text-[1.7rem] font-black leading-[1.06] tracking-tight text-ink [font-stretch:105%] sm:text-[1.9rem] xl:text-[2.1rem]">
+                Seu projeto pode conquistar{" "}
+                <span className="inline-block bg-yellow px-2.5 pb-[0.08em] text-green-dark [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
+                  mais
+                </span>{" "}
+                do que os primeiros usuários.
+              </h2>
+              <p className="mt-3 max-w-[36ch] text-pretty text-sm leading-relaxed text-muted">
+                O hackathon reúne oportunidades de premiação e investimento para
+                projetos selecionados.
+              </p>
+            </Reveal>
+
+            <Reveal
+              index={1}
+              tone="texto"
+              className="order-last flex justify-center lg:order-none lg:pb-1"
+            >
               <TrackedCta
                 href={cadastroHref}
                 event="cta_clicked"
@@ -658,13 +655,21 @@ export default async function HomePage() {
               >
                 <span>{ctaLabel}</span>
               </TrackedCta>
-              <p className="text-center font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink/65">
-                Valores e condições após a divulgação oficial
-              </p>
-            </div>
-          </Reveal>
+            </Reveal>
 
-          <PrizeBoard />
+            <Reveal index={2} tone="texto" className="lg:justify-self-end lg:text-right">
+              <span className="inline-flex items-center rounded-full bg-yellow px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-green-dark">
+                A divulgar
+              </span>
+              <p className="mt-3 font-heading text-lg font-black tracking-tight text-ink sm:text-xl">
+                Valores e condições
+              </p>
+              <p className="mt-2 max-w-[36ch] text-pretty text-sm leading-relaxed text-muted lg:ml-auto">
+                Prêmios, categorias e a avaliação para programas de aceleração
+                aparecem aqui após a divulgação oficial.
+              </p>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -1159,21 +1164,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {!registered && (
-        <>
-          <div
-            aria-hidden
-            className="h-[calc(5.5rem+env(safe-area-inset-bottom))] lg:hidden"
-          />
-          <TicketStub
-            href={cadastroHref}
-            serial={TICKET_SERIAL}
-            label={ctaLabel}
-            fromId="hero-ticket"
-            untilId="ultima-chamada"
-          />
-        </>
-      )}
       <SoundToggle />
     </div>
   );
