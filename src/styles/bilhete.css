@@ -34,6 +34,13 @@
    gradiente (que só transiciona se o browser souber que aquilo é uma
    porcentagem) e os dois ângulos da pose. O valor inicial de cada um é o
    estado de repouso — a peça nasce pronta, nunca esperando JS. */
+/* A unidade do bilhete. Registrada para nascer valendo 1 em qualquer
+   instância: a peça do hero não precisa saber que existe uma peça grande. */
+@property --bu {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
 @property --foil-x {
   syntax: "<percentage>";
   inherits: true;
@@ -60,16 +67,22 @@
   initial-value: 0;
 }
 
-/* --- O QUADRO DA TRAVESSIA -----------------------------------------------
- * A perspectiva da cinemática de saída (`styles/scroll.css`, `.cena-bilhete`).
- * Mais curta que a da pose porque o gesto é outro: ali o cartão está na mão e
- * inclina de leve; aqui ele ATRAVESSA a câmera, e travessia sem perspectiva
- * curta vira um `scale` grande — que é exatamente o zoom de apresentação que
- * esta transição não quer ser. A origem fica alta e à direita porque é de lá,
- * do canto onde o bilhete descansa, que ele parte.                           */
-.cena-bilhete-quadro {
-  perspective: 1150px;
-  perspective-origin: 68% 34%;
+/* O VOO. Duas grandezas físicas que o giro do bilhete escreve e as camadas de
+   papel leem: quanto a peça está NO AR (governa a sombra) e quanto a face
+   está VIRADA PARA LONGE DA LUZ (governa o quanto ela escurece). Papel que
+   gira sem escurecer é a razão principal de uma virada parecer pedra girando
+   num torno: uma superfície real perde luz conforme a normal dela sai do
+   eixo, e o olho lê essa perda antes de ler a rotação. Zero nas duas pontas —
+   no canto do hero e estacionada, a peça é exatamente o desenho aprovado. */
+@property --voo-alto {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --voo-sombra {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
 }
 
 /* --- A POSE --------------------------------------------------------------
@@ -216,7 +229,7 @@
     rgb(255 255 255 / 0) 100%
   );
   background-size: 220% 100%;
-  background-position: calc(var(--foil-x) * 1.6) 0;
+  background-position: var(--foil-x) 0;
   mix-blend-mode: soft-light;
   opacity: 0.75;
 }
@@ -257,24 +270,55 @@
    de piscar. Sem máscara, porque máscara com borda é a outra forma de criar
    uma linha onde não deve haver nenhuma. */
 .foil-iris {
+  /* O ESPECTRO REPETE TRÊS VEZES dentro da imagem. Uma passada só de arco-íris
+     numa imagem de três alturas deixa UMA faixa de matiz sobre o canhoto — e
+     `hard-light` com um verde saturado inteiro apaga o amarelo: o canhoto vira
+     verde, não vira foil. Com três ciclos, qualquer janela de uma altura
+     mostra o espectro inteiro, a média volta a ser neutra, o amarelo
+     sobrevive, e o que `--foil-x` faz é escorregar o matiz — que é o gesto do
+     holograma. */
   background-image: linear-gradient(
     163deg,
-    hsl(340 92% 74% / 0.9) 0%,
-    hsl(24 100% 70% / 0.85) 14%,
-    hsl(52 100% 74% / 0.8) 27%,
-    hsl(122 74% 64% / 0.85) 42%,
-    hsl(176 86% 68% / 0.85) 56%,
-    hsl(212 92% 74% / 0.85) 70%,
-    hsl(286 86% 76% / 0.9) 85%,
-    hsl(340 92% 74% / 0.9) 100%
+    hsl(340 88% 54% / 0.85) 0.0%,
+    hsl(24 92% 54% / 0.8) 4.67%,
+    hsl(52 95% 58% / 0.75) 9.0%,
+    hsl(122 70% 46% / 0.8) 14.0%,
+    hsl(176 80% 48% / 0.8) 18.67%,
+    hsl(212 88% 54% / 0.8) 23.33%,
+    hsl(286 80% 56% / 0.85) 28.33%,
+    hsl(340 88% 54% / 0.85) 33.33%,
+    hsl(24 92% 54% / 0.8) 38.0%,
+    hsl(52 95% 58% / 0.75) 42.33%,
+    hsl(122 70% 46% / 0.8) 47.33%,
+    hsl(176 80% 48% / 0.8) 52.0%,
+    hsl(212 88% 54% / 0.8) 56.67%,
+    hsl(286 80% 56% / 0.85) 61.67%,
+    hsl(340 88% 54% / 0.85) 66.67%,
+    hsl(24 92% 54% / 0.8) 71.33%,
+    hsl(52 95% 58% / 0.75) 75.67%,
+    hsl(122 70% 46% / 0.8) 80.67%,
+    hsl(176 80% 48% / 0.8) 85.33%,
+    hsl(212 88% 54% / 0.8) 90.0%,
+    hsl(286 80% 56% / 0.85) 95.0%,
+    hsl(340 88% 54% / 0.85) 100%
   );
   background-size: 100% 300%;
-  background-position: 0 calc(var(--foil-x) * -2);
+  /* A conta da posição em porcentagem é `p × (caixa − imagem)`: com a imagem
+     valendo três alturas, `--foil-x` de 0 a 100% já varre duas alturas
+     inteiras de espectro. Multiplicar ou negar aqui joga o gradiente para fora
+     da caixa e o canhoto volta a ser amarelo chapado — sem erro visível de
+     sintaxe, só sem cor. */
+  background-position: 0 var(--foil-x);
   /* `hard-light` e não `overlay`: sobre um amarelo saturado o `overlay`
      preserva o matiz da base e o que sobra do espectro é claro-escuro — foil
      sem cor. A difração precisa DESLOCAR o matiz. */
   mix-blend-mode: hard-light;
-  opacity: 0.44;
+  /* O AMARELO É A MARCA, a íris é o acabamento. `hard-light` com espectro
+     claro demais vira pastel e come o amarelo — o canhoto deixa de ser o
+     canhoto amarelo do Superteam e vira uma tira de arco-íris. Espectro em
+     meia-luz e opacidade curta: o matiz escorrega POR CIMA do amarelo em vez
+     de substituí-lo. */
+  opacity: 0.34;
 }
 
 /* Camada 3 — o especular. Uma lâmina de luz larga, com as duas pontas mortas
@@ -283,9 +327,9 @@
 .foil-brilho {
   background-image: linear-gradient(
     168deg,
-    rgb(255 255 255 / 0) calc(var(--foil-x) - 40%),
-    rgb(255 255 255 / 0.62) var(--foil-x),
-    rgb(255 255 255 / 0) calc(var(--foil-x) + 40%)
+    rgb(255 255 255 / 0) calc(var(--foil-x) - 26%),
+    rgb(255 255 255 / 0.5) var(--foil-x),
+    rgb(255 255 255 / 0) calc(var(--foil-x) + 26%)
   );
   mix-blend-mode: soft-light;
 }
@@ -334,6 +378,79 @@
   .bilhete-espessura {
     transform: translate3d(1.2px, 1.4px, 0);
   }
+}
+
+/* --- A PEÇA QUE VIRA ------------------------------------------------------
+ * A estrutura das duas faces. O comportamento — quando e quanto ela vira —
+ * está em `styles/scroll.css`, junto com as outras cenas de rolagem; aqui
+ * mora só o que a peça É.
+ *
+ * O REPOUSO É O DESTINO. `.bilhete-voo` nasce com `rotateY(180deg)`, ou seja
+ * estacionada e com o verso para cima. Sem `animation-timeline`, sem JS, com
+ * movimento reduzido ou abaixo de `lg`, o que fica na tela é a seção pronta e
+ * legível — nunca um cartão parado no meio de um giro à espera de um efeito.
+ * O canto do hero é que é o estado transformado.                             */
+.bilhete-vao {
+  position: relative;
+  /* A dobra tem `z-10` e é pintada antes. Sem isto a peça atravessaria a
+     primeira dobra por baixo dela durante o voo inteiro. */
+  z-index: 30;
+  /* Distância de câmera proporcional à peça: ~2x a largura dela estacionada.
+     A primeira medida era quase o dobro disto e o efeito colateral era o
+     defeito: com a câmera tão longe a projeção fica quase ortográfica, as
+     duas bordas verticais encolhem igual e o giro perde a única pista de que
+     existe profundidade. Perto o bastante para a borda que se afasta
+     encolher visivelmente, longe o bastante para o retângulo não virar
+     trapézio de vitrine ao passar dos 45°. */
+  perspective: 1900px;
+  perspective-origin: 50% 44%;
+}
+
+.bilhete-voo {
+  position: relative;
+  transform-style: preserve-3d;
+  /* A lista de funções é a MESMA dos quadros do voo, inclusive as que aqui
+     valem zero: quadro com lista diferente força interpolação de matriz, e
+     matriz com 180° de `rotateY` degenera — o cartão achata em vez de virar. */
+  transform: translate3d(
+      calc(var(--voo-dx, 0px) * 0),
+      calc(var(--voo-dy, 0px) * 0),
+      0
+    )
+    scale(1) rotate(0deg) rotateX(0deg) rotateY(180deg) skewY(0deg);
+}
+
+/* Cada face esconde as próprias costas — é o que faz uma virada mostrar o
+   outro lado em vez de mostrar o mesmo lado espelhado. */
+.bilhete-face {
+  position: relative;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* A sombra é `filter` porque tem que seguir o serrilhado, e mora na FACE e
+     não no invólucro: o invólucro é quem guarda o `preserve-3d`, e um filtro
+     ali achataria a cena inteira — a virada viraria um retângulo encolhendo. */
+  /* A FACE PERDE LUZ AO VIRAR e a sombra sai de baixo dela quando ela sobe.
+     `brightness` e não uma véu absoluto por cima porque o filtro segue o
+     recorte serrilhado de graça — véu retangular vazaria no picote e no canto
+     cortado. A ordem importa: escurece a peça primeiro, projeta a sombra
+     depois, senão a sombra sairia lavada junto com o papel. */
+  filter: brightness(calc(1 - var(--voo-sombra, 0) * 0.28))
+    contrast(calc(1 + var(--voo-sombra, 0) * 0.07))
+    drop-shadow(
+      calc(var(--voo-alto, 0) * -7px * var(--bu))
+        calc((10px + var(--voo-alto, 0) * 30px) * var(--bu))
+        calc((16px + var(--voo-alto, 0) * 34px) * var(--bu))
+        rgb(27 35 29 / calc(0.22 - var(--voo-alto, 0) * 0.08))
+    );
+}
+
+/* A frente fica em fluxo e é ela quem define a ALTURA da peça; o verso é
+   sobreposto. Duas faces em fluxo dariam duas alturas, e um cartão com duas
+   alturas não é um cartão. */
+.bilhete-face-verso {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
 }
 
 /* --- TINTA PRENSADA ------------------------------------------------------

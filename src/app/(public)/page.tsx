@@ -30,6 +30,7 @@ import { StepNumeral } from "@/components/home/step-numeral";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { EventTicket } from "@/components/campaign/event-ticket";
+import { BilheteVirando } from "@/components/campaign/ticket-flip";
 import { CasesFan } from "@/components/home/cases-fan";
 import {
   CommunityPreview,
@@ -120,6 +121,11 @@ const COLOSSEUM_FACTS = [
     body: "As trilhas são por rede, não por tema. Os jurados olham produto, tração e plano de distribuição. Sozinho ou em time, uma submissão por pessoa.",
   },
 ];
+
+/* A mesma linha nos dois lugares: rodapé da grade no telefone, última cláusula
+   do verso no desktop. Duas cópias literais divergiriam na primeira correção
+   de data. */
+const COLOSSEUM_NOTA = "Jurados e regras completas saem em 14 de setembro.";
 
 const SOLANA_STATS = [
   {
@@ -623,33 +629,106 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* O quadro guarda a PERSPECTIVA e a cena guarda o GIRO: quem
-              observa é a página, quem vira é o cartão. Separados porque a
-              cena também é o elemento que a régua de rolagem mede — juntar os
-              dois faria a `view()` medir uma caixa que já está deformada. */}
-          <div className="cena-bilhete-quadro lg:mt-6 lg:flex lg:w-full lg:max-w-[min(40vw,37rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90">
-            <div className="cena-bilhete">
-              <div id="hero-ticket" className="hero-ticket">
-                <EventTicket />
-              </div>
+          {/* A ÂNCORA. De `lg` para cima este bilhete fica invisível e o que
+              a pessoa vê aqui é a peça de verdade, trazida da seção seguinte
+              pelo voo. Mas a caixa continua ocupada, e é ela que diz ao voo
+              onde é o canto do hero — e é ela que fica no lugar, visível,
+              quando não há régua de rolagem ou o movimento é reduzido. */}
+          <div
+            id="bilhete-ancora"
+            className="bilhete-ancora lg:mt-6 lg:flex lg:w-full lg:max-w-[min(40vw,37rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90"
+          >
+            <div id="hero-ticket" className="hero-ticket">
+              <EventTicket />
             </div>
           </div>
         </div>
       </section>
 
+      {/* O bilhete pousa AQUI. O título fica de fora porque título é da
+          página; o resto do conteúdo desta seção é o verso da peça — e é por
+          isso que a grade de cards só existe abaixo de `lg`, onde a virada não
+          acontece. Nos dois casos o conteúdo é o mesmo e sai da mesma fonte. */}
       <section
         id="colosseum"
         aria-label="O que é o Colosseum"
-        className={`${LP_SECTION} relative bg-surface`}
+        className={`${LP_SECTION} relative bg-surface pb-16 lg:pb-20`}
       >
-        <div className={PAGE_SHELL}>
+        {/* A ARENA. O hero mostra o monumento por fora; aqui a página já está
+            DENTRO dele — arquibancada cheia, arcada em volta, areia embaixo — e
+            é sobre essa areia que o bilhete pousa. A cena inteira entra, sem
+            recorte: `cover`, sangrando pelos quatro lados, porque arena não tem
+            pé nem borda, ela continua fora do quadro.
+
+            Duas coisas a mantêm fundo e não ilustração. A tinta é curta — o
+            mesmo alfa das manchas de meio-tom do hero, não o do legionário, que
+            é peça. E a máscara come as bordas: a cena nasce do papel no topo,
+            onde a dobra anterior termina, e volta a ser papel embaixo, antes de
+            `#cases` começar. Sem isso o fundo teria arestas, e aresta em fundo
+            de seção lê como imagem colada.
+
+            A MÁSCARA MORA NO QUADRO QUE CORTA, não na caixa da chapa. A caixa
+            deriva com a rolagem, e uma máscara presa nela viaja junto: a borda
+            de cima sai do corte no meio do curso e a arena reaparece com uma
+            aresta reta atravessando a página. Quem corta é este quadro, que
+            está parado — então é ele quem desmancha.
+
+            NEM `isolate` NEM `-z-10` AQUI. O bilhete em voo é filho desta
+            seção e sobrevoa a dobra anterior graças ao `z-index: 30` dele
+            valendo contra o `z-10` do hero — no MESMO contexto de empilhamento.
+            Isolar a seção prende esse 30 aqui dentro, a dobra inteira passa a
+            pintar por cima, e o Coliseu do hero decepa a peça no meio do voo.
+            Um `z-0` posicionado já sobe acima do fundo da própria seção, que é
+            tudo o que esta camada precisa. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 overflow-clip [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_9%,#000_27%,#000_72%,transparent_99%)]"
+        >
+          {/* A caixa tem a PROPORÇÃO da chapa e mora no topo da seção. É o que
+              faz a cena inteira caber — arquibancada, arcada, areia — em vez de
+              um recorte central dela: com a caixa na razão certa, `cover` não
+              tem o que cortar. Ancorada em cima porque a arcada é a parte que
+              lê como Coliseu, e ela tem que ficar atrás do título e da aba do
+              bilhete; a areia desce e morre na máscara, que é onde o cartão
+              pousa. */}
+          <div className="cena-deriva-curta absolute inset-x-[-14%] top-[7%] aspect-[1199/692]">
+            <HalftoneImage
+              src="/home/arena.webp"
+              fit="cover"
+              /* A mesma régua do legionário: a chapa só é pedida onde ela
+                 aparece. Abaixo de `lg` a seção é uma grade de cards opacos —
+                 a arena ficaria escondida atrás deles e o telefone teria
+                 pagado 190 kB para não ver nada. */
+              minWidth={1024}
+              gamma={1.5}
+              toneFloor={0.09}
+              toneGain={1.02}
+              className="h-full w-full text-ink/40"
+            />
+          </div>
+        </div>
+
+        <div className={`relative ${PAGE_SHELL}`}>
           <Reveal>
             <h2 className="max-w-[15ch] text-balance font-heading text-[clamp(1.9rem,4.6vw,3.35rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] text-ink [font-stretch:118%]">
               O que é o Colosseum
             </h2>
           </Reveal>
 
-          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5">
+          {/* A peça estacionada não precisa ocupar a coluna inteira. O que
+              governa o tamanho dela é `--bu` — a razão entre esta caixa e a
+              âncora do hero —, então encolher a caixa encolhe a peça e a
+              chegada do voo junto, numa conta só. Com margem dos dois lados a
+              arena continua visível em volta do bilhete, que é o que faz o
+              cartão parecer POUSADO na areia em vez de colado por cima dela. */}
+          <div className="mx-auto mt-8 hidden sm:mt-10 lg:block lg:max-w-[84%] xl:max-w-[78%]">
+            <BilheteVirando
+              fatos={COLOSSEUM_FACTS}
+              nota={COLOSSEUM_NOTA}
+            />
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:hidden">
             {COLOSSEUM_FACTS.map((fact, i) => (
               <Reveal
                 key={fact.figure}
@@ -679,8 +758,8 @@ export default async function HomePage() {
           </div>
 
           <Reveal index={5} tone="texto">
-            <p className="mt-6 font-mono text-[11px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65">
-              Jurados e regras completas saem em 14 de setembro.
+            <p className="mt-6 font-mono text-[11px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65 lg:hidden">
+              {COLOSSEUM_NOTA}
             </p>
           </Reveal>
         </div>

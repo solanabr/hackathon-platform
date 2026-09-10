@@ -679,8 +679,8 @@ details[open] > .faq-answer {
    edge, intersected, so the outline chews like a real perforation. The shadow
    sits on the wrapper because a mask clips a box-shadow off its own element. */
 .ticket-cut {
-  --ticket-notch: 5px;
-  --ticket-pitch: 13px;
+  --ticket-notch: calc(5px * var(--bu, 1));
+  --ticket-pitch: calc(13px * var(--bu, 1));
   mask-image:
     radial-gradient(circle var(--ticket-notch) at 50% 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
     radial-gradient(circle var(--ticket-notch) at 50% 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
@@ -701,8 +701,8 @@ details[open] > .faq-answer {
 
 @media (min-width: 640px) {
   .ticket-cut {
-    --ticket-notch: 6.5px;
-    --ticket-pitch: 16px;
+    --ticket-notch: calc(6.5px * var(--bu, 1));
+    --ticket-pitch: calc(16px * var(--bu, 1));
   }
 }
 
@@ -718,20 +718,21 @@ details[open] > .faq-answer {
    leva a espessura junto em vez de revelar uma borda reta por baixo. */
 .ticket-paper {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.55),
-    inset 0 -18px 20px -18px rgb(27 35 29 / 0.28);
+    inset 0 calc(1px * var(--bu, 1)) 0 rgb(255 255 255 / 0.55),
+    inset 0 calc(-18px * var(--bu, 1)) calc(20px * var(--bu, 1))
+      calc(-18px * var(--bu, 1)) rgb(27 35 29 / 0.28);
 }
 
 /* The tear line: holes punched through to the cream, each with the burr the
    punch leaves on the paper. */
 .ticket-holes {
   background-image: radial-gradient(
-    circle 5.4px at 50% 50%,
-    var(--ticket-hole-fill, var(--color-surface)) 0 4.2px,
-    rgb(27 35 29 / 0.38) 4.2px 5px,
-    transparent 5.2px
+    circle calc(5.4px * var(--bu, 1)) at 50% 50%,
+    var(--ticket-hole-fill, var(--color-surface)) 0 calc(4.2px * var(--bu, 1)),
+    rgb(27 35 29 / 0.38) calc(4.2px * var(--bu, 1)) calc(5px * var(--bu, 1)),
+    transparent calc(5.2px * var(--bu, 1))
   );
-  background-size: 100% 20px;
+  background-size: 100% calc(20px * var(--bu, 1));
   background-repeat: no-repeat round;
   background-position: center;
 }
@@ -739,16 +740,17 @@ details[open] > .faq-answer {
 /* Uneven bars, so the barcode reads as printed rather than generated; it runs
    bottom-up on the stub, so the gradient walks the y axis. */
 .ticket-barcode-v {
+  --bc: var(--bu, 1);
   background-image: repeating-linear-gradient(
     0deg,
-    currentColor 0 2px,
-    transparent 2px 4px,
-    currentColor 4px 5px,
-    transparent 5px 9px,
-    currentColor 9px 12px,
-    transparent 12px 13px,
-    currentColor 13px 14px,
-    transparent 14px 18px
+    currentColor 0 calc(2px * var(--bc)),
+    transparent calc(2px * var(--bc)) calc(4px * var(--bc)),
+    currentColor calc(4px * var(--bc)) calc(5px * var(--bc)),
+    transparent calc(5px * var(--bc)) calc(9px * var(--bc)),
+    currentColor calc(9px * var(--bc)) calc(12px * var(--bc)),
+    transparent calc(12px * var(--bc)) calc(13px * var(--bc)),
+    currentColor calc(13px * var(--bc)) calc(14px * var(--bc)),
+    transparent calc(14px * var(--bc)) calc(18px * var(--bc))
   );
 }
 

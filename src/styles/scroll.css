@@ -160,87 +160,234 @@
       }
     }
 
-    /* --- O BILHETE ATRAVESSA A CÂMERA -------------------------------------
+    /* --- O BILHETE VIRA E ESTACIONA --------------------------------------
      * A passagem da primeira dobra para a seção que explica o hackathon. Ela
-     * não é um corte: é o próprio bilhete que faz o transporte. Enquanto a
-     * dobra recua, o cartão GIRA sobre o eixo vertical, cresce e passa pela
-     * câmera — e o que fica no lugar dele é a seção seguinte, que já estava
-     * subindo por baixo. O objeto que a pessoa passou a primeira dobra inteira
-     * olhando é o que a leva para dentro do conteúdo.
+     * não é um corte nem uma peça que evapora: é o BILHETE que faz o
+     * transporte. Ele sai do canto do hero, cresce, gira 180° sobre o eixo
+     * vertical e ESTACIONA na seção seguinte com o verso para cima — e o verso
+     * é o conteúdo da seção. O objeto que a pessoa passou a primeira dobra
+     * inteira olhando é o mesmo que ela lê depois, do outro lado.
      *
-     * Três decisões que fazem isso não virar um zoom genérico de apresentação:
+     * Quatro decisões seguram isso de pé:
      *
-     * 1. O CURSO É DESIGUAL. Os primeiros 38% quase não mexem — a peça só
-     *    respira e começa a virar. A régua da rolagem é linear por definição,
-     *    então a aceleração tem que estar nos quadros: sem isso o cartão sai
-     *    voando no primeiro toque de scroll e ninguém chega a ler o bilhete.
+     * 1. A PEÇA MORA NO DESTINO. Ela é filha da seção, e o repouso dela é o
+     *    estado estacionado. O canto do hero é o estado TRANSFORMADO — e os
+     *    números desse estado são medidos da âncora que ficou no hero
+     *    (`components/campaign/ticket-flip.tsx`), não calibrados em `vh`. Um
+     *    pouso calibrado a olho erra em toda altura de janela diferente
+     *    daquela em que foi calibrado.
      *
-     * 2. A LUZ ACOMPANHA O GIRO. `--foil-x` anda no mesmo curso do `rotateY`,
-     *    porque é isso que acontece com foil de verdade quando o cartão vira:
-     *    a banda de íris varre a peça. Herdado, então o ponteiro continua
-     *    mandando enquanto a mão estiver nela — inline vence herança.
+     * 2. A LISTA DE FUNÇÕES É IDÊNTICA EM TODOS OS QUADROS. Listas diferentes
+     *    fazem o browser cair para interpolação de matriz, e matriz com 180°
+     *    de `rotateY` degenera: o cartão achata em vez de virar. Por isso todo
+     *    quadro escreve `translate3d + scale + rotate + rotateY`, inclusive os
+     *    que não precisariam.
      *
-     * 3. A PEÇA DEIXA DE EXISTIR PARA O DEDO ANTES DE SUMIR DA VISTA. Um
-     *    cartão a 3,6x com opacidade zero continua sendo uma parede invisível
-     *    sobre a seção inteira; `pointer-events` sai junto com a tinta.
+     * 3. O GIRO ACONTECE DEPOIS DA VIAGEM COMEÇAR. Nos primeiros 30% a peça
+     *    quase só cresce; a virada mesmo acontece no meio, e o instante de
+     *    perfil (90°) cai perto de dois terços — que é onde o olho espera a
+     *    troca de lado.
      *
-     * A perspectiva mora no quadro, e não aqui: quem gira é o cartão, quem
-     * observa é a página.                                                     */
-    .cena-bilhete {
-      animation: cenaBilhete linear both;
-      /* A régua é a ROLAGEM DA PÁGINA, não a travessia da peça. `view()` mede
-         o bilhete contra a janela, e o bilhete é baixo: a faixa inteira dele
-         se esgotava perto de 0,8 da dobra — o cartão sumia antes de a seção
-         seguinte encostar no topo, e a transição virava um objeto que
-         evapora. Com `scroll(root)` a faixa é escrita em altura de janela e
-         casa com a dobra, que é exatamente o trecho que esta cena cobre. */
-      animation-timeline: scroll(root block);
-      animation-range: 4vh 96vh;
+     * 4. A RÉGUA É A ROLAGEM DA PÁGINA, com o curso escrito em px pelo
+     *    medidor. `view()` mediria a peça contra a janela e a faixa acabaria
+     *    cedo demais; o curso certo é "daqui até a caixa de destino chegar a
+     *    um quarto da tela", e isso é uma distância, não uma travessia.
+     *
+     * Abaixo de `lg` a cena não existe. Não é falta de suporte: é
+     * enquadramento. O verso do bilhete é uma folha de quatro cláusulas, e num
+     * telefone essa folha não cabe na proporção de um ingresso — ali a seção é
+     * a grade de cards e o bilhete fica no hero, inteiro, como sempre esteve. */
+    @media (min-width: 1024px) {
+      /* A cópia do hero vira ÂNCORA: continua ocupando a caixa (é ela que dá
+         a medida) e sai da vista e da árvore de acessibilidade. */
+      .bilhete-ancora {
+        visibility: hidden;
+      }
+
+      /* A peça continua sendo DEPOSITADA na primeira dobra, como sempre foi:
+         a entrada é do invólucro e mexe só em opacidade, porque `transform` no
+         voo já é do scroll e duas animações na mesma propriedade não somam —
+         a última vence e o pouso deixaria de acontecer. */
+      .bilhete-vao {
+        animation: bilheteEntra var(--dur-lenta) var(--ease-entrada)
+          calc(var(--hero-cue) + 0.28s) backwards;
+      }
+
+      @keyframes bilheteEntra {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .bilhete-voo {
+        animation: bilheteVoo linear both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 var(--voo-curso, 60vh);
+      }
     }
 
-    @keyframes cenaBilhete {
+    /* A FÍSICA. Uma folha de papel jogada no ar não é uma placa presa a um
+     * eixo, e a primeira versão desta cena era exatamente isso: rotação
+     * uniforme, escala uniforme, brilho constante. Cada quadro abaixo existe
+     * para desfazer uma dessas três coisas.
+     *
+     * 1. PESO E ARRASTO. A queda vai na frente da travessia lateral: no meio
+     *    do voo a peça já cedeu metade da altura e só um terço do caminho de
+     *    lado. Isso curva a trajetória — papel cai e depois plana, não anda em
+     *    linha reta entre dois pontos.
+     *
+     * 2. INÉRCIA NO GIRO. A folha resiste, vira de vez no meio e passa do
+     *    ponto: cruza os 180° e volta. É o mesmo gesto de `--ease-carimbo`
+     *    escrito em quadros, porque a régua aqui é a rolagem e a curva de
+     *    tempo não existe — quem faz o ritmo é a distribuição dos quadros.
+     *
+     * 3. TORÇÃO. `rotateX` e `skewY` tiram o giro do eixo único. Uma folha
+     *    real nunca gira em torno de uma reta perfeita: ela balança e
+     *    cisalha, e são esses dois graus fora do eixo que fazem o olho ler
+     *    FOLHA em vez de PORTA GIRATÓRIA.
+     *
+     * E as três só convencem porque a superfície acompanha: `--voo-sombra`
+     * apaga a face conforme ela sai do eixo da luz, `--voo-alto` afasta a
+     * sombra do chão enquanto a peça está no ar e `--foil-x` faz a luz varrer
+     * o papel durante a virada — a mesma fonte de luz que acende o canhoto.  */
+    @keyframes bilheteVoo {
       0% {
+        transform: translate3d(var(--voo-dx, 0px), var(--voo-dy, 0px), 0)
+          scale(var(--voo-k, 1)) rotate(-0.7deg) rotateX(0deg) rotateY(0deg)
+          skewY(0deg);
+        --voo-alto: 0;
+        --voo-sombra: 0;
         --foil-x: 50%;
-        opacity: 1;
-        pointer-events: auto;
-        transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
       }
-      /* `pointer-events` é discreto: ele vira no meio do intervalo, ou seja
-         logo no comecinho do curso. É de propósito. A partir do momento em que
-         a peça começa a viajar ela é cenário, e um cartão de três metros com
-         opacidade zero por cima da seção seguinte é uma parede invisível — o
-         hover que se perde aqui vale muito menos que o clique que se ganha. */
-      38% {
-        --foil-x: 62%;
-        opacity: 1;
-        pointer-events: none;
-        transform: translate3d(-1%, -3%, 0) rotateX(3deg) rotateY(-7deg)
-          scale(1.1);
+      /* O DESCOLAR. A peça não parte: ela solta. Um giro curto no plano e a
+         borda de fuga levantando antes de qualquer viagem — é assim que papel
+         sai de uma superfície. */
+      8% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.96),
+            calc(var(--voo-dy, 0px) * 0.92),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.93 + 0.07)) rotate(-3.2deg)
+          rotateX(-4deg) rotateY(5deg) skewY(0.6deg);
+        --voo-alto: 0.55;
+        --voo-sombra: 0.08;
+        --foil-x: 42%;
       }
-      70% {
-        --foil-x: 22%;
-        opacity: 1;
-        pointer-events: none;
-        transform: translate3d(-8%, -14%, 0) rotateX(10deg) rotateY(-24deg)
-          scale(1.95);
+      22% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.86),
+            calc(var(--voo-dy, 0px) * 0.74),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.8 + 0.2)) rotate(-4.6deg)
+          rotateX(-6.5deg) rotateY(20deg) skewY(1.2deg);
+        --voo-alto: 0.92;
+        --voo-sombra: 0.28;
+        --foil-x: 32%;
       }
-      /* A tinta acaba antes do curso. O cartão continua crescendo depois de
-         sumir — é o que faz a saída ler como passagem pela câmera e não como
-         fade —, mas o fantasma não pode disputar a leitura do título da seção
-         seguinte, e ele chega ao topo da tela antes do fim da faixa. */
-      86% {
-        --foil-x: 6%;
-        opacity: 0;
-        pointer-events: none;
-        transform: translate3d(-13%, -23%, 0) rotateX(14deg) rotateY(-33deg)
-          scale(2.9);
+      40% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.7),
+            calc(var(--voo-dy, 0px) * 0.5),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.62 + 0.38)) rotate(-4.2deg)
+          rotateX(-5.5deg) rotateY(46deg) skewY(1.5deg);
+        --voo-alto: 1;
+        --voo-sombra: 0.55;
+        --foil-x: 46%;
       }
+      /* O PERFIL. Aqui a face está de canto para a luz e é onde ela precisa
+         estar mais escura — a virada de uma folha tem um instante quase preto,
+         e é justamente esse instante que uma placa iluminada por igual não
+         tem. */
+      58% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.52),
+            calc(var(--voo-dy, 0px) * 0.3),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.44 + 0.56)) rotate(-2.8deg)
+          rotateX(-3.5deg) rotateY(82deg) skewY(1.3deg);
+        --voo-alto: 1;
+        --voo-sombra: 0.9;
+        --foil-x: 66%;
+      }
+      68% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.42),
+            calc(var(--voo-dy, 0px) * 0.21),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.34 + 0.66)) rotate(-1.6deg)
+          rotateX(-1.8deg) rotateY(102deg) skewY(0.8deg);
+        --voo-alto: 0.95;
+        --voo-sombra: 0.82;
+        --foil-x: 78%;
+      }
+      82% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.24),
+            calc(var(--voo-dy, 0px) * 0.09),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.17 + 0.83)) rotate(0.8deg)
+          rotateX(1.2deg) rotateY(140deg) skewY(0.15deg);
+        --voo-alto: 0.7;
+        --voo-sombra: 0.42;
+        --foil-x: 72%;
+      }
+      /* O TAPA. Trinta e cinco graus em dez por cento de curso: a folha
+         desaba no último trecho, como qualquer coisa leve que encontra a
+         mesa. */
+      92% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.08),
+            calc(var(--voo-dy, 0px) * 0.02),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.04 + 0.98)) rotate(1.3deg)
+          rotateX(1.8deg) rotateY(175deg) skewY(-0.35deg);
+        --voo-alto: 0.34;
+        --voo-sombra: 0.16;
+        --foil-x: 60%;
+      }
+      /* O RECUO. Passa dos 180° e volta. Sem isto o cartão PARA no ângulo
+         exato, que é a assinatura de coisa animada por interpolação — objeto
+         com massa sempre devolve um pouco do que recebeu. */
+      97% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0),
+            calc(var(--voo-dy, 0px) * 0),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * -0.03 + 1.03)) rotate(0.5deg)
+          rotateX(0.6deg) rotateY(186deg) skewY(-0.18deg);
+        --voo-alto: 0.12;
+        --voo-sombra: 0.04;
+        --foil-x: 52%;
+      }
+      /* ZERO ESCRITO COMO FRAÇÃO, e não como `0px`. Um `translate3d(0,0,0)`
+         literal é reduzido a `translate(0)` pelo minificador — outro NOME de
+         função — e a lista deste quadro deixa de casar com a dos demais.
+         Consequência: o último trecho cai na interpolação de matriz, bem em
+         cima dos 180°, que é justamente onde a decomposição é ambígua e o
+         cartão achata. A fração mantém a forma da tabela inteira e sobrevive
+         ao build. */
       100% {
-        --foil-x: 2%;
-        opacity: 0;
-        pointer-events: none;
-        transform: translate3d(-16%, -28%, 0) rotateX(16deg) rotateY(-40deg)
-          scale(3.6);
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0),
+            calc(var(--voo-dy, 0px) * 0),
+            0
+          )
+          scale(1) rotate(0deg) rotateX(0deg) rotateY(180deg) skewY(0deg);
+        --voo-alto: 0;
+        --voo-sombra: 0;
+        --foil-x: 50%;
       }
     }
 
