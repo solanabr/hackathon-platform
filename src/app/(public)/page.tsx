@@ -632,9 +632,9 @@ export default async function HomePage() {
               id="calendario"
               className="overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker scroll-mt-28"
             >
-              <p className="px-6 pt-5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60 sm:px-8">
+              <h3 className="px-6 pt-5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60 sm:px-8">
                 Calendário
-              </p>
+              </h3>
               <ol className="mt-3 divide-y-2 divide-green-dark/15 border-t-2 border-green-dark/15">
                 {CALENDAR.map((item) => (
                   <li
@@ -671,9 +671,9 @@ export default async function HomePage() {
               href={withPlatformUtm("https://superteam.fun/earn/s/superteambr", { content: "lp_trilha_brasil", campaign: "colosseum-2026" })}
               event="campaign_link_clicked"
               properties={{ target: "earn", location: "lp" }}
-              className="group flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker scroll-mt-28 transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:p-7"
+              className="group flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:p-7"
             >
-              <span id="trilha-brasil" className="flex items-center gap-3">
+              <h3 id="trilha-brasil" className="flex items-center gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-green-dark bg-green-dark">
                   <Image
                     src="/brand/stbr/logo/symbol-fwhite.png"
@@ -686,7 +686,7 @@ export default async function HomePage() {
                 <span className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
                   Trilha Brasil
                 </span>
-              </span>
+              </h3>
               <p className="mt-4 text-pretty text-sm leading-relaxed text-green-dark/70">
                 Para projetos na Solana: além dos prêmios da competição Global, os brasileiros têm uma trilha extra com prêmios adicionais no Superteam Earn. Dá para concorrer nas duas ao mesmo tempo.
               </p>

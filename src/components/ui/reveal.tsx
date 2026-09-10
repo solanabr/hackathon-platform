@@ -39,10 +39,9 @@ function getReducedMotion() {
 
 export function CountUp({ value, duration = 1800 }: { value: string; duration?: number }) {
   const { ref, isVisible } = useEntranceAnimation<HTMLSpanElement>({ threshold: 0.35 });
-  const [display, setDisplay] = useState(() => {
-    const match = value.match(NUMBER);
-    return match ? `${match[1]}0${match[3]}` : value;
-  });
+  // The server HTML carries the real number: crawlers and no-JS readers must
+  // never see "0B". The zero appears only once the animation is about to run.
+  const [display, setDisplay] = useState(value);
 
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false);
 

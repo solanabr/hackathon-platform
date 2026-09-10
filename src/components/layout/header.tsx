@@ -21,10 +21,10 @@ import { LpSectionNav } from "./lp-section-nav";
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark";
 const ENTRAR_CLASS = `rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 ${FOCUS_RING}`;
-// Below lg the sticky MobileCtaBar already carries the cadastro button, so the
-// dock keeps Entrar there and shows cadastro only from lg up.
+// Below lg the sticky MobileCtaBar carries the cadastro button; between lg and
+// xl the seven section pills leave no room for it without crushing the logo.
 const ENTRAR_LP_CLASS = `rounded-full border-2 border-surface/40 px-4 py-1.5 text-sm font-bold text-surface transition-colors duration-200 hover:bg-surface hover:text-green-dark sm:inline-block ${FOCUS_RING}`;
-const CADASTRO_CLASS = `hidden whitespace-nowrap lg:inline-block ${ENTRAR_CLASS}`;
+const CADASTRO_CLASS = `hidden whitespace-nowrap xl:inline-block ${ENTRAR_CLASS}`;
 
 export async function Header() {
   const claims = await resolveSessionClaims();
@@ -35,7 +35,7 @@ export async function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-sticker sm:px-6">
         <Link
           href="/"
-          className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+          className="flex shrink-0 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
         >
           <Image
             src="/brand/stbr/logo/horizontal-fwhite.svg"
