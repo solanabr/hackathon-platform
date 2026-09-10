@@ -487,31 +487,27 @@ export default async function HomePage() {
         </div>
 
         <div
-          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-12 lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:6vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
+          className={`relative ${PAGE_SHELL} py-10 lg:grid lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-12 lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:6vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
         >
-          <div className="lg:flex lg:flex-col">
-            {/* O bloco da dobra: chapéu no topo, h1 empurrado pela base. Tudo
-                que vem depois nasce abaixo da linha da dobra, de propósito. */}
-            <div className="lg:flex lg:min-h-[calc(100dvh-4rem-var(--hero-pt)-var(--hero-pb))] lg:flex-col">
-              <div className="hero-print mb-5 flex">
-                <SectionHat>Hackathon Colosseum</SectionHat>
-              </div>
-
-              <h1 className="hero-print lg:mt-auto font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[2.9rem] xl:text-[3.6rem] 2xl:text-[4.2rem]">
-                <span className="block" style={{ "--hero-i": 1 } as CSSProperties}>
-                  O próximo time
-                </span>
-                <span className="mt-1 block" style={{ "--hero-i": 2 } as CSSProperties}>
-                  a captar{" "}
-                  <span className="hero-marca inline-block px-3 text-green-dark">
-                    milhões
-                  </span>
-                </span>
-                <span className="mt-1 block" style={{ "--hero-i": 3 } as CSSProperties}>
-                  pode ser o seu.
-                </span>
-              </h1>
+          <div>
+            <div className="hero-print mb-5 flex">
+              <SectionHat>Hackathon Colosseum</SectionHat>
             </div>
+
+            <h1 className="hero-print font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[2.9rem] xl:text-[3.6rem] 2xl:text-[4.2rem]">
+              <span className="block" style={{ "--hero-i": 1 } as CSSProperties}>
+                O próximo time
+              </span>
+              <span className="mt-1 block" style={{ "--hero-i": 2 } as CSSProperties}>
+                a captar{" "}
+                <span className="hero-marca inline-block px-3 text-green-dark">
+                  milhões
+                </span>
+              </span>
+              <span className="mt-1 block" style={{ "--hero-i": 3 } as CSSProperties}>
+                pode ser o seu.
+              </span>
+            </h1>
 
             <p className="hero-after mt-5 max-w-[19rem] text-pretty text-base leading-relaxed text-ink/70 sm:max-w-2xl sm:text-lg lg:hidden">
               Tire sua ideia do papel, construa um produto e dispute prêmios e
