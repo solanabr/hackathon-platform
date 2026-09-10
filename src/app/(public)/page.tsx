@@ -24,11 +24,11 @@ import { MobileSteps } from "@/components/campaign/mobile-steps";
 export const metadata = {
   title: "Colosseum Crypto World's Fair 2026",
   description:
-    "O próximo time a captar milhões pode ser o seu. Cadastre-se para o Colosseum, o hackathon global da Solana: 100% remoto, prêmios milionários e capital anjo.",
+    "O próximo time a captar milhões pode ser o seu. Cadastre-se para o Colosseum, o hackathon global de startups cripto: 100% remoto, prêmios milionários e capital anjo.",
   openGraph: {
     title: "O próximo time a captar milhões pode ser o seu · Colosseum 2026",
     description:
-      "Hackathon global da Solana, 100% remoto, de 14 set a 12 out. Cadastre-se com o Superteam Brasil.",
+      "Hackathon global do Colosseum, 100% remoto, de 14 set a 12 out. Cadastre-se com o Superteam Brasil.",
     images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }],
   },
 };
@@ -92,13 +92,48 @@ const RESOURCES = [
   { label: "Academy", href: "https://www.st.academy/", icon: GraduationCapIcon },
   { label: "Discord", href: "https://discord.gg/superteambrasil", icon: DiscordLogoIcon },
 ];
+const COLOSSEUM_FACTS = [
+  {
+    kicker: "8 trilhas",
+    title: "Uma trilha por rede",
+    body: "Solana, Ethereum, Base, Arbitrum, Hyperliquid, Tempo, Zcash e Robinhood Chain. Uma única submissão no Colosseum concorre à trilha da sua rede, bancada pelo parceiro e julgada pelo Colosseum, e ao prêmio geral entre todas as redes. As trilhas já anunciadas pagam US$ 100 mil entre os 10 melhores.",
+  },
+  {
+    kicker: "US$ 250 mil",
+    title: "O cheque do acelerador",
+    body: "Vencedores selecionados entram no acelerador do Colosseum com US$ 250 mil de investimento. Exige alguma integração com a Solana.",
+  },
+  {
+    kicker: "Projeto existente",
+    title: "Pode, com regras",
+    body: "Vale se a startup ainda não captou capital relevante. Só conta o que for construído entre 14 de setembro e 12 de outubro, e código anterior precisa ser declarado.",
+  },
+  {
+    kicker: "Qualquer área",
+    title: "DeFi, pagamentos, RWA, consumer, IA",
+    body: "As trilhas são por rede, não por tema. Os jurados olham produto, tração e plano de distribuição. Sozinho ou em time, uma submissão por pessoa.",
+  },
+];
+
 const FAQ_GROUPS = [
   {
     title: "Antes de entrar",
     items: [
       {
+        q: "Já tenho um projeto. Posso participar?",
+        a: "Pode, desde que a startup ainda não tenha captado capital relevante. Os jurados avaliam só o que foi construído entre 14 de setembro e 12 de outubro, e o código anterior precisa ser declarado no formulário de submissão. Tração e usuários contam a favor.",
+      },
+      {
+        q: "Meu projeto é em outra rede. Posso participar?",
+        a: "Pode. A edição 2026 tem trilhas para Solana, Ethereum, Base, Arbitrum, Hyperliquid, Tempo, Zcash e Robinhood Chain, e um prêmio geral entre todas as redes. A Trilha Brasil no Superteam Earn e o acelerador de US$ 250 mil pedem integração com a Solana, então vale considerar uma integração se esse for o seu objetivo.",
+      },
+      {
+        q: "Que tipo de projeto o Colosseum procura?",
+        a: "Qualquer área: DeFi, pagamentos, RWA, consumer, infraestrutura, IA. As trilhas são por rede, não por tema. O que pesa é produto funcionando, tração e um plano de distribuição, apresentados em inglês num vídeo de 2 a 3 minutos mais uma demo de até 3 minutos.",
+      },
+      {
         q: "Preciso me cadastrar aqui e no Colosseum?",
-        a: "Sim, nos dois. Aqui você entra nas mentorias, na comunidade e na Trilha Brasil. No Colosseum é onde o projeto é enviado e julgado, e cada membro do time precisa de uma conta lá, com Solana marcada no registro. A conta também libera o diretório de cofundadores e o Discord deles. Para a Trilha Brasil, o mesmo projeto vai para o Superteam Earn.",
+        a: "Sim, nos dois. Aqui você entra nas mentorias, na comunidade e na Trilha Brasil. No Colosseum é onde o projeto é enviado e julgado, e cada membro do time precisa de uma conta lá, com a rede do seu projeto marcada no registro. A conta também libera o diretório de cofundadores e o Discord deles. Para a Trilha Brasil, o mesmo projeto vai para o Superteam Earn.",
       },
       {
         q: "Preciso ter ideia ou time pronto?",
@@ -126,10 +161,6 @@ const FAQ_GROUPS = [
         a: "A submissão no Colosseum é em inglês: vídeo de pitch de dois a três minutos, demo técnica de até três minutos, repositório no GitHub e um formulário com produto, time e estratégia de mercado. Toda a Trilha Brasil, as mentorias e o suporte são em português.",
       },
       {
-        q: "Posso usar um projeto que já existe?",
-        a: "Pode, desde que a startup não tenha captado capital relevante. Você pode começar antes e reaproveitar código, mas só o que for construído entre 14 de setembro e 12 de outubro conta, e todo o histórico precisa ser declarado no formulário. Omitir isso desclassifica o time.",
-      },
-      {
         q: "Como os projetos são avaliados?",
         a: "Seis critérios: time certo para o mercado, um insight que os outros não têm, produto funcionando e ritmo de entrega, tamanho do mercado, clareza na comunicação e viabilidade como negócio. No repositório, o que importa é trabalho relevante feito pelo próprio time durante o hackathon, com integração onchain de verdade.",
       },
@@ -140,7 +171,7 @@ const FAQ_GROUPS = [
     items: [
       {
         q: "O que o vencedor ganha?",
-        a: "Na última edição foram USD 250 mil em prêmios diretos: USD 30 mil para o campeão global e USD 10 mil para cada um dos 20 melhores, com prêmios extras para times universitários. Os melhores ainda são chamados para o acelerador do Colosseum: USD 250 mil de investimento pré-seed e oito semanas de programa, duas em São Francisco e seis remotas. Entrar no acelerador é opcional.",
+        a: "Em 2026 cada trilha por rede já anunciada paga US$ 100 mil entre os 10 melhores, e todo projeto concorre também ao prêmio geral entre todas as redes. Os melhores ainda são chamados para o acelerador do Colosseum: US$ 250 mil de investimento pré-seed e oito semanas de programa, duas em São Francisco e seis remotas (pede integração com a Solana; entrar é opcional). Na edição anterior foram US$ 250 mil em prêmios diretos, com US$ 30 mil para o campeão global.",
       },
       {
         q: "O que é a Trilha Brasil?",
@@ -181,6 +212,9 @@ export default async function HomePage() {
   // Logged-out visitors skip the /pre-registro round trip and land on the
   // login step with the deep link already attached.
   const cadastroHref = state ? "/pre-registro" : "/auth?next=/pre-registro";
+  // Someone already registered is not asked to "cadastrar" again; the same
+  // button takes them to their next steps.
+  const cadastroLabel = registered ? "Ver próximos passos" : state ? "Concluir cadastro" : "Fazer cadastro";
   return (
     <div className="bg-surface text-ink">
       {/* Hero: centered launch-announcement stack, the cheque as the single
@@ -198,7 +232,7 @@ export default async function HomePage() {
           />
         </div>
 
-        <div className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:py-12 lg:[@media(max-height:820px)]:py-6`}>
+        <div className={`relative ${LP_CONTAINER} px-4 py-10 text-center sm:px-6 lg:pb-12 lg:pt-20 xl:pt-24 lg:[@media(max-height:820px)]:py-6`}>
           <h1 className="font-heading font-black uppercase leading-[1.04] tracking-tight text-ink [font-stretch:108%]">
             <span className="block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">O próximo time a captar</span>
             <span className="mt-1 block text-balance text-[clamp(2rem,9vw,3rem)] lg:text-[3.6rem] xl:text-[4.2rem]">
@@ -221,7 +255,7 @@ export default async function HomePage() {
               properties={{ cta: "cadastro", location: "hero" }}
               className="whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-7 py-3.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-10 sm:text-lg"
             >
-              Fazer cadastro
+              {cadastroLabel}
             </TrackedCta>
             <a
               href="#jornada"
@@ -233,8 +267,13 @@ export default async function HomePage() {
 
           <MobileSteps
             whatsappUrl={WHATSAPP_COMMUNITY_URL}
-            colosseumUrl={colosseum?.external_url ?? null}
+            colosseumUrl={
+              colosseum?.external_url
+                ? withPlatformUtm(colosseum.external_url, { content: "hero_steps", campaign: "colosseum-2026" })
+                : null
+            }
             registered={registered}
+            cadastroLabel={cadastroLabel}
           />
 
           {/* The desk: the cheque is the main sticker, the facts are stickers
@@ -243,7 +282,7 @@ export default async function HomePage() {
               stays a compact visual instead of a second wall. */}
           <div className="mx-auto mt-8 w-full max-w-sm md:max-w-xl lg:mt-10 lg:max-w-none">
           <Tilt max={5} className="relative pt-2 text-left lg:h-[26rem] lg:pt-0 xl:h-[28rem]">
-            <div aria-hidden className="relative w-full lg:absolute lg:left-1/2 lg:top-8 lg:w-[40rem] lg:-translate-x-1/2 xl:w-[44rem]">
+            <div aria-hidden className="relative w-full lg:absolute lg:left-[54%] lg:top-8 lg:w-[40rem] lg:-translate-x-1/2 xl:w-[44rem]">
             <div className="relative sm:[transform:rotate(-3deg)] lg:[transform:rotate(-4deg)]">
               <div aria-hidden className="absolute inset-0 translate-y-6 rounded-xl bg-green-dark/25 blur-2xl" />
               <div aria-hidden className="cheque-perf absolute inset-0 translate-x-3.5 translate-y-3.5 rounded-xl bg-green-dark" />
@@ -264,7 +303,7 @@ export default async function HomePage() {
                   <div className="flex items-start justify-between gap-4">
                     <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
                       Colosseum
-                      <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
+                      <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/70 sm:text-[10px]">
                         Prêmio do Crypto World&apos;s Fair
                       </span>
                     </p>
@@ -300,7 +339,7 @@ export default async function HomePage() {
                   </div>
 
                   <div className="mt-3 flex items-end justify-between gap-4">
-                    <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/60 sm:text-xs sm:tracking-[0.35em]">
+                    <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/70 sm:text-xs sm:tracking-[0.35em]">
                       ⑆001417 ⑆0914 ⑈1210 2026⑈
                     </p>
                     <div className="shrink-0 text-right">
@@ -313,7 +352,7 @@ export default async function HomePage() {
                           strokeLinecap="round"
                         />
                       </svg>
-                      <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/60">
+                      <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/70">
                         Colosseum
                       </p>
                     </div>
@@ -322,20 +361,20 @@ export default async function HomePage() {
               </div>
             </div>
             </div>
-            <div className="hidden lg:block left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-yellow text-green-dark">
+            <div className="hidden lg:block left-1 top-0 [transform:rotate(-6deg)_translateZ(44px)] lg:left-[6%] lg:top-10 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[4px_4px_0_rgba(27,35,29,0.9)] lg:px-4 lg:py-2.5 lg:text-base bg-surface-raised text-ink">
               100% online
             </div>
-            <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-surface-raised text-ink hidden lg:block">
+            <div className="right-1 top-1 [transform:rotate(6deg)_translateZ(56px)] lg:right-[4%] lg:top-8 absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[4px_4px_0_rgba(27,35,29,0.9)] lg:px-4 lg:py-2.5 lg:text-base bg-surface-raised text-ink hidden lg:block">
               14 set a 12 out
             </div>
-            <div className="hidden lg:block -bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-emerald text-surface">
+            <div className="hidden lg:block -bottom-4 right-1 [transform:rotate(-4deg)_translateZ(64px)] lg:bottom-auto lg:right-[2%] lg:top-[62%] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[4px_4px_0_rgba(27,35,29,0.9)] lg:px-4 lg:py-2.5 lg:text-base bg-surface-raised text-ink">
               R$15M+ captados
-              <span className="block font-mono text-[8px] font-bold normal-case tracking-wider text-surface/80 lg:text-[11px]">
+              <span className="block font-mono text-[8px] font-bold normal-case tracking-wider text-green-dark/70 lg:text-[11px]">
                 por times brasileiros em edições anteriores
               </span>
             </div>
-            <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[6px_6px_0_rgba(27,35,29,0.9)] lg:px-5 lg:py-3.5 lg:text-xl bg-green-dark text-yellow">
-              Solana
+            <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[4px_4px_0_rgba(27,35,29,0.9)] lg:px-4 lg:py-2.5 lg:text-base bg-surface-raised text-ink">
+              Multichain
             </div>
           </Tilt>
           <ul className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:hidden" aria-label="Fatos do hackathon">
@@ -352,11 +391,58 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section id="colosseum" className={LP_SECTION} aria-label="O que é o Colosseum">
+        <div className={LP_CONTAINER}>
+          <Reveal>
+            <h2 className="max-w-3xl text-balance font-heading text-4xl font-black leading-[1.15] tracking-tight [font-stretch:105%] sm:text-5xl">
+              O que é o{" "}
+              <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">Colosseum</span>
+            </h2>
+            <p className="mt-6 max-w-3xl text-pretty text-base leading-relaxed text-ink/80 sm:text-lg lg:text-xl">
+              A maior competição online de startups cripto. Quatro semanas de construção, jurados do
+              Colosseum e líderes do setor, e um acelerador que investe US$ 250 mil nos vencedores
+              selecionados. Em 2026 ela abre para todas as redes: é a Crypto World&apos;s Fair.
+            </p>
+          </Reveal>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {COLOSSEUM_FACTS.map((fact, i) => (
+              <Reveal key={fact.kicker} delay={i * 100} className="h-full">
+                <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
+                  <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
+                    {fact.kicker}
+                  </span>
+                  <h3 className="mt-4 font-heading text-xl font-bold">{fact.title}</h3>
+                  <p className="mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">{fact.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={200} className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
+            <p className="text-pretty text-sm leading-relaxed text-ink/80 sm:text-base">
+              Jurados e regras completas saem em 14 de setembro.
+            </p>
+            <TrackedCta
+              href="https://colosseum.com/worldsfair"
+              event="campaign_link_clicked"
+              properties={{ target: "colosseum_site", location: "lp_colosseum" }}
+              className="inline-block whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-5 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+            >
+              Ver no site do Colosseum
+            </TrackedCta>
+          </Reveal>
+        </div>
+      </section>
+
       {/* Why Solana: plain typographic stats, no boxes — the numbers carry it. */}
       <section id="solana" className={LP_SECTION} aria-label="O que é a Solana">
         <div className={LP_CONTAINER}>
           <Reveal>
-            <h2 className="max-w-3xl text-balance font-heading text-4xl font-black leading-[1.15] tracking-tight [font-stretch:105%] sm:text-5xl">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/70">
+              Por que construir na Solana
+            </p>
+            <h2 className="mt-3 max-w-3xl text-balance font-heading text-4xl font-black leading-[1.15] tracking-tight [font-stretch:105%] sm:text-5xl">
               Uma nova infraestrutura financeira.{" "}
               <span className="inline-block -rotate-1 border-2 border-green-dark bg-yellow px-3 text-green-dark">Global.</span>
             </h2>
@@ -401,7 +487,7 @@ export default async function HomePage() {
               O hackathon global
             </h2>
             <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-ink/80">
-              Todo ano, a Solana coloca builders do mundo inteiro para competir, 100% remoto, com
+              Todo ano, o Colosseum coloca builders do mundo inteiro para competir, 100% remoto, com
               prêmios em dinheiro e investimento anjo direto para os melhores times.{" "}
               <strong className="text-ink">
                 Nas duas últimas edições, times brasileiros saíram de lá com capital confirmado.
@@ -458,7 +544,7 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <Reveal className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                   Passo 01
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Faça seu cadastro</h3>
@@ -472,24 +558,28 @@ export default async function HomePage() {
                   properties={{ cta: "cadastro", location: "jornada" }}
                   className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
                 >
-                  Fazer cadastro
+                  {cadastroLabel}
                 </TrackedCta>
               </div>
             </Reveal>
 
             <Reveal delay={130} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                   Passo 02
                 </span>
-                <h3 className="mt-4 font-heading text-xl font-bold">Registre-se no hackathon</h3>
+                <h3 className="mt-4 font-heading text-xl font-bold">Registre-se no Colosseum</h3>
                 <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">
                   Crie sua conta no Colosseum e clique em &quot;Register now&quot; já, mesmo sem ideia
                   ou time: projeto e time entram na plataforma a partir de 14 de setembro.
                 </p>
                 {colosseum?.external_url ? (
                   <TrackedCta
-                    href={registered ? colosseum.external_url : cadastroHref}
+                    href={
+                      registered
+                        ? withPlatformUtm(colosseum.external_url, { content: "lp_jornada", campaign: "colosseum-2026" })
+                        : cadastroHref
+                    }
                     event={registered ? "campaign_link_clicked" : "cta_clicked"}
                     properties={
                       registered
@@ -498,7 +588,7 @@ export default async function HomePage() {
                     }
                     className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
                   >
-                    Abrir Colosseum
+                    {registered ? "Abrir Colosseum" : "Cadastre-se primeiro"}
                   </TrackedCta>
                 ) : (
                   <p className="mt-auto font-mono text-xs font-bold uppercase tracking-widest text-muted">
@@ -510,7 +600,7 @@ export default async function HomePage() {
 
             <Reveal delay={260} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                   Passo 03
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Entre na comunidade</h3>
@@ -532,134 +622,119 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Calendário: one schedule sheet, rows instead of a card grid. */}
-      <section id="calendario" className={LP_SECTION} aria-label="Calendário do hackathon">
-        <div className={`${LP_CONTAINER} grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16`}>
-          <Reveal className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-            Calendário do hackathon
-          </h2>
-          <p className="mt-4 hidden max-w-md text-pretty text-lg leading-relaxed text-ink/80 lg:block">
-            Da abertura do Colosseum ao anúncio dos vencedores: as datas que não podem passar batido.
-          </p>
+      {/* Sobre o evento: one bento instead of three left-headed sections. The
+          heading sits on the right this time; the section-nav anchors live on
+          the cards so #calendario/#trilha-brasil/#recursos keep resolving. */}
+      <section id="evento" className={LP_SECTION} aria-label="Sobre o evento">
+        <div className={`${LP_CONTAINER} grid gap-6 lg:grid-cols-12 lg:gap-8`}>
+          <Reveal className="lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:self-start">
+            <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
+              Sobre o evento
+            </h2>
+            <p className="mt-4 max-w-md text-pretty text-lg leading-relaxed text-ink/80">
+              Datas, trilha extra para brasileiros e tudo que você precisa para chegar pronto.
+            </p>
           </Reveal>
 
-          <Reveal delay={150}>
-          <ol className="divide-y-2 divide-green-dark/15 overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
-            {CALENDAR.map((item) => (
-              <li
-                key={item.title}
-                className={`grid gap-1 px-6 py-5 sm:grid-cols-12 sm:items-baseline sm:gap-6 sm:px-8 sm:py-6 ${
-                  item.highlight ? "bg-green text-surface" : "text-ink"
-                }`}
-              >
-                <p className={`font-heading text-2xl font-black uppercase leading-none [font-stretch:115%] sm:col-span-3 sm:text-3xl ${item.highlight ? "text-yellow" : ""}`}>
-                  {item.date}
-                </p>
-                <div className="sm:col-span-9">
-                  <p className="font-heading text-lg font-bold">
-                    {item.href ? (
-                      <a href={item.href} target="_blank" rel="noopener noreferrer" className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald">
-                        {item.title}
-                      </a>
-                    ) : (
-                      item.title
-                    )}
-                  </p>
-                  <p className={`mt-0.5 text-pretty text-sm leading-snug ${item.highlight ? "text-surface/85" : "text-muted"}`}>
-                    {item.body}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <div id="calendario" className="scroll-mt-28 lg:col-span-8 lg:col-start-1 lg:row-span-3 lg:row-start-1">
+          <Reveal delay={100} className="h-full">
+            <div
+              className="rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker"
+            >
+              <h3 className="px-6 pt-5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/70 sm:px-8">
+                Calendário
+              </h3>
+              <ol className="mt-3 divide-y-2 divide-green-dark/15 border-t-2 border-green-dark/15">
+                {CALENDAR.map((item) => (
+                  <li
+                    key={item.title}
+                    className={`grid gap-1 px-6 py-5 sm:grid-cols-12 sm:items-baseline sm:gap-6 sm:px-8 sm:py-6 ${
+                      item.highlight ? "bg-green text-surface" : "text-ink"
+                    }`}
+                  >
+                    <p className={`font-heading text-2xl font-black uppercase leading-none [font-stretch:115%] sm:col-span-3 sm:text-3xl ${item.highlight ? "text-yellow" : ""}`}>
+                      {item.date}
+                    </p>
+                    <div className="sm:col-span-9">
+                      <p className="font-heading text-lg font-bold">
+                        {item.href ? (
+                          <a href={item.href} target="_blank" rel="noopener noreferrer" className="underline decoration-yellow decoration-4 underline-offset-4 hover:text-emerald">
+                            {item.title}
+                          </a>
+                        ) : (
+                          item.title
+                        )}
+                      </p>
+                      <p className={`mt-0.5 text-pretty text-sm leading-snug ${item.highlight ? "text-surface/85" : "text-muted"}`}>
+                        {item.body}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </Reveal>
-        </div>
-      </section>
+          </div>
 
-      {/* Side tracks: compact cards, no empty cover art. */}
-      <section id="trilha-brasil" className={LP_SECTION} aria-label="Trilha Brasil">
-        <div className={`${LP_CONTAINER} grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16`}>
-          <Reveal className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-            Trilha Brasil
-          </h2>
-          <p className="mt-3 max-w-xl text-pretty leading-relaxed text-green-dark/70 lg:max-w-none">
-            Além dos prêmios e investimentos da competição Global, os brasileiros têm uma trilha extra com prêmios adicionais. Você pode participar dela e da Global ao mesmo tempo, e concorrer a ainda mais prêmios.
-          </p>
-          </Reveal>
-
-          <div className="grid gap-6">
-            <Reveal delay={100} className="max-w-3xl lg:max-w-none">
+          <div id="trilha-brasil" className="scroll-mt-28 lg:col-span-4 lg:col-start-9 lg:row-start-2">
+          <Reveal delay={200} className="h-full">
             <TrackedCta
               href={withPlatformUtm("https://superteam.fun/earn/s/superteambr", { content: "lp_trilha_brasil", campaign: "colosseum-2026" })}
               event="campaign_link_clicked"
               properties={{ target: "earn", location: "lp" }}
               className="group flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:p-7"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-green-dark bg-green-dark">
-                    <Image
-                      src="/brand/stbr/logo/symbol-fwhite.png"
-                      alt=""
-                      width={26}
-                      height={25}
-                      className="h-6 w-auto"
-                    />
-                  </span>
-                  <p className="truncate font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
-                    Trilha Brasil
-                  </p>
-                </div>
-                <span className="hidden shrink-0 font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/60 sm:block">
-                  Superteam Earn
+              <h3 className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-green-dark bg-green-dark">
+                  <Image
+                    src="/brand/stbr/logo/symbol-fwhite.png"
+                    alt=""
+                    width={26}
+                    height={25}
+                    className="h-6 w-auto"
+                  />
                 </span>
-              </div>
+                <span className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
+                  Trilha Brasil
+                </span>
+              </h3>
               <p className="mt-4 text-pretty text-sm leading-relaxed text-green-dark/70">
-                Prêmios extras para times brasileiros, publicados na plataforma Superteam Earn. Complete os desafios da trilha e concorra além da competição Global, com apoio da Superteam Brasil do cadastro à submissão.
+                Para projetos na Solana: além dos prêmios da competição Global, os brasileiros têm uma trilha extra com prêmios adicionais no Superteam Earn. Dá para concorrer nas duas ao mesmo tempo.
               </p>
               <p className="mt-auto pt-4 text-sm font-bold text-emerald group-hover:underline">
                 Ver oportunidades no Earn
               </p>
             </TrackedCta>
-            </Reveal>
+          </Reveal>
           </div>
-        </div>
-      </section>
 
-      {/* Recursos: link pills with an icon each. */}
-      <section id="recursos" className={LP_SECTION} aria-label="Recursos">
-        <div className={`${LP_CONTAINER} lg:flex lg:items-end lg:justify-between lg:gap-10`}>
-          <Reveal className="lg:max-w-md lg:shrink-0">
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tight [font-stretch:118%] sm:text-5xl">
-            Recursos
-          </h2>
-          <p className="mt-3 max-w-xl text-pretty text-lg leading-relaxed text-ink/80 lg:max-w-none">
-            Tudo que você precisa para chegar pronto na arena.
-          </p>
+          <div id="recursos" className="scroll-mt-28 lg:col-span-4 lg:col-start-9 lg:row-start-3">
+          <Reveal delay={300} className="h-full">
+            <div
+              className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7"
+            >
+              <h3 className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">Recursos</h3>
+              <ul className="mt-4 grid grid-cols-2 gap-3">
+                {RESOURCES.map((r) => {
+                  const Icon = r.icon;
+                  return (
+                    <li key={r.label}>
+                      <TrackedCta
+                        href={r.href}
+                        event="campaign_link_clicked"
+                        properties={{ target: r.label, location: "recursos" }}
+                        className="flex h-full items-center gap-2.5 rounded-xl border-2 border-green-dark bg-surface px-3.5 py-2.5 text-[13px] font-bold leading-tight text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+                      >
+                        <Icon size={18} weight="bold" aria-hidden className="shrink-0" />
+                        {r.label}
+                      </TrackedCta>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </Reveal>
-
-          <Reveal delay={100} className="lg:min-w-0 lg:flex-1">
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap lg:mt-0 lg:justify-end">
-            {RESOURCES.map((r) => {
-              const Icon = r.icon;
-              return (
-                <li key={r.label}>
-                  <TrackedCta
-                    href={r.href}
-                    event="campaign_link_clicked"
-                    properties={{ target: r.label, location: "recursos" }}
-                    className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-green-dark bg-surface-raised px-3 py-4 text-center text-[13px] font-bold text-ink shadow-sticker transition-colors duration-200 hover:bg-green-dark hover:text-surface sm:inline-flex sm:h-auto sm:flex-row sm:gap-2.5 sm:rounded-full sm:px-5 sm:py-2.5 sm:text-left sm:text-sm sm:shadow-none"
-                  >
-                    <Icon size={22} weight="bold" aria-hidden className="sm:size-[18px]" />
-                    {r.label}
-                  </TrackedCta>
-                </li>
-              );
-            })}
-          </ul>
-          </Reveal>
+          </div>
         </div>
       </section>
 
@@ -687,7 +762,7 @@ export default async function HomePage() {
           <div className="space-y-8">
             {FAQ_GROUPS.map((g, i) => (
               <Reveal key={g.title} delay={i * 80}>
-                <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60">
+                <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/70">
                   {g.title}
                 </p>
                 <div className="divide-y-2 divide-green-dark/15 rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
@@ -726,11 +801,11 @@ export default async function HomePage() {
 
       {!registered && (
         <>
-          <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] lg:hidden" />
+          <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] xl:hidden" />
           <MobileCtaBar
             watchId="hero-cta"
             href={cadastroHref}
-            label="Fazer cadastro"
+            label={cadastroLabel}
             secondaryHref="#jornada"
             secondaryLabel="Como funciona"
           />

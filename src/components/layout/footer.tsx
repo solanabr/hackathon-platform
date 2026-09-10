@@ -48,6 +48,7 @@ export function Footer() {
               width={190}
               height={32}
               className="h-8 w-auto"
+              style={{ height: "2rem", width: "auto" }}
             />
             <p className="mt-5 max-w-xs text-pretty leading-relaxed text-surface/70">
               A plataforma de hackathons da Superteam Brasil. Feito por builders, para builders.

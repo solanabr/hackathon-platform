@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState, startTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -42,8 +42,19 @@ export function PreregForm({ profile, email }: { profile: User | null; email: st
     trackClient("registration_form_viewed");
   }, []);
 
+  // Submitting through the action prop makes React reset every field after
+  // the action settles, which wipes what the person typed on a validation
+  // error. Dispatching the FormData ourselves keeps the fields as they are.
+  const [edited, setEdited] = useState(false);
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEdited(false);
+    const formData = new FormData(e.currentTarget);
+    startTransition(() => formAction(formData));
+  };
+
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={submit} onChange={() => setEdited(true)} className="space-y-4">
       <AttributionFields />
       <div>
         <Label htmlFor="full_name">Nome completo</Label>
@@ -112,8 +123,8 @@ export function PreregForm({ profile, email }: { profile: User | null; email: st
         </span>
       </label>
 
-      {!state.ok && state.error && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
+      {!state.ok && state.error && !edited && (
+        <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       )}

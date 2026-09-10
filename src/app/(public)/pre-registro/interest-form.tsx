@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, startTransition, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { trackClient } from "@/lib/analytics-browser";
@@ -27,11 +27,23 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
     trackClient("interest_form_viewed");
   }, []);
 
+  // Same reason as PreregForm: a manual dispatch keeps the answers on a
+  // validation error. The intent travels with the button that was clicked.
+  const [edited, setEdited] = useState(false);
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEdited(false);
+    const formData = new FormData(e.currentTarget);
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    if (submitter?.name === "intent") formData.set("intent", submitter.value);
+    startTransition(() => formAction(formData));
+  };
+
   const lookingDefault =
     interest?.looking_for_team === true ? "yes" : interest?.looking_for_team === false ? "no" : "";
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form onSubmit={submit} onChange={() => setEdited(true)} className="space-y-6">
       <fieldset className="space-y-4">
         <legend className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
           Situação
@@ -135,8 +147,8 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
         />
       </div>
 
-      {state.error && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
+      {state.error && !edited && (
+        <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       )}
