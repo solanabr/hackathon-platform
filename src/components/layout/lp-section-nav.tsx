@@ -11,6 +11,7 @@ type PageNav = { links: NavLink[]; accent?: NavLink };
 const NAV: Record<string, PageNav> = {
   "/": {
     links: [
+      { href: "#colosseum", label: "Colosseum" },
       { href: "#jornada", label: "Como funciona" },
       { href: "#cases", label: "Cases" },
       { href: "#calendario", label: "Calendário" },

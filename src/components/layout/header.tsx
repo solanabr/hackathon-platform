@@ -6,6 +6,7 @@ import { resolveSessionClaims } from "@/lib/user-state";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
 import { EntrarLink } from "./entrar-link";
+import { CadastroLink } from "./cadastro-link";
 import { LpSectionNav } from "./lp-section-nav";
 
 /**
@@ -17,8 +18,13 @@ import { LpSectionNav } from "./lp-section-nav";
  * same-size placeholder. Without the boundary every page's first byte waited
  * on those two queries before the browser could even start on CSS and fonts.
  */
-const ENTRAR_CLASS =
-  "rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark";
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark";
+const ENTRAR_CLASS = `rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 ${FOCUS_RING}`;
+// Below lg the sticky MobileCtaBar already carries the cadastro button, so the
+// dock keeps Entrar there and shows cadastro only from lg up.
+const ENTRAR_LP_CLASS = `rounded-full border-2 border-surface/40 px-4 py-1.5 text-sm font-bold text-surface transition-colors duration-200 hover:bg-surface hover:text-green-dark sm:inline-block ${FOCUS_RING}`;
+const CADASTRO_CLASS = `hidden whitespace-nowrap lg:inline-block ${ENTRAR_CLASS}`;
 
 export async function Header() {
   const claims = await resolveSessionClaims();
@@ -45,7 +51,8 @@ export async function Header() {
           <LpSectionNav />
         </div>
 
-        <nav className="flex items-center gap-1 text-sm sm:gap-1.5">
+        <nav className="flex items-center gap-2 text-sm sm:gap-3">
+          {!claims && <CadastroLink className={CADASTRO_CLASS} />}
           {claims ? (
             <Suspense
               fallback={
@@ -55,7 +62,7 @@ export async function Header() {
               <SignedInMenu />
             </Suspense>
           ) : (
-            <EntrarLink className={ENTRAR_CLASS} />
+            <EntrarLink className={ENTRAR_CLASS} lpClassName={ENTRAR_LP_CLASS} />
           )}
         </nav>
       </div>
@@ -65,7 +72,7 @@ export async function Header() {
 
 async function SignedInMenu() {
   const roles = await resolveRoleState();
-  if (!roles) return <EntrarLink className={ENTRAR_CLASS} />;
+  if (!roles) return <EntrarLink className={ENTRAR_CLASS} lpClassName={ENTRAR_LP_CLASS} />;
   const { state } = roles;
   const admin = roles.isAdmin || roles.adminFor.length > 0;
   // /judge only admits global admins and real judges; a scoped edition admin

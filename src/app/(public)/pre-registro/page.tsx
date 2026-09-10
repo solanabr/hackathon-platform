@@ -45,6 +45,11 @@ async function loadInterest(userId: string, hackathonId: string) {
   return unwrap(result, "preRegistro.loadInterest") as CampaignInterest | null;
 }
 
+// Each step draws its own connector down to the next one, so the line ends at
+// the last circle instead of running past a tall final card.
+const JORNADA_STEP =
+  "relative flex items-start gap-4 before:absolute before:-bottom-4 before:left-[1.35rem] before:top-12 before:w-0.5 before:bg-green-dark/15 last:before:hidden";
+
 const STEPS = [
   { n: 1, label: "Conta" },
   { n: 2, label: "Contato" },
@@ -177,8 +182,8 @@ export default async function PreRegistroPage({
               </h1>
             </div>
 
-            <ol className="relative mt-10 space-y-4 before:absolute before:bottom-8 before:left-[1.35rem] before:top-8 before:w-0.5 before:bg-green-dark/15">
-              <li className="relative flex items-start gap-4">
+            <ol className="relative mt-10 space-y-4">
+              <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
                   ✓
                 </span>
@@ -189,7 +194,7 @@ export default async function PreRegistroPage({
               </li>
 
               {colosseumConfirmed ? (
-                <li className="relative flex items-start gap-4">
+                <li className={JORNADA_STEP}>
                   <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
                     ✓
                   </span>
@@ -199,7 +204,7 @@ export default async function PreRegistroPage({
                   </div>
                 </li>
               ) : (
-              <li className="relative flex items-start gap-4">
+              <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
                   2
                 </span>
@@ -224,7 +229,7 @@ export default async function PreRegistroPage({
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">2.</span>
-                      Com a conta criada, abra Arena › Hackathon e clique em &quot;Register now&quot;: escolha Brasil e sua cidade e marque Solana (print abaixo)
+                      Com a conta criada, abra Arena › Hackathon e clique em &quot;Register now&quot;: escolha Brasil e sua cidade e marque a rede do seu projeto (no print, Solana)
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">3.</span>
@@ -277,7 +282,7 @@ export default async function PreRegistroPage({
               </li>
               )}
 
-              <li className="relative flex items-start gap-4">
+              <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
                   3
                 </span>
