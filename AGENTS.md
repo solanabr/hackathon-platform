@@ -2,6 +2,13 @@
 
 Next.js 16 App Router-specific warnings for contributors (human or AI).
 
+## Shared development environment
+
+- Coordinate one editing session per working tree. Parallel analysis can be read-only; independent edits should use separate worktrees and their own dev servers.
+- `npm run dev` uses port 3001. Check the existing server before starting another; changing only the port does not isolate `.next`.
+- Do not kill another session's server or clear its build cache. Identify the process owner and working directory before recovery; never use broad `pkill` for Next processes.
+- Batch visual checks for the requested change. Recheck after fixing a concrete defect, not after every speculative micro-adjustment.
+
 ## Don't
 
 - **Don't run `create-next-app`** — the project is scaffolded by hand; running the CLI here will fail (non-empty dir) or wipe configuration.
