@@ -160,6 +160,90 @@
       }
     }
 
+    /* --- O BILHETE ATRAVESSA A CÂMERA -------------------------------------
+     * A passagem da primeira dobra para a seção que explica o hackathon. Ela
+     * não é um corte: é o próprio bilhete que faz o transporte. Enquanto a
+     * dobra recua, o cartão GIRA sobre o eixo vertical, cresce e passa pela
+     * câmera — e o que fica no lugar dele é a seção seguinte, que já estava
+     * subindo por baixo. O objeto que a pessoa passou a primeira dobra inteira
+     * olhando é o que a leva para dentro do conteúdo.
+     *
+     * Três decisões que fazem isso não virar um zoom genérico de apresentação:
+     *
+     * 1. O CURSO É DESIGUAL. Os primeiros 38% quase não mexem — a peça só
+     *    respira e começa a virar. A régua da rolagem é linear por definição,
+     *    então a aceleração tem que estar nos quadros: sem isso o cartão sai
+     *    voando no primeiro toque de scroll e ninguém chega a ler o bilhete.
+     *
+     * 2. A LUZ ACOMPANHA O GIRO. `--foil-x` anda no mesmo curso do `rotateY`,
+     *    porque é isso que acontece com foil de verdade quando o cartão vira:
+     *    a banda de íris varre a peça. Herdado, então o ponteiro continua
+     *    mandando enquanto a mão estiver nela — inline vence herança.
+     *
+     * 3. A PEÇA DEIXA DE EXISTIR PARA O DEDO ANTES DE SUMIR DA VISTA. Um
+     *    cartão a 3,6x com opacidade zero continua sendo uma parede invisível
+     *    sobre a seção inteira; `pointer-events` sai junto com a tinta.
+     *
+     * A perspectiva mora no quadro, e não aqui: quem gira é o cartão, quem
+     * observa é a página.                                                     */
+    .cena-bilhete {
+      animation: cenaBilhete linear both;
+      /* A régua é a ROLAGEM DA PÁGINA, não a travessia da peça. `view()` mede
+         o bilhete contra a janela, e o bilhete é baixo: a faixa inteira dele
+         se esgotava perto de 0,8 da dobra — o cartão sumia antes de a seção
+         seguinte encostar no topo, e a transição virava um objeto que
+         evapora. Com `scroll(root)` a faixa é escrita em altura de janela e
+         casa com a dobra, que é exatamente o trecho que esta cena cobre. */
+      animation-timeline: scroll(root block);
+      animation-range: 4vh 96vh;
+    }
+
+    @keyframes cenaBilhete {
+      0% {
+        --foil-x: 50%;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+      }
+      /* `pointer-events` é discreto: ele vira no meio do intervalo, ou seja
+         logo no comecinho do curso. É de propósito. A partir do momento em que
+         a peça começa a viajar ela é cenário, e um cartão de três metros com
+         opacidade zero por cima da seção seguinte é uma parede invisível — o
+         hover que se perde aqui vale muito menos que o clique que se ganha. */
+      38% {
+        --foil-x: 62%;
+        opacity: 1;
+        pointer-events: none;
+        transform: translate3d(-1%, -3%, 0) rotateX(3deg) rotateY(-7deg)
+          scale(1.1);
+      }
+      70% {
+        --foil-x: 22%;
+        opacity: 1;
+        pointer-events: none;
+        transform: translate3d(-8%, -14%, 0) rotateX(10deg) rotateY(-24deg)
+          scale(1.95);
+      }
+      /* A tinta acaba antes do curso. O cartão continua crescendo depois de
+         sumir — é o que faz a saída ler como passagem pela câmera e não como
+         fade —, mas o fantasma não pode disputar a leitura do título da seção
+         seguinte, e ele chega ao topo da tela antes do fim da faixa. */
+      86% {
+        --foil-x: 6%;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(-13%, -23%, 0) rotateX(14deg) rotateY(-33deg)
+          scale(2.9);
+      }
+      100% {
+        --foil-x: 2%;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(-16%, -28%, 0) rotateX(16deg) rotateY(-40deg)
+          scale(3.6);
+      }
+    }
+
     /* --- O LEQUE ABRE ----------------------------------------------------
      * As três cartas da fila já estão em escada no repouso. A rolagem abre a
      * escada: cada carta anda um pouco mais que a anterior, então o intervalo

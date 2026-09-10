@@ -124,3 +124,28 @@
     --ease-mola: cubic-bezier(0.16, 1, 0.28, 1);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * REGISTRO — o desvio das chapas antes de encaixarem.
+ *
+ * Do raio-X da referência (kit técnico, doc 02): o acabamento não nasce de
+ * pós-processamento, nasce da própria impressão. Aqui só mora a grandeza; o
+ * comportamento está em `styles/gravura.css`.
+ * ------------------------------------------------------------------------- */
+:root {
+  /* DESVIO DE REGISTRO. O quanto cada chapa entra fora do eixo antes de
+     encaixar. Em `em` e não em px: o fantasma tem que crescer com o corpo da
+     letra, senão uma manchete de 76px e um selo de 11px erram por igual e o
+     selo vira borrão. */
+  --registro-desvio: 0.13em;
+
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Registro fora do eixo é deslocamento; sem vetor, a chapa já nasce
+       encaixada e o que se lê é a tipografia limpa — que é o estado final. */
+    --registro-desvio: 0em;
+  }
+}

@@ -1,0 +1,140 @@
+/* ---------------------------------------------------------------------------
+ * PROGRESSO LOCAL E REGISTRO
+ *
+ * A regra de arquitetura do raio-X do kit (doc 02): **um único progresso por
+ * seção**. `--p` vai de 0 a 1 enquanto a seção chega, é escrito UMA vez nela e
+ * herdado por tudo que estiver dentro. Distribuir números de scroll globais por
+ * dezenas de componentes é como se perde o controle de uma página assim — cada
+ * peça passa a ter a própria régua e nada mais encaixa.
+ *
+ * `initial-value: 1` é a rede de segurança inteira: sem `animation-timeline`,
+ * sem JS ou em movimento reduzido, tudo lê 1 — a composição PRONTA. O repouso
+ * desta página é sempre o desenho aprovado, nunca uma tela esperando efeito.
+ * ------------------------------------------------------------------------- */
+/* O progresso local. `initial-value: 1` é deliberado e é a rede de segurança
+   inteira: onde não houver `animation-timeline`, onde o JS falhar, onde o
+   movimento for reduzido — tudo lê 1, que é a composição PRONTA. O estado de
+   repouso desta página é sempre o desenho aprovado, nunca uma tela em branco
+   esperando um efeito. */
+@property --p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* --- O DRIVER ------------------------------------------------------------
+ * Três faixas, porque a mesma pergunta ("quando a composição termina de ser
+ * desenhada?") tem três respostas boas dependendo da altura da seção.
+ * `entry` tem comprimento igual à altura do sujeito; `cover` soma a viewport.
+ * Escolher explicitamente no call site é melhor que uma heurística que erra
+ * em silêncio numa seção alta.                                              */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .cena-p,
+    .cena-p-curta,
+    .cena-p-longa {
+      animation: cenaProgresso linear both;
+      animation-timeline: view();
+    }
+
+    /* O padrão: desenha enquanto a seção entra e fecha antes de ela estar
+       inteira na tela — quem lê o texto já encontra o desenho pronto. */
+    .cena-p {
+      animation-range: entry 8% entry 78%;
+    }
+
+    /* Seção baixa, onde `entry` é curto: o desenho tem que acontecer quase
+       todo na primeira aparição, senão nem começa antes de a seção passar. */
+    .cena-p-curta {
+      animation-range: entry 2% entry 44%;
+    }
+
+    /* Composição que continua evoluindo durante a leitura inteira — a que a
+       pessoa atravessa em vez de olhar. */
+    .cena-p-longa {
+      animation-range: cover;
+    }
+
+    @keyframes cenaProgresso {
+      from {
+        --p: 0;
+      }
+      to {
+        --p: 1;
+      }
+    }
+  }
+}
+
+/* --- 1. REGISTRO ---------------------------------------------------------
+ * As chapas entram fora do eixo e encaixam.
+ *
+ * É o gesto que abre e fecha a página, e o único momento em que a marca
+ * mostra o PROCESSO em vez do produto: por um instante a manchete é três
+ * impressões mal alinhadas, e só depois vira tipografia.
+ *
+ * `text-shadow` e não camadas duplicadas: sombra de texto pinta atrás do
+ * glifo, então o fantasma aparece exatamente onde a chapa teria errado, sem
+ * duplicar o texto no DOM — o leitor de tela continua ouvindo uma manchete só.
+ *
+ * As duas chapas erram em direções OPOSTAS e em proporções diferentes (uma
+ * mais no eixo X, outra mais no Y). Errar as duas para o mesmo lado não é
+ * registro fora de esquadro: é sombra projetada, que é outra coisa e lê como
+ * relevo barato.                                                            */
+.registro {
+  --r: calc(1 - var(--p));
+  --tinta-a: var(--color-emerald);
+  --tinta-b: var(--color-yellow-strong);
+  text-shadow:
+    calc(var(--registro-desvio) * var(--r) * -1)
+      calc(var(--registro-desvio) * var(--r) * 0.44) 0 var(--tinta-a),
+    calc(var(--registro-desvio) * var(--r) * 0.82)
+      calc(var(--registro-desvio) * var(--r) * -0.36) 0 var(--tinta-b);
+}
+
+/* Sobre o verde escuro a esmeralda some e o amarelo estoura. As chapas trocam
+   para o par que existe nesse fundo: creme e amarelo. */
+.registro-escuro {
+  --tinta-a: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  --tinta-b: var(--color-yellow);
+}
+
+/* A dobra imprime no load, não na rolagem: a manchete já está na tela quando
+   a página abre, então esperar scroll seria esperar para sempre. Roda junto
+   com `heroPrint`, na mesma deixa, para as chapas encaixarem no instante em
+   que a linha termina de subir de baixo do rolo. */
+.registro-impressao {
+  animation: registroImpressao var(--dur-lenta) var(--ease-entrada) backwards;
+  animation-delay: calc(var(--hero-cue) + var(--hero-i, 0) * var(--stagger-texto));
+}
+
+@keyframes registroImpressao {
+  from {
+    --p: 0;
+  }
+  to {
+    --p: 1;
+  }
+}
+
+/* --- 5. O GRÃO -----------------------------------------------------------
+ * A composição final da referência aplica ruído azul de baixa intensidade por
+ * cima de tudo. É o que impede a página de parecer um vetor: papel tem fibra.
+ *
+ * `soft-light` e não `overlay`: sobre creme o overlay estoura o meio-tom e o
+ * grão vira sujeira. Mesma decisão já tomada na atmosfera da premiação.      */
+.grao {
+  position: relative;
+}
+
+.grao::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: var(--grao-forca, 0.055);
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 190px 190px;
+}

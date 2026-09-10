@@ -1,0 +1,352 @@
+/* ---------------------------------------------------------------------------
+ * O BILHETE
+ *
+ * A peça mais cara da primeira dobra ganha o tratamento que uma peça cara
+ * recebe na vida real: papel com estrutura, impressão de segurança, hot stamp
+ * no canhoto e uma pose. Cada uma dessas quatro coisas existe por um motivo
+ * físico, e é o motivo que decide o valor — não o efeito.
+ *
+ * 1. PAPEL. Um ingresso não é uma cor de fundo. Papel tem trama (o ponto que
+ *    já vinha de `PaperTexture`), tem VERGATURA — as linhas de forma que ficam
+ *    marcadas na folha — e tem espessura. Sem as três, o retângulo continua
+ *    sendo um retângulo pintado por mais sombra que se empilhe em cima.
+ *
+ * 2. IMPRESSÃO DE SEGURANÇA. Guilhoché, microtexto e selo em relevo. É o que
+ *    o olho lê como "documento" antes de conseguir dizer por quê, e é a mesma
+ *    técnica da gravura desta marca: linha fina, cruzada, sem meio-tom.
+ *
+ * 3. FOIL. O canhoto amarelo vira holográfico — e holográfico de verdade não é
+ *    um arco-íris estampado, é uma GRADE DE DIFRAÇÃO que só devolve cor no
+ *    ângulo em que pega luz. Por isso a íris inteira mora atrás de uma máscara
+ *    estreita ancorada em `--foil-x`: o resto do canhoto fica amarelo, e a cor
+ *    só acontece na banda que o ponteiro está iluminando.
+ *
+ * 4. POSE. Perspectiva de verdade, com espessura que aparece do lado oposto à
+ *    inclinação e sombra que anda contra a peça. O cartão continua sendo um
+ *    plano — é isso que um bilhete é —, mas um plano POSICIONADO no espaço.
+ *
+ * Tudo degrada: sem ponteiro fino, a luz do foil faz uma varredura de ambiente
+ * e a pose fica em repouso; sem `@property`, as máscaras param no valor
+ * inicial, que é o desenho centrado e aprovado.
+ * ------------------------------------------------------------------------- */
+
+/* Registrados porque são interpolados: `--foil-x` dentro de máscara e
+   gradiente (que só transiciona se o browser souber que aquilo é uma
+   porcentagem) e os dois ângulos da pose. O valor inicial de cada um é o
+   estado de repouso — a peça nasce pronta, nunca esperando JS. */
+@property --foil-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --foil-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --pose-x {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --pose-y {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --pose-alt {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* --- O QUADRO DA TRAVESSIA -----------------------------------------------
+ * A perspectiva da cinemática de saída (`styles/scroll.css`, `.cena-bilhete`).
+ * Mais curta que a da pose porque o gesto é outro: ali o cartão está na mão e
+ * inclina de leve; aqui ele ATRAVESSA a câmera, e travessia sem perspectiva
+ * curta vira um `scale` grande — que é exatamente o zoom de apresentação que
+ * esta transição não quer ser. A origem fica alta e à direita porque é de lá,
+ * do canto onde o bilhete descansa, que ele parte.                           */
+.cena-bilhete-quadro {
+  perspective: 1150px;
+  perspective-origin: 68% 34%;
+}
+
+/* --- A POSE --------------------------------------------------------------
+ * A perspectiva mora no invólucro e a rotação na peça, porque quem observa
+ * não é o cartão: é a página. Perspectiva curta demais deforma o retângulo em
+ * trapézio de vitrine; a distância aqui é ~4x a largura da peça, que é a
+ * distância de quem está segurando um ingresso na mão.                      */
+.bilhete-cena {
+  perspective: 1400px;
+  perspective-origin: 50% 42%;
+}
+
+.bilhete-pose {
+  transform: rotateX(var(--pose-x)) rotateY(var(--pose-y));
+  transform-style: preserve-3d;
+  /* Amortecimento. O ponteiro chega em degraus de frame; sem o atraso curto a
+     peça copia o ruído da mão em vez de responder ao gesto. */
+  transition: transform var(--dur-instant) linear;
+}
+
+/* Ao soltar, o cartão não desliga: ele volta a assentar, com a mesma curva de
+   objeto físico do resto da base. */
+.bilhete-cena[data-pousado="true"] .bilhete-pose {
+  transition: transform var(--dur-media) var(--ease-mola);
+}
+
+/* --- A ESPESSURA ---------------------------------------------------------
+ * O lado do cartão. É uma cópia do mesmo recorte serrilhado, em tinta, atrás
+ * da peça e deslocada CONTRA a inclinação: incline para a esquerda e a borda
+ * direita é a que aparece, como em qualquer objeto com lado. O deslocamento é
+ * proporcional ao ângulo, então a espessura nasce e some junto com a pose.   */
+.bilhete-espessura {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: linear-gradient(
+    100deg,
+    #6d6547 0%,
+    #46442f 42%,
+    #2b3128 100%
+  );
+  /* Um fio de base mais o que a pose acrescenta: o cartão tem lado mesmo
+     parado — papel de 300 g tem espessura antes de alguém inclinar. */
+  transform: translate3d(
+    calc(1.2px + var(--pose-y) / 1deg * -0.5px),
+    calc(1.4px + var(--pose-x) / 1deg * 0.5px),
+    0
+  );
+  transition: transform var(--dur-instant) linear;
+}
+
+.bilhete-cena[data-pousado="true"] .bilhete-espessura {
+  transition: transform var(--dur-media) var(--ease-mola);
+}
+
+/* --- A SOMBRA ANDA -------------------------------------------------------
+ * Sombra parada embaixo de peça que se inclina é o detalhe que denuncia todo
+ * efeito 3D falso. Ela é `filter` porque precisa seguir o serrilhado, e o
+ * deslocamento é o dobro do da espessura — a sombra está mais longe do
+ * cartão do que a própria borda dele.                                       */
+.bilhete-cena.ticket-shadow {
+  filter: drop-shadow(
+    calc(var(--pose-y) / 1deg * -1.1px)
+      calc(16px + var(--pose-x) / 1deg * 1.1px + var(--pose-alt) * 9px)
+      calc(22px + var(--pose-alt) * 7px) rgb(27 35 29 / 0.26)
+  );
+  transition: filter var(--dur-instant) linear;
+}
+
+.bilhete-cena[data-pousado="true"].ticket-shadow {
+  transition: filter var(--dur-media) var(--ease-mola);
+}
+
+/* A ELEVAÇÃO. Encostar levanta a peça da mesa, e a sombra tem que crescer e
+   afastar junto — peça que sobe com a sombra parada denuncia que a sombra é um
+   desenho colado no fundo. Um número só, lido pelo `filter` acima, para o
+   levantar e o inclinar não brigarem por quem escreve a sombra. */
+@media (hover: hover) {
+  .bilhete-cena:hover {
+    --pose-alt: 1;
+  }
+}
+
+/* --- VERGATURA -----------------------------------------------------------
+ * As linhas da forma de papel: as finas juntas (pontusais) e as grossas
+ * espaçadas (vergaturas). Alfa baixíssimo de propósito — se der para VER a
+ * listra, virou padrão decorativo; ela tem que ser sentida como estrutura da
+ * folha quando a luz do foil passa por cima.                                */
+.bilhete-vergatura {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgb(27 35 29 / 0.035) 0 1px,
+      transparent 1px 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgb(27 35 29 / 0.032) 0 1px,
+      transparent 1px 34px
+    );
+}
+
+/* --- A MANCHA DA FOLHA ---------------------------------------------------
+ * Papel de verdade não tem tom uniforme: a polpa assenta desigual e a folha
+ * fica mais quente em algumas regiões e mais fria em outras. Quatro manchas
+ * largas e fora de qualquer grade, com alfa na casa dos dois por cento — o
+ * bastante para o creme deixar de ser uma cor chapada quando a peça cresce
+ * três vezes, e pouco o bastante para ninguém conseguir apontar onde estão.  */
+.bilhete-mancha {
+  background-image:
+    radial-gradient(
+      62% 48% at 18% 26%,
+      rgb(140 108 52 / 0.05),
+      transparent 70%
+    ),
+    radial-gradient(
+      44% 58% at 74% 68%,
+      rgb(120 96 48 / 0.045),
+      transparent 72%
+    ),
+    radial-gradient(
+      70% 40% at 52% 104%,
+      rgb(96 84 44 / 0.06),
+      transparent 76%
+    ),
+    radial-gradient(
+      38% 44% at 88% 12%,
+      rgb(255 253 244 / 0.5),
+      transparent 68%
+    );
+}
+
+/* --- A LUZ NO PAPEL ------------------------------------------------------
+ * Papel não é foil, então aqui não há cor: há uma faixa larga de luz quente
+ * atravessando a folha no mesmo eixo do canhoto. É o que amarra as duas
+ * metades — a mesma fonte de luz acende a íris de um lado e o creme do outro.
+ * `soft-light` porque a folha tem que continuar clara: `screen` estouraria o
+ * branco e apagaria a impressão.                                            */
+.bilhete-luz {
+  background-image: linear-gradient(
+    102deg,
+    rgb(255 255 255 / 0) 0%,
+    rgb(255 252 235 / 0.85) 48%,
+    rgb(255 255 255 / 0) 100%
+  );
+  background-size: 220% 100%;
+  background-position: calc(var(--foil-x) * 1.6) 0;
+  mix-blend-mode: soft-light;
+  opacity: 0.75;
+}
+
+/* --- O CANHOTO É HOT STAMP ----------------------------------------------- */
+
+/* O canhoto isola: sem isto as camadas em blend procuram fundo abaixo dele e
+   acabam borrando o papel do miolo em vez do amarelo. */
+.bilhete-canhoto {
+  isolation: isolate;
+}
+
+/* Camada 1 — a base perolada. Não é o holograma ainda: é o amarelo deixando
+   de ser chapado. Existe o tempo todo, inclusive parado, e é ela que impede o
+   canhoto de parecer uma tarja de cor quando não há ponteiro na tela. */
+.foil-perola {
+  background-image: conic-gradient(
+    from calc(var(--foil-x) * 2.4),
+    rgb(255 214 92 / 0.9),
+    rgb(255 168 79 / 0.75),
+    rgb(255 240 140 / 0.95),
+    rgb(214 255 196 / 0.6),
+    rgb(255 226 106 / 0.9),
+    rgb(255 214 92 / 0.9)
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.8;
+}
+
+/* Camada 2 — A ÍRIS. Um espectro contínuo, sem grade.
+   A primeira versão desta camada era uma grade de difração literal — linhas de
+   2px em arco-íris — e era tecnicamente correta e visualmente errada: no
+   tamanho em que o canhoto vive, ranhura microgravada não lê como microgravura,
+   lê como RISCO. Foil de verdade visto a olho nu não mostra a ranhura; mostra o
+   matiz escorregando. Então o espectro é contínuo e quem o move é a posição da
+   luz, deslocando um gradiente três vezes maior que a peça: em qualquer
+   instante só um trecho do arco-íris está sobre o amarelo, e ele desliza em vez
+   de piscar. Sem máscara, porque máscara com borda é a outra forma de criar
+   uma linha onde não deve haver nenhuma. */
+.foil-iris {
+  background-image: linear-gradient(
+    163deg,
+    hsl(340 92% 74% / 0.9) 0%,
+    hsl(24 100% 70% / 0.85) 14%,
+    hsl(52 100% 74% / 0.8) 27%,
+    hsl(122 74% 64% / 0.85) 42%,
+    hsl(176 86% 68% / 0.85) 56%,
+    hsl(212 92% 74% / 0.85) 70%,
+    hsl(286 86% 76% / 0.9) 85%,
+    hsl(340 92% 74% / 0.9) 100%
+  );
+  background-size: 100% 300%;
+  background-position: 0 calc(var(--foil-x) * -2);
+  /* `hard-light` e não `overlay`: sobre um amarelo saturado o `overlay`
+     preserva o matiz da base e o que sobra do espectro é claro-escuro — foil
+     sem cor. A difração precisa DESLOCAR o matiz. */
+  mix-blend-mode: hard-light;
+  opacity: 0.44;
+}
+
+/* Camada 3 — o especular. Uma lâmina de luz larga, com as duas pontas mortas
+   em transparente: em foil real o branco chega antes da cor porque é reflexão
+   direta, e ele é uma REGIÃO, não uma faixa com aresta. */
+.foil-brilho {
+  background-image: linear-gradient(
+    168deg,
+    rgb(255 255 255 / 0) calc(var(--foil-x) - 40%),
+    rgb(255 255 255 / 0.62) var(--foil-x),
+    rgb(255 255 255 / 0) calc(var(--foil-x) + 40%)
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* Camada 4 — a impressão de segurança do canhoto, em tinta. Fica ACIMA do
+   foil e em `multiply`: a linha gravada não recebe o brilho, ela o interrompe
+   — que é a diferença entre tinta sobre foil e tinta sob foil.              */
+.foil-linha {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* --- VARREDURA DE AMBIENTE ----------------------------------------------
+ * Sem ponteiro fino (telefone, tablet) o foil não pode ficar congelado: um
+ * holograma parado é uma mancha. Então a luz faz um curso lento e contínuo, na
+ * casa dos treze segundos — metade da deriva de ambiente da página, porque é
+ * um objeto na mão e não um fundo. Vale também no desktop enquanto ninguém
+ * encostou: a peça está viva antes de ser tocada.                           */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .bilhete-cena[data-pousado="true"] {
+    animation: bilheteRonda calc(var(--dur-ambiente) / 2) var(--ease-inout)
+      infinite;
+  }
+}
+
+@keyframes bilheteRonda {
+  0% {
+    --foil-x: 16%;
+  }
+  50% {
+    --foil-x: 84%;
+  }
+  100% {
+    --foil-x: 16%;
+  }
+}
+
+/* Inclinar é deslocamento e rotação — o que o movimento reduzido pede para
+   não acontecer. O foil FICA: cor e brilho não têm vetor, e desligá-los
+   entregaria um canhoto chapado a quem pediu menos movimento, não menos
+   movimento. A espessura vira o valor de base: o cartão continua tendo lado. */
+@media (prefers-reduced-motion: reduce) {
+  .bilhete-pose {
+    transform: none;
+  }
+  .bilhete-espessura {
+    transform: translate3d(1.2px, 1.4px, 0);
+  }
+}
+
+/* --- TINTA PRENSADA ------------------------------------------------------
+ * Tipografia de tipografia: a letra afunda no papel, então ela tem um fio de
+ * luz na aresta de baixo — o papel levantado que o tipo empurrou. Um pixel, e
+ * é a diferença entre texto renderizado sobre creme e texto IMPRESSO nele.   */
+.bilhete-prensa {
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.62);
+}
+
+/* O microtexto é impressão de segurança, não conteúdo: some do fluxo de
+   leitura e da árvore de acessibilidade, e existe para ser descoberto quando
+   a peça cresce. */
+.bilhete-microtexto {
+  opacity: 0.5;
+}

@@ -167,17 +167,11 @@
     transform: translate3d(0, -4px, 0) rotate(calc(var(--tilt-papel) * -0.12));
   }
 
-  /* A sombra cresce no mesmo curso, pela mesma razão da carta que abre: peça
-     que sobe com a sombra parada denuncia que a sombra é um desenho colado no
-     fundo. Aqui ela é `filter`, porque precisa seguir o corte serrilhado — e
-     por isso mora no invólucro, não na peça mascarada. */
-  .hero-ticket .ticket-shadow {
-    transition: filter var(--dur-rapida) var(--ease-mola);
-  }
-
-  .hero-ticket:hover .ticket-shadow {
-    filter: drop-shadow(0 24px 28px rgb(27 35 29 / 0.32));
-  }
+  /* A sombra não é escrita aqui. Ela cresce com o levantar E anda com a
+     inclinação da pose, e as duas coisas precisam sair do mesmo `filter` —
+     duas regras disputando a mesma propriedade é como a sombra acabava
+     travada no valor do hover justamente enquanto o cartão gira. Quem escreve
+     é `styles/bilhete.css`, a partir de `--pose-alt`. */
 }
 
 /* --- A TINTA DO LINK -----------------------------------------------------

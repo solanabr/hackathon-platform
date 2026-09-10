@@ -5,7 +5,10 @@
    que cada uma possa ser lida (e revista) como um sistema fechado. */
 @import "../styles/rota.css";
 @import "../styles/scroll.css";
+@import "../styles/gravura.css";
 @import "../styles/interactions.css";
+/* A linguagem de impressão do bilhete: papel, gravação, foil e pose. */
+@import "../styles/bilhete.css";
 
 @theme {
   --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
@@ -675,7 +678,7 @@ details[open] > .faq-answer {
 /* Hero ticket: the paper is die-cut on all four edges — one scallop mask per
    edge, intersected, so the outline chews like a real perforation. The shadow
    sits on the wrapper because a mask clips a box-shadow off its own element. */
-.ticket-paper {
+.ticket-cut {
   --ticket-notch: 5px;
   --ticket-pitch: 13px;
   mask-image:
@@ -697,7 +700,7 @@ details[open] > .faq-answer {
 }
 
 @media (min-width: 640px) {
-  .ticket-paper {
+  .ticket-cut {
     --ticket-notch: 6.5px;
     --ticket-pitch: 16px;
   }
