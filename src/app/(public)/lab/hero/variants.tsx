@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ColosseumScene } from "@/components/home/colosseum";
+import { ColosseumBackdrop } from "@/components/home/colosseum-backdrop";
 import { PAGE_SHELL } from "@/components/layout/container";
 import { ColosseumWhole } from "./colosseum-whole";
 import type { LabHeroProps } from "./catalog";
@@ -39,7 +40,7 @@ function BleedMonument({
       }
     >
       <div className={`h-full w-full ${mirror ? "[transform:scaleX(-1)]" : ""}`}>
-        <ColosseumScene />
+        <ColosseumScene backdrop={<ColosseumBackdrop className="h-full w-full" />} />
       </div>
     </div>
   );

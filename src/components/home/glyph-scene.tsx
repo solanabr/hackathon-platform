@@ -316,13 +316,40 @@ export default function GlyphScene({
     let cellHeight = 0;
     let cellPx = cell;
 
+    /* Onde o host está na página, medido quando o layout muda — não a cada
+       quadro. Um `getBoundingClientRect` dentro do laço, depois de outro
+       componente ter escrito estilo no mesmo quadro, força layout síncrono
+       toda vez; `scrollY` não custa nada. A deriva de rolagem da camada-mãe
+       desloca o host uns 3% do que esta conta diz, e a conta alimenta um
+       giro de 1° — invisível. */
+    let hostTop = 0;
+    let hostHeight = 0;
+    function measureHost(rect: DOMRect) {
+      hostTop = rect.top + window.scrollY;
+      hostHeight = rect.height;
+    }
+
+    /* A última pose pintada. A cena só pinta de novo quando a câmera andou
+       pelo menos uma fração de célula: o vaivém ambiente move meio pixel a
+       cada dez quadros, e repintar cinco passes de GPU para um quadro igual
+       ao anterior era a maior parte do custo da dobra em repouso. */
+    let dirty = true;
+    let lastHeading = 0;
+    let lastRise = 0;
+    let lastFov = 0;
+    let lastRadius = 0;
+    const lastFocus = new THREE.Vector3(NaN, NaN, NaN);
+    const POSE_EPSILON = 0.00025;
+
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const rect = host!.getBoundingClientRect();
+      measureHost(rect);
       const nextWidth = Math.max(1, Math.round(rect.width * dpr));
       const nextHeight = Math.max(1, Math.round(rect.height * dpr));
       if (nextWidth === width && nextHeight === height) return;
 
+      dirty = true;
       width = nextWidth;
       height = nextHeight;
       cellPx = cell * dpr;
@@ -380,9 +407,9 @@ export default function GlyphScene({
          acúmulo: a cena pode parar e voltar sem saltar. */
       let travel = 0;
       if (scrollBound) {
-        const rect = host!.getBoundingClientRect();
-        const span = window.innerHeight + rect.height;
-        const through = span > 0 ? (window.innerHeight - rect.top) / span : 0.5;
+        const top = hostTop - window.scrollY;
+        const span = window.innerHeight + hostHeight;
+        const through = span > 0 ? (window.innerHeight - top) / span : 0.5;
         travel = THREE.MathUtils.clamp(through, 0, 1) * 2 - 1;
       }
 
@@ -403,6 +430,22 @@ export default function GlyphScene({
         (scrollAxis === "azimuth" ? travel * scrollBound : 0);
       const rise =
         lens.elevation + (scrollAxis === "elevation" ? travel * scrollBound : 0);
+
+      const moved =
+        dirty ||
+        Math.abs(heading - lastHeading) > POSE_EPSILON ||
+        Math.abs(rise - lastRise) > POSE_EPSILON ||
+        fovDegrees !== lastFov ||
+        lens.radius !== lastRadius ||
+        !focus.equals(lastFocus);
+      if (!moved) return;
+      dirty = false;
+      lastHeading = heading;
+      lastRise = rise;
+      lastFov = fovDegrees;
+      lastRadius = lens.radius;
+      lastFocus.copy(focus);
+
       camera.position.set(
         focus.x + lens.radius * Math.cos(rise) * Math.sin(heading),
         focus.y + lens.radius * Math.sin(rise),
@@ -475,6 +518,7 @@ export default function GlyphScene({
     const io = new IntersectionObserver(
       ([entry]) => {
         onScreen = Boolean(entry?.isIntersecting);
+        if (entry) measureHost(entry.boundingClientRect);
         if (onScreen) start();
         else stop();
       },

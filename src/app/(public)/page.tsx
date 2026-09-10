@@ -22,6 +22,7 @@ import { Countdown } from "@/components/ui/countdown";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
+import { ColosseumBackdrop } from "@/components/home/colosseum-backdrop";
 import { HalftoneImage } from "@/components/home/halftone-image";
 import { CtaHalftone } from "@/components/home/cta-halftone";
 import { HeroHalftone } from "@/components/home/hero-halftone";
@@ -386,7 +387,7 @@ function NetworkSphere({ className }: { className: string }) {
       aria-hidden
       className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-surface [mask-image:radial-gradient(closest-side,black_58%,transparent)] ${className}`}
     >
-      <NetworkHalo className="h-auto w-full" />
+      <NetworkHalo className="w-full" />
     </div>
   );
 }
@@ -541,7 +542,9 @@ export default async function HomePage() {
 
           <div className="cena-deriva-media absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]">
             <div className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:right-auto lg:bottom-[-12%] lg:left-[-10%] lg:h-[70%] lg:w-[72%]">
-              <ColosseumScene />
+              <ColosseumScene
+                backdrop={<ColosseumBackdrop className="h-full w-full" />}
+              />
             </div>
 
             {/* Wide screens only: below `lg` the ticket already owns the

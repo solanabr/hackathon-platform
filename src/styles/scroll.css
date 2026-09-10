@@ -143,20 +143,46 @@
      * Só na saída (`exit`), e nunca até zero: a 0.28 ainda dá para ler o que
      * está lá quando a pessoa muda de ideia e sobe. Um hero que apaga de vez
      * transforma o scroll de volta num susto.                                */
+    /* A perda de tinta é um VÉU de creme por cima, não a opacidade da dobra.
+       Opacidade numa seção com canvas, chapas e camadas em deriva obriga o
+       compositor a pintar a dobra inteira num quadro à parte a cada frame de
+       rolagem; um véu é um retângulo. O resultado é o mesmo — a dobra é lida
+       sobre creme —, e o bilhete em voo (z-30, fora desta seção) continua
+       pousando por cima do véu, como pousava por cima da dobra apagada. */
     .cena-dobra {
+      view-timeline: --dobra block;
       animation: cenaDobra linear both;
-      animation-timeline: view();
+      animation-timeline: --dobra;
+      animation-range: exit 15% exit 100%;
+    }
+
+    .cena-dobra::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-color: var(--color-surface);
+      opacity: 0;
+      animation: cenaDobraVeu linear both;
+      animation-timeline: --dobra;
       animation-range: exit 15% exit 100%;
     }
 
     @keyframes cenaDobra {
       from {
-        opacity: 1;
         transform: translate3d(0, 0, 0);
       }
       to {
-        opacity: 0.28;
         transform: translate3d(0, calc(var(--deriva-curta) * -1), 0);
+      }
+    }
+
+    @keyframes cenaDobraVeu {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 0.72;
       }
     }
 

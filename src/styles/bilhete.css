@@ -228,8 +228,14 @@
     rgb(255 252 235 / 0.85) 48%,
     rgb(255 255 255 / 0) 100%
   );
-  background-size: 220% 100%;
-  background-position: var(--foil-x) 0;
+  /* A faixa é a camada inteira, 2,2x mais larga que a folha, e quem a move é
+     um transform — não `background-position`. Deslocar o fundo repintava a
+     face inteira a cada quadro do voo; deslocar a camada é só compor. A conta
+     reproduz a posição em porcentagem de antes: (100% − 220%) × X da folha,
+     que em largura da própria camada é −0,5455 × X. */
+  width: 220%;
+  transform: translate3d(calc(var(--foil-x) * -0.5455), 0, 0);
+  will-change: transform;
   mix-blend-mode: soft-light;
   opacity: 0.75;
 }

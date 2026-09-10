@@ -121,6 +121,10 @@ export function SolanaCoin() {
       let raf = 0;
       let last = 0;
       let rect = stage.getBoundingClientRect();
+      // The rect is re-read inside the frame, never in the scroll handler: a
+      // read there lands after this loop's own style writes and forces a
+      // synchronous layout on every scroll event.
+      let stale = false;
       let onScreen = false;
       let pointer: { x: number; y: number } | null = null;
 
@@ -146,6 +150,10 @@ export function SolanaCoin() {
         const dt = last ? Math.min(0.05, (t - last) / 1000) : 0.016;
         last = t;
         const now = t / 1000;
+        if (stale) {
+          rect = stage.getBoundingClientRect();
+          stale = false;
+        }
 
         // Breathing at rest — a piece that is dead still until you touch it
         // announces that it is waiting for you. This one is just standing.
@@ -229,14 +237,14 @@ export function SolanaCoin() {
         delete stage.dataset.struck;
       };
       const measure = () => {
-        rect = stage.getBoundingClientRect();
+        stale = true;
       };
       const onVisibility = () => (document.hidden ? stop() : start());
 
       const io = new IntersectionObserver(
         ([entry]) => {
           onScreen = entry.isIntersecting;
-          measure();
+          rect = entry.boundingClientRect;
           if (onScreen) start();
           else stop();
         },

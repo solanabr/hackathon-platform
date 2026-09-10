@@ -7,6 +7,7 @@ import { getHackathonBySlug } from "@/lib/hackathon";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
+import { ColosseumBackdrop } from "@/components/home/colosseum-backdrop";
 import { HalftoneImage } from "@/components/home/halftone-image";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
 import { EventTicket } from "@/components/campaign/event-ticket";
@@ -52,7 +53,7 @@ export default async function LegionaryPreview() {
           className="pointer-events-none absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]"
         >
           <div className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:right-auto lg:bottom-[-12%] lg:left-[-10%] lg:h-[70%] lg:w-[72%]">
-            <ColosseumScene />
+            <ColosseumScene backdrop={<ColosseumBackdrop className="h-full w-full" />} />
           </div>
 
           <div className="absolute right-[1%] bottom-0 hidden h-[88%] w-[32%] lg:block">

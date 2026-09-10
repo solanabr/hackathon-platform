@@ -51,8 +51,18 @@ export type HalftoneImageProps = {
    * enquadramento de uma CENA, que não tem pé nem borda, só continua fora do
    * quadro. */
   fit?: "contain" | "cover";
+  /** Teto de pixels físicos da tela. Uma chapa de cena sangra 28% além da
+   * janela e a 2x de DPR passava de oito milhões de pixels — trinta e tantos
+   * megabytes de textura para um fundo a 40% de tinta. Acima do teto o DPR
+   * cai até caber; a célula continua em px de CSS, então a grade é a mesma. */
+  maxPixels?: number;
   className?: string;
 };
+
+/* Quantas células cada fatia de pintura processa antes de devolver a thread.
+   Uma chapa de cena tem perto de um milhão; riscá-la de uma vez era uma
+   tarefa de várias centenas de milissegundos bem no meio da rolagem. */
+const CELLS_PER_SLICE = 90_000;
 
 export function HalftoneImage({
   src,
@@ -63,6 +73,7 @@ export function HalftoneImage({
   alphaCut = 0.45,
   fit = "contain",
   minWidth = 0,
+  maxPixels = 4_500_000,
   className = "h-full w-full text-ink",
 }: HalftoneImageProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -86,13 +97,19 @@ export function HalftoneImage({
 
     let disposed = false;
     let image: HTMLImageElement | null = null;
+    /* Cada pintura tem um número; uma fatia que acorda e vê outro número
+       sabe que uma pintura mais nova já limpou a tela e desiste. */
+    let generation = 0;
+    let pending = 0;
 
     function paint() {
       if (disposed || !image || !context || !samplerContext) return;
       const rect = host!.getBoundingClientRect();
       if (rect.width < 1 || rect.height < 1) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const area = rect.width * rect.height;
+      if (area * dpr * dpr > maxPixels) dpr = Math.max(1, Math.sqrt(maxPixels / area));
       const width = Math.round(rect.width * dpr);
       const height = Math.round(rect.height * dpr);
       const cellPx = cell * dpr;
@@ -128,41 +145,56 @@ export function HalftoneImage({
       context.lineCap = "round";
       context.strokeStyle = ink;
 
-      // Dois caminhos, um por peso — os mesmos dois <path> do meio-tom em SVG.
-      // Traçar mark a mark custaria uma chamada por célula, e são dezenas de
-      // milhares delas numa caixa de hero.
-      const light = new Path2D();
-      const dark = new Path2D();
+      const mine = ++generation;
+      if (pending) clearTimeout(pending);
+      pending = 0;
+      const rowsPerSlice = Math.max(1, Math.floor(CELLS_PER_SLICE / cols));
+      let row = 0;
 
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const index = (row * cols + col) * 4;
-          const alpha = pixels[index + 3]! / 255;
-          if (alpha < alphaCut) continue;
+      /* A chapa é riscada em fatias, de cima para baixo — a mesma varredura
+         da folha saindo da prensa —, e cada fatia devolve a thread antes da
+         próxima. Dois caminhos por fatia, um por peso: traçar mark a mark
+         custaria uma chamada por célula. */
+      const slice = () => {
+        pending = 0;
+        if (disposed || mine !== generation || !context) return;
+        const light = new Path2D();
+        const dark = new Path2D();
+        const end = Math.min(rows, row + rowsPerSlice);
 
-          const luminance = pixels[index]! / 255;
-          const tone = Math.min(
-            1,
-            Math.max(0, toneFloor + toneGain * (1 - Math.pow(luminance, gamma))),
-          );
-          if (tone < 0.05 + hash(col, row, 0) * 0.11) continue;
+        for (; row < end; row++) {
+          for (let col = 0; col < cols; col++) {
+            const index = (row * cols + col) * 4;
+            const alpha = pixels[index + 3]! / 255;
+            if (alpha < alphaCut) continue;
 
-          const length = ((0.4 + Math.pow(tone, 1.2) * (UNIT - 0.5)) / UNIT) * cellPx;
-          const x =
-            col * cellPx + cellPx / 2 + (hash(col, row, 1) - 0.5) * 0.8 * (cellPx / UNIT);
-          const y =
-            row * cellPx + cellPx / 2 + (hash(col, row, 2) - 0.5) * 0.5 * (cellPx / UNIT);
+            const luminance = pixels[index]! / 255;
+            const tone = Math.min(
+              1,
+              Math.max(0, toneFloor + toneGain * (1 - Math.pow(luminance, gamma))),
+            );
+            if (tone < 0.05 + hash(col, row, 0) * 0.11) continue;
 
-          const path = tone > 0.7 ? dark : light;
-          path.moveTo(x - length / 2, y);
-          path.lineTo(x + length / 2, y);
+            const length = ((0.4 + Math.pow(tone, 1.2) * (UNIT - 0.5)) / UNIT) * cellPx;
+            const x =
+              col * cellPx + cellPx / 2 + (hash(col, row, 1) - 0.5) * 0.8 * (cellPx / UNIT);
+            const y =
+              row * cellPx + cellPx / 2 + (hash(col, row, 2) - 0.5) * 0.5 * (cellPx / UNIT);
+
+            const path = tone > 0.7 ? dark : light;
+            path.moveTo(x - length / 2, y);
+            path.lineTo(x + length / 2, y);
+          }
         }
-      }
 
-      context.lineWidth = (1.6 / UNIT) * cellPx;
-      context.stroke(light);
-      context.lineWidth = (3 / UNIT) * cellPx;
-      context.stroke(dark);
+        context.lineWidth = (1.6 / UNIT) * cellPx;
+        context.stroke(light);
+        context.lineWidth = (3 / UNIT) * cellPx;
+        context.stroke(dark);
+
+        if (row < rows) pending = window.setTimeout(slice, 0);
+      };
+      slice();
     }
 
     /* Mesma regra das peças 3D: nada de fundo disputa o LCP. A chapa só é
@@ -215,12 +247,13 @@ export function HalftoneImage({
 
     return () => {
       disposed = true;
+      if (pending) clearTimeout(pending);
       observer.disconnect();
       wide?.removeEventListener("change", begin);
       dprQuery?.removeEventListener("change", onDpr);
       canvas.remove();
     };
-  }, [src, cell, toneFloor, toneGain, gamma, alphaCut, fit, minWidth]);
+  }, [src, cell, toneFloor, toneGain, gamma, alphaCut, fit, minWidth, maxPixels]);
 
   return <div ref={hostRef} aria-hidden className={className} />;
 }

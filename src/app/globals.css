@@ -367,6 +367,37 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * CHAPA — um halftone servido como arquivo e aplicado como máscara.
+ *
+ * O desenho vem de `/halftone/*.svg` (ver `components/home/plates.ts`); a
+ * tinta é o `currentColor` da caixa, alfa incluído. Os três `fit` espelham o
+ * `preserveAspectRatio` que o SVG inline tinha antes de virar arquivo.
+ * ------------------------------------------------------------------------- */
+.chapa {
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+.chapa-cover {
+  mask-size: cover;
+  mask-position: center;
+  -webkit-mask-size: cover;
+  -webkit-mask-position: center;
+}
+.chapa-cover-bottom {
+  mask-size: cover;
+  mask-position: center bottom;
+  -webkit-mask-size: cover;
+  -webkit-mask-position: center bottom;
+}
+.chapa-contain {
+  mask-size: contain;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-position: center;
+}
+
 /* LP hub homepage: morth shapes as paint, not watermark ------------------- */
 .morth {
   mask-size: contain;
@@ -466,12 +497,23 @@
  * seguem a mesma regra dos floats: escala de tempo em token e parada seca no
  * modo reduzido.
  * ------------------------------------------------------------------------- */
+/* O anel é um pseudo-elemento com sombra FIXA que escala e apaga: transform e
+   opacidade rodam no compositor. Animar a própria box-shadow repintava o
+   ponto a cada quadro, para sempre, em dois lugares da página. */
 @keyframes bentoPulse {
-  0% { box-shadow: 0 0 0 0 rgb(var(--pulse-rgb) / 0.45); }
-  70%, 100% { box-shadow: 0 0 0 6px rgb(var(--pulse-rgb) / 0); }
+  0% { transform: scale(0.8); opacity: 1; }
+  70%, 100% { transform: scale(2.4); opacity: 0; }
 }
 .bento-pulse {
   --pulse-rgb: 0 140 76;
+  position: relative;
+}
+.bento-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2.5px rgb(var(--pulse-rgb) / 0.45);
   animation: bentoPulse 2.1s var(--ease-inout) infinite;
 }
 /* Sobre o verde escuro o halo esmeralda some; o sinal herda o amarelo. */
@@ -497,8 +539,9 @@
 .bento-typing > span:nth-child(3) { animation-delay: calc(var(--stagger-lista) * 2); }
 
 @media (prefers-reduced-motion: reduce) {
-  .bento-pulse,
+  .bento-pulse::after,
   .bento-typing > span { animation: none; }
+  .bento-pulse::after { opacity: 0; }
   .bento-typing > span { opacity: 0.6; }
 }
 
@@ -846,6 +889,9 @@ details[open] > .faq-answer {
   border-radius: 50%;
   background: rgb(0 0 0 / 0.38);
   filter: blur(6.5cqw);
+  /* A pose move a sombra a cada quadro; sem a própria camada, cada quadro
+     refazia o blur inteiro na thread principal. */
+  will-change: transform;
   /* It travels with the lean and narrows as the piece turns edge-on — a coin
      standing on its rim casts a stripe, not a disc. `max(x, -x)` is |cos|:
      past 90° the pose flips sign and a bare `--cy` would mirror the pool. */
