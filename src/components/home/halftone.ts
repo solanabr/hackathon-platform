@@ -3,7 +3,22 @@
    deixa passo, ganho e corte ajustáveis sem redesenhar tudo. */
 export function halftoneMarks(
   tones: string,
-  { cols, cellW, cellH }: { cols: number; cellW: number; cellH: number },
+  {
+    cols,
+    cellW,
+    cellH,
+    jitterX = 0.8,
+    jitterY = 0.5,
+  }: {
+    cols: number;
+    cellW: number;
+    cellH: number;
+    /* Quanto cada risco sai do centro da célula. O padrão é o desvio mínimo
+       que tira a régua da grade sem soltar o desenho; textura de fundo pede
+       muito mais, senão a mancha lê como tela de impressão em vez de tinta. */
+    jitterX?: number;
+    jitterY?: number;
+  },
 ) {
   let seed = 0x9e3779b9;
   const rnd = () => {
@@ -20,8 +35,8 @@ export function halftoneMarks(
     const tone = parseInt(tones[i], 36) / 35;
     if (tone < 0.05 + rnd() * 0.11) continue;
     const len = 0.4 + Math.pow(tone, 1.2) * (cellW - 0.5);
-    const cx = (i % cols) * cellW + cellW / 2 + (rnd() - 0.5) * 0.8;
-    const cy = Math.floor(i / cols) * cellH + cellH / 2 + (rnd() - 0.5) * 0.5;
+    const cx = (i % cols) * cellW + cellW / 2 + (rnd() - 0.5) * jitterX;
+    const cy = Math.floor(i / cols) * cellH + cellH / 2 + (rnd() - 0.5) * jitterY;
     (tone > 0.7 ? dark : light).push(`M${round(cx - len / 2)} ${round(cy)}h${round(len)}`);
   }
 

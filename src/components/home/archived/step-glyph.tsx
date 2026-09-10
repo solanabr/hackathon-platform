@@ -1,4 +1,10 @@
-import { halftoneMarks } from "./halftone";
+/* Arquivado: os três passos passaram a ser numerados — 1, 2 e 3 impressos na
+   mesma prensa — e as ilustrações saíram do card. Os mapas de tom continuam
+   aqui porque são arte desenhada à mão, célula a célula, e não se refazem de
+   memória: para voltar, renderizar <StepGlyph shape="badge|arena|community">
+   no lugar de <StepNumeral> em (public)/page.tsx. */
+
+import { halftoneMarks } from "../halftone";
 
 type Shape = "badge" | "arena" | "community";
 

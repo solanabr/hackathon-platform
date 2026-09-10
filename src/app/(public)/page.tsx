@@ -22,9 +22,11 @@ import { Countdown } from "@/components/ui/countdown";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
+import { HalftoneImage } from "@/components/home/halftone-image";
 import { CtaHalftone } from "@/components/home/cta-halftone";
+import { HeroHalftone } from "@/components/home/hero-halftone";
 import { NetworkHalo } from "@/components/home/network-halo";
-import { StepGlyph } from "@/components/home/step-glyph";
+import { StepNumeral } from "@/components/home/step-numeral";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { MobileSteps } from "@/components/campaign/mobile-steps";
@@ -389,7 +391,6 @@ export default async function HomePage() {
   const journey = [
     {
       marker: "Agora",
-      glyph: "badge" as const,
       title: "Crie sua conta.",
       items: [
         "Entre na plataforma da Superteam Brasil e preencha seus dados",
@@ -409,7 +410,6 @@ export default async function HomePage() {
     },
     {
       marker: "Em seguida",
-      glyph: "arena" as const,
       title: "Conclua a inscrição oficial.",
       items: [
         "Siga o link para a Colosseum e faça sua inscrição no hackathon",
@@ -439,7 +439,6 @@ export default async function HomePage() {
     },
     {
       marker: "Antes de 14 set",
-      glyph: "community" as const,
       title: "Construa com a comunidade.",
       items: [
         "Workshops e mentorias ao vivo",
@@ -464,38 +463,94 @@ export default async function HomePage() {
       <PressSheet />
       {/* Hero: on wide screens the copy is centred over the fold, the
           amphitheatre rises from the lower left and bleeds past that margin,
-          and the ticket rests against the opposite corner. */}
-      <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden lg:justify-start">
+          and the ticket rests against the opposite corner — with the legionary
+          standing behind it, closing the right side. The two pieces reach the
+          halftone by different routes (render depth, photographic luminance)
+          and come out in the same ink, on the same 1.5px grid. */}
+      {/* A dobra não corta nada. O ticket é DEPOSITADO no canto e a aresta de
+          baixo dele descansa SOBRE a seção seguinte — objeto de papel pousado
+          na página, não forma recortada por ela. Um `overflow-x: clip` aqui
+          não serviria: o Chromium corta os dois eixos nessa combinação e o
+          ticket voltaria a ser cerceado. Quem sangra são os fundos, e eles já
+          têm o próprio quadro de corte; a garantia contra rolagem horizontal
+          continua no `main`. O `z-10` é o que mantém a aba pendurada por cima
+          de `#cases`, que pinta depois na ordem do DOM. */}
+      <section className="cena-dobra relative z-10 flex min-h-[calc(100dvh-4rem)] flex-col justify-center lg:justify-start">
+        {/* One still frame clips every drifting backdrop, because the fold
+            itself no longer clips on Y — and the clip cannot ride on the
+            drifting layers, since a clip travels with its own transform and
+            would cut the bleeds along a line that walks with the parallax
+            instead of along the edge of the fold. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]"
+          className="pointer-events-none absolute inset-0 overflow-clip"
         >
-          <div
-            className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:right-auto lg:bottom-[-12%] lg:left-[-10%] lg:h-[70%] lg:w-[72%]"
-          >
-            <ColosseumScene />
+          {/* A tinta que sobra nos cantos altos. O monumento e o legionário
+            fecham a base do quadro e deixam o topo lateral em papel liso; a
+            textura ocupa esse vão sem virar objeto. Deriva curta: ela está
+            atrás do monumento, então anda menos que ele — e a camada é maior
+            que a seção nos dois sentidos, senão o curso da deriva descobre uma
+            faixa de papel limpo na borda onde a mancha é mais densa.
+
+            Só a partir de `lg`: o vão que ela preenche é o das laterais da
+            manchete centrada. Abaixo disso o texto é alinhado à esquerda e
+            ocupa a largura inteira — a mesma mancha, ali, não preenche canto
+            nenhum, ela entra por baixo da leitura. */}
+          <div className="cena-deriva-curta absolute inset-x-0 -top-[4%] hidden h-[108%] lg:block">
+            <HeroHalftone
+              side="left"
+              className="absolute left-0 top-0 h-[62%] w-[34%] text-ink/20 lg:h-[68%] lg:w-[30%]"
+            />
+            <HeroHalftone
+              side="right"
+              className="absolute right-0 top-0 h-[34%] w-[30%] text-ink/20 lg:h-[42%] lg:w-[28%]"
+            />
+          </div>
+
+          <div className="cena-deriva-media absolute inset-0 lg:bottom-auto lg:h-[calc(100dvh-4rem)]">
+            <div className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[62%] lg:right-auto lg:bottom-[-12%] lg:left-[-10%] lg:h-[70%] lg:w-[72%]">
+              <ColosseumScene />
+            </div>
+
+            {/* Wide screens only: below `lg` the ticket and the mobile steps
+              already own the lower half, and the plate is never fetched. The
+              shield bleeds past the right margin the way the amphitheatre
+              bleeds past the left — and that bleed is what keeps the figure
+              clear of the sub-headline on short screens. */}
+            <div className="absolute right-[-5%] bottom-0 hidden h-[88%] w-[32%] lg:block">
+              <HalftoneImage src="/home/legionario.webp" minWidth={1024} />
+            </div>
           </div>
         </div>
 
         <div
-          className={`relative ${PAGE_SHELL} py-10 lg:flex lg:min-h-[calc(100dvh-4rem)] lg:flex-col lg:[--hero-pt:9vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:3vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
+          className={`relative ${PAGE_SHELL} py-10 lg:flex lg:min-h-[calc(100dvh-4rem)] lg:flex-col lg:[--hero-pt:11vh] lg:[--hero-pb:2.5rem] lg:pb-[var(--hero-pb)] lg:pt-[var(--hero-pt)] lg:[@media(max-height:860px)]:[--hero-pt:5vh] lg:[@media(max-height:860px)]:[--hero-pb:1.5rem]`}
         >
-          <div className="lg:mx-auto lg:my-auto lg:w-full lg:max-w-4xl lg:text-center">
+          <div className="lg:mx-auto lg:mb-auto lg:w-full lg:max-w-4xl lg:text-center">
             <div className="hero-print mb-5 flex lg:justify-center">
               <SectionHat>Hackathon Colosseum</SectionHat>
             </div>
 
             <h1 className="hero-print font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[clamp(3rem,4.6vw,4.8rem)]">
-              <span className="block" style={{ "--hero-i": 1 } as CSSProperties}>
+              <span
+                className="block"
+                style={{ "--hero-i": 1 } as CSSProperties}
+              >
                 O próximo time
               </span>
-              <span className="mt-1 block" style={{ "--hero-i": 2 } as CSSProperties}>
+              <span
+                className="mt-1 block"
+                style={{ "--hero-i": 2 } as CSSProperties}
+              >
                 a captar{" "}
                 <span className="hero-marca inline-block px-3 text-green-dark">
                   milhões
                 </span>
               </span>
-              <span className="mt-1 block" style={{ "--hero-i": 3 } as CSSProperties}>
+              <span
+                className="mt-1 block"
+                style={{ "--hero-i": 3 } as CSSProperties}
+              >
                 pode ser o seu.
               </span>
             </h1>
@@ -531,10 +586,9 @@ export default async function HomePage() {
                 <span>Entrar no grupo do WhatsApp</span>
               </TrackedCta>
             </div>
-
           </div>
 
-          <div className="lg:mt-6 lg:flex lg:w-full lg:max-w-[min(44vw,44rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[margin-right:calc(50%-50vw-1.75rem)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90">
+          <div className="lg:mt-6 lg:flex lg:w-full lg:max-w-[min(33vw,31rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90">
             <div id="hero-ticket" className="hero-ticket">
               <EventTicket />
             </div>
@@ -644,9 +698,9 @@ export default async function HomePage() {
                 </span>
               </div>
               <div className="mt-3 border-y border-green-dark/15 py-3 text-green-dark">
-                <StepGlyph
-                  shape={step.glyph}
-                  className="mx-auto h-20 w-auto [@media(min-height:960px)]:h-24"
+                <StepNumeral
+                  digit={i + 1}
+                  className="mx-auto h-24 w-auto [@media(min-height:960px)]:h-28"
                 />
               </div>
               <h3 className="mt-4 font-heading text-xl font-bold">
@@ -709,12 +763,15 @@ export default async function HomePage() {
         />
 
         <div className={`${PAGE_SHELL} mt-12 xl:mt-16`}>
-          <div className="rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
+          <div className="cena-assenta rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
             <div className="relative hidden aspect-[1200/480] w-full lg:block">
               <NetworkSphere className="w-[52%]" />
               <StatWires />
 
-              <Reveal tone="longe" className="absolute left-1/2 top-1/2 w-[25%] -translate-x-1/2 -translate-y-1/2">
+              <Reveal
+                tone="longe"
+                className="absolute left-1/2 top-1/2 w-[25%] -translate-x-1/2 -translate-y-1/2"
+              >
                 <SolanaCoin />
               </Reveal>
 
@@ -797,8 +854,8 @@ export default async function HomePage() {
               comprime sem perder nada. */}
           <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)]">
             <Reveal index={1} tone="papel" className="h-full min-w-0">
-              <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-emerald-deep shadow-sticker">
-                <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-surface/20 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
+              <article className="relative flex h-full flex-col overflow-clip rounded-2xl border-2 border-green-dark bg-emerald-deep shadow-sticker">
+                <CtaHalftone className="cena-zoom pointer-events-none absolute inset-0 h-full w-full text-surface/20 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
                 <header className="relative px-6 pt-5 sm:px-8 sm:pt-6">
                   <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-surface">
                     Calendário
@@ -812,7 +869,10 @@ export default async function HomePage() {
                   {/* O card abre com o único número que muda sozinho: sem ele
                       o calendário é uma tabela, com ele é um relógio. */}
                   <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-surface/25 bg-green-dark/25 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-surface-raised">
-                    <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-yellow bento-pulse bento-pulse-yellow" />
+                    <span
+                      aria-hidden
+                      className="h-1.5 w-1.5 rounded-full bg-yellow bento-pulse bento-pulse-yellow"
+                    />
                     Faltam
                     <Countdown
                       deadlineIso={submissionDeadline}
@@ -822,7 +882,10 @@ export default async function HomePage() {
                     para o envio
                   </p>
                 </header>
-                <CalendarTrack items={CALENDAR} deadlineIso={submissionDeadline} />
+                <CalendarTrack
+                  items={CALENDAR}
+                  deadlineIso={submissionDeadline}
+                />
                 <div className="relative px-6 pb-6 sm:px-8 sm:pb-8">
                   <TrackedCta
                     href="https://colosseum.com/hackathon"
@@ -831,7 +894,7 @@ export default async function HomePage() {
                       target: "colosseum_docs",
                       location: "calendario",
                     }}
-                    className="text-sm font-bold text-surface underline decoration-yellow decoration-4 underline-offset-4 transition-colors duration-(--dur-instant) ease-entrada hover:text-surface-raised"
+                    className="link-tinta text-sm font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:text-surface-raised"
                   >
                     Consultar as orientações oficiais
                   </TrackedCta>
@@ -888,8 +951,10 @@ export default async function HomePage() {
                     </p>
                     <h3 className="mt-2 font-heading text-[clamp(1.9rem,3.4vw,2.75rem)] font-black uppercase leading-[0.95] text-ink [font-stretch:115%]">
                       Conheça quem
-                      <br />vai construir
-                      <br />com você
+                      <br />
+                      vai construir
+                      <br />
+                      com você
                     </h3>
                     <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
                       Entre no grupo do WhatsApp para acompanhar as conversas,
@@ -912,7 +977,7 @@ export default async function HomePage() {
                               target: r.label,
                               location: "recursos",
                             }}
-                            className="flex h-full flex-col items-center justify-center gap-2.5 px-3 py-7 text-center text-[13px] font-bold leading-tight text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-emerald-deep hover:text-surface sm:py-8 sm:text-sm"
+                            className="tile-recurso flex h-full flex-col items-center justify-center gap-2.5 px-3 py-7 text-center text-[13px] font-bold leading-tight text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-emerald-deep hover:text-surface sm:py-8 sm:text-sm"
                           >
                             <Icon size={24} weight="bold" aria-hidden />
                             {r.label}
@@ -934,7 +999,7 @@ export default async function HomePage() {
       <section
         id="faq"
         aria-label="Perguntas frequentes"
-        className="relative isolate mt-8 overflow-hidden pb-10 lg:mt-10 lg:pb-14"
+        className="relative isolate mt-8 overflow-clip pb-10 lg:mt-10 lg:pb-14"
       >
         <SectionRails crossOffset="top-8" />
         <div className={`${PAGE_SHELL} pt-6 lg:pt-8`}>
@@ -950,7 +1015,7 @@ export default async function HomePage() {
               </p>
             </Reveal>
             <Reveal index={1} tone="texto" className="reveal-estampa">
-              <div className="flex flex-col items-start gap-0 lg:items-end">
+              <div className="cena-deriva-media flex flex-col items-start gap-0 lg:items-end">
                 <FaqHalftone className="hidden -mb-4 w-[19rem] text-ink lg:block xl:w-[23rem]" />
               </div>
             </Reveal>
@@ -961,7 +1026,7 @@ export default async function HomePage() {
               <div key={c}>
                 {column.map((f, i) => (
                   <Reveal key={f.q} index={i} tone="texto">
-                    <details className="group border-b border-dashed border-green-dark/35">
+                    <details className="faq-linha group border-b border-dashed border-green-dark/35">
                       <summary className="flex cursor-pointer list-none items-start gap-4 py-5 sm:gap-5 [&::-webkit-details-marker]:hidden">
                         <span
                           aria-hidden
@@ -1013,10 +1078,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="ultima-chamada" className={LP_SECTION} aria-label="Última chamada">
+      <section
+        id="ultima-chamada"
+        className={LP_SECTION}
+        aria-label="Última chamada"
+      >
         <div className="mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
-            <CtaHalftone className="pointer-events-none absolute inset-0 h-full w-full text-surface/35 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
+          <div className="cena-assenta relative overflow-clip rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
+            <CtaHalftone className="cena-zoom pointer-events-none absolute inset-0 h-full w-full text-surface/35 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
             <div className="relative mx-auto max-w-5xl">
               <Reveal>
                 <div className="text-center">

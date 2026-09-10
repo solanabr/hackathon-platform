@@ -708,6 +708,17 @@ details[open] > .faq-answer {
   filter: drop-shadow(0 16px 22px rgb(27 35 29 / 0.26));
 }
 
+/* A ESPESSURA DO PAPEL. Um ingresso não é um retângulo pintado: ele tem canto
+   vivo virado para a luz e sombra própria acumulada na base. Duas sombras
+   internas — o fio claro na aresta de cima, a tinta que assenta embaixo — e o
+   cartão passa a ter LADO. Vai dentro da máscara, então o recorte serrilhado
+   leva a espessura junto em vez de revelar uma borda reta por baixo. */
+.ticket-paper {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    inset 0 -18px 20px -18px rgb(27 35 29 / 0.28);
+}
+
 /* The tear line: holes punched through to the cream, each with the burr the
    punch leaves on the paper. */
 .ticket-holes {
@@ -1149,10 +1160,16 @@ html:not(.press-done) {
 }
 
 /* O ticket é objeto de papel: não sobe, é DEPOSITADO — chega girado e assenta,
-   com a curva de carimbo. O repouso é reto: agora ele sangra pela margem
-   direita, e uma peça inclinada não encosta na borda — ou o canto entra na
-   página, ou a base sai dela. O giro fica só na entrada. */
+   com a curva de carimbo. E assenta TORTO: ele não sangra mais pela margem,
+   então o desalinho de papel solto cabe dentro do quadro sem que o canto saia
+   da página. O repouso é meio grau da inclinação de chegada — a diferença
+   entre uma peça pousada na mesa e uma imagem alinhada por CSS.
+
+   O `to` repete o transform de repouso de propósito: a animação não é
+   `forwards`, então um `none` aqui devolveria o ticket ao reto num estalo no
+   quadro final. */
 .hero-ticket {
+  transform: rotate(calc(var(--tilt-papel) * -0.5));
   animation: heroTicket var(--dur-lenta) var(--ease-carimbo)
     calc(var(--hero-cue) + 0.28s) backwards;
 }
@@ -1163,7 +1180,7 @@ html:not(.press-done) {
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: rotate(calc(var(--tilt-papel) * -0.5));
   }
 }
 
