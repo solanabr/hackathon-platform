@@ -211,34 +211,31 @@ void main() {
 }
 `;
 
-/* Passo final — o hash É o meio-tom. O tom define o peso do glifo, nunca qual
-   glifo. Curva e piso de ruído são os mesmos de halftoneMarks(), para o campo
-   de densidade bater com o resto da página. */
-export const GLYPH_FRAG = /* glsl */ `
+/* Passo final — o campo de profundidade sai no MESMO traço de halftoneMarks():
+   risco horizontal na grade, comprimento modulado pelo tom, dois pesos, mesmo
+   piso de ruído. Testamos emitir um caractere base58 por célula e o resultado
+   foi sopa: 58 formas diferentes em 8px são ruído de alta frequência que destrói
+   o campo de tom em vez de carregá-lo. O hash entra onde se lê, não como textura. */
+export const HALFTONE_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
 uniform sampler2D tCell;
 uniform sampler2D tMin;
-uniform sampler2D tGlyphs;
-uniform sampler2D tSignature;
 uniform vec2 uResolution;
 uniform vec2 uCellResolution;
 uniform float uCell;
-uniform float uSignatureLength;
-uniform float uAtlasCols;
-uniform float uAtlasRows;
 uniform vec3 uInk;
 uniform vec3 uSurface;
 uniform float uFadeStart;
 uniform float uFadeEnd;
-
 uniform float uRecessDeadZone;
 uniform float uRecessDepth;
-uniform float uReverseStart;
-uniform float uReverseEnd;
+uniform float uToneFloor;
+uniform float uRecessGain;
+uniform float uFormGain;
 
-float hash(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+float hash(vec2 p, float salt) {
+  return fract(sin(dot(p + salt, vec2(127.1, 311.7))) * 43758.5453123);
 }
 
 void main() {
@@ -254,68 +251,43 @@ void main() {
 
   float nearest = texture2D(tMin, cellUv).a;
   // Escala log, não linear: em perspectiva a diferença de profundidade é
-  // multiplicativa, e entre a pedra e o vão ela varia por um fator de ~30. Uma
-  // rampa linear ou achata a pedra ou satura o vão — nunca as duas coisas.
+  // multiplicativa, e entre a pedra e o vão ela varia por um fator de ~30.
   float delta = max(packed.r - nearest, 1e-6);
   float recess = clamp(log(delta / uRecessDeadZone) / log(uRecessDepth / uRecessDeadZone), 0.0, 1.0);
   float form = 1.0 - packed.g;
-  // Expoente acima de 1 empurra a pedra para baixo em vez de levantá-la: sem
-  // isso o contraste pedra/vão fica menor que o da própria rampa vertical, e a
-  // peça lê como gradiente antes de ler como prédio.
-  float tone = clamp(0.02 + 0.94 * pow(recess, 1.3) + 0.10 * form * (1.0 - recess), 0.0, 1.0);
+  // Os três ganhos são a única diferença entre uma peça de arcada e uma peça
+  // maciça: na arcada o tom vem do vão (recesso), numa taça não há vão nenhum
+  // e quem desenha o volume é a luz (form). Ancorado nos mesmos dois valores
+  // do componente 2D: pedra em 0.26, vão em 0.95.
+  float tone = clamp(uToneFloor + uRecessGain * pow(recess, 1.15) + uFormGain * form * (1.0 - recess), 0.0, 1.0);
 
-  // O topo dissolve no creme, como no backdrop 2D: sem isso a peça termina numa
-  // silhueta dura em vez de virar página.
   // v cresce de baixo para cima: a distância a dissolver é medida do topo.
   float fromTop = 1.0 - fragPx.y / uResolution.y;
   float ramp = clamp((fromTop - uFadeStart) / (uFadeEnd - uFadeStart), 0.0, 1.0);
-  tone *= 0.35 + 0.65 * pow(ramp, 1.2);
+  tone *= 0.5 + 0.5 * pow(ramp, 1.2);
 
-  if (tone < 0.05 + hash(cell) * 0.11) {
+  if (tone < 0.05 + hash(cell, 0.0) * 0.11) {
     gl_FragColor = vec4(uSurface, 1.0);
     return;
   }
 
-  float linear = cell.y * uCellResolution.x + cell.x;
-  float sigU = (mod(linear, uSignatureLength) + 0.5) / uSignatureLength;
-  float glyph = floor(texture2D(tSignature, vec2(sigU, 0.5)).r * 255.0 + 0.5);
+  // A grade de referência é a de halftoneMarks(): o risco cresce de 0.4 a 7.9
+  // numa célula de 8, e a espessura salta de 1.6 para 3.0 em tom > 0.7.
+  const float UNIT = 8.0;
+  float length01 = (0.4 + pow(tone, 1.2) * (UNIT - 0.5)) / UNIT;
+  float weight01 = (tone > 0.7 ? 3.0 : 1.6) / UNIT;
 
-  vec2 atlasCell = vec2(mod(glyph, uAtlasCols), floor(glyph / uAtlasCols));
+  vec2 jitter = vec2(hash(cell, 1.0) - 0.5, hash(cell, 2.0) - 0.5) * vec2(0.8, 0.5) / UNIT;
   vec2 inCell = (fragPx - cell * uCell) / uCell;
+  vec2 p = inCell - (vec2(0.5) + jitter);
 
-  // Tom leve encolhe o glifo dentro da célula; tom pesado enche. Mesma ideia do
-  // comprimento do risco em halftoneMarks(), só que em duas dimensões.
-  float scale = 0.46 + 0.54 * pow(tone, 0.85);
-  vec2 local = (inCell - 0.5) / scale + 0.5;
-  float coverage = 0.0;
-  if (local.x >= 0.0 && local.x <= 1.0 && local.y >= 0.0 && local.y <= 1.0) {
-    vec2 atlasUv = (atlasCell + local) / vec2(uAtlasCols, uAtlasRows);
-    coverage = texture2D(tGlyphs, atlasUv).r;
-  }
+  // Cápsula, não retângulo: o traço do SVG tem ponta redonda.
+  float span = max(length01 * 0.5 - weight01 * 0.5, 0.0);
+  p.x = max(abs(p.x) - span, 0.0);
+  float dist = length(p);
 
-  // Limiar alto = só o miolo do caractere imprime (traço fino); limiar baixo =
-  // glifo cheio. O tom move o limiar, e é assim que o peso passa a carregar tom.
-  float threshold = mix(0.72, 0.46, pow(tone, 1.1));
-  float glyphInk = smoothstep(threshold - 0.035, threshold + 0.035, coverage);
-
-  // Um caractere cobre ~30% da célula: sozinho o meio-tom de hash nunca fecha o
-  // vão do arco. Acima do cruzamento entra um bloco de ÁREA proporcional ao tom,
-  // com a assinatura vazada dentro. É a área que modula — meio-tom de verdade,
-  // não mosaico, exatamente como o comprimento do risco modula em halftoneMarks().
-  float blockArea = smoothstep(uReverseStart, uReverseEnd, tone);
-  vec2 fromCentre = abs(inCell - 0.5);
-  float squircle = pow(pow(fromCentre.x, 4.0) + pow(fromCentre.y, 4.0), 0.25);
-  // Com área exata sobra creme entre células vizinhas e uma sombra contínua lê
-  // como xadrez. O ganho faz os blocos encostarem antes do tom cheio — é o que o
-  // meio-tom de traço já faz quando o risco cobre a célula inteira e as linhas
-  // se encontram.
-  float blockHalf = min(0.5 * sqrt(blockArea) * 1.32, 0.72);
-  float aa = 0.6 / uCell;
-  float block = step(0.001, blockArea) *
-    (1.0 - smoothstep(blockHalf - aa, blockHalf + aa, squircle));
-
-  // Dentro do bloco a tinta é o negativo do glifo; fora, o próprio glifo.
-  float ink = mix(glyphInk, 1.0 - glyphInk, block);
+  float aa = 0.5 / uCell;
+  float ink = 1.0 - smoothstep(weight01 * 0.5 - aa, weight01 * 0.5 + aa, dist);
 
   gl_FragColor = vec4(mix(uSurface, uInk, ink), 1.0);
 }
