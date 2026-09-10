@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "subject": "laura",
+  "surface": {
+    "kind": "cowork",
+    "permissionMode": "unknown",
+    "modelFamily": "unknown",
+    "effort": "unknown",
+    "folderGrantCount": null,
+    "connectorCounts": {
+      "readOnly": null,
+      "writeCapable": null,
+      "unknown": null
+    }
+  },
+  "runtime": {
+    "activeTaskCount": null,
+    "leadAgentCount": null,
+    "subagentCount": null,
+    "maximumDelegationDepth": null,
+    "activeWorktreeCount": null,
+    "registeredWorktreeCount": null,
+    "worktreeLogicalGiB": null,
+    "worktreeNodeModulesGiB": null,
+    "writeCapableAgentsOnSameWorktree": null,
+    "watcherCount": null,
+    "logicalBrowserCount": null,
+    "testRunnerCount": null,
+    "orphanCandidateCount": null
+  },
+  "context": {
+    "windowUtilizationPercent": null,
+    "customInstructionPercent": null,
+    "skillCount": null,
+    "deferredToolCount": null,
+    "cacheReadTokensP50": null,
+    "cacheReadTokensP95": null,
+    "compactionCount": null,
+    "compactionDurationMsP50": null,
+    "compactionDurationMsP95": null
+  },
+  "mcp": {
+    "connected": null,
+    "pending": null,
+    "failed": null,
+    "unknown": null
+  },
+  "workflows": {
+    "sampleCount": null,
+    "durationMsP50": null,
+    "durationMsP95": null,
+    "over20Minutes": null,
+    "over40Minutes": null,
+    "agentFanoutP50": null,
+    "agentFanoutMax": null,
+    "toolCallsP50": null,
+    "timeouts": null
+  },
+  "hostSnapshot": {
+    "logicalCpu": null,
+    "ramGiB": null,
+    "diskFreeGiB": null,
+    "diskUsedPercent": null,
+    "swapUsedGiB": null,
+    "swapCapacityGiB": null,
+    "pageoutObservedDuringTwoSeconds": null,
+    "processCount": null,
+    "claudeCliCount": null,
+    "codexCliCount": null,
+    "browserWebviewRssGiB": null,
+    "testRunnerCount": null
+  },
+  "hookMeasurements": {
+    "secretScannerBashNeutralMs": null,
+    "secretScannerWriteOneLineMs": null,
+    "secretScannerWriteHundredLinesMs": null,
+    "codeDiscoveryGateMs": null,
+    "sessionReminderMs": null
+  },
+  "privacy": {
+    "freeTextPresent": false,
+    "rawCommandOutputPresent": false,
+    "sessionContentPresent": false,
+    "pathsPresent": false,
+    "identifiersPresent": false
+  }
+}

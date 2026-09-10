@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "subject": "felix",
+  "surface": {
+    "kind": "claude-code-cli",
+    "permissionMode": "auto",
+    "modelFamily": "opus",
+    "effort": "xhigh",
+    "folderGrantCount": null,
+    "connectorCounts": {
+      "readOnly": null,
+      "writeCapable": null,
+      "unknown": 4
+    }
+  },
+  "runtime": {
+    "activeTaskCount": null,
+    "leadAgentCount": null,
+    "subagentCount": null,
+    "maximumDelegationDepth": null,
+    "activeWorktreeCount": null,
+    "registeredWorktreeCount": 15,
+    "worktreeLogicalGiB": 18.7,
+    "worktreeNodeModulesGiB": 15.46,
+    "writeCapableAgentsOnSameWorktree": null,
+    "watcherCount": null,
+    "logicalBrowserCount": null,
+    "testRunnerCount": 0,
+    "orphanCandidateCount": 4
+  },
+  "context": {
+    "windowUtilizationPercent": null,
+    "customInstructionPercent": null,
+    "skillCount": 318,
+    "deferredToolCount": 257,
+    "cacheReadTokensP50": 371000,
+    "cacheReadTokensP95": 916000,
+    "compactionCount": null,
+    "compactionDurationMsP50": null,
+    "compactionDurationMsP95": null
+  },
+  "mcp": {
+    "connected": null,
+    "pending": null,
+    "failed": null,
+    "unknown": 4
+  },
+  "workflows": {
+    "sampleCount": 202,
+    "durationMsP50": 225600,
+    "durationMsP95": 1160400,
+    "over20Minutes": 10,
+    "over40Minutes": 8,
+    "agentFanoutP50": 11.5,
+    "agentFanoutMax": 59,
+    "toolCallsP50": null,
+    "timeouts": null
+  },
+  "hostSnapshot": {
+    "logicalCpu": 12,
+    "ramGiB": 36,
+    "diskFreeGiB": 16,
+    "diskUsedPercent": 97,
+    "swapUsedGiB": 10.55,
+    "swapCapacityGiB": 12,
+    "pageoutObservedDuringTwoSeconds": false,
+    "processCount": 748,
+    "claudeCliCount": 3,
+    "codexCliCount": 3,
+    "browserWebviewRssGiB": 11.6,
+    "testRunnerCount": 0
+  },
+  "hookMeasurements": {
+    "secretScannerBashNeutralMs": 165,
+    "secretScannerWriteOneLineMs": 167,
+    "secretScannerWriteHundredLinesMs": 6373,
+    "codeDiscoveryGateMs": 19,
+    "sessionReminderMs": 12
+  },
+  "privacy": {
+    "freeTextPresent": false,
+    "rawCommandOutputPresent": false,
+    "sessionContentPresent": false,
+    "pathsPresent": false,
+    "identifiersPresent": false
+  }
+}
