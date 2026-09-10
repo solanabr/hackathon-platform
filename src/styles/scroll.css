@@ -1,0 +1,253 @@
+/* ---------------------------------------------------------------------------
+ * CENAS DE ROLAGEM
+ *
+ * A terceira camada de movimento da LP. As outras duas já existiam: a ENTRADA
+ * (`.reveal`, um observer que dispara uma vez) e a AMBIENTE (loops que não
+ * respondem a ninguém). Falta a que responde ao dedo: o que a pessoa vê muda
+ * porque ELA está rolando, e não porque um cronômetro disparou.
+ *
+ * Tudo aqui é `animation-timeline` — animação amarrada à posição do scroll,
+ * não ao relógio. Três consequências que justificam a escolha inteira:
+ *
+ * 1. É reversível de graça. Subir desfaz na mesma curva, porque não existe
+ *    "estado disparado" para rearmar — existe uma posição.
+ * 2. Roda no compositor, fora da main thread. A alternativa honesta seria mais
+ *    um `scroll` listener em rAF por camada; a `JourneyPin` tem um, e um é o
+ *    limite antes de a rolagem começar a engasgar em telefone.
+ * 3. Degrada para nada. Onde a API não existe, o `@supports` não entra e a
+ *    camada fica no estado de repouso — que é o desenho aprovado, não uma
+ *    versão quebrada esperando JS.
+ *
+ * REGRA DE HIERARQUIA: cena de rolagem mexe em CAMADA DE FUNDO — halftone,
+ * kraft, monumento, trilho, malha. Texto e CTA não derivam. O conteúdo é a
+ * coisa parada em relação à qual o resto se move; invertido, a página vira um
+ * carrossel e a leitura fica impossível.
+ *
+ * GOTCHA que custou tempo: `view()` mede o elemento contra o SCROLLPORT mais
+ * próximo, e `overflow: hidden` conta como scrollport. Uma camada dentro de
+ * uma seção `overflow-hidden` nunca progride — a seção não rola. Por isso as
+ * seções que hospedam cena usam `overflow-clip`: corta igual, sem virar
+ * container de rolagem.
+ * ------------------------------------------------------------------------- */
+
+/* A régua nasce vazia e só é preenchida pela rolagem. Fora do `@supports` ela
+   nunca é preenchida — então fica invisível, que é o estado certo para uma
+   peça cujo único conteúdo é o progresso. */
+.lp-regua {
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* --- DERIVA -----------------------------------------------------------
+     * O paralaxe. A camada entra adiantada e sai atrasada em relação ao
+     * conteúdo, então ela lê como se estivesse ATRÁS do papel em vez de
+     * colada nele. O curso é simétrico em torno do repouso de propósito: no
+     * meio da travessia — que é onde a seção é lida — a camada está exatamente
+     * onde o design a colocou.                                              */
+    .cena-deriva-curta,
+    .cena-deriva-media,
+    .cena-deriva-longa {
+      animation: cenaDeriva linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    .cena-deriva-curta {
+      --deriva: var(--deriva-curta);
+    }
+    .cena-deriva-media {
+      --deriva: var(--deriva-media);
+    }
+    .cena-deriva-longa {
+      --deriva: var(--deriva-longa);
+    }
+
+    /* Inverte o sentido: a camada sobe enquanto a página desce. Serve para o
+       que precisa parecer FIXO no mundo — um monumento apoiado no chão não
+       acompanha a rolagem, ele fica para trás. */
+    .cena-deriva-contra {
+      --deriva-sinal: -1;
+    }
+
+    @keyframes cenaDeriva {
+      from {
+        transform: translate3d(
+          0,
+          calc(var(--deriva) * -1 * var(--deriva-sinal, 1)),
+          0
+        );
+      }
+      to {
+        transform: translate3d(
+          0,
+          calc(var(--deriva) * var(--deriva-sinal, 1)),
+          0
+        );
+      }
+    }
+
+    /* --- ZOOM DE CENA -----------------------------------------------------
+     * Para camada que preenche o quadro inteiro e não tem para onde
+     * transladar sem mostrar a borda: o halftone dos cards escuros, a malha.
+     * Ela chega grande e assenta no tamanho de repouso na saída — o gesto é o
+     * de uma câmera recuando, não o de um GIF respirando.                    */
+    .cena-zoom {
+      animation: cenaZoom linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    @keyframes cenaZoom {
+      from {
+        transform: scale(var(--zoom-cena))
+          translate3d(0, calc(var(--deriva-curta) * -1), 0);
+      }
+      to {
+        transform: scale(1) translate3d(0, var(--deriva-curta), 0);
+      }
+    }
+
+    /* --- O TRILHO SE DESENHA ---------------------------------------------
+     * As linhas do `SectionRails` são desenho técnico: a régua da página
+     * aparecendo. Então elas não fazem fade — elas são TRAÇADAS, de cima para
+     * baixo, no ritmo em que a seção entra. É a mesma decisão do halftone que
+     * é varrido em vez de desbotado: nesta marca, coisa desenhada aparece
+     * pela ponta do traço.
+     *
+     * A faixa é `entry`, cujo comprimento é a ALTURA DA SEÇÃO: o traço é
+     * ruled no ritmo em que a seção passa, e não numa duração fixa que ficaria
+     * curta demais numa seção alta e longa demais numa baixa. Fecha em 75%
+     * para o traço não estar sempre incompleto enquanto a seção é lida.      */
+    .cena-trilhos {
+      animation: cenaTrilhos linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 75%;
+    }
+
+    @keyframes cenaTrilhos {
+      from {
+        clip-path: inset(0 0 100% 0);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    /* --- A PRIMEIRA DOBRA ENTREGA A PÁGINA -------------------------------
+     * O hero não é substituído por corte seco: ele RECUA. Enquanto sai de
+     * cena, a dobra inteira perde tinta e desce um fio, como uma folha que
+     * volta para a pilha — e a seção seguinte sobe por cima dela.
+     *
+     * Só na saída (`exit`), e nunca até zero: a 0.28 ainda dá para ler o que
+     * está lá quando a pessoa muda de ideia e sobe. Um hero que apaga de vez
+     * transforma o scroll de volta num susto.                                */
+    .cena-dobra {
+      animation: cenaDobra linear both;
+      animation-timeline: view();
+      animation-range: exit 15% exit 100%;
+    }
+
+    @keyframes cenaDobra {
+      from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+      to {
+        opacity: 0.28;
+        transform: translate3d(0, calc(var(--deriva-curta) * -1), 0);
+      }
+    }
+
+    /* --- O LEQUE ABRE ----------------------------------------------------
+     * As três cartas da fila já estão em escada no repouso. A rolagem abre a
+     * escada: cada carta anda um pouco mais que a anterior, então o intervalo
+     * entre elas cresce enquanto a faixa atravessa a tela e volta a fechar
+     * quando ela sai. O passo entre as cartas é o mesmo token de deriva —
+     * quem define a diferença é o índice, escrito no call site como todo
+     * stagger desta base.                                                    */
+    .cena-carta {
+      --deriva: calc(var(--deriva-curta) * var(--carta-i, 1));
+      animation: cenaDeriva linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    /* --- O PAINEL É DEPOSITADO -------------------------------------------
+     * Objeto de papel grande — o quadro escuro da Solana, o bloco da última
+     * chamada. Ele não entra flutuando: chega um fio maior do que a caixa e
+     * assenta nela, que é o gesto de prensar uma folha contra a mesa. Termina
+     * em `entry 100%`: quando a peça está inteira na tela, ela já está
+     * parada — o resto da travessia é leitura, não animação.                 */
+    .cena-assenta {
+      animation: cenaAssenta linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 100%;
+    }
+
+    @keyframes cenaAssenta {
+      from {
+        transform: scale(0.965) translate3d(0, var(--dist-entrada), 0);
+      }
+      to {
+        transform: scale(1) translate3d(0, 0, 0);
+      }
+    }
+
+  }
+
+  /* As duas peças abaixo ficam FORA do corte de movimento reduzido, e isso é
+   * uma decisão, não um esquecimento. O que causa desconforto é deslocamento
+   * grande, rotação e escala de bloco — não uma barra de 2px sendo preenchida
+   * nem um fundo trocando de opacidade no lugar. Além disso as duas informam:
+   * uma diz onde a pessoa está na folha, a outra diz que o cabeçalho passou a
+   * flutuar sobre o conteúdo. Desligá-las seria tirar informação de quem
+   * pediu menos movimento. */
+
+  /* --- O CHROME ASSENTA -------------------------------------------------
+   * O cabeçalho no topo da página é uma linha sobre o creme; assim que a
+   * página anda, ele vira uma barra apoiada em cima do conteúdo. A troca é
+   * contínua e amarrada aos primeiros 5rem de rolagem, não um `if scrollY >
+   * 0` que estala de um estado para o outro.
+   *
+   * Só cor e sombra: a altura fica fora porque encolher um header sticky
+   * reflui a página inteira a cada frame de rolagem.                        */
+  .chrome-assenta {
+    animation: chromeAssenta linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 5rem;
+  }
+
+  @keyframes chromeAssenta {
+    from {
+      background-color: color-mix(in srgb, var(--color-surface) 55%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
+      box-shadow: 0 0 0 0 rgb(27 35 29 / 0);
+    }
+    to {
+      background-color: color-mix(in srgb, var(--color-surface) 92%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--color-ink) 18%, transparent);
+      box-shadow: 0 6px 0 -4px rgb(27 35 29 / 0.1);
+    }
+  }
+
+  /* --- A RÉGUA ---------------------------------------------------------
+   * Quanto da folha já passou. É a única peça da página que informa em vez
+   * de ambientar, e por isso é a mais discreta: 2px de tinta correndo na
+   * base do cabeçalho, ancorada à esquerda como uma régua de impressão.
+   * Amarelo é a cor de marcação da marca — a mesma da tarja do hero.        */
+  .lp-regua {
+    animation: lpRegua linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes lpRegua {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}

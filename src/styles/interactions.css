@@ -1,0 +1,274 @@
+/* ---------------------------------------------------------------------------
+ * MICROINTERAÇÕES
+ *
+ * O que a página responde quando a pessoa encosta nela. A régua é a mesma do
+ * resto da identidade: isto aqui é papel impresso, e papel tem PESO. Nada
+ * flutua, nada pulsa, nada brilha — as coisas levantam um fio quando o dedo
+ * chega perto e BATEM quando ele fecha.
+ *
+ * Três decisões que valem para o arquivo inteiro:
+ *
+ * 1. Todo gesto tem ida e volta. `:hover` levanta com `--ease-mola`,
+ *    `:active` afunda com `--dur-toque` — a confirmação do toque chega ANTES
+ *    do resultado da ação, que é o que faz um botão parecer mecânico em vez
+ *    de decorativo.
+ * 2. Levantar é só para o que é clicável. Card informativo que se mexe ao
+ *    passar o mouse promete um clique que não existe.
+ * 3. Deslocamento fica atrás de `@media (hover: hover)`. Em toque, `:hover`
+ *    gruda depois do tap e a peça fica levantada até a pessoa tocar em outro
+ *    lugar — o gesto vira um bug.
+ *
+ * NOTA sobre a cascata: as regras deste arquivo não estão em `@layer`, então
+ * vencem as utilities do Tailwind. Onde eu declaro `transition` completa é de
+ * propósito: `transition-colors` no JSX define a lista de propriedades e
+ * derrubaria o transform junto. A lista aqui REPÕE o que a utility fazia e
+ * acrescenta o transform — nenhuma transição de cor foi perdida.
+ * ------------------------------------------------------------------------- */
+
+/* --- O CARIMBO ------------------------------------------------------------
+ * O CTA de canto cortado é a peça mais clicada da página. Ele levanta 1px no
+ * hover e afunda 1px no toque: um curso de 2px no total, que é
+ * deliberadamente pouco — o botão tem uma sombra dura e um chanfro, e qualquer
+ * curso maior descola a peça do papel em vez de prensá-la contra ele.        */
+.btn-cut {
+  transition:
+    transform var(--dur-toque) var(--ease-mola),
+    background-color var(--dur-instant) var(--ease-entrada),
+    border-color var(--dur-instant) var(--ease-entrada),
+    color var(--dur-instant) var(--ease-entrada);
+}
+
+@media (hover: hover) {
+  .btn-cut:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.btn-cut:active {
+  transform: translate3d(0, 1px, 0);
+  transition-duration: var(--dur-toque);
+}
+
+/* O mesmo par no botão de pílula, que já levantava no hover mas não tinha
+   volta: sem o `:active` o clique não é confirmado em lugar nenhum.
+   O secundário só transicionava cor, então o transform precisa entrar na
+   lista — do contrário ele estala em vez de afundar. */
+.btn-secondary {
+  transition:
+    transform var(--dur-toque) var(--ease-mola),
+    background-color var(--dur-instant) var(--ease-entrada),
+    border-color var(--dur-instant) var(--ease-entrada),
+    color var(--dur-instant) var(--ease-entrada);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translate3d(0, 1px, 0);
+  transition-duration: var(--dur-toque);
+}
+
+/* --- A CARTA QUE ABRE ----------------------------------------------------
+ * Só a versão clicável do card de canto cortado. O deslocamento é diagonal e
+ * a sombra cresce junto no mesmo vetor: é a peça saindo do papel, não uma caixa
+ * escorregando na tela. Sombra que fica parada enquanto o card sobe é o erro
+ * clássico — denuncia que a sombra é um retângulo pintado e não uma sombra.  */
+@media (hover: hover) {
+  a.card-cut,
+  button.card-cut {
+    transition:
+      transform var(--dur-rapida) var(--ease-mola),
+      filter var(--dur-rapida) var(--ease-mola);
+  }
+
+  a.card-cut:hover,
+  button.card-cut:hover {
+    transform: translate3d(-2px, -3px, 0);
+    filter: drop-shadow(9px 10px 0 rgb(27 35 29 / 0.2));
+  }
+
+  a.card-cut:active,
+  button.card-cut:active {
+    transform: translate3d(0, 0, 0);
+    filter: drop-shadow(4px 4px 0 rgb(27 35 29 / 0.22));
+    transition-duration: var(--dur-toque);
+  }
+}
+
+/* --- O LADRILHO DE RECURSO ----------------------------------------------
+ * A grade de canais é um bloco de seis quadros iguais, e o hover já vira o
+ * fundo inteiro em verde. Falta dizer QUAL deles está sob o dedo antes de a
+ * cor chegar: o ícone sobe um fio, e é ele que confirma a mira.             */
+.tile-recurso svg {
+  transition: transform var(--dur-rapida) var(--ease-mola);
+}
+
+@media (hover: hover) {
+  .tile-recurso:hover svg {
+    transform: translate3d(0, -3px, 0) scale(1.06);
+  }
+}
+
+.tile-recurso:active svg {
+  transform: translate3d(0, 0, 0) scale(0.96);
+  transition-duration: var(--dur-toque);
+}
+
+/* --- A LINHA DA PERGUNTA -------------------------------------------------
+ * A FAQ é uma lista de doze linhas iguais separadas por tracejado. O alvo de
+ * clique é a linha inteira, mas visualmente nada dizia isso — só a pergunta
+ * trocava de cor. Agora a linha inteira responde: o número da pergunta anda
+ * para dentro, como um marcador de página sendo empurrado, e o papel embaixo
+ * dela esquenta um grau.
+ *
+ * O número é `aria-hidden` e o deslocamento é de 3px: ele existe para o olho
+ * achar a linha ativa na varredura, não para ser lido de novo.              */
+.faq-linha summary {
+  transition: background-color var(--dur-instant) var(--ease-entrada);
+}
+
+.faq-linha summary > span:first-child {
+  transition:
+    transform var(--dur-rapida) var(--ease-mola),
+    color var(--dur-instant) var(--ease-entrada);
+}
+
+@media (hover: hover) {
+  .faq-linha summary:hover {
+    background-color: color-mix(in srgb, var(--color-green-dark) 4%, transparent);
+  }
+
+  .faq-linha summary:hover > span:first-child {
+    transform: translate3d(3px, 0, 0);
+    color: var(--color-emerald-deep);
+  }
+}
+
+/* Aberta, a pergunta fica marcada enquanto a resposta estiver na tela — sem
+   isso, quem abre três e rola perde de vista qual linha é qual. */
+.faq-linha[open] summary > span:first-child {
+  color: var(--color-emerald-deep);
+}
+
+/* --- O TICKET ------------------------------------------------------------
+ * A peça de papel mais bonita da primeira dobra, e até agora inerte. Encostar
+ * nela levanta o ingresso e ENDIREITA o que estava torto: o repouso é
+ * inclinado, e o dedo que levanta uma folha da mesa é o que a alinha. O objeto
+ * continua sendo papel solto, e não uma imagem colada no fundo.
+ *
+ * `heroTicket` roda com `backwards`, então a animação de entrada não deixa
+ * transform de repouso para trás — o hover só existe depois que ela termina,
+ * que é exatamente quando a pessoa consegue mirar nele.                      */
+@media (hover: hover) {
+  .hero-ticket {
+    transition: transform var(--dur-rapida) var(--ease-mola);
+  }
+
+  .hero-ticket:hover {
+    transform: translate3d(0, -4px, 0) rotate(calc(var(--tilt-papel) * -0.12));
+  }
+
+  /* A sombra cresce no mesmo curso, pela mesma razão da carta que abre: peça
+     que sobe com a sombra parada denuncia que a sombra é um desenho colado no
+     fundo. Aqui ela é `filter`, porque precisa seguir o corte serrilhado — e
+     por isso mora no invólucro, não na peça mascarada. */
+  .hero-ticket .ticket-shadow {
+    transition: filter var(--dur-rapida) var(--ease-mola);
+  }
+
+  .hero-ticket:hover .ticket-shadow {
+    filter: drop-shadow(0 24px 28px rgb(27 35 29 / 0.32));
+  }
+}
+
+/* --- A TINTA DO LINK -----------------------------------------------------
+ * Link de texto dentro de card escuro. O sublinhado não acende: ele é
+ * TRAÇADO da esquerda para a direita, no mesmo gesto de toda linha desenhada
+ * desta página. Fora do hover ele existe em meia altura, então o link continua
+ * legível como link mesmo parado — sublinhado que só aparece no hover é uma
+ * armadilha de acessibilidade, não um efeito.                                */
+.link-tinta {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-tinta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.22em;
+  height: 3px;
+  background-color: var(--color-yellow);
+  transform-origin: left center;
+  transform: scaleY(0.34);
+  transition: transform var(--dur-rapida) var(--ease-mola);
+}
+
+@media (hover: hover) {
+  .link-tinta:hover::after {
+    transform: scaleY(1);
+  }
+}
+
+/* --- A PÍLULA DA NAVEGAÇÃO ----------------------------------------------
+ * O menu de seções do cabeçalho. Duas coisas acontecem aqui: o hover desenha
+ * um traço embaixo do rótulo, e a seção em que a pessoa ESTÁ fica marcada.
+ *
+ * A marcação da seção ativa é o item que faz a navegação virar um mapa em vez
+ * de uma lista de atalhos: sem ela, a pessoa lê o menu, não se acha nele, e
+ * ele deixa de ser consultado. Quem escreve `data-ativo` é o observer do
+ * componente — aqui só mora a aparência.                                     */
+.nav-pilula {
+  position: relative;
+}
+
+.nav-pilula::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.25rem;
+  height: 2px;
+  background-color: var(--color-emerald-deep);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--dur-rapida) var(--ease-mola);
+}
+
+@media (hover: hover) {
+  .nav-pilula:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+.nav-pilula[data-ativo="true"] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.nav-pilula[data-ativo="true"]::after {
+  background-color: var(--color-yellow-strong, var(--color-yellow));
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sem vetor, a marcação vira estado: o traço da seção ativa continua lá — é
+     informação — e só o curso de quem entra e sai desaparece. */
+  .nav-pilula::after,
+  .link-tinta::after {
+    transition: none;
+  }
+
+  .btn-cut:hover,
+  .btn-cut:active,
+  .btn-primary:active,
+  .btn-secondary:active,
+  a.card-cut:hover,
+  button.card-cut:hover,
+  .hero-ticket:hover,
+  .tile-recurso:hover svg,
+  .tile-recurso:active svg,
+  .faq-linha summary:hover > span:first-child {
+    transform: none;
+  }
+}

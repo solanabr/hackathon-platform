@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Reveal } from "@/components/ui/reveal";
 import { QuestionGlyph } from "./question-glyph";
 
@@ -170,12 +170,22 @@ export function CasesFan({
             tone="papel"
             className={`relative w-full max-w-lg lg:w-auto ${SLOT[i] ?? ""}`}
           >
+            {/* A escada abre com a rolagem: cada carta anda um degrau a mais
+                que a anterior, então o intervalo entre as três cresce
+                enquanto a faixa atravessa a tela e fecha de novo na saída. O
+                índice é a única coisa escrita aqui — a distância sai do token
+                de deriva, como todo stagger desta base. */}
             <div
-              className={`h-full transition-transform duration-(--dur-rapida) ease-mola hover:rotate-0 ${
-                POSE[i] ?? ""
-              }`}
+              className="cena-carta h-full"
+              style={{ "--carta-i": i + 1 } as CSSProperties}
             >
-              <CaseTile item={item} />
+              <div
+                className={`h-full transition-transform duration-(--dur-rapida) ease-mola hover:rotate-0 ${
+                  POSE[i] ?? ""
+                }`}
+              >
+                <CaseTile item={item} />
+              </div>
             </div>
           </Reveal>
         ))}

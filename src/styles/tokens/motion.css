@@ -67,6 +67,23 @@
   /* Rotação de repouso dos objetos de papel — o desalinho que faz o card
      parecer colado à mão em vez de posicionado por CSS. */
   --tilt-papel: 1.4deg;
+
+  /* DERIVA — o quanto uma camada anda enquanto a página passa por ela.
+     É a distância de entrada aplicada ao eixo do scroll, e obedece à mesma
+     regra: três degraus, e o degrau É a hierarquia. O que anda mais é o que
+     está mais fundo na cena, nunca o que carrega o conteúdo.
+
+     Em % da própria camada e não em px: a mesma deriva precisa valer no
+     telefone e no monitor de 27", e um valor absoluto vira salto num e
+     imperceptível no outro. */
+  --deriva-curta: 3%;
+  --deriva-media: 7%;
+  --deriva-longa: 13%;
+
+  /* Quanto uma camada de fundo cresce ao atravessar o quadro. Escala é o
+     vetor de profundidade quando não há para onde transladar — halftone que
+     ocupa o card inteiro, por exemplo. */
+  --zoom-cena: 1.09;
 }
 
 /* ---------------------------------------------------------------------------
@@ -84,6 +101,13 @@
     --dist-entrada: 0px;
     --dist-longa: 0px;
     --tilt-papel: 0deg;
+
+    /* Deriva e zoom de cena são deslocamento e escala puros: sem vetor não
+       sobra orquestração nenhuma para preservar, só a camada no lugar. */
+    --deriva-curta: 0%;
+    --deriva-media: 0%;
+    --deriva-longa: 0%;
+    --zoom-cena: 1;
 
     /* Sem deslocamento, o mesmo tempo fica lento demais — a percepção de
        duração de um fade é maior que a de um movimento. Encurta a escala

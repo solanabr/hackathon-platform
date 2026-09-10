@@ -1,0 +1,87 @@
+/* ---------------------------------------------------------------------------
+ * A PASSAGEM ENTRE PÁGINAS
+ *
+ * Trocar de rota era o único corte seco que sobrava: a página some, a próxima
+ * aparece, e o site inteiro que se apresenta como uma gráfica dá um pulo de
+ * slide.
+ *
+ * A resposta não é inventar um efeito novo — é usar o gesto que a marca já
+ * tem. `PressSheet` estabeleceu que a primeira folha da sessão sai da prensa e
+ * é PUXADA PARA BAIXO, liberando o topo primeiro para que a manchete apareça
+ * enquanto ainda está sendo estampada. Cada página seguinte é outra folha da
+ * mesma prensa. Mesmo sentido, mesma curva, mesma leitura: a página nova já
+ * está impressa embaixo, e o que a revela é a folha anterior saindo.
+ *
+ * Por que só a ENTRADA e não um par entrada/saída: no App Router o template
+ * remonta quando a rota nova já renderizou — a anterior não existe mais nesse
+ * instante. Animar uma saída exigiria segurar a árvore velha (View
+ * Transitions, hoje experimental no Next) para ganhar ~150ms de cortina. O
+ * gesto que importa é o da revelação, e esse dá para fazer sem flag.
+ *
+ * `PressSheet` é z-60 e esta folha é z-55: na primeira visita à LP as duas
+ * coexistem por um instante, e a da prensa — que é a que tem o símbolo — fica
+ * por cima. Nenhuma das duas sabe da outra.
+ * ------------------------------------------------------------------------- */
+
+.rota-folha {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  background-color: var(--color-surface);
+  animation: rotaFolha var(--dur-rapida) var(--ease-saida) forwards;
+}
+
+/* A ARESTA DO ROLO. A borda de cima da folha é o que varre a tela, e uma
+   borda de creme sobre creme é invisível — o movimento acontece mas ninguém
+   vê o que se moveu. Três pixels de tinta transformam a mesma translação num
+   gesto legível: é a linha do rolo passando. */
+.rota-folha::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background-color: var(--color-green-dark);
+}
+
+@keyframes rotaFolha {
+  to {
+    transform: translate3d(0, 100%, 0);
+    visibility: hidden;
+  }
+}
+
+/* A página nova aparece POR BAIXO da folha, então ela não pode começar em
+   zero: a folha já cobriu o quadro, e o que se vê pela fresta tem que ser
+   conteúdo, não vazio. Começa em 0.45 e fecha na curva de entrada, terminando
+   depois de a folha ter saído — a tinta ainda está assentando quando o papel
+   já foi embora, que é o que acontece numa impressão de verdade.
+   Só opacidade: um transform aqui viraria bloco de contenção e prenderia
+   qualquer elemento `fixed` da página dentro do wrapper. */
+.rota-entra {
+  animation: rotaEntra var(--dur-media) var(--ease-entrada) backwards;
+}
+
+@keyframes rotaEntra {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Como na folha da prensa: aqui "versão pensada" é NÃO acontecer. A passagem
+   não carrega informação nenhuma — ela é inteiramente transição, e preservar
+   a orquestração de algo cujo único conteúdo é o movimento seria só atrasar a
+   página de quem pediu menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  .rota-folha {
+    display: none;
+  }
+
+  .rota-entra {
+    animation: none;
+  }
+}

@@ -50,6 +50,58 @@ ritmo, tem metrônomo.
 Distância é hierarquia: o que vem de mais longe é o que a seção quer que você
 olhe.
 
+## Deriva e zoom de cena
+
+`--deriva-curta` `3%` · `--deriva-media` `7%` · `--deriva-longa` `13%` · `--zoom-cena` `1.09`
+
+A distância de entrada aplicada ao eixo do scroll. Mesma regra dos degraus: o
+que anda mais é o que está mais fundo na cena. Em **%** da própria camada e
+não em px — um valor absoluto vira salto no telefone e some no monitor de 27".
+
+## As quatro camadas de movimento
+
+| Camada | Onde | O que dispara |
+|---|---|---|
+| entrada | `.reveal`, `.hero-print`, `.press-sheet` | um observer, uma vez |
+| ambiente | `.prizes-*`, `.bento-pulse` | ninguém — é o fundo respirando |
+| **rolagem** | `src/styles/scroll.css` | a posição do scroll |
+| **dedo** | `src/styles/interactions.css` | hover, active, focus |
+
+### Rolagem (`src/styles/scroll.css`)
+
+Tudo é `animation-timeline`, nunca um listener novo. É reversível de graça,
+roda no compositor e, onde a API não existe, o `@supports` não entra e a
+camada fica no estado de repouso — que é o desenho aprovado.
+
+| Classe | O que faz |
+|---|---|
+| `cena-deriva-{curta,media,longa}` | paralaxe de camada de fundo (`+ cena-deriva-contra` inverte) |
+| `cena-zoom` | camada que preenche o quadro e recua ao atravessá-lo |
+| `cena-trilhos` | os trilhos do `SectionRails` sendo traçados |
+| `cena-dobra` | o hero recuando ao entregar a página |
+| `cena-carta` | a escada de cartas abrindo (`--carta-i` no call site) |
+| `cena-assenta` | painel grande sendo prensado contra a mesa |
+| `chrome-assenta` / `lp-regua` | o cabeçalho e a régua de progresso |
+
+**Regra dura: cena de rolagem mexe em camada de fundo.** Texto e CTA não
+derivam — o conteúdo é a coisa parada em relação à qual o resto se move.
+
+**Gotcha:** `view()` mede contra o scrollport mais próximo, e `overflow: hidden`
+**é** scrollport. Seção que hospeda cena usa `overflow-clip`.
+
+### Dedo (`src/styles/interactions.css`)
+
+Papel tem peso: nada flutua, nada pulsa. As coisas levantam um fio no hover
+(`--ease-mola`) e **batem** no toque (`--dur-toque`) — a confirmação chega
+antes do resultado da ação. Deslocamento fica atrás de `@media (hover: hover)`,
+senão o `:hover` gruda depois do tap.
+
+### Passagem entre páginas (`src/styles/rota.css`)
+
+`src/app/(public)/template.tsx` remonta a cada rota, então a folha da prensa
+sai de novo: mesmo gesto do primeiro frame, puxada para baixo, liberando o
+topo primeiro. Server Component — a passagem não custa um byte de JS.
+
 ## Como usar no reveal
 
 `<Reveal>` (`src/components/ui/reveal.tsx`) não recebe mais `delay` em ms.
@@ -86,7 +138,9 @@ para onde convergir.
 
 ## Gate
 
-- [ ] `grep -rnE 'duration-[0-9]|duration-\[|cubic-bezier|\bease-(out|in|linear|in-out)\b' src` volta vazio (fora de `styles/tokens`).
+- [ ] `grep -rnE 'duration-[0-9]|duration-\[|cubic-bezier|\bease-(out|in|linear|in-out)\b' src` volta vazio (fora de `styles/tokens`; `linear` numa `animation-timeline` é a curva certa — a curva ali é a rolagem).
 - [ ] Nem tudo tem a mesma duração — existe hierarquia de tempo.
 - [ ] Toda transição de craft tem uma utility `ease-*` de token explícita.
 - [ ] Movimento reduzido é uma versão pensada, não animação desligada.
+- [ ] Cena de rolagem só em camada de fundo, e a seção que a hospeda usa `overflow-clip`.
+- [ ] Todo alvo clicável tem `:hover` **e** `:active`.

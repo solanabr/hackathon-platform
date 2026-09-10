@@ -23,7 +23,7 @@ export function SectionRails({
   return (
     <div
       aria-hidden
-      className={`pointer-events-none absolute inset-0 -z-10 hidden md:block ${className}`}
+      className={`cena-trilhos pointer-events-none absolute inset-0 -z-10 hidden md:block ${className}`}
     >
       <div
         className={`relative h-full ${PAGE_SHELL} border-x border-dashed border-ink/15`}

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 @import "../styles/tokens/motion.css";
+/* As três camadas de movimento que não são entrada: a passagem entre rotas, o
+   que responde à rolagem e o que responde ao dedo. Ficam fora do globals para
+   que cada uma possa ser lida (e revista) como um sistema fechado. */
+@import "../styles/rota.css";
+@import "../styles/scroll.css";
+@import "../styles/interactions.css";
 
 @theme {
   --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);

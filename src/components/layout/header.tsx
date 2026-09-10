@@ -28,7 +28,7 @@ export async function Header() {
   const claims = await resolveSessionClaims();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-ink/10 bg-surface/80 backdrop-blur-md">
+    <header className="chrome-assenta sticky top-0 z-50 border-b border-ink/10 bg-surface/80 backdrop-blur-md">
       {claims && <PostHogIdentify userId={claims.userId} />}
       <div className={`${PAGE_SHELL} flex h-16 items-center justify-between gap-4`}>
         <Link
@@ -69,6 +69,13 @@ export async function Header() {
           )}
         </nav>
       </div>
+      {/* A régua: quanto da folha já passou. Fica na base do cabeçalho porque é
+          exatamente ali que a barra encosta no conteúdo — a linha marca a
+          fronteira entre o chrome e a página, e de quebra informa. */}
+      <span
+        aria-hidden
+        className="lp-regua absolute inset-x-0 bottom-[-2px] h-[2px] bg-yellow-strong"
+      />
     </header>
   );
 }
