@@ -44,6 +44,7 @@ export async function Header() {
             height={24}
             priority
             className="h-6 w-auto"
+              style={{ height: "1.5rem", width: "auto" }}
           />
         </Link>
 

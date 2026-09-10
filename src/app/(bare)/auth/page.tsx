@@ -4,6 +4,12 @@ import { defaultAuthRedirect, resolveAuthenticatedUserState } from "@/lib/user-s
 import { pickAuthNext } from "@/lib/auth-next";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Entrar",
+  description: "Entre com Google, GitHub ou um código por e-mail para se cadastrar nos hackathons da Superteam Brasil.",
+  openGraph: { images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }] },
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function AuthPage({
@@ -28,7 +34,7 @@ export default async function AuthPage({
           <AuthForm
             intro={
               interestFunnel
-                ? "Para se cadastrar no hackathon, entre com Google ou receba um código por e-mail. Leva 1 minuto."
+                ? "Para se cadastrar no hackathon, entre com Google, GitHub ou receba um código por e-mail. Leva 1 minuto."
                 : undefined
             }
           />

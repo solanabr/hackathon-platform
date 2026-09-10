@@ -20,10 +20,12 @@ export function MobileSteps({
   whatsappUrl,
   colosseumUrl,
   registered,
+  cadastroLabel,
 }: {
   whatsappUrl: string;
   colosseumUrl: string | null;
   registered: boolean;
+  cadastroLabel: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,7 +48,7 @@ export function MobileSteps({
     {
       title: "Faça seu cadastro",
       body: "Leva um minuto. Você recebe tudo sobre o hackathon e não perde nenhuma data.",
-      label: "Fazer cadastro",
+      label: cadastroLabel,
       href: "/pre-registro",
       event: "cta_clicked",
       properties: { cta: "cadastro", location: "hero_steps" },
@@ -54,7 +56,7 @@ export function MobileSteps({
     {
       title: "Registre-se no Colosseum",
       body: "Crie sua conta e clique em “Register now” já, mesmo sem ideia ou time.",
-      label: "Abrir Colosseum",
+      label: registered && colosseumUrl ? "Abrir Colosseum" : "Cadastre-se primeiro",
       href: registered && colosseumUrl ? colosseumUrl : "/pre-registro",
       event: registered && colosseumUrl ? "campaign_link_clicked" : "cta_clicked",
       properties:

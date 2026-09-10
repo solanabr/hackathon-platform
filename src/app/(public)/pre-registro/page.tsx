@@ -130,7 +130,7 @@ export default async function PreRegistroPage({
               Complete seu cadastro
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Falta pouco: confirme seus dados para garantir sua vaga no Colosseum Crypto World&apos;s Fair.
+              Falta pouco: confirme seus dados para garantir sua vaga na campanha da Superteam Brasil para o Colosseum.
             </p>
             <div className="mt-6">
               <PreregForm profile={state.profile} email={state.email} />
@@ -144,8 +144,11 @@ export default async function PreRegistroPage({
               Sobre você
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Leva 1 minuto. Você pode salvar e voltar depois.
+              Seu cadastro já está feito. Isso leva 1 minuto e você pode salvar e voltar depois.
             </p>
+            <Link href="/pre-registro?step=jornada" className="mt-3 inline-block text-sm font-semibold underline underline-offset-4">
+              Ver próximos passos
+            </Link>
             <div className="mt-6">
               <InterestForm interest={interest} />
             </div>
@@ -206,7 +209,7 @@ export default async function PreRegistroPage({
               ) : (
               <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
-                  2
+                  →
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <div className="flex flex-wrap items-center gap-2">
@@ -284,7 +287,7 @@ export default async function PreRegistroPage({
 
               <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
-                  3
+                  →
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <p className="font-heading text-base font-bold uppercase text-ink">Entre na comunidade</p>

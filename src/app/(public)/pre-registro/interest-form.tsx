@@ -148,7 +148,7 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
       </div>
 
       {state.error && !edited && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
+        <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       )}

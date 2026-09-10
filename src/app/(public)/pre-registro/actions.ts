@@ -124,13 +124,14 @@ export async function confirmColosseumRegistration(): Promise<void> {
     .update({ luma_confirmed_at: new Date().toISOString() })
     .eq("hackathon_id", hackathon.id)
     .eq("user_id", state.userId)
+    .is("luma_confirmed_at", null)
     .select("user_id");
   if (error) {
     logQueryError("preRegistro.confirmColosseum", error);
     return;
   }
-  // No registration row, no attestation: keeps the funnel event honest even
-  // though the action endpoint is reachable by any signed-in user.
+  // No registration row (or already confirmed), no attestation: keeps the
+  // funnel event honest and a double click from firing it twice.
   if (!data?.length) return;
 
   track(state.userId, "colosseum_registration_confirmed", { edition: COLOSSEUM_SLUG });

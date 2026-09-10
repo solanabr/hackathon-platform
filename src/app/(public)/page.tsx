@@ -171,7 +171,7 @@ const FAQ_GROUPS = [
     items: [
       {
         q: "O que o vencedor ganha?",
-        a: "Na última edição foram USD 250 mil em prêmios diretos: USD 30 mil para o campeão global e USD 10 mil para cada um dos 20 melhores, com prêmios extras para times universitários. Os melhores ainda são chamados para o acelerador do Colosseum: USD 250 mil de investimento pré-seed e oito semanas de programa, duas em São Francisco e seis remotas. Entrar no acelerador é opcional.",
+        a: "Em 2026 cada trilha por rede já anunciada paga US$ 100 mil entre os 10 melhores, e todo projeto concorre também ao prêmio geral entre todas as redes. Os melhores ainda são chamados para o acelerador do Colosseum: US$ 250 mil de investimento pré-seed e oito semanas de programa, duas em São Francisco e seis remotas (pede integração com a Solana; entrar é opcional). Na edição anterior foram US$ 250 mil em prêmios diretos, com US$ 30 mil para o campeão global.",
       },
       {
         q: "O que é a Trilha Brasil?",
@@ -267,8 +267,13 @@ export default async function HomePage() {
 
           <MobileSteps
             whatsappUrl={WHATSAPP_COMMUNITY_URL}
-            colosseumUrl={colosseum?.external_url ?? null}
+            colosseumUrl={
+              colosseum?.external_url
+                ? withPlatformUtm(colosseum.external_url, { content: "hero_steps", campaign: "colosseum-2026" })
+                : null
+            }
             registered={registered}
+            cadastroLabel={cadastroLabel}
           />
 
           {/* The desk: the cheque is the main sticker, the facts are stickers
@@ -298,7 +303,7 @@ export default async function HomePage() {
                   <div className="flex items-start justify-between gap-4">
                     <p className="min-w-0 font-heading text-lg font-black uppercase leading-none text-ink [font-stretch:118%] sm:text-xl">
                       Colosseum
-                      <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/60 sm:text-[10px]">
+                      <span className="mt-1.5 block font-mono text-[9px] font-bold tracking-widest text-green-dark/70 sm:text-[10px]">
                         Prêmio do Crypto World&apos;s Fair
                       </span>
                     </p>
@@ -334,7 +339,7 @@ export default async function HomePage() {
                   </div>
 
                   <div className="mt-3 flex items-end justify-between gap-4">
-                    <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/60 sm:text-xs sm:tracking-[0.35em]">
+                    <p className="whitespace-nowrap font-mono text-[9px] tracking-[0.28em] text-green-dark/70 sm:text-xs sm:tracking-[0.35em]">
                       ⑆001417 ⑆0914 ⑈1210 2026⑈
                     </p>
                     <div className="shrink-0 text-right">
@@ -347,7 +352,7 @@ export default async function HomePage() {
                           strokeLinecap="round"
                         />
                       </svg>
-                      <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/60">
+                      <p className="border-t-2 border-green-dark/30 pt-1 font-mono text-[8px] font-bold uppercase tracking-widest text-green-dark/70">
                         Colosseum
                       </p>
                     </div>
@@ -404,7 +409,7 @@ export default async function HomePage() {
             {COLOSSEUM_FACTS.map((fact, i) => (
               <Reveal key={fact.kicker} delay={i * 100} className="h-full">
                 <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                  <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                  <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                     {fact.kicker}
                   </span>
                   <h3 className="mt-4 font-heading text-xl font-bold">{fact.title}</h3>
@@ -416,7 +421,7 @@ export default async function HomePage() {
 
           <Reveal delay={200} className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
             <p className="text-pretty text-sm leading-relaxed text-ink/80 sm:text-base">
-              Trilhas, jurados e regras completas saem em 14 de setembro.
+              Jurados e regras completas saem em 14 de setembro.
             </p>
             <TrackedCta
               href="https://colosseum.com/worldsfair"
@@ -434,7 +439,7 @@ export default async function HomePage() {
       <section id="solana" className={LP_SECTION} aria-label="O que é a Solana">
         <div className={LP_CONTAINER}>
           <Reveal>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/70">
               Por que construir na Solana
             </p>
             <h2 className="mt-3 max-w-3xl text-balance font-heading text-4xl font-black leading-[1.15] tracking-tight [font-stretch:105%] sm:text-5xl">
@@ -539,7 +544,7 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <Reveal className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                   Passo 01
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Faça seu cadastro</h3>
@@ -560,17 +565,21 @@ export default async function HomePage() {
 
             <Reveal delay={130} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                   Passo 02
                 </span>
-                <h3 className="mt-4 font-heading text-xl font-bold">Registre-se no hackathon</h3>
+                <h3 className="mt-4 font-heading text-xl font-bold">Registre-se no Colosseum</h3>
                 <p className="mb-5 mt-2 text-pretty text-sm leading-relaxed text-green-dark/70">
                   Crie sua conta no Colosseum e clique em &quot;Register now&quot; já, mesmo sem ideia
                   ou time: projeto e time entram na plataforma a partir de 14 de setembro.
                 </p>
                 {colosseum?.external_url ? (
                   <TrackedCta
-                    href={registered ? colosseum.external_url : cadastroHref}
+                    href={
+                      registered
+                        ? withPlatformUtm(colosseum.external_url, { content: "lp_jornada", campaign: "colosseum-2026" })
+                        : cadastroHref
+                    }
                     event={registered ? "campaign_link_clicked" : "cta_clicked"}
                     properties={
                       registered
@@ -579,7 +588,7 @@ export default async function HomePage() {
                     }
                     className="mt-auto inline-block w-fit whitespace-nowrap rounded-full border-2 border-green-dark bg-surface-raised px-6 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
                   >
-                    Abrir Colosseum
+                    {registered ? "Abrir Colosseum" : "Cadastre-se primeiro"}
                   </TrackedCta>
                 ) : (
                   <p className="mt-auto font-mono text-xs font-bold uppercase tracking-widest text-muted">
@@ -591,7 +600,7 @@ export default async function HomePage() {
 
             <Reveal delay={260} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-6 shadow-sticker sm:p-7">
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald">
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-green">
                   Passo 03
                 </span>
                 <h3 className="mt-4 font-heading text-xl font-bold">Entre na comunidade</h3>
@@ -632,7 +641,7 @@ export default async function HomePage() {
             <div
               className="rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker"
             >
-              <h3 className="px-6 pt-5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60 sm:px-8">
+              <h3 className="px-6 pt-5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/70 sm:px-8">
                 Calendário
               </h3>
               <ol className="mt-3 divide-y-2 divide-green-dark/15 border-t-2 border-green-dark/15">
@@ -753,7 +762,7 @@ export default async function HomePage() {
           <div className="space-y-8">
             {FAQ_GROUPS.map((g, i) => (
               <Reveal key={g.title} delay={i * 80}>
-                <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/60">
+                <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-green-dark/70">
                   {g.title}
                 </p>
                 <div className="divide-y-2 divide-green-dark/15 rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
@@ -796,7 +805,7 @@ export default async function HomePage() {
           <MobileCtaBar
             watchId="hero-cta"
             href={cadastroHref}
-            label="Fazer cadastro"
+            label={cadastroLabel}
             secondaryHref="#jornada"
             secondaryLabel="Como funciona"
           />
