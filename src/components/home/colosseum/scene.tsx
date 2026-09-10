@@ -30,6 +30,20 @@ const AZIMUTH_SWING = Math.PI * 0.006;
 const SWAY_RADIANS = 0.025;
 const SWAY_SECONDS = 26;
 
+/* A CÂMERA ATRAVESSANDO O QUADRO. O vaivém acima é o relógio; isto é o
+   scroll. Amplitude presa ao teto do swing do ponteiro — 1,08° para cada
+   lado — porque com FOV de 12,6° qualquer coisa maior vira travelling e
+   rouba a leitura do texto que está por cima.
+
+   VARIANTE A ("azimuth"): a câmera anda em volta do anel. As arcadas da
+   fachada abrem e fecham conforme a dobra sai.
+   VARIANTE B ("elevation"): a linha do horizonte sobe pela fachada. Você
+   começa olhando o muro de baixo e termina vendo a cávea abrir.
+
+   Trocar de uma para a outra é trocar SCROLL_AXIS. */
+const SCROLL_SWING = AZIMUTH_SWING;
+const SCROLL_AXIS = "azimuth" as const;
+
 /* Calibrados contra o render nesta escala: abaixo de 0.006 a curvatura do
    próprio anel entra como recesso e o campo satura; acima de 0.08 o vão perde
    a borda e o arco vira retângulo. */
@@ -59,6 +73,8 @@ export default function ColosseumCanvas() {
       azimuthSwing={AZIMUTH_SWING}
       swayRadians={SWAY_RADIANS}
       swaySeconds={SWAY_SECONDS}
+      scrollSwing={SCROLL_SWING}
+      scrollAxis={SCROLL_AXIS}
       lightTracksCamera
       cell={CELL}
       minRadiusCells={MIN_RADIUS_CELLS}

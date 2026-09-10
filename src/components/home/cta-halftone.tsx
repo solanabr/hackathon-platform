@@ -41,7 +41,7 @@ export function CtaHalftone({ className }: { className?: string }) {
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
-      className={className}
+      className={["halftone-press", className].filter(Boolean).join(" ")}
     >
       <path d={light} strokeWidth="2" />
       <path d={dark} strokeWidth="3.6" />

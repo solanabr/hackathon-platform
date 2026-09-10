@@ -86,6 +86,12 @@ export type GlyphSceneProps = {
    * de se reconhecer — o que um giro completo faz. */
   swayRadians?: number;
   swaySeconds?: number;
+  /** Câmera presa ao progresso da peça atravessando a janela: amplitude em
+   * radianos para cada lado do repouso, e o eixo em que ela anda. O relógio
+   * aqui é o scroll, não o tempo — parada a página, parada a câmera. */
+  scrollSwing?: number;
+  /** `azimuth` roda em volta da peça; `elevation` sobe a linha do horizonte. */
+  scrollAxis?: "azimuth" | "elevation";
   /** Lado da célula do meio-tom, em px de CSS. */
   cell?: number;
   light?: [number, number, number];
@@ -108,6 +114,11 @@ export type GlyphSceneProps = {
   /** Dissolve medido do topo do quadro: 0..1 do começo ao fim da rampa. */
   fadeStart?: number;
   fadeEnd?: number;
+  /* Deixas para quem chama trocar o desenho 2D pela cena: `onReady` no primeiro
+     quadro efetivamente pintado, `onLost` quando o contexto cai. Sem elas o
+     poster teria de sumir na montagem, antes de existir o que o substitui. */
+  onReady?: () => void;
+  onLost?: () => void;
   className?: string;
 };
 
@@ -127,6 +138,8 @@ export default function GlyphScene({
   spin = 0,
   swayRadians = 0,
   swaySeconds = 14,
+  scrollSwing = 0,
+  scrollAxis = "azimuth",
   cell = 8,
   light = [-0.55, 0.52, 0.65],
   lightTracksCamera = false,
@@ -140,9 +153,20 @@ export default function GlyphScene({
   paper = true,
   fadeStart = 0,
   fadeEnd = 0.5,
+  onReady,
+  onLost,
   className = "h-full w-full bg-surface text-ink",
 }: GlyphSceneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
+  /* Por referência, não por dependência: um callback novo a cada render do pai
+     derrubaria e reconstruiria a cena inteira. */
+  const onReadyRef = useRef(onReady);
+  const onLostRef = useRef(onLost);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+    onLostRef.current = onLost;
+  });
 
   useEffect(() => {
     const host = hostRef.current;
@@ -257,10 +281,20 @@ export default function GlyphScene({
 
     let disposed = false;
     let raf = 0;
+    let running = false;
+    let onScreen = false;
+    let painted = false;
     let model: THREE.Group | null = null;
 
     const pointer = { target: 0, current: 0 };
     const smoothing = 1 - Math.exp(-1 / (readMotionSeconds("--dur-toque", 0.62) * 60));
+
+    /* Movimento ligado ao scroll é deslocamento por definição: sem vetor não
+       sobra nada dele. O gate de elegibilidade já barra 3D em movimento
+       reduzido; isto é o cinto além do suspensório. */
+    const scrollBound = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : scrollSwing;
 
     const onPointerMove = (event: PointerEvent) => {
       pointer.target = (event.clientX / window.innerWidth) * 2 - 1;
@@ -317,7 +351,7 @@ export default function GlyphScene({
     const WORLD_UP = new THREE.Vector3(0, 1, 0);
 
     function frame(now: number) {
-      if (disposed) return;
+      if (disposed || !running) return;
       raf = requestAnimationFrame(frame);
       if (!model) return;
 
@@ -331,11 +365,31 @@ export default function GlyphScene({
         : 0;
 
       pointer.current += (pointer.target - pointer.current) * smoothing;
-      const heading = azimuth + spun + sway + pointer.current * azimuthSwing;
+
+      /* Progresso da peça atravessando a janela, lido do próprio host: -1
+         quando a borda de cima entra pelo rodapé, +1 quando a de baixo sai
+         pelo topo. Um rect por quadro, dentro do laço que já existe — nada de
+         um segundo laço nem de um ouvinte de scroll para isto. É posição, não
+         acúmulo: a cena pode parar e voltar sem saltar. */
+      let travel = 0;
+      if (scrollBound) {
+        const rect = host!.getBoundingClientRect();
+        const span = window.innerHeight + rect.height;
+        const through = span > 0 ? (window.innerHeight - rect.top) / span : 0.5;
+        travel = THREE.MathUtils.clamp(through, 0, 1) * 2 - 1;
+      }
+
+      const heading =
+        azimuth +
+        spun +
+        sway +
+        pointer.current * azimuthSwing +
+        (scrollAxis === "azimuth" ? travel * scrollBound : 0);
+      const rise = elevation + (scrollAxis === "elevation" ? travel * scrollBound : 0);
       camera.position.set(
-        focus.x + radius * Math.cos(elevation) * Math.sin(heading),
-        focus.y + radius * Math.sin(elevation),
-        focus.z + radius * Math.cos(elevation) * Math.cos(heading),
+        focus.x + radius * Math.cos(rise) * Math.sin(heading),
+        focus.y + radius * Math.sin(rise),
+        focus.z + radius * Math.cos(rise) * Math.cos(heading),
       );
       camera.lookAt(focus);
 
@@ -378,14 +432,74 @@ export default function GlyphScene({
       // preto do alvo de cena volta como fundo da tela.
       renderer.setClearColor(0x000000, paper ? 1 : 0);
       quad.render(renderer);
+
+      if (!painted) {
+        painted = true;
+        onReadyRef.current?.();
+      }
     }
+
+    /* A cena só queima GPU enquanto está no quadro e a aba está à frente. Parar
+       é só suspender o laço: nada aqui encosta nos disposes, que continuam
+       exclusivos do cleanup. */
+    function start() {
+      if (running || disposed || !model || !onScreen || document.hidden) return;
+      running = true;
+      last = 0;
+      raf = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = Boolean(entry?.isIntersecting);
+        if (onScreen) start();
+        else stop();
+      },
+      { rootMargin: "20%" },
+    );
+    io.observe(host);
+
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener("visibilitychange", onVisibility);
+
+    /* O ResizeObserver não vê a troca de monitor: arrastando a janela de um
+       Retina para um 1x o retângulo em CSS continua igual e só o
+       devicePixelRatio muda — o traço serrilharia até o próximo resize. */
+    let dprQuery: MediaQueryList | null = null;
+    const onDpr = () => {
+      resize();
+      watchDpr();
+    };
+    function watchDpr() {
+      dprQuery?.removeEventListener("change", onDpr);
+      dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      dprQuery.addEventListener("change", onDpr);
+    }
+    watchDpr();
+
+    /* Contexto perdido devolve o desenho 2D em vez de deixar buraco. Não há
+       tentativa de restaurar: cada alvo, material e shader teria de ser
+       reconstruído, e o poster já é a peça em movimento reduzido. */
+    const onContextLost = (event: Event) => {
+      if (disposed) return;
+      event.preventDefault();
+      stop();
+      onLostRef.current?.();
+    };
+    canvas.addEventListener("webglcontextlost", onContextLost);
 
     const dracoLoader = new DRACOLoader();
 
     function mount(loaded: THREE.Group) {
       model = loaded;
       scene.add(model);
-      raf = requestAnimationFrame(frame);
+      start();
     }
 
     if (build) {
@@ -431,8 +545,12 @@ export default function GlyphScene({
 
     return () => {
       disposed = true;
-      if (raf) cancelAnimationFrame(raf);
+      stop();
+      io.disconnect();
       observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+      dprQuery?.removeEventListener("change", onDpr);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       window.removeEventListener("pointermove", onPointerMove);
       quad.dispose();
       shadeMaterial.dispose();
@@ -449,6 +567,7 @@ export default function GlyphScene({
         if (node instanceof THREE.Mesh) node.geometry.dispose();
       });
       dracoLoader.dispose();
+      renderer.forceContextLoss();
       renderer.dispose();
       canvas.remove();
     };
@@ -468,6 +587,8 @@ export default function GlyphScene({
     spin,
     swayRadians,
     swaySeconds,
+    scrollSwing,
+    scrollAxis,
     cell,
     albedoMix,
     lightTracksCamera,

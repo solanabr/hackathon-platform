@@ -1036,7 +1036,7 @@ export default async function HomePage() {
                 O que todo time pergunta antes de entrar.
               </p>
             </Reveal>
-            <Reveal index={1} tone="texto">
+            <Reveal index={1} tone="texto" className="reveal-estampa">
               <div className="flex flex-col items-start gap-0 lg:items-end">
                 <FaqHalftone className="hidden -mb-4 w-[19rem] text-ink lg:block xl:w-[23rem]" />
               </div>

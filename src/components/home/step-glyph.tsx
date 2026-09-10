@@ -111,7 +111,7 @@ export function StepGlyph({ shape, className }: { shape: Shape; className?: stri
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
-      className={className}
+      className={["halftone-press", className].filter(Boolean).join(" ")}
     >
       <path d={light} strokeWidth="1.5" />
       <path d={dark} strokeWidth="2.9" />

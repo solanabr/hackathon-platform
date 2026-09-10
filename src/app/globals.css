@@ -539,6 +539,62 @@
   }
 }
 
+/* A ESTAMPA SAINDO DA PRENSA.
+   Halftone não flutua para dentro do quadro: ele é revelado de baixo para
+   cima, no gesto da folha que sai do cilindro — o mesmo que o press-sheet já
+   sugere na primeira dobra. Varredura, e não desenho de traço: aqui são
+   milhares de segmentos curtos, e animar stroke-dashoffset em cada um custa
+   caro e lê como ruído em vez de traço.
+
+   Quem abre o clip é o estado que o elemento já tinha: .reveal-in para os
+   que entram por observador, --t para os que entram presos ao scroll da
+   jornada. Nenhum laço de quadro novo. */
+.reveal .halftone-press {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path var(--dur-media) var(--ease-entrada)
+    calc(var(--reveal-i) * var(--reveal-stagger));
+}
+.reveal-in .halftone-press {
+  clip-path: inset(0 0 0 0);
+}
+.journey-card .halftone-press {
+  clip-path: inset(calc(100% * (1 - var(--t))) 0 0 0);
+}
+/* Onde o meio-tom É o bloco (e não a textura de fundo de um card), a
+   varredura substitui a entrada: as duas juntas embaralham o gesto. */
+.reveal-estampa {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Movimento reduzido zera o vetor, não a orquestração: sem a varredura o
+   desenho ainda entra no seu lugar da fila, só que aparecendo. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .halftone-press {
+    clip-path: none;
+    opacity: 0;
+    transition: opacity calc(var(--dur-media) * 0.75) var(--ease-entrada)
+      calc(var(--reveal-i) * var(--reveal-stagger));
+  }
+  .reveal-in .halftone-press {
+    opacity: 1;
+  }
+}
+
+/* Ninguém escreve .reveal-in nem --t sem JS, então o clip nunca abriria. */
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .journey-card .halftone-press {
+    clip-path: none;
+  }
+}
+@media (scripting: none) {
+  .reveal .halftone-press {
+    clip-path: none;
+    transition: none;
+  }
+}
+
 /* Jornada: while the section is pinned, each card rides up from below the fold
    and in from an alternating side, landing in the row. --t is per-card scroll
    progress and --pp lifts the pitch out of the way, both written by JourneyPin.

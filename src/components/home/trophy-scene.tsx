@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useCallback, useState } from "react";
 import { Trophy } from "@/components/home/trophy";
 import { useSceneEligible } from "@/hooks/use-scene-eligible";
 
@@ -29,37 +30,55 @@ const RECESS_GAIN = 0.12;
 const FORM_GAIN = 0.82;
 const ALBEDO_MIX = 0.85;
 
+/* O desenho fica no lugar até a cena ter pintado um quadro de verdade, e volta
+   se o contexto cair. Trocar na montagem abria uma janela de quadro vazio, e
+   uma falha depois dela não tinha para onde degradar.
+
+   Contexto perdido desmonta a tela em vez de só revelar o desenho: um canvas
+   sem contexto continua ocupando o quadro e o navegador o pinta como imagem
+   quebrada — opaca, e por cima do que deveria substituí-la. */
 export function TrophyScene({ className = "" }: { className?: string }) {
   const showScene = useSceneEligible();
+  const [painted, setPainted] = useState(false);
+  const [lost, setLost] = useState(false);
+  const onReady = useCallback(() => setPainted(true), []);
+  const onLost = useCallback(() => {
+    setPainted(false);
+    setLost(true);
+  }, []);
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      {showScene ? null : (
-        <Trophy className="h-full w-auto drop-shadow-[8px_10px_0_rgb(27_35_29/0.16)]" />
-      )}
-      {showScene ? (
-        <GlyphScene
-          modelUrl="/models/trophy.glb"
-          target={TARGET}
-          radius={RADIUS}
-          elevation={ELEVATION}
-          fovRadians={FOV_RADIANS}
-          azimuth={AZIMUTH}
-          azimuthSwing={AZIMUTH_SWING}
-          swayRadians={SWAY_RADIANS}
-          swaySeconds={SWAY_SECONDS}
-          lightTracksCamera
-          toneFloor={TONE_FLOOR}
-          recessGain={RECESS_GAIN}
-          formGain={FORM_GAIN}
-          cell={3}
-          albedoMix={ALBEDO_MIX}
-          fadeStart={-1}
-          fadeEnd={0}
-          paper={false}
-          className="h-full w-full text-surface"
-        />
-      ) : null}
+      <div className="relative flex h-full w-full items-center justify-center">
+        {showScene && painted ? null : (
+          <Trophy className="h-full w-auto drop-shadow-[8px_10px_0_rgb(27_35_29/0.16)]" />
+        )}
+        {showScene && !lost ? (
+          <GlyphScene
+            onReady={onReady}
+            onLost={onLost}
+            modelUrl="/models/trophy.glb"
+            target={TARGET}
+            radius={RADIUS}
+            elevation={ELEVATION}
+            fovRadians={FOV_RADIANS}
+            azimuth={AZIMUTH}
+            azimuthSwing={AZIMUTH_SWING}
+            swayRadians={SWAY_RADIANS}
+            swaySeconds={SWAY_SECONDS}
+            lightTracksCamera
+            toneFloor={TONE_FLOOR}
+            recessGain={RECESS_GAIN}
+            formGain={FORM_GAIN}
+            cell={3}
+            albedoMix={ALBEDO_MIX}
+            fadeStart={-1}
+            fadeEnd={0}
+            paper={false}
+            className="absolute inset-0 h-full w-full text-surface"
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
