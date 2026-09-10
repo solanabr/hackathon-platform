@@ -12,7 +12,7 @@ Este runbook impede que uma tarefa simples abra subagentes, sessões, worktrees,
 
 Os números deste documento são **defaults internos do laboratório**. Não são limites oficiais da Anthropic, do Claude Code, do sistema operacional ou dos modelos. A calibração deve usar medições repetíveis de cada máquina e projeto.
 
-Na versão Claude Code 2.1.263, [subagentes podem gerar novos subagentes](https://code.claude.com/docs/en/agents) por padrão, com até três camadas; a documentação informa limite concorrente padrão de 20 e ausência de teto total por sessão. A profundidade `1` e o teto de máquina desta política são, portanto, controles internos deliberadamente menores. Não foi encontrada no Felix uma regra explícita de auto-spawn; skills de delegação deixam essa recursão disponível ao modelo.
+O snapshot histórico usava Claude Code 2.1.263 e permitia delegação recursiva. Valide os recursos e limites da versão local. A profundidade `1` e o teto de máquina desta política são controles internos deliberadamente menores.
 
 Esta política não apaga worktrees, branches, arquivos ou sessões automaticamente. Um recurso vencido é cercado, marcado e apresentado para revisão humana.
 

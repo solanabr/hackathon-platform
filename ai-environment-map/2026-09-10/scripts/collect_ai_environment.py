@@ -33,7 +33,7 @@ from typing import Any, Iterable
 
 
 SCHEMA_VERSION = "1.0.0"
-COLLECTOR_VERSION = "1.0.1"
+COLLECTOR_VERSION = "1.1.0"
 _PAIRING_KEY = secrets.token_bytes(32)
 MAX_STRUCTURED_FILE_BYTES = 8 * 1024 * 1024
 PRUNE_DIRS = {
@@ -85,7 +85,7 @@ SAFE_SETTING_SCALARS = {
 
 
 def utc_now() -> str:
-    now = dt.datetime.now(dt.timezone.utc).replace(minute=0, second=0, microsecond=0)
+    now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     return now.isoformat().replace("+00:00", "Z")
 
 
@@ -238,6 +238,13 @@ def run_safe(command: list[str], timeout: float = 8, cwd: Path | None = None) ->
         for key in ("PATH", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "SYSTEMROOT", "WINDIR")
         if key in os.environ
     }
+    child_environment.update(
+        {
+            "CI": "1",
+            "COREPACK_ENABLE_PROJECT_SPEC": "0",
+            "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
+        }
+    )
     executable_name = Path(command[0]).name.lower() if command else ""
     if executable_name in {"zsh", "bash", "sh"}:
         for key in ("HOME", "SHELL"):
@@ -330,14 +337,29 @@ def file_meta(path: Path, home: Path, project: Path, *, hash_content: bool = Tru
     return result
 
 
-def directory_summary(path: Path, home: Path, project: Path) -> dict[str, Any]:
+def directory_summary(
+    path: Path,
+    home: Path,
+    project: Path,
+    *,
+    recursive: bool = True,
+    deadline: float | None = None,
+) -> dict[str, Any]:
     result: dict[str, Any] = {"ref": normalize_path(path, home, project), "exists": path.exists()}
     if not path.exists():
         return result
     if has_symlink_component(path) or not path.is_dir():
         result["traversalSkipped"] = True
         return result
-    du = run_safe(["du", "-sk", str(path)], timeout=30)
+    result["recursiveMeasured"] = recursive
+    if not recursive:
+        return result
+    raw_remaining = deadline - time.monotonic() if deadline else 30
+    if deadline and raw_remaining <= 0:
+        result["scanTruncated"] = True
+        return result
+    remaining = max(0.1, raw_remaining)
+    du = run_safe(["du", "-sk", str(path)], timeout=min(30, remaining))
     if du["ok"] and du["stdout"].strip():
         try:
             result["bytes"] = int(du["stdout"].split()[0]) * 1024
@@ -348,6 +370,10 @@ def directory_summary(path: Path, home: Path, project: Path) -> dict[str, Any]:
     truncated = False
     try:
         for _, dirnames, filenames in os.walk(path, followlinks=False):
+            if deadline and time.monotonic() >= deadline:
+                truncated = True
+                result["scanTruncated"] = True
+                break
             directories += len(dirnames)
             files += len(filenames)
             if files + directories > 250_000:
@@ -947,13 +973,20 @@ def parse_worktree_porcelain(text: str) -> list[dict[str, Any]]:
     return blocks
 
 
-def cache_summary(worktree: Path) -> dict[str, Any]:
+def cache_summary(worktree: Path, deadline: float) -> tuple[dict[str, Any], bool]:
     result: dict[str, Any] = {}
+    truncated = False
     for name in ("node_modules", ".next", ".turbo", "dist", "build", "coverage", "playwright-report", "test-results"):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            truncated = True
+            break
         target = worktree / name
         if not target.exists() or has_symlink_component(target) or not target.is_dir():
             continue
-        du = run_safe(["du", "-sk", str(target)], timeout=20)
+        du = run_safe(["du", "-sk", str(target)], timeout=min(20, max(0.1, remaining)))
+        if du.get("timedOut") and time.monotonic() >= deadline:
+            truncated = True
         size = None
         if du["ok"] and du["stdout"].strip():
             try:
@@ -961,13 +994,21 @@ def cache_summary(worktree: Path) -> dict[str, Any]:
             except (ValueError, IndexError):
                 pass
         result[name] = {"exists": True, "bytes": size}
-    return result
+    return result, truncated
 
 
-def summarize_worktrees(repositories: list[Path], home: Path, project: Path, include_cache_sizes: bool) -> dict[str, Any]:
+def summarize_worktrees(
+    repositories: list[Path],
+    home: Path,
+    project: Path,
+    include_cache_sizes: bool,
+    max_cache_seconds: int,
+) -> dict[str, Any]:
     groups: list[dict[str, Any]] = []
     seen_common_dirs: set[str] = set()
     total_worktrees = 0
+    cache_deadline = time.monotonic() + max_cache_seconds
+    cache_scan_truncated = False
     for repository in repositories:
         common = run_safe(["git", "-C", str(repository), "rev-parse", "--path-format=absolute", "--git-common-dir"], timeout=5)
         if not common["ok"]:
@@ -994,7 +1035,10 @@ def summarize_worktrees(repositories: list[Path], home: Path, project: Path, inc
                 "prunable": bool(raw.get("prunable")),
             }
             if include_cache_sizes and path.exists():
-                item["caches"] = cache_summary(path)
+                caches, truncated = cache_summary(path, cache_deadline)
+                item["caches"] = caches
+                item["cacheScanTruncated"] = truncated
+                cache_scan_truncated = cache_scan_truncated or truncated
             items.append(item)
         total_worktrees += len(items)
         groups.append(
@@ -1012,6 +1056,9 @@ def summarize_worktrees(repositories: list[Path], home: Path, project: Path, inc
         "groupsOverThree": sum(1 for group in groups if group["worktreeCount"] > 3),
         "prunableWorktrees": sum(1 for group in groups for item in group["worktrees"] if item["prunable"]),
         "missingWorktrees": sum(1 for group in groups for item in group["worktrees"] if not item["exists"]),
+        "cacheSizesMeasured": include_cache_sizes,
+        "cacheScanBudgetSeconds": max_cache_seconds if include_cache_sizes else 0,
+        "cacheScanTruncated": cache_scan_truncated,
         "groups": groups,
     }
 
@@ -1159,14 +1206,16 @@ def system_summary(home: Path, project: Path) -> dict[str, Any]:
 
 def tool_versions(home: Path, project: Path) -> dict[str, Any]:
     output = {}
-    for name, command in VERSION_COMMANDS.items():
-        result = run_safe(command, timeout=8)
-        first_line = result.pop("stdout", "").strip().splitlines()[:1]
-        output[name] = {
-            **result,
-            "version": safe_version(first_line[0]) if first_line else None,
-            "executablePresent": bool(shutil.which(command[0])),
-        }
+    with tempfile.TemporaryDirectory(prefix="ai-map-version-") as raw:
+        neutral_cwd = Path(raw)
+        for name, command in VERSION_COMMANDS.items():
+            result = run_safe(command, timeout=8, cwd=neutral_cwd)
+            stdout = result.pop("stdout", "")
+            output[name] = {
+                **result,
+                "version": safe_version(stdout),
+                "executablePresent": bool(shutil.which(command[0])),
+            }
     return output
 
 
@@ -1193,7 +1242,9 @@ def command_and_agent_catalog(home: Path, project: Path) -> dict[str, Any]:
     return output
 
 
-def claude_runtime_storage(home: Path, project: Path) -> dict[str, Any]:
+def claude_runtime_storage(
+    home: Path, project: Path, *, recursive: bool, max_seconds: int
+) -> dict[str, Any]:
     claude = home / ".claude"
     app = home / "Library" / "Application Support" / "Claude"
     paths = [
@@ -1214,8 +1265,15 @@ def claude_runtime_storage(home: Path, project: Path) -> dict[str, Any]:
         ("desktop-git-shadow", app / "git-shadow"),
     ]
     output = []
+    deadline = time.monotonic() + max_seconds
     for storage_class, path in paths:
-        item = directory_summary(path, home, project) if path.is_dir() else file_meta(path, home, project, hash_content=False)
+        item = (
+            directory_summary(
+                path, home, project, recursive=recursive, deadline=deadline
+            )
+            if path.is_dir()
+            else file_meta(path, home, project, hash_content=False)
+        )
         item["storageClass"] = storage_class
         output.append(item)
     extensions_root = app / "Claude Extensions"
@@ -1224,6 +1282,9 @@ def claude_runtime_storage(home: Path, project: Path) -> dict[str, Any]:
         "paths": output,
         "coworkExtensionCount": len(extensions),
         "coworkExtensionRefs": sorted(private_ref(path.name, "extension") for path in extensions),
+        "recursiveMeasured": recursive,
+        "scanBudgetSeconds": max_seconds if recursive else 0,
+        "scanTruncated": any(item.get("scanTruncated") for item in output),
     }
 
 
@@ -1481,7 +1542,10 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             "privacyPolicy": "allowlist-hmac-v1",
             "activeBenchmarks": bool(args.active_benchmarks),
             "cacheSizes": bool(args.include_cache_sizes),
-            "networkRequests": False,
+            "cacheScanBudgetSeconds": args.max_cache_seconds if args.include_cache_sizes else 0,
+            "storageSizes": bool(args.include_storage_sizes),
+            "collectorInitiatedNetworkRequests": False,
+            "userStartupCodeExecuted": bool(args.active_benchmarks),
         },
         "privacy": {
             "redacted": True,
@@ -1525,11 +1589,22 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "codex": codex_summary(home, project),
         "workspace": {
             "repositoriesDiscovered": len(repositories),
-            "worktrees": summarize_worktrees(repositories, home, project, args.include_cache_sizes),
+            "worktrees": summarize_worktrees(
+                repositories,
+                home,
+                project,
+                args.include_cache_sizes,
+                args.max_cache_seconds,
+            ),
         },
         "runtime": {
             "processes": relevant_processes(home, project),
-            "storage": claude_runtime_storage(home, project),
+            "storage": claude_runtime_storage(
+                home,
+                project,
+                recursive=args.include_storage_sizes,
+                max_seconds=args.max_storage_seconds,
+            ),
             "benchmarks": shell_benchmark() if args.active_benchmarks else {"executed": False},
         },
     }
@@ -1548,8 +1623,24 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Explicit Git repository to inventory; repeat as needed. No disk-wide discovery is performed.",
     )
-    parser.add_argument("--active-benchmarks", action="store_true", help="Run safe local shell/CLI startup timings")
+    parser.add_argument(
+        "--active-benchmarks",
+        action="store_true",
+        help="Execute shell startup code and local CLI timing probes",
+    )
+    parser.add_argument(
+        "--confirm-shell-startup-code",
+        action="store_true",
+        help="Required with --active-benchmarks after reviewing shell startup files",
+    )
     parser.add_argument("--include-cache-sizes", action="store_true", help="Measure build/cache sizes inside worktrees")
+    parser.add_argument("--max-cache-seconds", type=int, default=60)
+    parser.add_argument(
+        "--include-storage-sizes",
+        action="store_true",
+        help="Recursively measure Claude storage (opt-in and budgeted)",
+    )
+    parser.add_argument("--max-storage-seconds", type=int, default=60)
     parser.add_argument("--self-test", action="store_true", help="Run privacy projection canaries without inspecting the host")
     return parser.parse_args()
 
@@ -1587,6 +1678,15 @@ def main() -> int:
     args = parse_args()
     if args.self_test:
         return self_test()
+    if args.active_benchmarks and not args.confirm_shell_startup_code:
+        print(
+            "SHELL_STARTUP_CONFIRMATION_REQUIRED: rerun with --confirm-shell-startup-code",
+            file=sys.stderr,
+        )
+        return 2
+    if not 5 <= args.max_storage_seconds <= 300 or not 5 <= args.max_cache_seconds <= 300:
+        print("SCAN_BUDGET_SECONDS_INVALID", file=sys.stderr)
+        return 2
     if not args.project or not args.output:
         print("PROJECT_AND_OUTPUT_REQUIRED", file=sys.stderr)
         return 2

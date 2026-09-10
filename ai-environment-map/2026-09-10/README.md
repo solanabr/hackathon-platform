@@ -1,5 +1,7 @@
 # Mapa técnico do ambiente de IA — Felix × Laura
 
+> **SNAPSHOT HISTÓRICO PRÉ-REMEDIAÇÃO — 2026-09-10T07:00Z.** A evidência Felix incluída não descreve o estado atual. Consulte `POST-CLEANUP-SUMMARY.md` e o pacote `../../ai-maintenance/2026-09-10/`.
+
 Este pacote transforma a lentidão de 20–40 minutos em uma comparação reproduzível. Ele registra a configuração estrutural do Claude Code/Desktop/Cowork, o peso de skills e instruções, hooks, plugins, MCPs, worktrees, processos e tempos locais. Ele não lê conversas, histórico, código do projeto, valores de ambiente, tokens, Keychain ou argumentos de processos. O benchmark envia somente os dois prompts sintéticos públicos declarados no próprio script e descarta o conteúdo retornado.
 
 O diagnóstico atual é um **baseline**, não uma certificação e ainda não prova a causa no computador da Laura. O baseline do Felix também é pesado; ele serve para comparar mecanismos e medidas, não como configuração a copiar.
@@ -19,13 +21,14 @@ Por segurança, o coletor compartilhável não atravessa diretórios por symlink
 - `scripts/compare_ai_environments.py`: comparação Felix × Laura e relatório em Markdown.
 - `scripts/validate_redacted_report.py`: validação independente do relatório compartilhável.
 - `evidence/felix-ai-environment.redacted.json`: baseline redigido do Felix.
+- `evidence/felix-post-cleanup.redacted.json`: coleta rápida validada após a limpeza.
 - `evidence/FELIX-MANUAL-OBSERVATIONS.redacted.json`: telemetria e snapshots agregados do Felix.
 - `evidence/LAURA-MANUAL-OBSERVATIONS.template.json`: formulário numérico, sem texto livre.
 
 ## Ordem de execução
 
-1. Laura lê `FIELD-SCHEMA.md` e copia esta pasta para um diretório local que não seja sincronizado.
-2. Ela executa o coletor com o repositório visual relevante e cada repositório adicional explicitamente informado.
+1. Laura lê `LAURA-COPY-PASTE.md` e executa cada etapa numa sessão nova.
+2. Ela grava toda evidência em `~/.local/state/claude-latency-lab/`, fora deste checkout.
 3. Ela valida o JSON antes de compartilhar.
 4. Ela executa os A/B do runbook com a mesma conta, modelo, effort, tarefa e rede.
 5. Ela preenche apenas números e enums no formulário manual.
@@ -40,16 +43,17 @@ Use Python 3.11 ou mais recente. O exemplo abaixo deve ser adaptado localmente c
 
 ```bash
 cd ai-environment-map/2026-09-10
+umask 077
+export AI_DIAG_OUT="$HOME/.local/state/claude-latency-lab/2026-09-10"
+mkdir -p "$AI_DIAG_OUT"
 python3 scripts/collect_ai_environment.py \
   --subject laura \
   --project "/caminho/local/do/projeto" \
   --repository "/caminho/local/do/projeto" \
-  --active-benchmarks \
-  --include-cache-sizes \
-  --output evidence/laura-ai-environment.redacted.json
+  --output "$AI_DIAG_OUT/laura-ai-environment.redacted.json"
 
 python3 scripts/validate_redacted_report.py \
-  evidence/laura-ai-environment.redacted.json
+  "$AI_DIAG_OUT/laura-ai-environment.redacted.json"
 ```
 
 Sem `AI_ENV_MAP_PAIRING_KEY`, o coletor cria uma chave efêmera: contagens continuam comparáveis, mas fingerprints entre máquinas não. Para comparar fingerprints, Felix e Laura definem a mesma frase longa somente nos terminais locais, sem gravá-la em arquivo, conversa ou relatório:
@@ -70,11 +74,13 @@ O relatório é escrito com modo `0600`. Se o DLP interno detectar path absoluto
 ```bash
 python3 scripts/compare_ai_environments.py \
   --baseline evidence/felix-ai-environment.redacted.json \
-  --candidate evidence/laura-ai-environment.redacted.json \
-  --output evidence/comparison-felix-laura.md
+  --candidate "$AI_DIAG_OUT/laura-ai-environment.redacted.json" \
+  --output "$AI_DIAG_OUT/comparison-historical-felix-laura.md"
 ```
 
 Um delta mostra associação, não causalidade. A causa só ganha confiança quando uma única camada é retirada e o mesmo teste fica repetidamente mais rápido.
+
+Para comparar com o estado atual do Felix, troque o `--baseline` por `evidence/felix-post-cleanup.redacted.json`. O snapshot histórico continua preservado para explicar a remediação.
 
 ## Condições mínimas do teste
 
@@ -91,6 +97,7 @@ Um delta mostra associação, não causalidade. A causa só ganha confiança qua
 
 - Não lê nem publica conversas ou sessões.
 - Não mata processos, remove caches, worktrees ou branches.
+- A coleta rápida não executa shell de inicialização nem mede diretórios recursivamente.
 - Não desliga o scanner de segredos para melhorar benchmark.
 - Não copia settings do Felix para Laura.
 - Não conclui que RAM baixa ou skills são a causa antes dos A/B.

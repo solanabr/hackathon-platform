@@ -1,5 +1,7 @@
 # Baseline técnico do ambiente de IA do Felix
 
+> **SNAPSHOT HISTÓRICO PRÉ-REMEDIAÇÃO — 2026-09-10T07:00Z.** Este documento preserva a evidência anterior e não descreve a configuração atual.
+
 **Data da coleta:** 2026-09-10
 **Estado:** baseline forense e hipótese de desempenho; não é certificação
 **Objetivo:** investigar por que tarefas no Claude podem durar 20–40 minutos e fornecer uma referência segura para comparar o ambiente da Laura

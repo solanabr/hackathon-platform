@@ -1,5 +1,7 @@
 # Resumo executivo
 
+> **Snapshot histórico pré-remediação — 2026-09-10T07:00Z.** Os itens abaixo descrevem o estado anterior à limpeza; veja `POST-CLEANUP-SUMMARY.md` para o estado medido depois.
+
 1. O baseline do Felix também é pesado; ele não deve ser copiado para Laura.
 2. Felix usa Claude `opus[1m]` com effort `xhigh` como default estrutural.
 3. Há 271 skills pessoais candidatas à seleção automática; runtime mediano 318, máximo 392.

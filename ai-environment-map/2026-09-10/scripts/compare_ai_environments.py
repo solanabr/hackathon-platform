@@ -420,7 +420,10 @@ def validate_report(report: Any) -> list[str]:
         failures.add("UNSUPPORTED_COLLECTOR_VERSION")
     if collector.get("privacyPolicy") != PRIVACY_POLICY:
         failures.add("PRIVACY_POLICY_MISMATCH")
-    if collector.get("networkRequests") is not False:
+    network_intent = collector.get(
+        "collectorInitiatedNetworkRequests", collector.get("networkRequests")
+    )
+    if network_intent is not False:
         failures.add("NETWORK_FREE_COLLECTION_REQUIRED")
     if not isinstance(collector.get("activeBenchmarks"), bool):
         failures.add("BENCHMARK_FLAG_REQUIRED")

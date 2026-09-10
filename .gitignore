@@ -38,9 +38,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+__pycache__/
+*.py[cod]
 
 # brand source (kept locally, served from public/brand)
 branding/
 
 # supabase cli scratch
 supabase/.temp/
+
+# local AI latency evidence (must remain outside the checkout)
+ai-environment-map/**/evidence/laura-*.json
+ai-environment-map/**/evidence/comparison-*.md
+ai-environment-map/**/evidence/LAURA-DIAGNOSTICO.md
+ai-environment-map/**/evidence/LAURA-REMEDIATION-REPORT.md

@@ -1,5 +1,7 @@
 # Runbook de diagnóstico — Claude Code/Cowork da Laura
 
+> Use `LAURA-COPY-PASTE.md` como entrada operacional. Ele divide este material em três sessões; este documento é referência, não deve ser carregado inteiro antes da primeira coleta.
+
 ## 1. Objetivo e critério de sucesso
 
 O objetivo é localizar a camada que transforma tarefas básicas em execuções de 20–40 minutos. O diagnóstico termina quando o mesmo teste, repetido sob condições controladas, identifica um delta estável entre duas configurações e a correção mantém os controles de segurança.
@@ -22,7 +24,7 @@ Esses valores são metas internas, não limites oficiais da Anthropic.
 
 No ambiente do Felix, o shell e a rede básica são rápidos. Os multiplicadores medidos são contexto grande, `opus[1m]`/`xhigh`, muitas skills selecionáveis, skills Superpowers sobrepostas, hooks síncronos, sessões grandes e fan-out. A telemetria registrou mediana de 11,5 agentes por workflow e máximo de 59. Isso prova que o mecanismo ocorre no ambiente do Felix; não prova a configuração da Laura.
 
-Claude Code 2.1.263 permite que subagentes gerem subagentes por padrão até três camadas; a [documentação de subagentes](https://code.claude.com/docs/en/agents) informa limite concorrente padrão de 20 e nenhum teto total por sessão. O limite interno deste laboratório é menor: profundidade um e `cap_maquina` de no máximo quatro.
+O snapshot histórico usava Claude Code 2.1.263, cuja configuração permitia delegação recursiva. Valide os recursos na versão local. O limite interno deste laboratório é menor: profundidade um e `cap_maquina` de no máximo quatro.
 
 Na captura enviada pela Laura, um turno fez leitura, quatro mudanças, TypeScript, 195 testes, lint e Playwright. O Playwright visível levou segundos; o turno já acumulava mais de nove minutos. Essa sequência é compatível com um agente que ampliou escopo e seguiu rituais de verificação. A imagem não identifica tempo de API, hooks, subagentes ou processos abandonados.
 
@@ -55,20 +57,21 @@ Se uma alteração for inevitável, descarte a bateria e recomece. Misturar esta
 
 ## 4. Coleta estática
 
-Copie este pacote para uma pasta local não sincronizada. Execute:
+Grave os resultados fora do checkout. Execute a coleta rápida sem shell de inicialização e sem varredura recursiva:
 
 ```bash
 cd ai-environment-map/2026-09-10
+umask 077
+export AI_DIAG_OUT="$HOME/.local/state/claude-latency-lab/2026-09-10"
+mkdir -p "$AI_DIAG_OUT"
 python3 scripts/collect_ai_environment.py \
   --subject laura \
   --project "/caminho/local/do/projeto" \
   --repository "/caminho/local/do/projeto" \
-  --active-benchmarks \
-  --include-cache-sizes \
-  --output evidence/laura-ai-environment.redacted.json
+  --output "$AI_DIAG_OUT/laura-ai-environment.redacted.json"
 
 python3 scripts/validate_redacted_report.py \
-  evidence/laura-ai-environment.redacted.json
+  "$AI_DIAG_OUT/laura-ai-environment.redacted.json"
 ```
 
 Adicione um `--repository` para cada repositório que participa do trabalho. Não passe o diretório HOME inteiro.
@@ -128,7 +131,7 @@ python3 scripts/benchmark_claude_modes.py \
   --timeout-seconds 60 \
   --probe startup \
   --confirm-paid-calls \
-  --output evidence/laura-ab-startup-smoke.redacted.json
+  --output "$AI_DIAG_OUT/laura-ab-startup-smoke.redacted.json"
 ```
 
 O script testa:
@@ -142,7 +145,7 @@ O script testa:
 
 Antes da primeira chamada, o script consulta `claude --help` e falha fechado se a versão local não anunciar todas as flags usadas. Nesse caso, registre a versão e adapte o protocolo; não substitua silenciosamente uma variante por outra.
 
-Se os quatro modos terminarem sem `timeout`, `process-error`, `protocol-error` ou `result-error`, repita `startup` com três amostras intercaladas e grave `evidence/laura-ab-startup.redacted.json`. Essa triagem permite até US$ 1,20 e, com timeout de 120 segundos, até 24 minutos. Um teto de custo atingido invalida a comparação daquela amostra; não o trate como latência normal nem aumente o teto sem uma nova decisão da operadora.
+Se os quatro modos terminarem sem `timeout`, `process-error`, `protocol-error` ou `result-error`, pare essa sessão. Em outra janela, repita `startup` com três amostras intercaladas e grave o resultado em `$AI_DIAG_OUT`. Essa triagem permite até US$ 1,20 e, com timeout de 120 segundos, até 24 minutos. Um teto de custo atingido invalida a comparação daquela amostra.
 
 Para localizar a fonte de settings, rode depois uma bateria separada com `--include-source-modes`. Isso adiciona `USER_ONLY`, `PROJECT_ONLY` e `LOCAL_ONLY`; faça primeiro uma amostra, pois os sete modos permitem até US$ 0,70 e sete minutos com timeout de 60 segundos.
 
@@ -157,10 +160,10 @@ python3 scripts/benchmark_claude_modes.py \
   --timeout-seconds 60 \
   --probe tool-read \
   --confirm-paid-calls \
-  --output evidence/laura-ab-read-smoke.redacted.json
+  --output "$AI_DIAG_OUT/laura-ab-read-smoke.redacted.json"
 ```
 
-O script cria uma fixture pública curta, limita tools a `Read`, descarta todo texto do modelo e remove a fixture ao terminar. Ele nunca grava `stdout`/`stderr` brutos. Se o smoke test for válido, repita com três amostras e grave `evidence/laura-ab-read.redacted.json`.
+O script cria uma fixture pública curta, limita tools a `Read`, descarta todo texto do modelo e remove a fixture ao terminar. Ele nunca grava `stdout`/`stderr` brutos. Se o smoke test for válido, repita com três amostras e grave `$AI_DIAG_OUT/laura-ab-read.redacted.json`.
 
 `firstAssistantMs` mede o primeiro evento estruturado do assistente, não o primeiro caractere renderizado na interface. As contagens de processos são do host inteiro e servem para detectar crescimento durante a amostra; não atribuem cada processo à probe. O benchmark registra worktrees antes/depois, mas pode perder uma worktree transitória; o teste manual da seção 7 cobre fan-out e ciclo de vida.
 
@@ -172,7 +175,7 @@ Não use `--debug`: o arquivo de debug pode conter prompt, path e entrada/saída
 
 ### Sobre `--bare`
 
-Claude Code 2.1.263 também oferece `--bare`, que pula hooks, LSP, plugin sync, attribution, auto-memory, prefetch, Keychain e descoberta de `CLAUDE.md`. Ele muda o caminho de autenticação e exige API key ou helper em settings. Por isso, use `--safe-mode` no teste principal. `--bare` só entra como quarto diagnóstico quando a Laura já usa o mesmo método de autenticação nas duas variantes e não precisa expor ou mover uma chave.
+O snapshot histórico em Claude Code 2.1.263 oferecia `--bare`. Verifique a semântica na versão local antes de considerar essa variante. Ela muda o caminho de autenticação; use `--safe-mode` no teste principal.
 
 ## 7. Teste específico de fan-out e worktrees
 

@@ -51,9 +51,11 @@ Claude Code CLI, Claude Desktop Code e Cowork devem ser tratados separadamente. 
 - `version`: versão do formato lógico do coletor.
 - `sha256`: hash público do próprio script. Felix e Laura devem executar o mesmo hash.
 - `privacyPolicy`: deve ser `allowlist-hmac-v1`.
-- `activeBenchmarks`: indica se timings locais sem modelo foram executados.
+- `activeBenchmarks`: indica se código de inicialização do shell e timings locais foram executados; exige confirmação separada.
 - `cacheSizes`: indica se tamanhos conhecidos dentro de worktrees foram medidos.
-- `networkRequests`: sempre `false` neste coletor.
+- `storageSizes`: indica se diretórios do Claude foram medidos recursivamente.
+- `collectorInitiatedNetworkRequests`: `false`; executáveis locais chamados pelo coletor podem ter comportamento próprio.
+- `userStartupCodeExecuted`: `true` quando a opção ativa executou arquivos como `.zshrc`.
 
 ### `run`
 
@@ -139,11 +141,15 @@ Saem apenas contagem, RSS total, CPU instantânea, faixas de idade e quantidade 
 
 ### `runtime.storage`
 
-Tamanho e cardinalidade por classe: projetos/sessões/tasks/teams/daemon do CLI, sessions/extensões/VM bundles/cache/git-shadow do Desktop. Nenhum conteúdo é aberto.
+Na coleta rápida, somente existência e metadados por classe. Tamanho e cardinalidade recursivos exigem `--include-storage-sizes`, têm orçamento global e não abrem o conteúdo dos arquivos.
 
 ### `runtime.benchmarks`
 
-Cinco execuções de inicialização de shell limpo, shell interativo e `claude --version`. Esses números mostram overhead local antes de qualquer chamada ao modelo.
+Quando explicitamente habilitado com as duas flags de confirmação, executa cinco inicializações de shell e CLI. Isso roda o código da `.zshrc`; por isso não pertence à coleta inicial.
+
+### Relatório A/B
+
+Cada relatório de `benchmark_claude_modes.py` inclui horário UTC com segundos, SHA-256 do script, versão do Claude CLI, flags de capacidade, Python e plataforma. Antes/depois só são comparáveis quando hash, CLI, modelo, effort, probe e fixture coincidem.
 
 ### `observations`
 

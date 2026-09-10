@@ -8,9 +8,12 @@ Use --self-test to validate the parser without invoking Claude or the network.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
+import hashlib
 import json
 import math
 import os
+import platform
 import random
 import re
 import selectors
@@ -47,6 +50,42 @@ MODE_FLAGS = {
     "PROJECT_ONLY": ["--setting-sources", "project"],
     "LOCAL_ONLY": ["--setting-sources", "local"],
 }
+
+
+def utc_now() -> str:
+    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace(
+        "+00:00", "Z"
+    )
+
+
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def claude_cli_version(claude: str) -> str | None:
+    try:
+        completed = subprocess.run(
+            [claude, "--version"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=8,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    match = re.search(r"\b\d+(?:\.\d+){1,3}(?:[-+][A-Za-z0-9.-]+)?\b", completed.stdout)
+    return match.group(0) if completed.returncode == 0 and match else None
+
+
+def capability_flags(modes: list[str], probe: str) -> list[str]:
+    flags = {value for value in BASE_FLAGS if value.startswith("--")}
+    for mode in modes:
+        flags.update(value for value in MODE_FLAGS[mode] if value.startswith("--"))
+    flags.update({"--model", "--effort", "--tools"})
+    if probe == "tool-read":
+        flags.add("--allowedTools")
+    return sorted(flags)
 
 
 def has_symlink_component(path: Path) -> bool:
@@ -521,7 +560,21 @@ def self_test() -> int:
     event_metrics({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read", "input": {"secret": "must-not-retain"}}]}}, 120.0, state)
     event_metrics({"type": "result", "result": "must-not-retain", "usage": {"input_tokens": 10, "output_tokens": 2}}, 240.0, state)
     encoded = json.dumps(state)
-    passed = state["toolCalls"] == 1 and state["resultObserved"] and not state["resultIsError"] and state["usage"] == {"inputTokens": 10, "outputTokens": 2} and "must-not-retain" not in encoded
+    provenance = {
+        "collectedAt": utc_now(),
+        "scriptSha256": file_sha256(Path(__file__)),
+        "claudeCliVersion": "test-version",
+        "capabilityFlags": capability_flags(["FULL"], "startup"),
+    }
+    passed = (
+        state["toolCalls"] == 1
+        and state["resultObserved"]
+        and not state["resultIsError"]
+        and state["usage"] == {"inputTokens": 10, "outputTokens": 2}
+        and "must-not-retain" not in encoded
+        and len(provenance["scriptSha256"]) == 64
+        and provenance["collectedAt"].endswith("Z")
+    )
     print(json.dumps({"selfTest": "passed" if passed else "failed"}))
     return 0 if passed else 1
 
@@ -588,6 +641,12 @@ def main() -> int:
     report = {
         "schemaVersion": SCHEMA_VERSION,
         "protocol": "claude-customization-ab-v1",
+        "collectedAt": utc_now(),
+        "scriptSha256": file_sha256(Path(__file__)),
+        "claudeCliVersion": claude_cli_version(claude),
+        "capabilityFlags": capability_flags(modes, args.probe),
+        "pythonVersion": platform.python_version(),
+        "platform": {"system": platform.system(), "release": platform.release()},
         "modelFamily": args.model if args.model in {"opus", "sonnet", "haiku"} else "other",
         "effort": args.effort,
         "probe": args.probe,
