@@ -801,7 +801,7 @@ export default async function HomePage() {
 
       {!registered && (
         <>
-          <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] lg:hidden" />
+          <div aria-hidden className="h-[calc(5.5rem+env(safe-area-inset-bottom))] xl:hidden" />
           <MobileCtaBar
             watchId="hero-cta"
             href={cadastroHref}

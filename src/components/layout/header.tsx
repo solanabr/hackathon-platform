@@ -21,8 +21,8 @@ import { LpSectionNav } from "./lp-section-nav";
 const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark";
 const ENTRAR_CLASS = `rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 ${FOCUS_RING}`;
-// Below lg the sticky MobileCtaBar carries the cadastro button; between lg and
-// xl the seven section pills leave no room for it without crushing the logo.
+// Below xl the sticky MobileCtaBar carries the cadastro button: at lg the seven
+// section pills leave no room for it in the dock without crushing the logo.
 const ENTRAR_LP_CLASS = `rounded-full border-2 border-surface/40 px-4 py-1.5 text-sm font-bold text-surface transition-colors duration-200 hover:bg-surface hover:text-green-dark sm:inline-block ${FOCUS_RING}`;
 const CADASTRO_CLASS = `hidden whitespace-nowrap xl:inline-block ${ENTRAR_CLASS}`;
 
