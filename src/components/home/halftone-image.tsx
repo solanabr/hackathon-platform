@@ -46,6 +46,11 @@ export type HalftoneImageProps = {
   gamma?: number;
   /** Abaixo disto o pixel é fundo e não imprime nada. */
   alphaCut?: number;
+  /** `contain` deixa a peça de pé no rodapé da caixa — é o enquadramento de um
+   * objeto recortado. `cover` preenche a caixa inteira e corta o que sobra: é o
+   * enquadramento de uma CENA, que não tem pé nem borda, só continua fora do
+   * quadro. */
+  fit?: "contain" | "cover";
   className?: string;
 };
 
@@ -56,6 +61,7 @@ export function HalftoneImage({
   toneGain = 0.8,
   gamma = 1,
   alphaCut = 0.45,
+  fit = "contain",
   minWidth = 0,
   className = "h-full w-full text-ink",
 }: HalftoneImageProps) {
@@ -99,12 +105,17 @@ export function HalftoneImage({
       sampler.height = rows;
 
       // `contain`, e alinhado embaixo: a peça fica de pé no rodapé da caixa, do
-      // mesmo jeito que o monumento se apoia na margem inferior do hero.
-      const scale = Math.min(cols / image.width, rows / image.height);
+      // mesmo jeito que o monumento se apoia na margem inferior do hero. Em
+      // `cover` não há pé: a cena transborda o quadro pelos quatro lados e o
+      // corte é o que prova que ela continua fora dele.
+      const cobre = fit === "cover";
+      const scale = cobre
+        ? Math.max(cols / image.width, rows / image.height)
+        : Math.min(cols / image.width, rows / image.height);
       const drawWidth = image.width * scale;
       const drawHeight = image.height * scale;
       const drawX = (cols - drawWidth) / 2;
-      const drawY = rows - drawHeight;
+      const drawY = cobre ? (rows - drawHeight) / 2 : rows - drawHeight;
 
       samplerContext.clearRect(0, 0, cols, rows);
       samplerContext.imageSmoothingEnabled = true;
@@ -209,7 +220,7 @@ export function HalftoneImage({
       dprQuery?.removeEventListener("change", onDpr);
       canvas.remove();
     };
-  }, [src, cell, toneFloor, toneGain, gamma, alphaCut, minWidth]);
+  }, [src, cell, toneFloor, toneGain, gamma, alphaCut, fit, minWidth]);
 
   return <div ref={hostRef} aria-hidden className={className} />;
 }
