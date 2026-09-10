@@ -369,7 +369,7 @@ export default async function HomePage() {
               </span>
             </div>
             <div className="hidden lg:block lg:left-[10%] lg:top-[64%] [transform:rotate(6deg)_translateZ(36px)] absolute whitespace-nowrap rounded-xl border-[3px] border-green-dark px-3 py-2 font-heading text-xs font-black uppercase shadow-[4px_4px_0_rgba(27,35,29,0.9)] lg:px-4 lg:py-2.5 lg:text-base bg-surface-raised text-ink">
-              Todas as redes
+              Multichain
             </div>
           </Tilt>
           <ul className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:hidden" aria-label="Fatos do hackathon">
