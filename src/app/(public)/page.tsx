@@ -29,7 +29,6 @@ import { NetworkHalo } from "@/components/home/network-halo";
 import { StepNumeral } from "@/components/home/step-numeral";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
-import { MobileSteps } from "@/components/campaign/mobile-steps";
 import { EventTicket } from "@/components/campaign/event-ticket";
 import { CasesFan } from "@/components/home/cases-fan";
 import {
@@ -92,6 +91,33 @@ const CASES = [
     tagline: "Seu time, daqui a um mês",
     tone: "dark" as const,
     glyph: "?",
+  },
+];
+
+// Os quatro fatos que decidem se a pessoa se inscreve: onde ela compete, o que
+// ganha, se o projeto que já existe vale, e se a área dela cabe. Vêm antes do
+// convite porque a dúvida chega antes da vontade.
+const COLOSSEUM_FACTS = [
+  {
+    figure: "8 trilhas",
+    title: "Uma trilha por rede",
+    body: "Solana, Ethereum, Base, Arbitrum, Hyperliquid, Tempo, Zcash e Robinhood Chain. Uma única submissão no Colosseum concorre à trilha da sua rede, bancada pelo parceiro e julgada pelo Colosseum, e ao prêmio geral entre todas as redes. As trilhas já anunciadas pagam US$ 100 mil entre os 10 melhores.",
+  },
+  {
+    figure: "US$ 250 mil",
+    accent: true,
+    title: "O cheque do acelerador",
+    body: "Vencedores selecionados entram no acelerador do Colosseum com US$ 250 mil de investimento. Exige alguma integração com a Solana.",
+  },
+  {
+    figure: "Projeto existente",
+    title: "Pode, com regras",
+    body: "Vale se a startup ainda não captou capital relevante. Só conta o que for construído entre 14 de setembro e 12 de outubro, e código anterior precisa ser declarado.",
+  },
+  {
+    figure: "Qualquer área",
+    title: "DeFi, pagamentos, RWA, consumer, IA",
+    body: "As trilhas são por rede, não por tema. Os jurados olham produto, tração e plano de distribuição. Sozinho ou em time, uma submissão por pessoa.",
   },
 ];
 
@@ -512,8 +538,8 @@ export default async function HomePage() {
               <ColosseumScene />
             </div>
 
-            {/* Wide screens only: below `lg` the ticket and the mobile steps
-              already own the lower half, and the plate is never fetched. The
+            {/* Wide screens only: below `lg` the ticket already owns the
+              lower half, and the plate is never fetched. The
               shield bleeds past the right margin the way the amphitheatre
               bleeds past the left — and that bleed is what keeps the figure
               clear of the sub-headline on short screens. */}
@@ -531,15 +557,24 @@ export default async function HomePage() {
               <SectionHat>Hackathon Colosseum</SectionHat>
             </div>
 
-            <h1 className="hero-print font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[clamp(3rem,4.6vw,4.8rem)]">
+            {/* A manchete não aparece: ela é IMPRESSA, e agora o processo
+                inteiro está à vista. As chapas esmeralda e amarela entram
+                fora do eixo e encaixam no mesmo instante em que a linha
+                termina de subir de baixo do rolo. O `--p` é escrito UMA vez,
+                aqui, e as três linhas o herdam: uma passagem de prensa, não
+                três registros independentes. */}
+            <h1
+              className="hero-print registro-impressao font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[clamp(3rem,4.6vw,4.8rem)]"
+              style={{ "--hero-i": 1 } as CSSProperties}
+            >
               <span
-                className="block"
+                className="registro block"
                 style={{ "--hero-i": 1 } as CSSProperties}
               >
                 O próximo time
               </span>
               <span
-                className="mt-1 block"
+                className="registro mt-1 block"
                 style={{ "--hero-i": 2 } as CSSProperties}
               >
                 a captar{" "}
@@ -548,7 +583,7 @@ export default async function HomePage() {
                 </span>
               </span>
               <span
-                className="mt-1 block"
+                className="registro mt-1 block"
                 style={{ "--hero-i": 3 } as CSSProperties}
               >
                 pode ser o seu.
@@ -588,23 +623,72 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="lg:mt-6 lg:flex lg:w-full lg:max-w-[min(33vw,31rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90">
-            <div id="hero-ticket" className="hero-ticket">
-              <EventTicket />
+          {/* O quadro guarda a PERSPECTIVA e a cena guarda o GIRO: quem
+              observa é a página, quem vira é o cartão. Separados porque a
+              cena também é o elemento que a régua de rolagem mede — juntar os
+              dois faria a `view()` medir uma caixa que já está deformada. */}
+          <div className="cena-bilhete-quadro lg:mt-6 lg:flex lg:w-full lg:max-w-[min(40vw,37rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90">
+            <div className="cena-bilhete">
+              <div id="hero-ticket" className="hero-ticket">
+                <EventTicket />
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <MobileSteps
-            whatsappUrl={WHATSAPP_COMMUNITY_URL}
-            colosseumUrl={colosseum?.external_url ?? null}
-            registered={registered}
-          />
+      <section
+        id="colosseum"
+        aria-label="O que é o Colosseum"
+        className={`${LP_SECTION} relative bg-surface`}
+      >
+        <div className={PAGE_SHELL}>
+          <Reveal>
+            <h2 className="max-w-[15ch] text-balance font-heading text-[clamp(1.9rem,4.6vw,3.35rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] text-ink [font-stretch:118%]">
+              O que é o Colosseum
+            </h2>
+          </Reveal>
+
+          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5">
+            {COLOSSEUM_FACTS.map((fact, i) => (
+              <Reveal
+                key={fact.figure}
+                index={i + 1}
+                tone="papel"
+                className="h-full min-w-0"
+              >
+                <article className="flex h-full flex-col rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker sm:p-6">
+                  <p className="text-balance font-heading text-[clamp(1.7rem,3vw,2.4rem)] font-black uppercase leading-[0.92] tracking-[-0.03em] text-green-dark [font-stretch:115%]">
+                    {"accent" in fact ? (
+                      <span className="inline-block bg-yellow px-2 pb-[0.06em] [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
+                        {fact.figure}
+                      </span>
+                    ) : (
+                      fact.figure
+                    )}
+                  </p>
+                  <h3 className="mt-3 font-heading text-lg font-bold leading-snug text-ink sm:text-xl">
+                    {fact.title}
+                  </h3>
+                  <p className="mt-2 text-pretty text-sm leading-relaxed text-ink/75">
+                    {fact.body}
+                  </p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal index={5} tone="texto">
+            <p className="mt-6 font-mono text-[11px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65">
+              Jurados e regras completas saem em 14 de setembro.
+            </p>
+          </Reveal>
         </div>
       </section>
 
       <section
         id="cases"
-        className={`${LP_SECTION} relative isolate overflow-x-clip bg-surface pb-8 lg:pb-28 xl:pb-32`}
+        className={`cena-p ${LP_SECTION} relative isolate overflow-x-clip bg-surface pb-8 lg:pb-28 xl:pb-32`}
         aria-label="O hackathon"
       >
         <SectionRails />
@@ -762,7 +846,7 @@ export default async function HomePage() {
           className="pointer-events-none absolute inset-x-0 bottom-[-6rem] -z-10 h-44 bg-surface-kraft lg:bottom-[-7rem] lg:h-48"
         />
 
-        <div className={`${PAGE_SHELL} mt-12 xl:mt-16`}>
+        <div className={`cena-p-curta ${PAGE_SHELL} mt-12 xl:mt-16`}>
           <div className="cena-assenta rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
             <div className="relative hidden aspect-[1200/480] w-full lg:block">
               <NetworkSphere className="w-[52%]" />
@@ -829,7 +913,7 @@ export default async function HomePage() {
       <section
         id="informacoes"
         aria-label="Informações"
-        className="relative isolate mt-24 lg:mt-28"
+        className="cena-p relative isolate mt-24 lg:mt-28"
       >
         <div
           aria-hidden
@@ -903,7 +987,7 @@ export default async function HomePage() {
             </Reveal>
 
             <Reveal index={2} tone="papel" className="h-full min-w-0">
-              <article className="flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark relative bg-surface shadow-sticker">
+              <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface shadow-sticker">
                 <header className="relative p-5 pb-0 sm:p-6 sm:pb-0">
                   <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/80">
                     Superteam Earn
@@ -1083,8 +1167,8 @@ export default async function HomePage() {
         className={LP_SECTION}
         aria-label="Última chamada"
       >
-        <div className="mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8">
-          <div className="cena-assenta relative overflow-clip rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
+        <div className="cena-p-curta mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8">
+          <div className="grao cena-assenta relative overflow-clip rounded-3xl border-2 border-green-dark bg-emerald-deep px-5 py-12 shadow-sticker sm:rounded-[2.5rem] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-16">
             <CtaHalftone className="cena-zoom pointer-events-none absolute inset-0 h-full w-full text-surface/35 [mask-image:radial-gradient(82%_86%_at_50%_50%,transparent_42%,rgba(0,0,0,0.45)_72%,black_100%)]" />
             <div className="relative mx-auto max-w-5xl">
               <Reveal>
@@ -1092,7 +1176,12 @@ export default async function HomePage() {
                   <SectionHat centered onDark>
                     Última chamada
                   </SectionHat>
-                  <h2 className="mt-5 mx-auto max-w-4xl font-heading font-black uppercase leading-[1.06] tracking-tight text-surface [font-stretch:108%]">
+                  {/* O mesmo gesto da primeira dobra, fechando o ciclo: a
+                      manchete que abriu a página impressa é a que a encerra,
+                      e aqui o registro é comandado pela rolagem em vez do
+                      load. Sobre o verde as chapas trocam para creme e
+                      amarelo — esmeralda sobre esmeralda não erra visível. */}
+                  <h2 className="registro registro-escuro mt-5 mx-auto max-w-4xl font-heading font-black uppercase leading-[1.06] tracking-tight text-surface [font-stretch:108%]">
                     <span className="block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.1rem]">
                       O próximo time a captar
                     </span>
