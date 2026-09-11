@@ -8,7 +8,8 @@ Este pacote registra a limpeza feita no Mac do Felix e oferece um roteiro seguro
 2. `ROTATION-REQUIRED.md`: credenciais que precisam ser substituídas fora do terminal de IA.
 3. `LAURA-REMEDIATION-RUNBOOK.md`: coleta rápida, A/B e correções em sessões separadas.
 4. `OWNER-ACTIONS.md`: correções no Mac do Felix que exigem senha administrativa.
-5. `scripts/`: utilitários defensivos e reversíveis. Laura deve executar primeiro sem `--apply`.
+5. `owner-finish.sh`: pré-validação e aplicação guardada dessas duas correções; execute primeiro com `--check`.
+6. `scripts/`: utilitários defensivos e reversíveis. Laura deve executar primeiro sem `--apply`.
 
 O baseline em `ai-environment-map/2026-09-10/evidence/felix-ai-environment.redacted.json` é um snapshot histórico anterior à limpeza. Ele serve para comparar mecanismos e não deve ser copiado como configuração.
 

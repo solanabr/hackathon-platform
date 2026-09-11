@@ -6,9 +6,11 @@
 - Claude Code 2.1.267, `opus/high`, prompts de segurança ativos e zero regras na allowlist local.
 - 49 skills válidas (43 físicas e 6 links) e quatro plugins ativos no escopo de usuário.
 - Codex 0.154.0, `gpt-6-astra/high`, cinco trusts explícitos.
-- LiqPay com checkout principal e dois worktrees temporários pertencentes a sessão ativa.
+- LiqPay somente com o checkout principal; as branches dos dois últimos worktrees removidos foram preservadas.
 - QVAC local e seu LaunchAgent removidos.
 - Shell limpo sem variáveis sensíveis monitoradas exportadas.
+- Shells de login e interativos resolvem `tsc` pelo prefixo npm pessoal; a duplicata `/usr/local` aguarda a etapa administrativa com backup.
+- PM2 sem daemon, PID, sockets ou autostart ativo; ownership do pacote aguarda a mesma etapa administrativa.
 - 48 GiB livres no volume de dados; aproximadamente 31 GiB recuperados nesta intervenção.
 - Históricos receberam passes de redação e JSONL foi revalidado; sessões ativas exigem scan final ao encerrar.
 

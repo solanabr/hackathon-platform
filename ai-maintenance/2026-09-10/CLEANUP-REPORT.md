@@ -35,13 +35,18 @@
 - O `rg` passou a resolver por `~/.local/bin` para a release Codex `current`, sem path fixo de versão antiga.
 - Context7 deixou de consultar o Keychain em todo shell; PATH e `compinit` duplicados foram consolidados.
 - A senha PostgreSQL do Kofre foi migrada para o Keychain; o arquivo local retém apenas host, porta, banco e usuário e passou no secret scan.
+- Os dois worktrees LiqPay temporários restantes foram removidos depois de confirmar árvore limpa, ausência de arquivos abertos e commits preservados no remoto; as branches locais foram mantidas.
+- O PATH do npm pessoal passou a ser definido no `.zshenv` e reafirmado no `.zprofile` após o `brew shellenv`; shells de login e interativos agora resolvem o mesmo TypeScript pessoal sem duplicar entradas.
+- Dumps PM2 e toda a árvore legada do Kimi tiveram acesso de grupo/outros removido.
+- O LaunchAgent PM2 descarregado foi arquivado com rollback; seu dump referenciava dois scripts inexistentes. O único daemon órfão restante foi encerrado e não restaram PID ou sockets.
+- O carregador sob demanda ganhou a rota `ai-key-load openai`; nenhuma chave foi criada ou gravada pelo agente.
 
 ## Estado final medido
 
 - Shell: sintaxe válida e nenhuma variável sensível monitorada exportada em shell limpo.
 - Claude: 2.1.267, `opus/high`, zero regras locais de allow, quatro plugins de usuário.
 - Codex: 0.154.0, `gpt-6-astra/high`, cinco projetos confiáveis explícitos.
-- LiqPay: checkout principal e dois worktrees temporários ainda pertencentes a uma sessão ativa.
+- LiqPay: somente o checkout principal; branches dos worktrees removidos permanecem preservadas.
 - QVAC: repositório, LaunchAgent, processo e listener local ausentes.
 - Disco de dados: 48 GiB disponíveis, contra cerca de 17 GiB no início desta intervenção.
 - Memória: 46% livre no snapshot final. Swap pode demorar a ser devolvido pelo macOS.
@@ -50,13 +55,12 @@
 ## Limites e pendências
 
 - O ganho de disco não prova, sozinho, menor latência do modelo.
-- Os dois worktrees temporários devem ser retirados pelo processo que os criou quando a sessão terminar.
 - Caches de projetos em uso foram preservados.
 - Nenhum banco de memória do Codex foi alterado enquanto sessões estavam ativas.
 - As credenciais listadas em `ROTATION-REQUIRED.md` precisam ser giradas nos provedores; redigir arquivos locais não invalida credenciais.
 - Context7 e Kofre agora exigem `ai-key-load context7` ou `kofre-env-load` antes da sessão que realmente os utiliza.
-- O Homebrew pertence corretamente a `felixrodrigues:admin`; o aviso de escrita veio do sandbox. Apenas o PM2 mantém ownership de root e exige a senha local.
+- O Homebrew pertence corretamente a `felixrodrigues:admin`; o aviso de escrita veio do sandbox. O problema de ownership dentro do prefixo pessoal está restrito ao PM2; a duplicata do TypeScript em `/usr/local` é root-owned por estar no prefixo de sistema.
 - As duas instalações locais do TypeScript são 5.8.3 e byte a byte iguais; a cópia `/usr/local` depende de `sudo` para remoção. O catálogo upstream consultado oferece 7.0.2, que exige teste separado.
-- PM2 6.0.5 permanece abaixo do catálogo 7.0.4 e contém 5.082 arquivos com owner `root` no prefixo pessoal. O daemon criado por uma consulta de versão durante a auditoria foi encerrado; corrija ownership antes de testar a atualização.
-- Kimi Code 0.28.1 permanece abaixo do catálogo 0.29.0. O `kimi-cli` legado 1.43.0 ocupa aproximadamente 229 MiB; confirme que nenhum fluxo depende dele antes de removê-lo ou migrá-lo.
+- PM2 6.0.5 permanece abaixo do catálogo 7.0.4 e contém 5.082 itens com owner `root` no prefixo pessoal. O autostart e os processos órfãos foram neutralizados; corrija ownership antes de testar a atualização.
+- Kimi Code 0.28.1 permanece abaixo da release oficial 0.42.0. O `kimi-cli` legado 1.43.0 ocupa aproximadamente 229 MiB e ainda guarda o estado que precisa passar por `kimi migrate`; não o remova antes de validar migração, login e uma sessão real.
 - O volume continua com 89% de uso. A meta operacional é recuperar mais 20–25 GiB em uma janela própria, revisando dados pessoais e projetos grandes em vez de apagar caches de projetos ativos.
