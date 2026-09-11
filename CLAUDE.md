@@ -29,7 +29,8 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
 - **Brand:** the LP language — cream ground, ink, emerald, Superteam yellow; sticker cards (`border-2 border-green-dark` + `shadow-sticker`), pill navs via `PillLink`. Tokens are in `@theme` in `src/app/globals.css`.
 - **Typography:** Archivo headings, Inter body — both via `next/font/google`.
 - **Query errors are never swallowed:** destructure `error` and route it through `unwrap()` (log + throw) or `logQueryError()` from `src/lib/supabase/unwrap.ts`; mutations return `{ ok: false }`.
-- **Motion:** every easing, duration, stagger and entrance distance is a token in
+- **Motion:** the token names are the design system's own vocabulary (`entrada`, `carimbo`, `mola`,
+  `bilhete`, `chapa`) and stay as named; everything else in code is English. Every easing, duration, stagger and entrance distance is a token in
   `src/styles/tokens/motion.css` — `ease-entrada` / `ease-carimbo` / `ease-mola` /
   `ease-inout` / `ease-saida` and `duration-(--dur-instant|rapida|media|lenta|toque)`.
   A raw ms value, a hand-written `cubic-bezier` or a bare `ease-out` anywhere in `src`

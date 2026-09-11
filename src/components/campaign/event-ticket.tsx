@@ -10,11 +10,11 @@ import {
 } from "react";
 import { PaperTexture } from "@/components/home/paper-texture";
 import {
-  FaixaGuilhoche,
-  Meandro,
-  Medalhao,
-  Microtexto,
-  SeloRomano,
+  GuillocheBand,
+  Meander,
+  Medallion,
+  Microtext,
+  RomanSeal,
 } from "@/components/campaign/gravacao";
 
 /* The stub that travels across the page carries this same number. As a literal
@@ -106,7 +106,7 @@ function Canhoto() {
       <span aria-hidden className="foil-perola absolute inset-0" />
       <span aria-hidden className="foil-iris absolute inset-0" />
       <span aria-hidden className="foil-brilho absolute inset-0" />
-      <FaixaGuilhoche className="foil-linha inset-0 h-full w-full text-green-dark/20" />
+      <GuillocheBand className="foil-linha inset-0 h-full w-full text-green-dark/20" />
 
       <div className="relative w-[calc(1.35rem*var(--bu))] self-stretch sm:w-[calc(1.7rem*var(--bu))]">
         <Image
@@ -146,7 +146,7 @@ export function TicketFrente() {
         {/* THE MEDALLION. Runs off the frame to the right and is cut by the
             perforation, as on a banknote — guilloche that respects the text
             frame reads as a page-background stamp, not security printing. */}
-        <Medalhao className="top-1/2 h-[calc(13rem*var(--bu))] w-[calc(13rem*var(--bu))] -translate-y-1/2 text-green-dark/[0.085] [right:calc(-6.5rem*var(--bu))] sm:h-[calc(15rem*var(--bu))] sm:w-[calc(15rem*var(--bu))] sm:[right:calc(-7.5rem*var(--bu))] lg:h-[calc(17rem*var(--bu))] lg:w-[calc(17rem*var(--bu))] lg:[right:calc(-8.5rem*var(--bu))]" />
+        <Medallion className="top-1/2 h-[calc(13rem*var(--bu))] w-[calc(13rem*var(--bu))] -translate-y-1/2 text-green-dark/[0.085] [right:calc(-6.5rem*var(--bu))] sm:h-[calc(15rem*var(--bu))] sm:w-[calc(15rem*var(--bu))] sm:[right:calc(-7.5rem*var(--bu))] lg:h-[calc(17rem*var(--bu))] lg:w-[calc(17rem*var(--bu))] lg:[right:calc(-8.5rem*var(--bu))]" />
 
         <div className="relative flex items-baseline justify-between gap-[calc(0.75rem*var(--bu))]">
           <p className="bilhete-prensa flex min-w-0 items-center gap-[calc(0.5rem*var(--bu))] font-mono text-[calc(9px*var(--bu))] font-bold uppercase tracking-[0.2em] text-green-dark/80 sm:text-[calc(10px*var(--bu))]">
@@ -171,7 +171,7 @@ export function TicketFrente() {
 
         {/* Where a rule once separated the header from the body, the meander
             now runs. Same height, same job — the rule just gained a drawing. */}
-        <Meandro className="relative my-[calc(0.75rem*var(--bu))] h-[calc(8px*var(--bu))] w-full text-green-dark/35 sm:my-[calc(1.25rem*var(--bu))] sm:h-[calc(11px*var(--bu))]" />
+        <Meander className="relative my-[calc(0.75rem*var(--bu))] h-[calc(8px*var(--bu))] w-full text-green-dark/35 sm:my-[calc(1.25rem*var(--bu))] sm:h-[calc(11px*var(--bu))]" />
 
         <dl className="relative flex flex-wrap items-end">
           <div className="min-w-0">
@@ -209,12 +209,12 @@ export function TicketFrente() {
             deciding: below that point the ticket is wide and short, the footer
             line wraps onto two and the bottom-right corner — the only place a
             stamp sits well — is where it ends. */}
-        <SeloRomano className="absolute bottom-[calc(0.75rem*var(--bu))] right-[calc(1.25rem*var(--bu))] hidden h-[calc(4.75rem*var(--bu))] w-[calc(4.75rem*var(--bu))] -rotate-[9deg] text-emerald-deep/25 lg:block" />
+        <RomanSeal className="absolute bottom-[calc(0.75rem*var(--bu))] right-[calc(1.25rem*var(--bu))] hidden h-[calc(4.75rem*var(--bu))] w-[calc(4.75rem*var(--bu))] -rotate-[9deg] text-emerald-deep/25 lg:block" />
 
         {/* The microtext runs along the bottom edge of the body. At rest it is
             a texture; up close it becomes words. */}
-        <Microtexto
-          texto={MICROTEXTO}
+        <Microtext
+          text={MICROTEXTO}
           className="bilhete-microtexto absolute inset-x-0 bottom-0 h-[calc(7px*var(--bu))] text-green-dark/45"
         />
       </div>
@@ -256,7 +256,7 @@ export function TicketVerso({
           seen at the large size, unreduced. Setting both at the same scale
           would give the back poster-sized type. */}
       <div className="relative flex min-w-0 flex-1 flex-col px-[calc(1.25rem*var(--bu))] py-[calc(1rem*var(--bu))]">
-        <Medalhao className="top-1/2 h-[calc(9rem*var(--bu))] w-[calc(9rem*var(--bu))] -translate-y-1/2 text-green-dark/[0.07] [left:calc(-4.5rem*var(--bu))]" />
+        <Medallion className="top-1/2 h-[calc(9rem*var(--bu))] w-[calc(9rem*var(--bu))] -translate-y-1/2 text-green-dark/[0.07] [left:calc(-4.5rem*var(--bu))]" />
 
         <div className="relative flex items-baseline justify-between gap-[calc(0.75rem*var(--bu))]">
           <p className="bilhete-prensa font-mono text-[calc(5.5px*var(--bu))] font-bold uppercase tracking-[0.2em] text-green-dark/80">
@@ -267,7 +267,7 @@ export function TicketVerso({
           </p>
         </div>
 
-        <Meandro className="relative my-[calc(0.6rem*var(--bu))] h-[calc(6px*var(--bu))] w-full text-green-dark/35" />
+        <Meander className="relative my-[calc(0.6rem*var(--bu))] h-[calc(6px*var(--bu))] w-full text-green-dark/35" />
 
         {/* The four clauses. No frame and no shadow: they are PRINTED on the
             paper, not stuck onto it — a sticker card on top of the ticket
@@ -306,10 +306,10 @@ export function TicketVerso({
           </p>
         ) : null}
 
-        <SeloRomano className="absolute bottom-[calc(0.3rem*var(--bu))] left-[calc(1.25rem*var(--bu))] h-[calc(2.6rem*var(--bu))] w-[calc(2.6rem*var(--bu))] rotate-[7deg] text-emerald-deep/20" />
+        <RomanSeal className="absolute bottom-[calc(0.3rem*var(--bu))] left-[calc(1.25rem*var(--bu))] h-[calc(2.6rem*var(--bu))] w-[calc(2.6rem*var(--bu))] rotate-[7deg] text-emerald-deep/20" />
 
-        <Microtexto
-          texto={MICROTEXTO}
+        <Microtext
+          text={MICROTEXTO}
           className="bilhete-microtexto absolute inset-x-0 bottom-0 h-[calc(4px*var(--bu))] text-green-dark/45"
         />
       </div>

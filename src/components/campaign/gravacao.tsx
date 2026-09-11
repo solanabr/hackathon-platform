@@ -16,40 +16,40 @@
  * `use`s. ~1 KB instead of ~20 KB.
  * ------------------------------------------------------------------------- */
 
-const arred = (v: number) => Math.round(v * 100) / 100;
+const round2 = (v: number) => Math.round(v * 100) / 100;
 
 /**
- * One turn of a rosette: r = raio + amplitude·cos(pétalas · t).
+ * One turn of a rosette: r = radius + amplitude·cos(petals · t).
  *
- * `pontos` is resolution, not style. Below ~160 the curve shows its straight
+ * `points` is resolution, not style. Below ~160 the curve shows its straight
  * segments at the petal vertices — and a faceted vertex in a guilloche is
  * exactly what gives away generated artwork.
  */
-function rosacea(raio: number, amplitude: number, petalas: number, pontos = 200) {
+function rosette(radius: number, amplitude: number, petals: number, points = 200) {
   const d: string[] = [];
-  for (let i = 0; i <= pontos; i += 1) {
-    const t = (i / pontos) * Math.PI * 2;
-    const r = raio + amplitude * Math.cos(petalas * t);
+  for (let i = 0; i <= points; i += 1) {
+    const t = (i / points) * Math.PI * 2;
+    const r = radius + amplitude * Math.cos(petals * t);
     d.push(
-      `${i === 0 ? "M" : "L"}${arred(r * Math.cos(t))} ${arred(r * Math.sin(t))}`,
+      `${i === 0 ? "M" : "L"}${round2(r * Math.cos(t))} ${round2(r * Math.sin(t))}`,
     );
   }
   return `${d.join("")}Z`;
 }
 
 /** A vertical sine wave — the banded guilloche line, for the stub. */
-function onda(altura: number, amplitude: number, ciclos: number, pontos = 120) {
+function wave(height: number, amplitude: number, cycles: number, points = 120) {
   const d: string[] = [];
-  for (let i = 0; i <= pontos; i += 1) {
-    const y = (i / pontos) * altura;
-    const x = amplitude * Math.sin((i / pontos) * Math.PI * 2 * ciclos);
-    d.push(`${i === 0 ? "M" : "L"}${arred(x)} ${arred(y)}`);
+  for (let i = 0; i <= points; i += 1) {
+    const y = (i / points) * height;
+    const x = amplitude * Math.sin((i / points) * Math.PI * 2 * cycles);
+    d.push(`${i === 0 ? "M" : "L"}${round2(x)} ${round2(y)}`);
   }
   return d.join("");
 }
 
-const ROSACEA_LARGA = rosacea(52, 15, 9);
-const ROSACEA_FINA = rosacea(33, 8, 14, 240);
+const ROSETTE_WIDE = rosette(52, 15, 9);
+const ROSETTE_FINE = rosette(33, 8, 14, 240);
 
 /**
  * THE MEDALLION. The banknote rosette, in two braided families: nine wide
@@ -57,7 +57,7 @@ const ROSACEA_FINA = rosacea(33, 8, 14, 240);
  * is cut by the perforation line — as on a banknote, where the guilloche never
  * respects the text frame.
  */
-export function Medalhao({ className = "" }: { className?: string }) {
+export function Medallion({ className = "" }: { className?: string }) {
   return (
     <svg
       aria-hidden
@@ -68,25 +68,25 @@ export function Medalhao({ className = "" }: { className?: string }) {
       strokeWidth="0.34"
     >
       <defs>
-        <path id="bilhete-ros-larga" d={ROSACEA_LARGA} />
-        <path id="bilhete-ros-fina" d={ROSACEA_FINA} />
+        <path id="bilhete-ros-larga" d={ROSETTE_WIDE} />
+        <path id="bilhete-ros-fina" d={ROSETTE_FINE} />
       </defs>
       {/* Three turns and two, not five and three. Guilloche is WEAVE: past
           this density the curves stop crossing and start adding up, and the
           medallion becomes a smudge behind the text — the opposite of what
           security printing does on a banknote. */}
-      {[0, 13, 26].map((giro) => (
+      {[0, 13, 26].map((turn) => (
         <use
-          key={`larga-${giro}`}
+          key={`wide-${turn}`}
           href="#bilhete-ros-larga"
-          transform={`rotate(${giro})`}
+          transform={`rotate(${turn})`}
         />
       ))}
-      {[0, 9].map((giro) => (
+      {[0, 9].map((turn) => (
         <use
-          key={`fina-${giro}`}
+          key={`fine-${turn}`}
           href="#bilhete-ros-fina"
-          transform={`rotate(${giro})`}
+          transform={`rotate(${turn})`}
         />
       ))}
       <circle r="22" strokeWidth="0.28" />
@@ -100,8 +100,8 @@ export function Medalhao({ className = "" }: { className?: string }) {
  * which is vertical. It sits over the foil, in `multiply`: the engraved line
  * interrupts the sheen instead of receiving it.
  */
-export function FaixaGuilhoche({ className = "" }: { className?: string }) {
-  const ONDA = onda(240, 7, 9);
+export function GuillocheBand({ className = "" }: { className?: string }) {
+  const WAVE = wave(240, 7, 9);
   return (
     <svg
       aria-hidden
@@ -113,12 +113,12 @@ export function FaixaGuilhoche({ className = "" }: { className?: string }) {
       strokeWidth="0.5"
     >
       <defs>
-        <path id="bilhete-onda" d={ONDA} />
+        <path id="bilhete-wave" d={WAVE} />
       </defs>
       {[7, 17].map((x, i) => (
         <use
           key={x}
-          href="#bilhete-onda"
+          href="#bilhete-wave"
           transform={`translate(${x} 0) scale(${i % 2 ? -1 : 1} 1)`}
         />
       ))}
@@ -138,7 +138,7 @@ export function FaixaGuilhoche({ className = "" }: { className?: string }) {
  * drawing it spiral by loose spiral is what makes the band lose its rhythm at
  * the joins.
  */
-export function Meandro({ className = "" }: { className?: string }) {
+export function Meander({ className = "" }: { className?: string }) {
   const CELULA = 14;
   const REPS = 44;
   const chaves = Array.from(
@@ -175,7 +175,7 @@ export function Meandro({ className = "" }: { className?: string }) {
  * by one: that way it follows the radius at any size, including when the
  * piece grows threefold coming out of the fold.
  */
-export function SeloRomano({ className = "" }: { className?: string }) {
+export function RomanSeal({ className = "" }: { className?: string }) {
   return (
     <svg
       aria-hidden
@@ -253,11 +253,11 @@ export function SeloRomano({ className = "" }: { className?: string }) {
  * texture — and becomes legible words when the piece grows coming out of the
  * fold. It is the zoom's reward: the print holds up to a close look.
  */
-export function Microtexto({
-  texto,
+export function Microtext({
+  text,
   className = "",
 }: {
-  texto: string;
+  text: string;
   className?: string;
 }) {
   return (
@@ -275,7 +275,7 @@ export function Microtexto({
         fontWeight="700"
         letterSpacing="1.1"
       >
-        {texto.repeat(6)}
+        {text.repeat(6)}
       </text>
     </svg>
   );
