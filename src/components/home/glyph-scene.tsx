@@ -519,8 +519,10 @@ export default function GlyphScene({
       ([entry]) => {
         onScreen = Boolean(entry?.isIntersecting);
         if (entry) measureHost(entry.boundingClientRect);
-        if (onScreen) start();
-        else stop();
+        if (onScreen) {
+          loadModel();
+          start();
+        } else stop();
       },
       { rootMargin: "20%" },
     );
@@ -567,7 +569,15 @@ export default function GlyphScene({
       const group = new THREE.Group();
       group.add(new THREE.Mesh(build(), shadeMaterial));
       mount(group);
-    } else {
+    }
+
+    // A GLB plus the Draco decoder is well over a megabyte; the prize stage
+    // sits far below the fold, so the download waits for the section to come
+    // within the observer's margin instead of firing on mount.
+    let loadStarted = false;
+    function loadModel() {
+      if (build || loadStarted || disposed) return;
+      loadStarted = true;
       dracoLoader.setDecoderPath("/draco/");
       const loader = new GLTFLoader();
       loader.setDRACOLoader(dracoLoader);
