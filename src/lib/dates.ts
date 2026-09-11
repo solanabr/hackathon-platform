@@ -29,3 +29,23 @@ export function stripPeriods(s: string): string {
 export const DAY_ONLY = fmt({ day: "2-digit" });
 /** "seg." — layouts uppercase it and drop the period. */
 export const WEEKDAY_SHORT = fmt({ weekday: "short" });
+
+const BRT_PARTS = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
+
+/** "2026-09-11 12:13:22" in America/Sao_Paulo — the shape RD Station custom date fields expect. */
+export function formatBrt(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  const p = Object.fromEntries(BRT_PARTS.formatToParts(date).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
+}

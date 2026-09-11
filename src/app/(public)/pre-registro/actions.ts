@@ -10,6 +10,8 @@ import { sanitizeText } from "@/lib/security";
 import { normalizeWhatsapp } from "@/lib/phone";
 import { attributionFromFormData } from "@/lib/attribution";
 import { track } from "@/lib/analytics-server";
+import { RD_FIELD, sendRdConversion } from "@/lib/rd-station";
+import { formatBrt } from "@/lib/dates";
 import { COLOSSEUM_SLUG, isRoleOption } from "./constants";
 import { validateInterest, type InterestField, type InterestIntent } from "./interest";
 
@@ -55,11 +57,12 @@ export async function preRegister(
 
   // The role doubles as the profile's Título; "Outro" says nothing useful
   // there, so it leaves whatever the person already wrote.
+  const normalizedWhatsapp = normalizeWhatsapp(whatsapp);
   const { error: profileError } = await supabase
     .from("users")
     .update({
       full_name: fullName,
-      whatsapp: normalizeWhatsapp(whatsapp),
+      whatsapp: normalizedWhatsapp,
       location,
       ...(role !== "Outro" && { headline: role }),
     })
@@ -103,6 +106,28 @@ export async function preRegister(
       utm_source: attribution.utm_source,
       utm_campaign: attribution.utm_campaign,
     });
+    // The row keeps first-touch attribution and its own registered_at, which
+    // may differ from what this save sent when the row already existed.
+    const { data: row, error: rowError } = await supabase
+      .from("hackathon_registrations")
+      .select("registered_at, utm_source, utm_medium, utm_campaign, utm_content")
+      .eq("hackathon_id", hackathon.id)
+      .eq("user_id", state.userId)
+      .maybeSingle();
+    if (rowError) logQueryError("preRegistro.readRegistrationForRd", rowError);
+    sendRdConversion({
+      identifier: "cadastro",
+      email: state.email,
+      name: fullName,
+      whatsapp: normalizedWhatsapp,
+      fields: {
+        [RD_FIELD.registered_at]: formatBrt(row?.registered_at ?? new Date().toISOString()),
+        [RD_FIELD.utm_source]: row?.utm_source ?? attribution.utm_source,
+        [RD_FIELD.utm_medium]: row?.utm_medium ?? attribution.utm_medium,
+        [RD_FIELD.utm_campaign]: row?.utm_campaign ?? attribution.utm_campaign,
+        [RD_FIELD.utm_content]: row?.utm_content ?? attribution.utm_content,
+      },
+    });
   }
   revalidatePath("/pre-registro");
   return { ok: true };
@@ -119,9 +144,10 @@ export async function confirmColosseumRegistration(): Promise<void> {
   if (!hackathon) return;
 
   const supabase = await createServerSupabaseClient();
+  const confirmedAt = new Date().toISOString();
   const { data, error } = await supabase
     .from("hackathon_registrations")
-    .update({ luma_confirmed_at: new Date().toISOString() })
+    .update({ luma_confirmed_at: confirmedAt })
     .eq("hackathon_id", hackathon.id)
     .eq("user_id", state.userId)
     .is("luma_confirmed_at", null)
@@ -135,6 +161,13 @@ export async function confirmColosseumRegistration(): Promise<void> {
   if (!data?.length) return;
 
   track(state.userId, "colosseum_registration_confirmed", { edition: COLOSSEUM_SLUG });
+  sendRdConversion({
+    identifier: "confirmacao",
+    email: state.email,
+    name: state.profile?.full_name,
+    whatsapp: state.profile?.whatsapp,
+    fields: { [RD_FIELD.colosseum_confirmed_at]: formatBrt(confirmedAt) },
+  });
   revalidatePath("/pre-registro");
 }
 
@@ -176,12 +209,23 @@ export async function saveInterest(
   // came back to edit.
   const supabase = await createServerSupabaseClient();
   const completed = intent === "complete";
+  // Editing an already complete form must not re-date it nor re-fire the RD
+  // event: the first completion is the one that counts.
+  const { data: prior, error: priorError } = await supabase
+    .from("campaign_interest")
+    .select("completed_at")
+    .eq("hackathon_id", hackathon.id)
+    .eq("user_id", state.userId)
+    .maybeSingle();
+  if (priorError) logQueryError("preRegistro.priorInterest", priorError);
+  const firstCompletion = completed && !prior?.completed_at;
+  const completedAt = new Date().toISOString();
   const { error } = await supabase.from("campaign_interest").upsert(
     {
       hackathon_id: hackathon.id,
       user_id: state.userId,
       ...validation.values,
-      ...(completed && { completed_at: new Date().toISOString() }),
+      ...(firstCompletion && { completed_at: completedAt }),
     },
     { onConflict: "hackathon_id,user_id" },
   );
@@ -196,6 +240,15 @@ export async function saveInterest(
     has_project: validation.values.has_project,
     looking_for_team: validation.values.looking_for_team,
   });
+  if (firstCompletion) {
+    sendRdConversion({
+      identifier: "formulario",
+      email: state.email,
+      name: state.profile?.full_name,
+      whatsapp: state.profile?.whatsapp,
+      fields: { [RD_FIELD.interest_completed_at]: formatBrt(completedAt) },
+    });
+  }
   revalidatePath("/pre-registro");
   redirect("/pre-registro?step=jornada");
 }

@@ -62,3 +62,47 @@ both sides land on one person.
 
 Pageviews (including App Router soft navigations) are autocaptured by
 PostHog under the `2026-05-30` defaults; there is no pageview component.
+
+## RD Station
+
+Marketing keeps its contact base in RD Station Marketing. The Colosseum
+registration flow (`src/app/(public)/pre-registro/actions.ts`) posts a
+conversion event through `sendRdConversion()` (`src/lib/rd-station.ts`) to
+`POST https://api.rd.services/platform/conversions`, authenticated with
+`RD_STATION_API_KEY` (no-op while unset). It runs in `after()` and is not
+consent-gated: it mirrors the registration the person just submitted, not
+behavioural analytics.
+
+The contact key is the account e-mail (`state.email`, never form data). A
+conversion for an existing e-mail updates that contact, so the three events are
+one upsert each with the fields that changed. Every event carries the tag
+`global_2026_cadastro_plataforma`.
+
+| Event | `conversion_identifier` | Fires from |
+| --- | --- | --- |
+| Cadastro | `global_2026_cadastro_plataforma` | `preRegister`, first completed registration only |
+| Confirmação Colosseum | `global_2026_confirmacao_colosseum` | `confirmColosseumRegistration`, on the attestation |
+| Formulário "Sobre você" | `global_2026_formulario_sobre_voce` | `saveInterest`, when the form is completed |
+
+| RD field | Source |
+| --- | --- |
+| `name` | `users.full_name` |
+| `email` | `users.email` |
+| `mobile_phone` | `users.whatsapp` (`+55…`) |
+| `cf_global_data_do_cadastro_brt` | `hackathon_registrations.registered_at` |
+| `cf_global_data_da_confirmacao_colosseum_brt` | `hackathon_registrations.luma_confirmed_at` |
+| `cf_data_da_confirmacao_colosseum_brt` | `campaign_interest.completed_at` |
+| `cf_global_utm_source` / `_medium` / `_campaign` / `_content` | `hackathon_registrations.utm_*` |
+
+Dates are `YYYY-MM-DD HH:mm:ss` in America/Sao_Paulo (`formatBrt()` in
+`src/lib/dates.ts`); RD custom fields are plain strings, so these sort but are
+not date-filterable in RD segmentations. Empty values are dropped from the
+payload. The field identifiers live in `RD_FIELD` so a rename in RD is a
+one-line change. Each event fires once per person: the cadastro on the first
+completed registration, the confirmation when the attestation first lands, the
+form on its first completion.
+
+The base that existed before this shipped (2026-09-11) was imported by
+marketing from the admin CSV export; only registrations after the deploy
+create contacts from here. People from that import still get the two update
+events when they confirm or complete the form, matched on e-mail.
