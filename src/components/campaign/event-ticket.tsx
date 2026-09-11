@@ -27,7 +27,7 @@ export const TICKET_SERIAL = "001417";
    seal's Roman date without writing "2026" twice. */
 const TICKET_SERIAL_ROMANO = "MCDXVII";
 
-const MICROTEXTO =
+const MICROTEXT =
   "SUPERTEAM BRASIL · HACKATHON COLOSSEUM · CRYPTO WORLD'S FAIR · MMXXVI · ";
 
 /* Pose travel, in degrees. Seven is the ceiling that keeps the rectangle
@@ -214,7 +214,7 @@ export function TicketFrente() {
         {/* The microtext runs along the bottom edge of the body. At rest it is
             a texture; up close it becomes words. */}
         <Microtext
-          text={MICROTEXTO}
+          text={MICROTEXT}
           className="bilhete-microtexto absolute inset-x-0 bottom-0 h-[calc(7px*var(--bu))] text-green-dark/45"
         />
       </div>
@@ -309,7 +309,7 @@ export function TicketVerso({
         <RomanSeal className="absolute bottom-[calc(0.3rem*var(--bu))] left-[calc(1.25rem*var(--bu))] h-[calc(2.6rem*var(--bu))] w-[calc(2.6rem*var(--bu))] rotate-[7deg] text-emerald-deep/20" />
 
         <Microtext
-          text={MICROTEXTO}
+          text={MICROTEXT}
           className="bilhete-microtexto absolute inset-x-0 bottom-0 h-[calc(4px*var(--bu))] text-green-dark/45"
         />
       </div>

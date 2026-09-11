@@ -139,12 +139,12 @@ export function GuillocheBand({ className = "" }: { className?: string }) {
  * the joins.
  */
 export function Meander({ className = "" }: { className?: string }) {
-  const CELULA = 14;
+  const CELL = 14;
   const REPS = 44;
-  const chaves = Array.from(
+  const keys = Array.from(
     { length: REPS },
     (_, i) => {
-      const x = i * CELULA;
+      const x = i * CELL;
       return `M${x + 1.5} 8V1.5H${x + 11.5}V6H${x + 5}V3.5H${x + 8.5}`;
     },
   ).join("");
@@ -152,15 +152,15 @@ export function Meander({ className = "" }: { className?: string }) {
   return (
     <svg
       aria-hidden
-      viewBox={`0 0 ${CELULA * REPS} 10`}
+      viewBox={`0 0 ${CELL * REPS} 10`}
       preserveAspectRatio="xMidYMid slice"
       className={`pointer-events-none ${className}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="1"
     >
-      <path d={`M0 8.6H${CELULA * REPS}`} strokeWidth="0.9" />
-      <path d={chaves} />
+      <path d={`M0 8.6H${CELL * REPS}`} strokeWidth="0.9" />
+      <path d={keys} />
     </svg>
   );
 }
