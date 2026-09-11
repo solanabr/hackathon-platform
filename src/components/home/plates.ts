@@ -171,7 +171,7 @@ function colosseum() {
 /* --- THE CLOSING ---------------------------------------------------------
  * Halftone texture in the same stroke as the illustrations, for the dark
  * panels: the calendar and the last call. */
-function fechamento() {
+function closing() {
   const COLS = 96;
   const ROWS = 56;
   const CELL = 12.5;
@@ -214,7 +214,7 @@ function fechamento() {
  * Fibonacci sphere projected onto the plane: uniform on the surface means
  * dense at the edge and sparse in the middle, which is what reads as a sphere
  * rather than a disc. Depth governs each dot's radius and opacity. */
-function rede() {
+function network() {
   const POINTS = 720;
   const RADIUS = 250;
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -240,23 +240,23 @@ function rede() {
 
 const SVG = {
   colosseum: colosseum(),
-  fechamento: fechamento(),
-  rede: rede(),
+  closing: closing(),
+  network: network(),
 } as const;
 
 export type PlateKey = keyof typeof SVG;
 
 const FILES: Record<PlateKey, string> = {
   colosseum: plateFilename("colosseum", SVG.colosseum),
-  fechamento: plateFilename("fechamento", SVG.fechamento),
-  rede: plateFilename("rede", SVG.rede),
+  closing: plateFilename("closing", SVG.closing),
+  network: plateFilename("network", SVG.network),
 };
 
 /** Each plate's URL, with the content hash in the name. */
 export const PLATE_SRC: Record<PlateKey, string> = {
   colosseum: `${PLATE_ROUTE}/${FILES.colosseum}`,
-  fechamento: `${PLATE_ROUTE}/${FILES.fechamento}`,
-  rede: `${PLATE_ROUTE}/${FILES.rede}`,
+  closing: `${PLATE_ROUTE}/${FILES.closing}`,
+  network: `${PLATE_ROUTE}/${FILES.network}`,
 };
 
 export const PLATE_FILES: string[] = Object.values(FILES);

@@ -42,33 +42,33 @@ const NAV: Record<string, PageNav> = {
  * A single passive listener, coalesced into rAF: the LP already pays one for
  * the journey, and that is the ceiling before scroll starts to stutter on phones.
  */
-function useSecaoAtiva(hrefs: string) {
-  const [ativa, setAtiva] = useState<string | null>(null);
+function useActiveSection(hrefs: string) {
+  const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
-    const alvos = hrefs.split(" ").filter((h) => h.startsWith("#"));
-    if (!alvos.length) return;
+    const targets = hrefs.split(" ").filter((h) => h.startsWith("#"));
+    if (!targets.length) return;
 
     let raf = 0;
-    const medir = () => {
+    const measure = () => {
       raf = 0;
       // The reading line sits in the first third of the screen, not the middle:
       // it is where the eye is when a section starts being read, and what makes
       // the marker switch along with the title instead of half a screen later.
-      const linha = window.innerHeight * 0.34;
-      let atual: string | null = null;
-      for (const href of alvos) {
+      const line = window.innerHeight * 0.34;
+      let current: string | null = null;
+      for (const href of targets) {
         const el = document.getElementById(href.slice(1));
         if (!el) continue;
-        if (el.getBoundingClientRect().top <= linha) atual = href;
+        if (el.getBoundingClientRect().top <= line) current = href;
       }
-      setAtiva(atual);
+      setActive(current);
     };
     const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(medir);
+      if (!raf) raf = requestAnimationFrame(measure);
     };
 
-    medir();
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
@@ -78,7 +78,7 @@ function useSecaoAtiva(hrefs: string) {
     };
   }, [hrefs]);
 
-  return ativa;
+  return active;
 }
 
 export function LpSectionNav() {
@@ -86,7 +86,7 @@ export function LpSectionNav() {
   const nav = NAV[pathname];
   /* The list comes in as a string: an array literal would be a new reference
      on every render and would remount the listener on every scroll frame. */
-  const ativa = useSecaoAtiva(nav?.links.map((l) => l.href).join(" ") ?? "");
+  const active = useActiveSection(nav?.links.map((l) => l.href).join(" ") ?? "");
   if (!nav) return null;
 
   return (
@@ -95,8 +95,8 @@ export function LpSectionNav() {
         <a
           key={link.href}
           href={link.href}
-          data-ativo={ativa === link.href}
-          aria-current={ativa === link.href ? "true" : undefined}
+          data-ativo={active === link.href}
+          aria-current={active === link.href ? "true" : undefined}
           className="nav-pilula whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink/75 transition-colors duration-(--dur-instant) ease-entrada hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           {link.label}

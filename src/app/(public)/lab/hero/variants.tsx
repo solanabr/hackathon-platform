@@ -81,7 +81,7 @@ function Desktop({ children }: { children: ReactNode }) {
   return <div className="hidden lg:block">{children}</div>;
 }
 
-export function VariantAtual(props: LabHeroProps) {
+export function VariantCurrent(props: LabHeroProps) {
   return (
     <LabStage>
       <LabMobileHero {...props} />
@@ -160,7 +160,7 @@ export function VariantEditorial(props: LabHeroProps) {
   );
 }
 
-export function VariantPaisagem(props: LabHeroProps) {
+export function VariantLandscape(props: LabHeroProps) {
   return (
     <LabStage>
       <LabMobileHero {...props} />
@@ -197,7 +197,7 @@ export function VariantPaisagem(props: LabHeroProps) {
   );
 }
 
-export function VariantCartaz(props: LabHeroProps) {
+export function VariantPoster(props: LabHeroProps) {
   return (
     <LabStage>
       <LabMobileHero {...props} />
@@ -236,7 +236,7 @@ export function VariantCartaz(props: LabHeroProps) {
   );
 }
 
-export function VariantFriso(props: LabHeroProps) {
+export function VariantFrieze(props: LabHeroProps) {
   return (
     <LabStage>
       <LabMobileHero {...props} />
@@ -318,7 +318,7 @@ export function VariantDock(props: LabHeroProps) {
   );
 }
 
-export function VariantTrilho(props: LabHeroProps) {
+export function VariantRail(props: LabHeroProps) {
   return (
     <LabStage>
       <LabMobileHero {...props} />
@@ -358,7 +358,7 @@ export function VariantTrilho(props: LabHeroProps) {
   );
 }
 
-export function VariantObjeto(props: LabHeroProps) {
+export function VariantObject(props: LabHeroProps) {
   return (
     <LabStage>
       <LabMobileHero {...props} />
@@ -397,17 +397,17 @@ export function VariantObjeto(props: LabHeroProps) {
 }
 
 const LIVE = {
-  atual: VariantAtual,
+  atual: VariantCurrent,
   editorial: VariantEditorial,
-  paisagem: VariantPaisagem,
-  cartaz: VariantCartaz,
-  friso: VariantFriso,
+  paisagem: VariantLandscape,
+  cartaz: VariantPoster,
+  friso: VariantFrieze,
   dock: VariantDock,
-  trilho: VariantTrilho,
-  objeto: VariantObjeto,
+  trilho: VariantRail,
+  objeto: VariantObject,
 } as const;
 
 export function renderLabHero(id: string, props: LabHeroProps) {
-  const Cmp = LIVE[id as keyof typeof LIVE] ?? VariantPaisagem;
+  const Cmp = LIVE[id as keyof typeof LIVE] ?? VariantLandscape;
   return <Cmp {...props} />;
 }

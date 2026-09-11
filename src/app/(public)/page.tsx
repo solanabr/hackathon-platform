@@ -31,7 +31,7 @@ import { StepNumeral } from "@/components/home/step-numeral";
 import { JourneyPin } from "@/components/home/journey-pin";
 import { FaqHalftone } from "@/components/home/faq-halftone";
 import { EventTicket } from "@/components/campaign/event-ticket";
-import { BilheteVirando } from "@/components/campaign/ticket-flip";
+import { TicketFlip } from "@/components/campaign/ticket-flip";
 import { CasesFan } from "@/components/home/cases-fan";
 import {
   CommunityPreview,
@@ -126,7 +126,7 @@ const COLOSSEUM_FACTS = [
 /* The same line in both places: the grid's footer on phones, the back's last
    clause on desktop. Two literal copies would diverge at the first date
    correction. */
-const COLOSSEUM_NOTA = "Jurados e regras completas saem em 14 de setembro.";
+const COLOSSEUM_NOTE = "Jurados e regras completas saem em 14 de setembro.";
 
 const SOLANA_STATS = [
   {
@@ -726,9 +726,9 @@ export default async function HomePage() {
               stays visible around the ticket, which is what makes the card
               look SET DOWN on the sand instead of pasted over it. */}
           <div className="mx-auto mt-8 hidden sm:mt-10 lg:block lg:max-w-[84%] xl:max-w-[78%]">
-            <BilheteVirando
+            <TicketFlip
               facts={COLOSSEUM_FACTS}
-              note={COLOSSEUM_NOTA}
+              note={COLOSSEUM_NOTE}
             />
           </div>
 
@@ -763,7 +763,7 @@ export default async function HomePage() {
 
           <Reveal index={5} tone="texto">
             <p className="mt-6 font-mono text-[11px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65 lg:hidden">
-              {COLOSSEUM_NOTA}
+              {COLOSSEUM_NOTE}
             </p>
           </Reveal>
         </div>

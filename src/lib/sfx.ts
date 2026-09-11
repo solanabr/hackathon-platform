@@ -99,7 +99,7 @@ function burst(
  * (low, short noise) and the thud of the hand on the desk beneath (a sine
  * falling from 92 to 54 Hz). A single layer sounds like a mouse click.
  */
-function carimbo(ac: AudioContext, out: GainNode) {
+function stamp(ac: AudioContext, out: GainNode) {
   burst(ac, out, { type: "lowpass", freq: 1400, peak: 0.5, attack: 0.002, decay: 0.055 });
 
   const t = ac.currentTime;
@@ -121,7 +121,7 @@ function carimbo(ac: AudioContext, out: GainNode) {
  * micro-snaps as the fiber gives way. That is why the envelope is jagged by
  * hand instead of a smooth decay — a smooth decay sounds like a breath.
  */
-function papel(ac: AudioContext, out: GainNode) {
+function tear(ac: AudioContext, out: GainNode) {
   const t = ac.currentTime;
   const src = ac.createBufferSource();
   src.buffer = noiseBuffer(ac);
@@ -152,14 +152,14 @@ function papel(ac: AudioContext, out: GainNode) {
 }
 
 /** The perforation. A single hole: high, dry, 30ms. */
-function picote(ac: AudioContext, out: GainNode) {
+function perforation(ac: AudioContext, out: GainNode) {
   burst(ac, out, { type: "highpass", freq: 2800, peak: 0.34, attack: 0.001, decay: 0.03 });
 }
 
 const VOICES: Record<Voice, (ac: AudioContext, out: GainNode) => void> = {
-  carimbo,
-  papel,
-  picote,
+  carimbo: stamp,
+  papel: tear,
+  picote: perforation,
 };
 
 /**

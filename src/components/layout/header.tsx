@@ -64,8 +64,8 @@ export async function Header() {
             </Suspense>
           ) : (
             <AuthActions
-              entrarClassName={ENTRAR_CLASS}
-              cadastroClassName={CADASTRO_CLASS}
+              signInClassName={ENTRAR_CLASS}
+              signUpClassName={CADASTRO_CLASS}
             />
           )}
         </nav>
@@ -86,8 +86,8 @@ async function SignedInMenu() {
   if (!roles)
     return (
       <AuthActions
-        entrarClassName={ENTRAR_CLASS}
-        cadastroClassName={CADASTRO_CLASS}
+        signInClassName={ENTRAR_CLASS}
+        signUpClassName={CADASTRO_CLASS}
       />
     );
   const { state } = roles;

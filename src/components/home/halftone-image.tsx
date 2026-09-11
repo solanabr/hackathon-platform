@@ -125,14 +125,14 @@ export function HalftoneImage({
       // the same way the monument rests on the hero's lower margin. In `cover`
       // there is no foot: the scene overflows the frame on all four sides and
       // the crop is what proves it continues beyond it.
-      const cobre = fit === "cover";
-      const scale = cobre
+      const covers = fit === "cover";
+      const scale = covers
         ? Math.max(cols / image.width, rows / image.height)
         : Math.min(cols / image.width, rows / image.height);
       const drawWidth = image.width * scale;
       const drawHeight = image.height * scale;
       const drawX = (cols - drawWidth) / 2;
-      const drawY = cobre ? (rows - drawHeight) / 2 : rows - drawHeight;
+      const drawY = covers ? (rows - drawHeight) / 2 : rows - drawHeight;
 
       samplerContext.clearRect(0, 0, cols, rows);
       samplerContext.imageSmoothingEnabled = true;

@@ -47,7 +47,7 @@ async function loadInterest(userId: string, hackathonId: string) {
 
 // Each step draws its own connector down to the next one, so the line ends at
 // the last circle instead of running past a tall final card.
-const JORNADA_STEP =
+const JOURNEY_STEP =
   "relative flex items-start gap-4 before:absolute before:-bottom-4 before:left-[1.35rem] before:top-12 before:w-0.5 before:bg-green-dark/15 last:before:hidden";
 
 const STEPS = [
@@ -186,7 +186,7 @@ export default async function PreRegistroPage({
             </div>
 
             <ol className="relative mt-10 space-y-4">
-              <li className={JORNADA_STEP}>
+              <li className={JOURNEY_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
                   ✓
                 </span>
@@ -197,7 +197,7 @@ export default async function PreRegistroPage({
               </li>
 
               {colosseumConfirmed ? (
-                <li className={JORNADA_STEP}>
+                <li className={JOURNEY_STEP}>
                   <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
                     ✓
                   </span>
@@ -218,7 +218,7 @@ export default async function PreRegistroPage({
                   </div>
                 </li>
               ) : (
-              <li className={JORNADA_STEP}>
+              <li className={JOURNEY_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
                   →
                 </span>
@@ -294,7 +294,7 @@ export default async function PreRegistroPage({
               </li>
               )}
 
-              <li className={JORNADA_STEP}>
+              <li className={JOURNEY_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
                   →
                 </span>

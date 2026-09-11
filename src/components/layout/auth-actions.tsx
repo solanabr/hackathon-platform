@@ -9,11 +9,11 @@ import { AUTH_DIALOG_EVENT, AuthDialog } from "@/components/auth/auth-dialog";
  *  the page it was clicked on, so login returns the visitor there instead of
  *  defaulting to their painel; cadastro keeps sending people to /pre-registro. */
 export function AuthActions({
-  entrarClassName,
-  cadastroClassName,
+  signInClassName,
+  signUpClassName,
 }: {
-  entrarClassName: string;
-  cadastroClassName: string;
+  signInClassName: string;
+  signUpClassName: string;
 }) {
   const pathname = usePathname();
   const [next, setNext] = useState<string | null>(null);
@@ -32,14 +32,14 @@ export function AuthActions({
     <>
       <button
         type="button"
-        className={entrarClassName}
+        className={signInClassName}
         onClick={() => setNext(pathname && pathname !== "/" ? pathname : "")}
       >
         <span>Entrar</span>
       </button>
       <button
         type="button"
-        className={cadastroClassName}
+        className={signUpClassName}
         onClick={() => {
           trackClient("cta_clicked", { cta: "cadastro", location: "header" });
           setNext("/pre-registro");

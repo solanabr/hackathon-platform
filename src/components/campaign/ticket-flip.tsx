@@ -36,85 +36,85 @@ import {
  * the first fold. One calculation governs both ends.
  * ------------------------------------------------------------------------- */
 
-const arred = (v: number) => Math.round(v * 1000) / 1000;
+const round3 = (v: number) => Math.round(v * 1000) / 1000;
 
-export function BilheteVirando({
+export function TicketFlip({
   facts,
   note,
 }: {
   facts: readonly TicketFact[];
   note?: string;
 }) {
-  const vao = useRef<HTMLDivElement>(null);
-  const voo = useRef<HTMLDivElement>(null);
+  const gap = useRef<HTMLDivElement>(null);
+  const flight = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const medir = () => {
-      const caixa = vao.current;
-      const peca = voo.current;
-      const ancora = document.getElementById("bilhete-ancora");
-      if (!caixa || !peca || !ancora) return;
+    const measure = () => {
+      const box = gap.current;
+      const piece = flight.current;
+      const anchor = document.getElementById("bilhete-ancora");
+      if (!box || !piece || !anchor) return;
 
-      const rc = caixa.getBoundingClientRect();
-      const ra = ancora.getBoundingClientRect();
+      const rc = box.getBoundingClientRect();
+      const ra = anchor.getBoundingClientRect();
       if (rc.width < 1 || ra.width < 1) return;
 
       /* The unit first, because it changes the piece's HEIGHT — and height
          feeds the offset. Measuring everything at once would give a `dy`
          computed against the old box, and the card would land a few px off. */
-      const bu = arred(rc.width / ra.width);
-      peca.style.setProperty("--bu", String(bu));
-      peca.style.setProperty("--voo-k", String(arred(1 / bu)));
+      const bu = round3(rc.width / ra.width);
+      piece.style.setProperty("--bu", String(bu));
+      piece.style.setProperty("--voo-k", String(round3(1 / bu)));
 
       /* Second pass, with the box at its new size: the vector between the two
          CENTERS. Center and not corner because the flight's spin and scale
          originate at the center; by corner the piece would land half a box off. */
       requestAnimationFrame(() => {
-        const c2 = vao.current?.getBoundingClientRect();
+        const c2 = gap.current?.getBoundingClientRect();
         const a2 = document
           .getElementById("bilhete-ancora")
           ?.getBoundingClientRect();
-        if (!c2 || !a2 || !voo.current) return;
+        if (!c2 || !a2 || !flight.current) return;
 
         const dx = a2.left + a2.width / 2 - (c2.left + c2.width / 2);
         const dy = a2.top + a2.height / 2 - (c2.top + c2.height / 2);
-        voo.current.style.setProperty("--voo-dx", `${Math.round(dx)}px`);
-        voo.current.style.setProperty("--voo-dy", `${Math.round(dy)}px`);
+        flight.current.style.setProperty("--voo-dx", `${Math.round(dx)}px`);
+        flight.current.style.setProperty("--voo-dy", `${Math.round(dy)}px`);
 
         /* THE TRAVEL. How much scroll until it parks. The end is the instant
            the destination box reaches a quarter of the window — high enough
            for the piece to land inside the frame, not glued to the bottom
            edge. The floor exists for very tall screens, where the math would
            give too short a travel and the flip would become a snap. */
-        const alvo = c2.top + window.scrollY;
-        const curso = Math.max(
+        const target = c2.top + window.scrollY;
+        const travel = Math.max(
           360,
-          Math.round(alvo - window.innerHeight * 0.24),
+          Math.round(target - window.innerHeight * 0.24),
         );
-        voo.current.style.setProperty("--voo-curso", `${curso}px`);
+        flight.current.style.setProperty("--voo-curso", `${travel}px`);
       });
     };
 
-    medir();
+    measure();
 
-    const ro = new ResizeObserver(medir);
-    if (vao.current) ro.observe(vao.current);
-    const ancora = document.getElementById("bilhete-ancora");
-    if (ancora) ro.observe(ancora);
-    window.addEventListener("resize", medir);
+    const ro = new ResizeObserver(measure);
+    if (gap.current) ro.observe(gap.current);
+    const anchor = document.getElementById("bilhete-ancora");
+    if (anchor) ro.observe(anchor);
+    window.addEventListener("resize", measure);
     /* Font swaps change the height of both boxes. Without this the first
        landing is measured in Times New Roman. */
-    document.fonts?.ready.then(medir).catch(() => {});
+    document.fonts?.ready.then(measure).catch(() => {});
 
     return () => {
       ro.disconnect();
-      window.removeEventListener("resize", medir);
+      window.removeEventListener("resize", measure);
     };
   }, []);
 
   return (
-    <div ref={vao} className="bilhete-vao">
-      <div ref={voo} className="bilhete-voo">
+    <div ref={gap} className="bilhete-vao">
+      <div ref={flight} className="bilhete-voo">
         <div className="bilhete-face bilhete-face-frente">
           <div aria-hidden className="bilhete-espessura ticket-cut" />
           <TicketFront />

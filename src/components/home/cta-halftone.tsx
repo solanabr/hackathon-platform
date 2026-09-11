@@ -10,7 +10,7 @@ export function CtaHalftone({ className }: { className?: string }) {
       aria-hidden
       className={["halftone-press", className].filter(Boolean).join(" ")}
     >
-      <Plate src={PLATE_SRC.fechamento} fit="cover" className="absolute inset-0" />
+      <Plate src={PLATE_SRC.closing} fit="cover" className="absolute inset-0" />
     </div>
   );
 }

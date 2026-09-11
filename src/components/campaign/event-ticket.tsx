@@ -61,15 +61,15 @@ const POSE_MAX = 7;
  */
 function Paper({
   children,
-  espelhado = false,
+  mirrored = false,
 }: {
   children: ReactNode;
-  espelhado?: boolean;
+  mirrored?: boolean;
 }) {
   return (
     <div
       className={`ticket-cut ticket-paper relative flex h-full items-stretch overflow-hidden rounded-[calc(4px*var(--bu))] border-[calc(2px*var(--bu))] border-green-dark bg-[linear-gradient(105deg,#fffdf6_0%,#fbf3dd_55%,#f2e3bf_100%)] ${
-        espelhado ? "flex-row-reverse" : ""
+        mirrored ? "flex-row-reverse" : ""
       }`}
     >
       {/* The paper weave, the same as the page's. It lives at the bottom and
@@ -249,7 +249,7 @@ export function TicketBack({
   note?: string;
 }) {
   return (
-    <Paper espelhado>
+    <Paper mirrored>
       {/* The back is set at HALF the unit the front would use. Not an
           inconsistency: the front is only ever seen reduced by the flight
           (`--bu` up, `scale` down, one cancels the other), while the back is
@@ -274,26 +274,26 @@ export function TicketBack({
             would turn the ticket into another object's background. What parts
             them is the rule, which is how a document separates clauses. */}
         <dl className="relative grid flex-1 content-start gap-x-[calc(1.75rem*var(--bu))] gap-y-[calc(0.8rem*var(--bu))] sm:grid-cols-2">
-          {facts.map((fato) => (
+          {facts.map((fact) => (
             <div
-              key={fato.figure}
+              key={fact.figure}
               className="min-w-0 border-t border-dotted border-green-dark/40 pt-[calc(0.5rem*var(--bu))]"
             >
               <dt className="text-balance font-heading text-[calc(0.94rem*var(--bu))] font-black uppercase leading-[0.95] tracking-[-0.03em] text-green-dark [font-stretch:115%]">
-                {fato.accent ? (
+                {fact.accent ? (
                   <span className="inline-block bg-yellow px-[calc(0.25rem*var(--bu))] pb-[0.06em] [clip-path:polygon(0_5%,100%_0,100%_95%,0_100%)]">
-                    {fato.figure}
+                    {fact.figure}
                   </span>
                 ) : (
-                  fato.figure
+                  fact.figure
                 )}
               </dt>
               <dd>
                 <p className="bilhete-prensa mt-[calc(0.28rem*var(--bu))] font-mono text-[calc(5.5px*var(--bu))] font-bold uppercase tracking-[0.16em] text-green-dark/80">
-                  {fato.title}
+                  {fact.title}
                 </p>
                 <p className="mt-[calc(0.28rem*var(--bu))] text-pretty text-[calc(7px*var(--bu))] leading-[1.6] text-ink/75">
-                  {fato.body}
+                  {fact.body}
                 </p>
               </dd>
             </div>
@@ -326,8 +326,8 @@ export function TicketBack({
  * flight is active, it is the ANCHOR: `visibility: hidden` yet still filling
  * its box, because that box is what tells the flight where the hero corner is. */
 export function EventTicket() {
-  const cena = useRef<HTMLDivElement>(null);
-  const [pousado, setPousado] = useState(true);
+  const scene = useRef<HTMLDivElement>(null);
+  const [landed, setLanded] = useState(true);
 
   /* Light and pose come from the SAME point: a single light source at the
      pointer's position. Writing the two from two different handlers is how
@@ -335,7 +335,7 @@ export function EventTicket() {
      the wrong side of the tilt is worse than no foil at all. */
   const followPointer = useCallback((e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse") return;
-    const el = cena.current;
+    const el = scene.current;
     if (!el) return;
 
     const r = el.getBoundingClientRect();
@@ -346,11 +346,11 @@ export function EventTicket() {
     el.style.setProperty("--pose-x", `${(0.5 - y) * 2 * POSE_MAX}deg`);
     el.style.setProperty("--foil-x", `${x * 100}%`);
     el.style.setProperty("--foil-y", `${y * 100}%`);
-    setPousado(false);
+    setLanded(false);
   }, []);
 
-  const pousar = useCallback(() => {
-    const el = cena.current;
+  const land = useCallback(() => {
+    const el = scene.current;
     if (el) {
       /* Remove rather than zero: rest goes back to the `@property` initial
          value, which is the approved drawing — not a zero this function would
@@ -359,15 +359,15 @@ export function EventTicket() {
         el.style.removeProperty(v);
       }
     }
-    setPousado(true);
+    setLanded(true);
   }, []);
 
   return (
     <div
-      ref={cena}
-      data-pousado={pousado}
+      ref={scene}
+      data-pousado={landed}
       onPointerMove={followPointer}
-      onPointerLeave={pousar}
+      onPointerLeave={land}
       className="bilhete-cena ticket-shadow mt-8 w-full max-w-sm text-left md:max-w-xl lg:mt-0 lg:max-w-none"
     >
       <div className="bilhete-pose relative">

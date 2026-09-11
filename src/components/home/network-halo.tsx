@@ -7,7 +7,7 @@ import { PLATE_SRC } from "./plates";
 export function NetworkHalo({ className = "" }: { className?: string }) {
   return (
     <Plate
-      src={PLATE_SRC.rede}
+      src={PLATE_SRC.network}
       fit="contain"
       className={`aspect-square ${className}`}
     />
