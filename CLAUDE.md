@@ -4,13 +4,9 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
 
 ## Quick reference
 
-- `npm run dev` — start dev server on port 3001; reuse the existing healthy instance
+- `npm run dev` — start dev server
 - `npm test` — run vitest tests
 - `npm run build` — production build (catches type errors)
-
-## Development sessions
-
-One session coordinates edits and the dev server in this working tree. Parallel readers are fine; independent editing sessions should use separate worktrees and ports. Changing only the port still shares `.next`. Do not kill another session's server or delete its build cache; identify ownership before recovery and never use broad `pkill` for Next. Batch visual checks and repeat when a concrete defect or requested change requires it.
 
 ## Architecture
 

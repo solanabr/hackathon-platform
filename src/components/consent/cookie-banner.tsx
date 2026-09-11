@@ -60,8 +60,7 @@ export function CookieBanner() {
 
   // On phones the banner docks at the bottom so it never covers the hero
   // headline; /auth is the exception because that's where its e-mail field
-  // and button sit, and on / it clears the sticky CTA bar that appears once
-  // the hero scrolls away.
+  // and button sit, and on / it clears the sound toggle in the corner.
   const placement = pathname?.startsWith("/auth")
     ? "top-[5.75rem]"
     : pathname === "/"

@@ -241,7 +241,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Quais são os prêmios?",
-    a: "Os detalhes de valores, categorias e critérios serão atualizados aqui após a divulgação oficial. A competição também pode abrir oportunidades de investimento, que dependem de seleção própria.",
+    a: "As trilhas por rede já anunciadas pagam US$ 100 mil entre os 10 melhores, e todo projeto concorre também ao prêmio geral entre todas as redes. Vencedores selecionados entram no acelerador da Colosseum com US$ 250 mil de investimento, que pede integração com a Solana. A lista completa de trilhas, valores e critérios sai em 14 de setembro.",
   },
   {
     q: "Ganhar o hackathon garante investimento?",
@@ -249,11 +249,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "Preciso usar Solana no meu projeto?",
-    a: "O evento aceita projetos de diferentes blockchains, incluindo Solana. A Superteam Brasil faz parte da comunidade Solana, mas essa edição da Colosseum é aberta a todas essas redes.",
+    a: "O evento aceita projetos de diferentes blockchains, incluindo Solana. A Superteam Brasil faz parte da comunidade Solana, mas essa edição da Colosseum é aberta a todas essas redes. A Trilha Brasil no Superteam Earn e o acelerador de US$ 250 mil pedem integração com a Solana.",
   },
   {
     q: "O que é a Trilha Brasil?",
-    a: "Mentoria e premiação da Superteam Brasil só para times brasileiros, publicadas no Superteam Earn. Para concorrer, além de enviar o projeto na Colosseum, você submete o mesmo projeto no desafio da Trilha Brasil. Valores e condições saem no Earn.",
+    a: "Mentoria e premiação da Superteam Brasil só para times brasileiros com projetos na Solana, publicadas no Superteam Earn. Para concorrer, além de enviar o projeto na Colosseum, você submete o mesmo projeto no desafio da Trilha Brasil. Valores e condições saem no Earn.",
   },
   {
     q: "Posso entrar no grupo antes de criar minha conta?",
@@ -1078,11 +1078,11 @@ export default async function HomePage() {
                     Trilha Brasil
                   </h3>
                   <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
-                    Os brasileiros têm uma trilha extra, publicada no Superteam
-                    Earn, com mentoria e premiação da Superteam Brasil. Dá para
-                    concorrer nas duas ao mesmo tempo, com apoio da Superteam
-                    Brasil da conta à submissão. Valores e condições saem no
-                    Earn.
+                    Para projetos na Solana: os brasileiros têm uma trilha
+                    extra, publicada no Superteam Earn, com mentoria e premiação
+                    da Superteam Brasil. Dá para concorrer nas duas ao mesmo
+                    tempo, com apoio da Superteam Brasil da conta à submissão.
+                    Valores e condições saem no Earn.
                   </p>
                 </header>
                 <EarnPreview />
