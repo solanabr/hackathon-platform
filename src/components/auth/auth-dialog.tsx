@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { AuthForm } from "./auth-form";
@@ -29,6 +29,8 @@ const FOCUSABLE =
  * the current view. /auth stays as the destination for middleware redirects
  * and deep links, so nothing that already points there has to change.
  */
+const subscribeNoop = () => () => {};
+
 export function AuthDialog({
   open,
   onClose,
@@ -40,9 +42,9 @@ export function AuthDialog({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  // Portal target exists only in the browser; the server snapshot says "not
+  // yet" without a state update in an effect.
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
   // Close on navigation as an adjust-during-render, like UserMenu: an effect
   // would flash the open dialog over the new page for a frame first.
