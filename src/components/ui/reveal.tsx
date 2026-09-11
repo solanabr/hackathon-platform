@@ -69,7 +69,7 @@ function getReducedMotion() {
   return window.matchMedia(REDUCED_MOTION).matches;
 }
 
-export function CountUp({ value, duration = 1800 }: { value: string; duration?: number }) {
+export function CountUp({ value }: { value: string }) {
   const { ref, isVisible } = useEntranceAnimation<HTMLSpanElement>({ threshold: 0.35 });
   // The server HTML carries the real number: crawlers and no-JS readers must
   // never see "0B". The zero appears only once the animation is about to run.
@@ -101,7 +101,7 @@ export function CountUp({ value, duration = 1800 }: { value: string; duration?: 
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [isVisible, value, duration, reducedMotion]);
+  }, [isVisible, value, reducedMotion]);
 
   return <span ref={ref}>{reducedMotion ? value : display}</span>;
 }
