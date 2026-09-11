@@ -727,8 +727,8 @@ export default async function HomePage() {
               look SET DOWN on the sand instead of pasted over it. */}
           <div className="mx-auto mt-8 hidden sm:mt-10 lg:block lg:max-w-[84%] xl:max-w-[78%]">
             <BilheteVirando
-              fatos={COLOSSEUM_FACTS}
-              nota={COLOSSEUM_NOTA}
+              facts={COLOSSEUM_FACTS}
+              note={COLOSSEUM_NOTA}
             />
           </div>
 

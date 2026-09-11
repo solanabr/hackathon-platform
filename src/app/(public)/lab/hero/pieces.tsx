@@ -178,8 +178,8 @@ export function HeroWarrior({
   className?: string;
   mirror?: boolean;
 }) {
-  /* A chapa olha para a direita. No lado direito do palco ela precisa virar,
-     senão o olhar sai da folha. */
+  /* The plate looks to the right. On the right side of the stage it has to
+     flip, or the gaze leaves the sheet. */
   return (
     <div
       aria-hidden

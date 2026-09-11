@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import {
-  TicketFrente,
-  TicketVerso,
-  type FatoBilhete,
+  TicketFront,
+  TicketBack,
+  type TicketFact,
 } from "@/components/campaign/event-ticket";
 
 /* ---------------------------------------------------------------------------
@@ -39,11 +39,11 @@ import {
 const arred = (v: number) => Math.round(v * 1000) / 1000;
 
 export function BilheteVirando({
-  fatos,
-  nota,
+  facts,
+  note,
 }: {
-  fatos: readonly FatoBilhete[];
-  nota?: string;
+  facts: readonly TicketFact[];
+  note?: string;
 }) {
   const vao = useRef<HTMLDivElement>(null);
   const voo = useRef<HTMLDivElement>(null);
@@ -117,11 +117,11 @@ export function BilheteVirando({
       <div ref={voo} className="bilhete-voo">
         <div className="bilhete-face bilhete-face-frente">
           <div aria-hidden className="bilhete-espessura ticket-cut" />
-          <TicketFrente />
+          <TicketFront />
         </div>
         <div className="bilhete-face bilhete-face-verso">
           <div aria-hidden className="bilhete-espessura ticket-cut" />
-          <TicketVerso fatos={fatos} nota={nota} />
+          <TicketBack facts={facts} note={note} />
         </div>
       </div>
     </div>

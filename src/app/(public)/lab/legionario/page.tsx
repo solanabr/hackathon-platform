@@ -43,10 +43,10 @@ export default async function LegionaryPreview() {
 
   return (
     <div className="bg-surface text-ink">
-      {/* Laboratório: o hero da LP intacto — Coliseu no canto inferior
-          esquerdo, sangrando pela margem — e o legionário entrando pela
-          direita, atrás do ticket. Duas peças da mesma prensa: mesma célula de
-          meio-tom, mesma tinta, mesmo vaivém de câmera. */}
+      {/* Lab: the LP hero untouched, Colosseum in the bottom-left corner
+          bleeding off the margin, and the legionary entering from the right
+          behind the ticket. Two pieces from the same press: same halftone
+          cell, same ink, same camera sway. */}
       <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden lg:justify-start">
         <div
           aria-hidden
@@ -131,9 +131,10 @@ export default async function LegionaryPreview() {
         </div>
       </section>
 
-      {/* Prova da chapa: a mesma peça sem ticket por cima e sem o Coliseu ao
-          lado, e a régua de tom em volta. É aqui que se julga a impressão —
-          quanto de tinta a armadura pede — antes de julgar a composição. */}
+      {/* Plate proof: the same piece without the ticket over it or the
+          Colosseum beside it, with the tone ruler around. This is where the
+          print is judged, how much ink the armour asks for, before the
+          composition is. */}
       <section className={`${PAGE_SHELL} border-t-2 border-green-dark/20 py-16`}>
         <SectionHat>A chapa sozinha · régua de tom</SectionHat>
         <div className="mt-8 grid grid-cols-3 gap-8">

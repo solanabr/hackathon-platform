@@ -25,7 +25,7 @@ export const TICKET_SERIAL = "001417";
 /* The same number in the house numerals. Not decoration: it is the second
    register every real numbered piece carries, and it gives the ticket the
    seal's Roman date without writing "2026" twice. */
-const TICKET_SERIAL_ROMANO = "MCDXVII";
+const TICKET_SERIAL_ROMAN = "MCDXVII";
 
 const MICROTEXT =
   "SUPERTEAM BRASIL · HACKATHON COLOSSEUM · CRYPTO WORLD'S FAIR · MMXXVI · ";
@@ -59,7 +59,7 @@ const POSE_MAX = 7;
  * faces would diverge at the first texture tweak — and a card whose front and
  * back are different papers stops being a card.
  */
-function Papel({
+function Paper({
   children,
   espelhado = false,
 }: {
@@ -98,7 +98,7 @@ function Papel({
 
 /** The yellow stub with the hot stamp. Same on both faces: a ticket's stub
  *  is the same strip of foil seen from either side. */
-function Canhoto() {
+function Stub() {
   return (
     <div className="bilhete-canhoto relative flex shrink-0 items-center bg-yellow gap-[calc(0.5rem*var(--bu))] px-[calc(0.5rem*var(--bu))] sm:gap-[calc(0.75rem*var(--bu))] sm:px-[calc(0.75rem*var(--bu))]">
       {/* THE HOT STAMP LAYERS, in physical order: pearl, iris, specular,
@@ -127,7 +127,7 @@ function Canhoto() {
 
 /** The perforation line: holes punched through to the cream, with the burr
  *  the punch leaves in the paper. */
-function Picote() {
+function Perforation() {
   return (
     <div
       aria-hidden
@@ -139,9 +139,9 @@ function Picote() {
 /* --- THE FRONT -----------------------------------------------------------
  * What has been printed on the ticket from the start: the edition, the number,
  * the period and the terms. It is the side people see above the fold.        */
-export function TicketFrente() {
+export function TicketFront() {
   return (
-    <Papel>
+    <Paper>
       <div className="relative min-w-0 flex-1 px-[calc(1rem*var(--bu))] py-[calc(1rem*var(--bu))] sm:px-[calc(1.75rem*var(--bu))] sm:py-[calc(1.5rem*var(--bu))] lg:pb-[calc(3.5rem*var(--bu))] lg:pt-[calc(1.75rem*var(--bu))]">
         {/* THE MEDALLION. Runs off the frame to the right and is cut by the
             perforation, as on a banknote — guilloche that respects the text
@@ -164,7 +164,7 @@ export function TicketFrente() {
               aria-hidden
               className="font-mono text-[calc(7px*var(--bu))] font-bold uppercase leading-none tracking-[0.34em] text-green-dark/40 sm:text-[calc(8px*var(--bu))]"
             >
-              {TICKET_SERIAL_ROMANO}
+              {TICKET_SERIAL_ROMAN}
             </p>
           </div>
         </div>
@@ -219,13 +219,13 @@ export function TicketFrente() {
         />
       </div>
 
-      <Picote />
-      <Canhoto />
-    </Papel>
+      <Perforation />
+      <Stub />
+    </Paper>
   );
 }
 
-export type FatoBilhete = {
+export type TicketFact = {
   figure: string;
   title: string;
   body: string;
@@ -241,15 +241,15 @@ export type FatoBilhete = {
  * The stub switches sides, and that is no gratuitous detail: flip a ticket in
  * your hand and the stub shows up on the other side. Keeping it on the right
  * would give away the back as a second image, not the other side of one sheet. */
-export function TicketVerso({
-  fatos,
-  nota,
+export function TicketBack({
+  facts,
+  note,
 }: {
-  fatos: readonly FatoBilhete[];
-  nota?: string;
+  facts: readonly TicketFact[];
+  note?: string;
 }) {
   return (
-    <Papel espelhado>
+    <Paper espelhado>
       {/* The back is set at HALF the unit the front would use. Not an
           inconsistency: the front is only ever seen reduced by the flight
           (`--bu` up, `scale` down, one cancels the other), while the back is
@@ -274,7 +274,7 @@ export function TicketVerso({
             would turn the ticket into another object's background. What parts
             them is the rule, which is how a document separates clauses. */}
         <dl className="relative grid flex-1 content-start gap-x-[calc(1.75rem*var(--bu))] gap-y-[calc(0.8rem*var(--bu))] sm:grid-cols-2">
-          {fatos.map((fato) => (
+          {facts.map((fato) => (
             <div
               key={fato.figure}
               className="min-w-0 border-t border-dotted border-green-dark/40 pt-[calc(0.5rem*var(--bu))]"
@@ -300,9 +300,9 @@ export function TicketVerso({
           ))}
         </dl>
 
-        {nota ? (
+        {note ? (
           <p className="bilhete-prensa relative mt-[calc(0.7rem*var(--bu))] border-t border-dotted border-green-dark/40 pt-[calc(0.5rem*var(--bu))] font-mono text-[calc(5.5px*var(--bu))] font-bold uppercase tracking-[0.2em] text-green-dark/80">
-            {nota}
+            {note}
           </p>
         ) : null}
 
@@ -314,9 +314,9 @@ export function TicketVerso({
         />
       </div>
 
-      <Picote />
-      <Canhoto />
-    </Papel>
+      <Perforation />
+      <Stub />
+    </Paper>
   );
 }
 
@@ -333,7 +333,7 @@ export function EventTicket() {
      pointer's position. Writing the two from two different handlers is how
      the sheen and the tilt end up disagreeing — and a foil that lights up on
      the wrong side of the tilt is worse than no foil at all. */
-  const seguirPonteiro = useCallback((e: PointerEvent<HTMLDivElement>) => {
+  const followPointer = useCallback((e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse") return;
     const el = cena.current;
     if (!el) return;
@@ -366,7 +366,7 @@ export function EventTicket() {
     <div
       ref={cena}
       data-pousado={pousado}
-      onPointerMove={seguirPonteiro}
+      onPointerMove={followPointer}
       onPointerLeave={pousar}
       className="bilhete-cena ticket-shadow mt-8 w-full max-w-sm text-left md:max-w-xl lg:mt-0 lg:max-w-none"
     >
@@ -375,7 +375,7 @@ export function EventTicket() {
             offset against the tilt that turns it into thickness instead of
             an outline. */}
         <div aria-hidden className="bilhete-espessura ticket-cut" />
-        <TicketFrente />
+        <TicketFront />
       </div>
     </div>
   );
