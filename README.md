@@ -2,7 +2,7 @@
 
 ![Superteam Brasil hackathon hub](public/brand/og-hub.png)
 
-The platform that runs [Superteam Brasil](https://br.superteam.fun)'s hackathons, live at [hackathon.superteam.com.br](https://hackathon.superteam.com.br). One deploy, every edition — currently powering **Hackathon Solana & Cursor** (Passo Fundo/RS, Sep 2026).
+The platform that runs [Superteam Brasil](https://br.superteam.fun)'s hackathons, live at [hackathon.superteam.com.br](https://hackathon.superteam.com.br). One deploy, every edition — currently powering the **Colosseum 2026** campaign alongside the Cursor and Vibeathon editions.
 
 ## What it does
 

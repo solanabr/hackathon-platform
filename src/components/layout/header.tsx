@@ -33,7 +33,7 @@ export async function Header() {
       <div className={`${PAGE_SHELL} flex h-16 items-center justify-between gap-4`}>
         <Link
           href="/"
-          className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
+          className="flex shrink-0 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
         >
           <Image
             src="/brand/stbr/logo/ST-DARK-GREEN-HORIZONTAL.svg"
@@ -42,6 +42,7 @@ export async function Header() {
             height={24}
             priority
             className="h-6 w-auto"
+            style={{ height: "1.5rem", width: "auto" }}
           />
         </Link>
 
@@ -49,7 +50,7 @@ export async function Header() {
           <LpSectionNav />
         </div>
 
-        <nav className="flex items-center gap-1 text-sm sm:gap-1.5">
+        <nav className="flex items-center gap-2 text-sm sm:gap-3">
           {claims ? (
             <Suspense
               fallback={

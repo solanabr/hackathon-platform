@@ -803,6 +803,14 @@ details[open] > .faq-answer {
     animation: none;
     clip-path: none;
   }
+  /* The global rule above zeroes durations but not delays; without this the
+     cheque stays blank for 3s before its amount appears. */
+  .cheque-payee,
+  .cheque-quantia,
+  .cheque-amount,
+  .cheque-sign path {
+    animation-delay: 0s;
+  }
 }
 
 /* --- the Solana coin ------------------------------------------------- *

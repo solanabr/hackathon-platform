@@ -4,6 +4,12 @@ import { defaultAuthRedirect, resolveAuthenticatedUserState } from "@/lib/user-s
 import { pickAuthNext } from "@/lib/auth-next";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Entrar",
+  description: "Entre com Google, GitHub ou um código por e-mail para se cadastrar nos hackathons da Superteam Brasil.",
+  openGraph: { images: [{ url: "/brand/og-colosseum.png", width: 1200, height: 630 }] },
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function AuthPage({
@@ -19,11 +25,19 @@ export default async function AuthPage({
     redirect(pickAuthNext(next, redirectParam) ?? (await defaultAuthRedirect(state)));
   }
 
+  const interestFunnel = pickAuthNext(next, redirectParam)?.startsWith("/pre-registro") ?? false;
+
   return (
     <main className="relative bg-surface">
-      <div className="relative z-10 flex justify-center px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28">
+      <div className="relative z-10 flex justify-center px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-10">
         <Suspense fallback={null}>
-          <AuthForm />
+          <AuthForm
+            intro={
+              interestFunnel
+                ? "Para se cadastrar no hackathon, entre com Google, GitHub ou receba um código por e-mail. Leva 1 minuto."
+                : undefined
+            }
+          />
         </Suspense>
       </div>
     </main>

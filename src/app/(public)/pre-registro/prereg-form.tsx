@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState, startTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -11,8 +11,15 @@ import { preRegister, type RegistrationField } from "./actions";
 import { isRoleOption, ROLE_OPTIONS } from "./constants";
 import type { User } from "@/types/db";
 
-export function PreregForm({ profile }: { profile: User | null }) {
+export function PreregForm({ profile, email }: { profile: User | null; email: string }) {
   const router = useRouter();
+  const currentRole = profile?.headline && isRoleOption(profile.headline) ? profile.headline : "";
+  // A headline from the first version of the form is not in the list anymore
+  // but still has to show as selected, so it rides along as an extra option.
+  const roles: readonly string[] =
+    currentRole && !(ROLE_OPTIONS as readonly string[]).includes(currentRole)
+      ? [currentRole, ...ROLE_OPTIONS]
+      : ROLE_OPTIONS;
   const [state, formAction, pending] = useActionState(
     async (
       prev: { ok: true } | { ok: false; error: string; field: RegistrationField },
@@ -35,36 +42,56 @@ export function PreregForm({ profile }: { profile: User | null }) {
     trackClient("registration_form_viewed");
   }, []);
 
+  // Submitting through the action prop makes React reset every field after
+  // the action settles, which wipes what the person typed on a validation
+  // error. Dispatching the FormData ourselves keeps the fields as they are.
+  const [edited, setEdited] = useState(false);
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEdited(false);
+    const formData = new FormData(e.currentTarget);
+    startTransition(() => formAction(formData));
+  };
+
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={submit} onChange={() => setEdited(true)} className="space-y-4">
       <AttributionFields />
       <div>
         <Label htmlFor="full_name">Nome completo</Label>
         <Input id="full_name" name="full_name" required defaultValue={profile?.full_name ?? ""} />
       </div>
       <div>
-        <Label htmlFor="whatsapp">WhatsApp</Label>
+        <Label htmlFor="email" hint="vem do seu login">E-mail</Label>
+        <Input id="email" type="email" value={email} readOnly className="bg-surface text-muted" />
+      </div>
+      <div>
+        <Label htmlFor="whatsapp" hint="com DDD">WhatsApp</Label>
         <Input
           id="whatsapp"
           name="whatsapp"
           type="tel"
           required
-          placeholder="+55 (11) 91234-5678"
+          placeholder="(11) 91234-5678"
           defaultValue={profile?.whatsapp ?? ""}
         />
       </div>
       <div>
-        <Label htmlFor="role">Como você se descreve?</Label>
-        <Select
-          id="role"
-          name="role"
+        <Label htmlFor="location">Cidade/Estado</Label>
+        <Input
+          id="location"
+          name="location"
           required
-          defaultValue={profile?.headline && isRoleOption(profile.headline) ? profile.headline : ""}
-        >
+          placeholder="São Paulo/SP"
+          defaultValue={profile?.location ?? ""}
+        />
+      </div>
+      <div>
+        <Label htmlFor="role">Perfil principal</Label>
+        <Select id="role" name="role" required defaultValue={currentRole}>
           <option value="" disabled>
             Selecione
           </option>
-          {ROLE_OPTIONS.map((r) => (
+          {roles.map((r) => (
             <option key={r} value={r}>
               {r}
             </option>
@@ -96,8 +123,8 @@ export function PreregForm({ profile }: { profile: User | null }) {
         </span>
       </label>
 
-      {!state.ok && state.error && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
+      {!state.ok && state.error && !edited && (
+        <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       )}

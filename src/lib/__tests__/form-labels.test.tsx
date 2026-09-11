@@ -13,6 +13,7 @@ vi.mock("@/app/(public)/pre-registro/actions", () => ({ preRegister: vi.fn() }))
 
 import { RegistrationForm } from "@/components/registration/registration-form";
 import { PreregForm } from "@/app/(public)/pre-registro/prereg-form";
+import { InterestForm } from "@/app/(public)/pre-registro/interest-form";
 import { SubmissionEditor } from "@/components/submission/submission-editor";
 import type { Submission } from "@/types/db";
 
@@ -81,7 +82,7 @@ describe("checkbox labels", () => {
   });
 
   it("pre-registro form pairs the terms checkbox", () => {
-    const html = renderToStaticMarkup(React.createElement(PreregForm, { profile: null }));
+    const html = renderToStaticMarkup(React.createElement(PreregForm, { profile: null, email: "a@b.co" }));
     const boxes = checkboxes(html);
     expect(boxes.map((b) => b.id)).toEqual(["terms_accepted"]);
     expect(boxes[0]).toMatchObject({ wrapped: true, paired: true });
@@ -156,10 +157,42 @@ describe("checkbox labels", () => {
   });
 
   it("text inputs on those forms have a label with a matching for", () => {
-    const html = renderToStaticMarkup(React.createElement(PreregForm, { profile: null }));
-    for (const id of ["full_name", "whatsapp", "role"]) {
+    const html = renderToStaticMarkup(React.createElement(PreregForm, { profile: null, email: "a@b.co" }));
+    for (const id of ["full_name", "email", "whatsapp", "location", "role"]) {
       expect(html).toContain(`for="${id}"`);
       expect(html).toMatch(new RegExp(`<(input|select)[^>]*id="${id}"`));
     }
+  });
+
+  it("interest form labels every field, including the project block", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(InterestForm, {
+        interest: {
+          hackathon_id: "h",
+          user_id: "u",
+          has_project: "yes",
+          looking_for_team: true,
+          project_name: "Foo",
+          one_liner: null,
+          stage: null,
+          team_size: null,
+          project_url: null,
+          project_socials: null,
+          notes: null,
+          completed_at: null,
+          created_at: "",
+          updated_at: "",
+        },
+      }),
+    );
+    for (const id of [
+      "has_project", "looking_for_team", "project_name", "one_liner", "stage",
+      "team_size", "project_url", "project_socials", "notes",
+    ]) {
+      expect(html).toContain(`for="${id}"`);
+      expect(html).toMatch(new RegExp(`<(input|select|textarea)[^>]*id="${id}"`));
+    }
+    expect(html).toMatch(/<button[^>]*value="complete"[^>]*name="intent"/);
+    expect(html).toMatch(/<button[^>]*value="later"[^>]*name="intent"/);
   });
 });

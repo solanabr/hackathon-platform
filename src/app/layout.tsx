@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${archivo.variable} ${inter.variable}`}>
+    <html lang="pt-BR" data-scroll-behavior="smooth" className={`${archivo.variable} ${inter.variable}`}>
       <head>
         {/* A folha da prensa é o primeiro frame da LP, e só na primeira visita
             da sessão. A marcação tem que acontecer ANTES da pintura, então o

@@ -33,8 +33,9 @@ const CALLBACK_ERRORS: Record<string, string> = {
 
 export function AuthForm({
   defaultNext,
+  intro,
   titleAs: Title = "h1",
-}: { defaultNext?: string; titleAs?: "h1" | "h2" } = {}) {
+}: { defaultNext?: string; intro?: string; titleAs?: "h1" | "h2" } = {}) {
   const searchParams = useSearchParams();
   const callbackError = searchParams.get("error");
   const [loading, setLoading] = useState<Provider | null>(null);
@@ -184,7 +185,7 @@ export function AuthForm({
           </span>
         </Title>
         <p className="mt-4 text-sm leading-relaxed text-muted">
-          Escolha como deseja continuar. Se você já tem uma conta, use o mesmo acesso para retomar seu cadastro.
+          {intro ?? "Escolha como deseja continuar. Se você já tem uma conta, use o mesmo acesso para retomar seu cadastro."}
         </p>
       </div>
 

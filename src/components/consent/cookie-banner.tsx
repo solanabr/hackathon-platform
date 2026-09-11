@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import posthog from "posthog-js";
 import { updateGtmConsent } from "@/components/analytics/google-tag-manager";
 import { CONSENT_KEY, parseConsent, writeConsentCookie, type ConsentValue } from "@/lib/consent";
@@ -31,6 +32,7 @@ export function CookieBanner() {
   // client snapshot decides on first client render without an effect.
   const stored = useSyncExternalStore(subscribe, readConsent, () => "server");
   const [dismissed, setDismissed] = useState(false);
+  const pathname = usePathname();
 
   // Choices made before the cookie existed live only in localStorage; mirror
   // them so server-side capture honours them without asking again.
@@ -56,10 +58,17 @@ export function CookieBanner() {
 
   if (dismissed || stored !== null) return null;
 
-  // On phones the bottom of the viewport is where the auth form's e-mail
-  // field and button sit, so the banner docks under the header instead.
+  // On phones the banner docks at the bottom so it never covers the hero
+  // headline; /auth is the exception because that's where its e-mail field
+  // and button sit, and on / it clears the sticky CTA bar that appears once
+  // the hero scrolls away.
+  const placement = pathname?.startsWith("/auth")
+    ? "top-[5.75rem]"
+    : pathname === "/"
+      ? "bottom-[4.25rem]"
+      : "bottom-3";
   return (
-    <div className="fixed inset-x-3 top-[5.75rem] z-50 sm:inset-x-auto sm:bottom-[4.75rem] sm:left-5 sm:top-auto sm:max-w-sm">
+    <div className={`fixed inset-x-3 z-50 sm:inset-x-auto sm:bottom-[4.75rem] sm:left-5 sm:top-auto sm:max-w-sm ${placement}`}>
       <div className="rounded-2xl border-2 border-green-dark bg-surface-raised p-3 shadow-sticker sm:p-4">
         <p className="text-[13px] leading-snug text-ink sm:text-sm sm:leading-relaxed">
           Cookies essenciais pro login e, se você permitir, análise de uso.{" "}

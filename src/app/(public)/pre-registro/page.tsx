@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -7,9 +8,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState, resolveSessionClaims } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
+import { InterestForm } from "./interest-form";
 import { confirmColosseumRegistration } from "./actions";
-import { COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
+import { COLOSSEUM_ARENA_URL, COLOSSEUM_SLUG, WHATSAPP_COMMUNITY_URL } from "./constants";
 import { TrackedLink } from "./tracked-link";
+import type { CampaignInterest } from "@/types/db";
 
 export const metadata = {
   title: "Criar conta | Hackathon Colosseum",
@@ -31,13 +34,32 @@ async function loadRegistration(userId: string, hackathonId: string) {
   return unwrap(result, "preRegistro.checkRegistration");
 }
 
+async function loadInterest(userId: string, hackathonId: string) {
+  const supabase = await createServerSupabaseClient();
+  const result = await supabase
+    .from("campaign_interest")
+    .select("*")
+    .eq("hackathon_id", hackathonId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  return unwrap(result, "preRegistro.loadInterest") as CampaignInterest | null;
+}
+
+// Each step draws its own connector down to the next one, so the line ends at
+// the last circle instead of running past a tall final card.
+const JORNADA_STEP =
+  "relative flex items-start gap-4 before:absolute before:-bottom-4 before:left-[1.35rem] before:top-12 before:w-0.5 before:bg-green-dark/15 last:before:hidden";
+
 const STEPS = [
   { n: 1, label: "Conta" },
   { n: 2, label: "Seus dados" },
-  { n: 3, label: "Próximos passos" },
+  { n: 3, label: "Sobre você" },
+  { n: 4, label: "Próximos passos" },
 ] as const;
 
-function StepIndicator({ active }: { active: 1 | 2 | 3 }) {
+type Step = (typeof STEPS)[number]["n"];
+
+function StepIndicator({ active }: { active: Step }) {
   return (
     <div className="mb-8 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
       {STEPS.map((step, i) => (
@@ -53,7 +75,7 @@ function StepIndicator({ active }: { active: 1 | 2 | 3 }) {
           >
             {step.n}
           </span>
-          <span className={step.n === active ? "text-ink" : ""}>{step.label}</span>
+          <span className={step.n === active ? "text-ink" : "hidden sm:inline"}>{step.label}</span>
           {i < STEPS.length - 1 && <span className="mx-1 h-px w-4 bg-green-dark/20" />}
         </span>
       ))}
@@ -61,7 +83,11 @@ function StepIndicator({ active }: { active: 1 | 2 | 3 }) {
   );
 }
 
-export default async function PreRegistroPage() {
+export default async function PreRegistroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ step?: string }>;
+}) {
   // A transient failure on the edition lookup must not take down step 1 —
   // anonymous visitors only need the auth form.
   const [claims, hackathon] = await Promise.all([
@@ -74,15 +100,24 @@ export default async function PreRegistroPage() {
 
   // The registration row only needs the user id, so it loads alongside the
   // profile instead of queuing behind it.
-  const [state, reg] = await Promise.all([
+  const [state, reg, interest, { step }] = await Promise.all([
     resolveAuthenticatedUserState(),
     hackathon ? loadRegistration(claims.userId, hackathon.id) : Promise.resolve(null),
+    hackathon ? loadInterest(claims.userId, hackathon.id) : Promise.resolve(null),
+    searchParams,
   ]);
   if (!state) redirect("/auth?next=/pre-registro");
   const registered = Boolean(reg);
   const colosseumConfirmed = Boolean(reg?.luma_confirmed_at);
+  const interestComplete = Boolean(interest?.completed_at);
 
-  const activeStep: 2 | 3 = registered ? 3 : 2;
+  // `?step=jornada` is where "terminar depois" lands; `?step=sobre` reopens
+  // the form from the jornada card. Without either, an unfinished form wins.
+  const activeStep: Step = !registered
+    ? 2
+    : step === "sobre" || (!interestComplete && step !== "jornada")
+      ? 3
+      : 4;
 
   return (
     <main className="relative bg-surface">
@@ -98,13 +133,48 @@ export default async function PreRegistroPage() {
               Preencha seus dados de contato para continuar. Depois, você poderá contar mais sobre sua ideia e sua equipe.
             </p>
             <div className="mt-6">
-              <PreregForm profile={state.profile} />
+              <PreregForm profile={state.profile} email={state.email} />
             </div>
           </Card>
         )}
 
         {activeStep === 3 && (
+          <Card sticker className="p-8 sm:p-10">
+            <h1 className="font-heading text-2xl font-black uppercase tracking-tight text-ink">
+              Sobre você
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Seu cadastro já está feito. Isso leva 1 minuto e você pode salvar e voltar depois.
+            </p>
+            <Link href="/pre-registro?step=jornada" className="mt-3 inline-block text-sm font-semibold underline underline-offset-4">
+              Ver próximos passos
+            </Link>
+            <div className="mt-6">
+              <InterestForm interest={interest} />
+            </div>
+          </Card>
+        )}
+
+        {activeStep === 4 && (
           <>
+            {!interestComplete && (
+              <div className="mb-8 flex flex-col gap-4 rounded-2xl border-2 border-green-dark bg-yellow/30 p-5 shadow-sticker sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-heading text-base font-bold uppercase text-ink">
+                    Falta 1 minuto: conte sobre você e seu projeto
+                  </p>
+                  <p className="mt-1 text-sm text-muted">
+                    Isso ajuda a gente a formar times e direcionar mentorias.
+                  </p>
+                </div>
+                <Link
+                  href="/pre-registro?step=sobre"
+                  className="inline-block shrink-0 whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-center text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  Completar agora
+                </Link>
+              </div>
+            )}
             <div className="text-center">
               <p className="inline-flex items-center gap-2 rounded-full bg-emerald/10 px-4 py-1.5 text-sm font-bold text-emerald">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald text-xs text-surface">✓</span>
@@ -115,8 +185,8 @@ export default async function PreRegistroPage() {
               </h1>
             </div>
 
-            <ol className="relative mt-10 space-y-4 before:absolute before:bottom-8 before:left-[1.35rem] before:top-8 before:w-0.5 before:bg-green-dark/15">
-              <li className="relative flex items-start gap-4">
+            <ol className="relative mt-10 space-y-4">
+              <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
                   ✓
                 </span>
@@ -127,7 +197,7 @@ export default async function PreRegistroPage() {
               </li>
 
               {colosseumConfirmed ? (
-                <li className="relative flex items-start gap-4">
+                <li className={JORNADA_STEP}>
                   <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-emerald bg-emerald font-heading text-lg font-black text-surface">
                     ✓
                   </span>
@@ -148,9 +218,9 @@ export default async function PreRegistroPage() {
                   </div>
                 </li>
               ) : (
-              <li className="relative flex items-start gap-4">
+              <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
-                  2
+                  →
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <div className="flex flex-wrap items-center gap-2">
@@ -167,11 +237,11 @@ export default async function PreRegistroPage() {
                   <ol className="mt-3 space-y-1.5 text-sm text-muted">
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">1.</span>
-                      Crie sua conta no Colosseum e complete o perfil
+                      Crie sua conta no Colosseum (o botão amarelo abre a criação de conta, não o registro)
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">2.</span>
-                      Clique em &quot;Register now&quot;, escolha Brasil e sua cidade e marque Solana (print abaixo)
+                      Com a conta criada, abra Arena › Hackathon e clique em &quot;Register now&quot;: escolha Brasil e sua cidade e marque a rede do seu projeto (no print, Solana)
                     </li>
                     <li className="flex gap-2">
                       <span className="font-mono text-xs font-bold text-emerald">3.</span>
@@ -186,7 +256,7 @@ export default async function PreRegistroPage() {
                           target="colosseum"
                           className="inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5"
                         >
-                          Abrir Colosseum
+                          Criar conta no Colosseum
                         </TrackedLink>
                         <form action={confirmColosseumRegistration}>
                           <button
@@ -197,6 +267,16 @@ export default async function PreRegistroPage() {
                           </button>
                         </form>
                       </div>
+                      <p className="mt-3 text-sm text-muted">
+                        Já tem conta?{" "}
+                        <TrackedLink
+                          href={COLOSSEUM_ARENA_URL}
+                          target="colosseum_arena"
+                          className="font-semibold text-ink underline underline-offset-4"
+                        >
+                          Ir direto para o registro do hackathon
+                        </TrackedLink>
+                      </p>
                       <Image
                         src="/brand/colosseum-registro.png"
                         alt="Formulário de registro do Colosseum preenchido com Brasil, cidade e Solana"
@@ -214,9 +294,9 @@ export default async function PreRegistroPage() {
               </li>
               )}
 
-              <li className="relative flex items-start gap-4">
+              <li className={JORNADA_STEP}>
                 <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
-                  3
+                  →
                 </span>
                 <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
                   <p className="font-heading text-base font-bold uppercase text-ink">Entre na comunidade</p>
