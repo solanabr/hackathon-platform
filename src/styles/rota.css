@@ -1,0 +1,88 @@
+/* ---------------------------------------------------------------------------
+ * THE PASSAGE BETWEEN PAGES
+ *
+ * Changing route was the last hard cut left: the page vanishes, the next one
+ * appears, and a site that presents itself as a print shop jumps like a
+ * slideshow.
+ *
+ * The answer is not to invent a new effect — it's to use the gesture the
+ * brand already has. `PressSheet` established that the session's first sheet
+ * leaves the press and is PULLED DOWN, freeing the top first so the headline
+ * shows while it is still being printed. Every following page is another
+ * sheet from the same press. Same direction, same curve, same reading: the
+ * new page is already printed underneath, and the previous sheet leaving is
+ * what reveals it.
+ *
+ * Why only the ENTRANCE and not an enter/exit pair: in the App Router the
+ * template remounts once the new route has rendered — the previous one no
+ * longer exists at that instant. Animating an exit would mean holding the
+ * old tree (View Transitions, still experimental in Next) to gain ~150ms of
+ * curtain. The gesture that matters is the reveal, and that needs no flag.
+ *
+ * `PressSheet` is z-60 and this sheet is z-55: on the first LP visit both
+ * coexist for an instant, and the press one — the one with the symbol —
+ * stays on top. Neither knows about the other.
+ * ------------------------------------------------------------------------- */
+
+.rota-folha {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  background-color: var(--color-surface);
+  animation: rotaFolha var(--dur-rapida) var(--ease-saida) forwards;
+}
+
+/* THE ROLLER EDGE. The sheet's top edge is what sweeps the screen, and a
+   cream edge over cream is invisible — the movement happens but nobody sees
+   what moved. Three pixels of ink turn the same translation into a legible
+   gesture: the roller's line passing by. */
+.rota-folha::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background-color: var(--color-green-dark);
+}
+
+@keyframes rotaFolha {
+  to {
+    transform: translate3d(0, 100%, 0);
+    visibility: hidden;
+  }
+}
+
+/* The new page appears UNDER the sheet, so it can't start at zero: the sheet
+   already covered the frame, and what shows through the gap has to be
+   content, not void. Starts at 0.45 and closes on the entrance curve, ending
+   after the sheet has left — the ink is still settling when the paper is
+   already gone, which is what happens in a real print.
+   Opacity only: a transform here would become a containing block and trap
+   any `fixed` element of the page inside the wrapper. */
+.rota-entra {
+  animation: rotaEntra var(--dur-media) var(--ease-entrada) backwards;
+}
+
+@keyframes rotaEntra {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* As with the press sheet: here the "considered version" is NOT happening.
+   The passage carries no information — it is entirely transition, and
+   preserving the orchestration of something whose only content is motion
+   would just delay the page for someone who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .rota-folha {
+    display: none;
+  }
+
+  .rota-entra {
+    animation: none;
+  }
+}

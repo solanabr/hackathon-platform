@@ -38,7 +38,7 @@ export function ProfileCard({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold text-ink transition-colors hover:bg-green-dark/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            className="whitespace-nowrap rounded-full border-2 border-green-dark px-4 py-1.5 text-sm font-bold text-ink transition-colors ease-entrada hover:bg-green-dark/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             Editar perfil
           </button>
@@ -80,7 +80,7 @@ export function ProfileCard({
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-green-dark/15 px-3 py-1 text-sm font-semibold text-muted transition-colors hover:border-emerald/40 hover:text-ink"
+                      className="rounded-full border border-green-dark/15 px-3 py-1 text-sm font-semibold text-muted transition-colors ease-entrada hover:border-emerald/40 hover:text-ink"
                     >
                       {s.label}
                     </a>

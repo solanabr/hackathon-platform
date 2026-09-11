@@ -1,12 +1,27 @@
 @import "tailwindcss";
+@import "../styles/tokens/motion.css";
+/* The three motion layers that are not entrances: the passage between routes,
+   what answers scroll and what answers the finger. Kept out of globals so
+   each can be read (and reviewed) as a closed system. */
+@import "../styles/rota.css";
+@import "../styles/scroll.css";
+@import "../styles/gravura.css";
+@import "../styles/interactions.css";
+/* The ticket's print language: paper, engraving, foil and pose. */
+@import "../styles/bilhete.css";
 
 @theme {
   --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
+  /* Same shadow at small-piece scale: 6px on a 30px-wide shovel is not a
+     sticker, it is a smear. */
+  --shadow-sticker-sm: 3px 3px 0 rgb(27 35 29 / 0.22);
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
   --color-surface-deep: #efe0ba;
+  --color-surface-kraft: #d1c09f;
+  --color-surface-deeper: #e8d5a6;
   --color-ink: #1b231d;
-  --color-muted: #5f6f60;
+  --color-muted: #5a6a5b;
 
   /* Keep Tailwind's built-in scales out of the brand greens/emeralds.
      The wildcard resets must precede the bare tokens, or they wipe the
@@ -15,6 +30,7 @@
   --color-emerald-*: initial;
 
   --color-emerald: #008c4c;
+  --color-emerald-deep: #00703d;
   --color-green: #2f6b3f;
   --color-green-dark: #1b231d;
   --color-yellow: #ffd23f;
@@ -71,16 +87,159 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-yellow px-6 py-3
-           font-semibold text-green-dark transition-[background-color,transform] duration-200
-           hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
+           font-semibold text-green-dark transition-[background-color,transform]
+           duration-(--dur-instant) ease-mola hover:-translate-y-0.5 hover:bg-[#ffdd66] focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-green-dark
-           bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-200
+           bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-(--dur-instant) ease-entrada
            hover:bg-green-dark hover:text-surface focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-green-dark/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+  }
+
+  /* Corner-cut CTAs: square-ish corners with a chamfer on the bottom right.
+     clip-path removes the border along the diagonal, so the outline variant
+     paints its own edge — the element is the border, ::after is the fill. */
+  .btn-cut {
+    --cut: 0.7rem;
+    position: relative;
+    border-radius: 0.5rem;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%,
+      0 100%
+    );
+  }
+
+  .btn-cut-outline {
+    --btn-cut-edge: 2px;
+    background-color: var(--btn-cut-edge-color, var(--color-green-dark));
+  }
+
+  .btn-cut-outline::before {
+    content: "";
+    position: absolute;
+    inset: var(--btn-cut-edge);
+    border-radius: 0.375rem;
+    background-color: var(--btn-cut-fill, var(--color-surface));
+    transition: background-color var(--dur-instant) var(--ease-entrada);
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--cut) + var(--btn-cut-edge)),
+      calc(100% - var(--cut) + var(--btn-cut-edge)) 100%,
+      0 100%
+    );
+  }
+
+  .btn-cut-outline:hover::before {
+    background-color: var(--color-emerald);
+  }
+
+  /* Quiet secondary: a light kraft behind a hairline edge, and a hover that
+     only deepens the same tone instead of turning green. */
+  .btn-cut-quiet {
+    --btn-cut-edge: 1px;
+    --btn-cut-edge-color: color-mix(in srgb, var(--color-green-dark) 35%, transparent);
+    --btn-cut-fill: var(--color-surface-deeper);
+  }
+
+  /* Sunken: a hard inset shadow at the top left and a light lip at the bottom
+     right, so the button reads as pressed into the sheet. */
+  .btn-cut-outline.btn-cut-quiet::before {
+    box-shadow:
+      inset 3px 3px 0 rgb(27 35 29 / 0.14),
+      inset -1px -1px 0 rgb(255 253 246 / 0.55);
+    transition:
+      background-color var(--dur-instant) var(--ease-entrada),
+      box-shadow var(--dur-instant) var(--ease-entrada);
+  }
+
+  .btn-cut-outline.btn-cut-quiet:hover::before {
+    background-color: var(--color-surface-kraft);
+    box-shadow:
+      inset 4px 4px 0 rgb(27 35 29 / 0.2),
+      inset -1px -1px 0 rgb(255 253 246 / 0.4);
+  }
+
+  /* The label sits above the fill layer. */
+  .btn-cut > span {
+    position: relative;
+  }
+
+  /* clip-path removes any ring drawn outside the box, so keyboard focus is an
+     inset outline instead. On the outline variant it rides the fill layer,
+     which paints above the element's own outline. */
+  .btn-cut:focus-visible {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: -4px;
+  }
+
+  .btn-cut-outline:focus-visible::before {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: calc(-1 * var(--btn-cut-edge));
+  }
+
+  /* Corner-cut cards: the .btn-cut chamfer at card scale, cut on the top
+     right. Same trick — the element paints the edge, ::before the fill —
+     plus a drop-shadow, since a box-shadow would be clipped away. */
+  .card-cut {
+    --cut: 2.5rem;
+    position: relative;
+    background-color: var(--color-green-dark);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cut)) 0,
+      100% var(--cut),
+      100% 100%,
+      0 100%
+    );
+    filter: drop-shadow(6px 6px 0 rgb(27 35 29 / 0.18));
+  }
+
+  /* Dark variant: the 2px rim turns emerald so the card still reads as a
+     sticker against the cream, and the inner fill goes ink. */
+  .card-cut-dark {
+    --card-cut-fill: var(--color-green-dark);
+    background-color: var(--color-emerald-deep);
+    color: var(--color-surface-raised);
+  }
+
+  /* Kraft variant: the deepest cream as fill under an ink rim, so the card
+     still reads as a sticker without going dark. */
+  .card-cut-kraft {
+    --card-cut-fill: var(--color-surface-kraft);
+    background-color: var(--color-green-dark);
+    color: var(--color-ink);
+  }
+
+  /* Open variant: the same rim with the page ground as fill, so the card reads
+     as an outline. Pairs with .card-cut-kraft to rank cards in a set — the
+     filled one is the step you act on now. Must follow it: same specificity. */
+  .card-cut-open {
+    --card-cut-fill: var(--color-surface);
+  }
+
+  .card-cut::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background-color: var(--card-cut-fill, var(--color-surface-raised));
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--cut) + 2px) 0,
+      100% calc(var(--cut) - 2px),
+      100% 100%,
+      0 100%
+    );
+  }
+
+  .card-cut > * {
+    position: relative;
   }
 
   /* Markdown sections on edition pages, in the LP voice. */
@@ -120,7 +279,7 @@
   }
 
   .card-hover {
-    @apply transition-[transform,border-color] duration-300 ease-out;
+    @apply transition-[transform,border-color] duration-(--dur-rapida) ease-mola;
   }
 
   .card-hover:hover {
@@ -156,11 +315,13 @@
     @apply bg-gradient-to-r from-yellow to-emerald bg-clip-text text-transparent;
   }
 
-  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-  .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
-  .animate-float-a { animation: floatA 6s ease-in-out infinite; }
-  .animate-float-b { animation: floatA 6s ease-in-out -2s infinite; }
-  .animate-float-c { animation: floatA 6s ease-in-out -4s infinite; }
+  .animate-fade-in { animation: fadeIn var(--dur-rapida) var(--ease-entrada) forwards; }
+  .animate-slide-up { animation: slideUp var(--dur-media) var(--ease-entrada) forwards; }
+  /* The three float with periods that never meet the same phase again, so
+     the set doesn't pulse as one block like a single object. */
+  .animate-float-a { animation: floatA 6s var(--ease-inout) infinite; }
+  .animate-float-b { animation: floatA 7s var(--ease-inout) -2.3s infinite; }
+  .animate-float-c { animation: floatA 8s var(--ease-inout) -4.7s infinite; }
 }
 
 @keyframes fadeIn {
@@ -169,21 +330,72 @@
 }
 
 @keyframes slideUp {
-  0% { opacity: 0; transform: translateY(20px); }
+  0% { opacity: 0; transform: translateY(var(--dist-entrada)); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes floatA {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(calc(var(--dist-curta) * -1)); }
 }
 
+@keyframes authOverlayIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes authPanelIn {
+  0% { opacity: 0; transform: translateY(var(--dist-curta)) scale(0.985); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* The backdrop darkens before the panel arrives, or the two fight for the eye. */
+.auth-overlay-in { animation: authOverlayIn var(--dur-instant) var(--ease-entrada); }
+.auth-panel-in { animation: authPanelIn var(--dur-rapida) var(--ease-carimbo); }
+
+/* Reduced motion is not a switch: the time scale, distances and curves are
+   already rewritten in tokens/motion.css, and the whole orchestration keeps
+   running there. What is left here is the one case no token solves — the
+   infinite decorative loop, which has no final state to converge to and so
+   must stop on its rest frame. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .animate-float-a,
+  .animate-float-b,
+  .animate-float-c,
+  .animate-brand-fill {
+    animation: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * PLATE — a halftone served as a file and applied as a mask.
+ *
+ * The drawing comes from `/halftone/*.svg` (see `components/home/plates.ts`);
+ * the ink is the box's `currentColor`, alpha included. The three `fit` values
+ * mirror the `preserveAspectRatio` the inline SVG had before becoming a file.
+ * ------------------------------------------------------------------------- */
+.chapa {
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+.chapa-cover {
+  mask-size: cover;
+  mask-position: center;
+  -webkit-mask-size: cover;
+  -webkit-mask-position: center;
+}
+.chapa-cover-bottom {
+  mask-size: cover;
+  mask-position: center bottom;
+  -webkit-mask-size: cover;
+  -webkit-mask-position: center bottom;
+}
+.chapa-contain {
+  mask-size: contain;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-position: center;
 }
 
 /* LP hub homepage: morth shapes as paint, not watermark ------------------- */
@@ -203,6 +415,69 @@
   }
 }
 
+/* THE SHEET ON THE PRESS — the first frame.
+ *
+ * Two halves of one gesture: the ink rises in the symbol (--dur-media) and,
+ * the instant it closes, the sheet is PULLED out (--dur-rapida, exit curve —
+ * leaves slowly and vanishes fast, exactly the gesture of tearing paper off
+ * a press). Total 1.19s, and not one value outside a token.
+ *
+ * The hero headline starts printing on load, under the sheet, so what shows
+ * when it lifts is not a still page: it is typography still coming off the
+ * roller. The two movements overlap on purpose.                              */
+.press-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-surface);
+  animation: pressLift var(--dur-rapida) var(--ease-saida) var(--dur-media)
+    forwards;
+}
+/* The sheet exits DOWNWARD, as into the press's output tray — not upward.
+   Direction is the point: exiting down frees the top first, and the headline
+   appears WHILE it is being stamped, in the order the page is read. Going up,
+   the headline was the last thing to show and arrived finished, which cancels
+   the first fold's one authorial moment. */
+@keyframes pressLift {
+  to {
+    transform: translate3d(0, 100%, 0);
+    visibility: hidden;
+  }
+}
+
+.press-sheet-mark {
+  position: relative;
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.press-sheet-ink {
+  clip-path: inset(100% 0 0 0);
+  animation: pressInk var(--dur-media) var(--ease-inout) forwards;
+}
+@keyframes pressInk {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Already seen this session: the sheet doesn't even come into play. */
+.press-done .press-sheet {
+  display: none;
+}
+
+/* Reduced motion. Here the "considered version" is NOT happening: the sheet
+   carries no information — it is entirely transition. Keeping the
+   orchestration of something whose only content is motion would just delay
+   the page for whoever asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .press-sheet {
+    display: none;
+  }
+}
+
 /* Brand loader: the symbol colors itself in from the bottom, then resets. */
 @keyframes brandFill {
   0% { clip-path: inset(100% 0 0 0); }
@@ -210,19 +485,105 @@
   82% { clip-path: inset(0 0 0 0); }
   100% { clip-path: inset(100% 0 0 0); }
 }
-.animate-brand-fill { animation: brandFill 1.9s ease-in-out infinite; }
+.animate-brand-fill { animation: brandFill 1.9s var(--ease-inout) infinite; }
 
-/* Scroll reveal: sections fade up once as they enter the viewport. */
+/* ---------------------------------------------------------------------------
+ * BENTO — the product cutouts of the Informações block.
+ *
+ * A still mock is a screenshot; what makes the cutout read as product is that
+ * it responds. The three pieces below are the minimum for that: the "live"
+ * signal, the staggered entry when the list switches filter or channel, and
+ * the "typing" indicator. All are decorative loops or micro-interactions, so
+ * they follow the floats' rule: time scale in tokens, dead stop in reduced
+ * mode.
+ * ------------------------------------------------------------------------- */
+/* The ring is a pseudo-element with a FIXED shadow that scales and fades:
+   transform and opacity run on the compositor. Animating the box-shadow
+   itself repainted the dot every frame, forever, in two places on the page. */
+@keyframes bentoPulse {
+  0% { transform: scale(0.8); opacity: 1; }
+  70%, 100% { transform: scale(2.4); opacity: 0; }
+}
+.bento-pulse {
+  --pulse-rgb: 0 140 76;
+  position: relative;
+}
+.bento-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2.5px rgb(var(--pulse-rgb) / 0.45);
+  animation: bentoPulse 2.1s var(--ease-inout) infinite;
+}
+/* On the dark green the emerald halo vanishes; the signal inherits yellow. */
+.bento-pulse-yellow { --pulse-rgb: 255 210 63; }
+
+@keyframes bentoRowIn {
+  from { opacity: 0; transform: translate3d(0, calc(var(--dist-curta) / 2), 0); }
+  to { opacity: 1; transform: none; }
+}
+/* --row-i is the row's position in the list; the component writes the index,
+   and the gap between one and the next comes from the token. */
+.bento-row {
+  animation: bentoRowIn var(--dur-rapida) var(--ease-entrada) both;
+  animation-delay: calc(var(--row-i, 0) * var(--stagger-tile));
+}
+
+@keyframes bentoTyping {
+  0%, 60%, 100% { opacity: 0.3; transform: none; }
+  30% { opacity: 1; transform: translateY(calc(var(--dist-curta) / -6)); }
+}
+.bento-typing > span { animation: bentoTyping 1.4s var(--ease-inout) infinite; }
+.bento-typing > span:nth-child(2) { animation-delay: var(--stagger-lista); }
+.bento-typing > span:nth-child(3) { animation-delay: calc(var(--stagger-lista) * 2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-pulse::after,
+  .bento-typing > span { animation: none; }
+  .bento-pulse::after { opacity: 0; }
+  .bento-typing > span { opacity: 0.6; }
+}
+
+/* Scroll reveal. Opacity rises slightly faster than displacement: the
+   element finishes appearing before it finishes arriving, and that lag is
+   what makes the entrance look like settling instead of braking.
+
+   --reveal-i is the element's index within its family; the component writes
+   the index, and the stagger comes from the token, not a hand-typed delay. */
 .reveal {
+  --reveal-i: 0;
+  --reveal-stagger: var(--stagger-lista);
+  --reveal-dist: var(--dist-entrada);
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transform: translate3d(0, var(--reveal-dist), 0);
+  transition:
+    opacity calc(var(--dur-media) * 0.75) var(--ease-entrada)
+      calc(var(--reveal-i) * var(--reveal-stagger)),
+    transform var(--dur-media) var(--ease-entrada)
+      calc(var(--reveal-i) * var(--reveal-stagger));
 }
 .reveal-in {
   opacity: 1;
   transform: none;
 }
-@media (prefers-reduced-motion: reduce) {
+/* Text travels less and closer together than objects: the eye scans a line
+   faster than it recognises a card. */
+.reveal-texto {
+  --reveal-stagger: var(--stagger-texto);
+  --reveal-dist: var(--dist-curta);
+}
+/* What the section wants you to look at comes from farther away. */
+.reveal-longe {
+  --reveal-dist: var(--dist-longa);
+}
+/* Paper objects enter stamped, not floating. */
+.reveal-papel {
+  transition-timing-function: var(--ease-carimbo);
+}
+/* Without JS the IntersectionObserver never adds .reveal-in, so every section
+   below the hero would stay at opacity 0. */
+@media (scripting: none) {
   .reveal {
     opacity: 1;
     transform: none;
@@ -230,57 +591,213 @@
   }
 }
 
+/* THE PRINT COMING OFF THE PRESS.
+   Halftone doesn't float into the frame: it is revealed bottom to top, in
+   the gesture of the sheet leaving the cylinder — the one the press-sheet
+   already suggests in the first fold. A sweep, not a stroke drawing: these
+   are thousands of short segments, and animating stroke-dashoffset on each
+   is expensive and reads as noise instead of a stroke.
+
+   The clip is opened by the state the element already had: .reveal-in for
+   those entering via observer, --t for those tied to the journey scroll. No
+   new frame loop. */
+.reveal .halftone-press {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path var(--dur-media) var(--ease-entrada)
+    calc(var(--reveal-i) * var(--reveal-stagger));
+}
+.reveal-in .halftone-press {
+  clip-path: inset(0 0 0 0);
+}
+.journey-card .halftone-press {
+  clip-path: inset(calc(100% * (1 - var(--t))) 0 0 0);
+}
+/* Where the halftone IS the block (not a card's background texture), the
+   sweep replaces the entrance: both together muddle the gesture. */
+.reveal-estampa {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Reduced motion zeroes the vector, not the orchestration: without the sweep
+   the drawing still enters at its place in the queue, just by appearing. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .halftone-press {
+    clip-path: none;
+    opacity: 0;
+    transition: opacity calc(var(--dur-media) * 0.75) var(--ease-entrada)
+      calc(var(--reveal-i) * var(--reveal-stagger));
+  }
+  .reveal-in .halftone-press {
+    opacity: 1;
+  }
+}
+
+/* Nobody writes .reveal-in or --t without JS, so the clip would never open. */
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .journey-card .halftone-press {
+    clip-path: none;
+  }
+}
+@media (scripting: none) {
+  .reveal .halftone-press {
+    clip-path: none;
+    transition: none;
+  }
+}
+
+/* Jornada: while the section is pinned, each card rides up from below the fold
+   and in from an alternating side, landing in the row. --t is per-card scroll
+   progress and --pp lifts the pitch out of the way, both written by JourneyPin.
+   --enter-x is the offset from the card's resting column to the centre of the
+   screen, in its own width: the trip is a straight line between the two.
+
+   The two vertical distances drop together because --pp and --t share the
+   same progress formula: if the card travels much farther than the pitch, it
+   lags behind and opens a gap of bare kraft between the two mid-flight. 12vh
+   and 38vh are the previous pair minus the same slack — the whole entrance
+   starts higher, with no dead space at the top of the frame, and the first
+   card's edge is already inside it: you see the arrival begin instead of
+   waiting for it. */
+.journey-card {
+  --t: 0;
+  --side: -1;
+  /* All three converge on the container's centre, like a fanned deck before
+     being dealt — not at arbitrary x values, which made 03 land on top of 01
+     and the visitor see the wrong step arrive first. Stacking follows arrival
+     order: 01 in front. Each column is one card width plus the gap from the
+     centre, so the offset is 100% + 1.5rem. */
+  --enter-x: calc(100% + 1.5rem);
+  z-index: 3;
+  transform: translate3d(
+      calc(var(--enter-x) * (1 - var(--t))),
+      calc(38vh * (1 - var(--t))),
+      0
+    )
+    rotate(calc(var(--side) * 1.5deg * (1 - var(--t))));
+  will-change: transform;
+}
+.journey-card-mid {
+  --side: 1;
+  --enter-x: 0px;
+  z-index: 2;
+}
+.journey-card-last {
+  --enter-x: calc(-100% - 1.5rem);
+  z-index: 1;
+}
+.journey-pin-pitch {
+  --pp: 0;
+  transform: translateY(calc((1 - var(--pp)) * 12vh));
+}
+
+/* Nothing drives --t or --pp in either case, so the pin unwinds into the
+   resting row it would have landed on. */
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .journey-pin {
+    height: auto;
+  }
+  .journey-pin-panel {
+    position: static;
+    height: auto;
+    overflow: visible;
+    padding-block: 6rem;
+  }
+  .journey-card,
+  .journey-pin-pitch {
+    transform: none;
+  }
+}
+
 /* FAQ answers ease in when a row opens. */
 @keyframes faqOpen {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(calc(var(--dist-curta) / -3)); }
   to { opacity: 1; transform: none; }
 }
 details[open] > .faq-answer {
-  animation: faqOpen 0.25s ease-out;
+  animation: faqOpen var(--dur-rapida) var(--ease-entrada);
 }
 
-/* Campaign cheque: the check fills itself out on load — payee types in,
-   the amount stamps, the quantia types, the signature draws. */
-@keyframes chequeWrite {
-  from { clip-path: inset(-10% 100% -10% 0); }
-  to { clip-path: inset(-10% -2% -10% 0); }
-}
-@keyframes chequeStamp {
-  0% { opacity: 0; transform: scale(1.5) rotate(-5deg); }
-  60% { opacity: 1; }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-@keyframes chequeSign {
-  to { stroke-dashoffset: 0; }
-}
-.cheque-payee {
-  clip-path: inset(-10% 100% -10% 0);
-  animation: chequeWrite 0.9s cubic-bezier(0.4, 0, 0.3, 1) 0.4s forwards;
-}
-.cheque-quantia {
-  clip-path: inset(-10% 100% -10% 0);
-  animation: chequeWrite 1.5s cubic-bezier(0.4, 0, 0.3, 1) 1.7s forwards;
-}
-.cheque-amount {
-  opacity: 0;
-  animation: chequeStamp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1.25s forwards;
-}
-.cheque-sign path {
-  stroke-dasharray: 320;
-  stroke-dashoffset: 320;
-  animation: chequeSign 1s ease-in-out 3.3s forwards;
+/* Hero ticket: the paper is die-cut on all four edges — one scallop mask per
+   edge, intersected, so the outline chews like a real perforation. The shadow
+   sits on the wrapper because a mask clips a box-shadow off its own element. */
+.ticket-cut {
+  --ticket-notch: calc(5px * var(--bu, 1));
+  --ticket-pitch: calc(13px * var(--bu, 1));
+  mask-image:
+    radial-gradient(circle var(--ticket-notch) at 50% 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 50% 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 0 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 100% 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch));
+  mask-size: var(--ticket-pitch) 100%, var(--ticket-pitch) 100%, 100% var(--ticket-pitch), 100% var(--ticket-pitch);
+  mask-repeat: round no-repeat, round no-repeat, no-repeat round, no-repeat round;
+  mask-composite: intersect;
+  -webkit-mask-image:
+    radial-gradient(circle var(--ticket-notch) at 50% 0, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 50% 100%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 0 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch)),
+    radial-gradient(circle var(--ticket-notch) at 100% 50%, transparent calc(var(--ticket-notch) - 1px), black var(--ticket-notch));
+  -webkit-mask-size: var(--ticket-pitch) 100%, var(--ticket-pitch) 100%, 100% var(--ticket-pitch), 100% var(--ticket-pitch);
+  -webkit-mask-repeat: round no-repeat, round no-repeat, no-repeat round, no-repeat round;
+  -webkit-mask-composite: source-in;
 }
 
-/* Torn checkbook edge: half-circle punches down the left side. `round`
-   stretches the tile so the column always ends on a whole punch. */
-.cheque-perf {
-  mask-image: radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
-  mask-size: 100% 26px;
-  mask-repeat: round;
-  -webkit-mask-image: radial-gradient(circle 7px at 0 50%, transparent 6px, black 7px);
-  -webkit-mask-size: 100% 26px;
-  -webkit-mask-repeat: round;
+@media (min-width: 640px) {
+  .ticket-cut {
+    --ticket-notch: calc(6.5px * var(--bu, 1));
+    --ticket-pitch: calc(16px * var(--bu, 1));
+  }
 }
+
+/* The shadow has to follow the die-cut, so it is a filter on the wrapper. */
+.ticket-shadow {
+  filter: drop-shadow(0 16px 22px rgb(27 35 29 / 0.26));
+}
+
+/* THE PAPER'S THICKNESS. A ticket is not a painted rectangle: it has a sharp
+   edge turned to the light and its own shadow pooled at the base. Two inset
+   shadows — the light hairline on the top edge, the ink settling below — and
+   the card gains a SIDE. It goes inside the mask, so the die-cut takes the
+   thickness with it instead of revealing a straight edge underneath. */
+.ticket-paper {
+  box-shadow:
+    inset 0 calc(1px * var(--bu, 1)) 0 rgb(255 255 255 / 0.55),
+    inset 0 calc(-18px * var(--bu, 1)) calc(20px * var(--bu, 1))
+      calc(-18px * var(--bu, 1)) rgb(27 35 29 / 0.28);
+}
+
+/* The tear line: holes punched through to the cream, each with the burr the
+   punch leaves on the paper. */
+.ticket-holes {
+  background-image: radial-gradient(
+    circle calc(5.4px * var(--bu, 1)) at 50% 50%,
+    var(--ticket-hole-fill, var(--color-surface)) 0 calc(4.2px * var(--bu, 1)),
+    rgb(27 35 29 / 0.38) calc(4.2px * var(--bu, 1)) calc(5px * var(--bu, 1)),
+    transparent calc(5.2px * var(--bu, 1))
+  );
+  background-size: 100% calc(20px * var(--bu, 1));
+  background-repeat: no-repeat round;
+  background-position: center;
+}
+
+/* Uneven bars, so the barcode reads as printed rather than generated; it runs
+   bottom-up on the stub, so the gradient walks the y axis. */
+.ticket-barcode-v {
+  --bc: var(--bu, 1);
+  background-image: repeating-linear-gradient(
+    0deg,
+    currentColor 0 calc(2px * var(--bc)),
+    transparent calc(2px * var(--bc)) calc(4px * var(--bc)),
+    currentColor calc(4px * var(--bc)) calc(5px * var(--bc)),
+    transparent calc(5px * var(--bc)) calc(9px * var(--bc)),
+    currentColor calc(9px * var(--bc)) calc(12px * var(--bc)),
+    transparent calc(12px * var(--bc)) calc(13px * var(--bc)),
+    currentColor calc(13px * var(--bc)) calc(14px * var(--bc)),
+    transparent calc(14px * var(--bc)) calc(18px * var(--bc))
+  );
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .animate-brand-fill {
@@ -295,4 +812,823 @@ details[open] > .faq-answer {
   .cheque-sign path {
     animation-delay: 0s;
   }
+}
+
+/* --- the Solana coin ------------------------------------------------- *
+ * A minted cylinder, not a disc with gradients on it: two faces and 36 rim
+ * panels standing in `preserve-3d`. The pose is live — the component writes
+ * `--yaw/--pitch` and their cosines every frame — and the shading is finished
+ * HERE, per surface, from those cosines. That order is the whole point: bake
+ * the Lambert term into the markup and the highlight turns with the metal,
+ * which is a painted coin. Solve it from the pose and the light stays nailed
+ * to the room while the piece moves under it.
+ *
+ * The metal is Solana black and the mark is struck in white: the piece is a
+ * token of the chain, not a medal of the brand. The network's violet and
+ * green ride only the rim chamfer — on the field they tint the whole piece
+ * and it stops reading as metal.
+ *
+ * One light, fixed at upper-left-front: L = (-0.5, -0.5, 0.707), y pointing
+ * DOWN as everywhere in CSS. Two sources on one object is how a struck piece
+ * starts looking painted.
+ *
+ * Nothing inside `.coin-scene` may use `filter`: it creates a compositing
+ * group, forces `transform-style: flat`, and that is how a preserve-3d scene
+ * collapses with no obvious cause. Depth goes through `color-mix` on `--b`.  */
+.coin-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  /* The piece is measured against its own box, never the viewport: every
+     length below is in `cqw`, because `translateZ()` rejects percentages and
+     a fixed px thickness would make the coin a different object on mobile. */
+  container-type: size;
+}
+
+/* The affordance appears only once the tracking is actually running — no
+   `cursor: pointer` on a piece that reduced motion left standing still. */
+.coin-stage[data-live] {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Containment lives on the stage, never on the scene: keeping it on an
+   ancestor of the cylinder is what leaves `preserve-3d` intact below. */
+.coin-scene {
+  --coin-thick: 11cqw;
+  --coin-apothem: 49.81cqw;   /* cos(5°) × 50% — half a panel off the flat */
+  --coin-seg: 11cqw;          /* 2·sin(5°) × 50%, ×1.26 of overlap: at the
+                                 silhouette the panels stand edge-on, and only
+                                 an overlap this wide keeps the next corner
+                                 from showing as a sawtooth */
+  /* The disc is the Solana token, not a Superteam brand piece: black metal
+     and cold silver, white mark. The network's two colours appear only on the
+     milling chamfer — colour on the field tinted the whole piece and it
+     stopped being metal. */
+  --coin-base: #08080d;
+  --coin-sheen: #e7eaf5;
+  --coin-violet: #9945ff;
+  --coin-teal: #14f195;
+
+  /* The rest pose, and the values every shading term falls back to before
+     hydration and under reduced motion: yaw 0, pitch 8°. */
+  --yaw: 0;
+  --pitch: 8;
+  --cy: 1;
+  --sy: 0;
+  --cp: 0.9903;
+  --sp: 0.1392;
+
+  position: absolute;
+  inset: 0;
+  /* ~3.4 diameters of lens. Anything shorter bends the far rim into a lumpy
+     skirt at the bottom — the coin stops being a turned object and becomes a
+     funnel. */
+  perspective: 340cqw;
+}
+
+/* The piece sits ON the section instead of floating over it, so the contact
+   shadow has to travel with the lean — a shadow that stays put under a coin
+   that tips is a sticker with a blur behind it. */
+.coin-cast {
+  position: absolute;
+  inset: 12% 12% -3% 12%;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.38);
+  filter: blur(6.5cqw);
+  /* The pose moves the shadow every frame; without its own layer, each frame
+     redid the whole blur on the main thread. */
+  will-change: transform;
+  /* It travels with the lean and narrows as the piece turns edge-on — a coin
+     standing on its rim casts a stripe, not a disc. `max(x, -x)` is |cos|:
+     past 90° the pose flips sign and a bare `--cy` would mirror the pool. */
+  transform: translate3d(calc(var(--sy) * -4cqw), calc(var(--sp) * 3.5cqw), 0)
+    scaleX(calc(0.52 + max(var(--cy), var(--cy) * -1) * 0.48));
+}
+
+.coin {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* enough tilt at rest to put the bottom rim in view, not enough to turn the
+     disc into an ellipse — the hub sits at the centre of the wire diagram and
+     has to read as a circle at a glance. Yaw is the axis the flick spins. */
+  transform: rotateY(calc(var(--yaw) * 1deg)) rotateX(calc(var(--pitch) * 1deg));
+  /* the give of a struck piece taking a shove */
+  transition: scale var(--dur-rapida) var(--ease-mola);
+  will-change: transform;
+}
+
+.coin-stage[data-struck] .coin {
+  scale: 0.955;
+  transition-duration: var(--dur-toque);
+}
+
+/* The faces sit INSIDE the rim, as on a struck piece where the rim is the
+   widest part. Without that step the edge hides under the silhouette, which
+   is why the old hub had no thickness at all. */
+.coin-face {
+  position: absolute;
+  inset: 1.8%;
+  border-radius: 50%;
+  /* without this the front face punches through and paints over the back */
+  backface-visibility: hidden;
+  background: color-mix(
+    in srgb,
+    var(--coin-sheen) calc(6% + var(--b) * 26%),
+    var(--coin-base)
+  );
+  box-shadow: 0 8cqw 15cqw -8cqw rgb(0 0 0 / 0.9);
+}
+
+/* n = (0,0,1) carried through rotateX(pitch) then rotateY(yaw), dotted with L */
+.coin-face-front {
+  --b: max(
+    0,
+    var(--cp) * var(--sy) * -0.5 + var(--sp) * 0.5 +
+      var(--cp) * var(--cy) * 0.707
+  );
+  transform: translateZ(calc(var(--coin-thick) / 2));
+}
+
+/* the same for n = (0,0,-1): the reverse only lights once it comes round */
+.coin-face-back {
+  --b: max(
+    0,
+    var(--cp) * var(--sy) * 0.5 + var(--sp) * -0.5 +
+      var(--cp) * var(--cy) * -0.707
+  );
+  transform: rotateY(180deg) translateZ(calc(var(--coin-thick) / 2));
+}
+
+/* THE COLLAR — the raised rim, and the one surface that carries the turn of
+   light. A single Lambert term per element gives every point of a ring the
+   same value, and a ring of even value reads as a circle drawn in pen; the
+   metal only appears once the light walks around it. `from 135deg` puts the
+   dark at lower-right, so the bright lands at upper-left, on the source — and
+   the yaw drags that turn a few degrees, the way a real collar does. */
+.coin-collar {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from calc(135deg + var(--sy) * 20deg),
+    color-mix(in srgb, var(--coin-sheen) 2%, var(--coin-base)) 0deg,
+    color-mix(in srgb, var(--coin-sheen) 9%, var(--coin-base)) 55deg,
+    color-mix(in srgb, var(--coin-sheen) 34%, var(--coin-base)) 140deg,
+    color-mix(in srgb, var(--coin-sheen) 60%, var(--coin-base)) 185deg,
+    color-mix(in srgb, var(--coin-sheen) 29%, var(--coin-base)) 240deg,
+    color-mix(in srgb, var(--coin-sheen) 8%, var(--coin-base)) 310deg,
+    color-mix(in srgb, var(--coin-sheen) 2%, var(--coin-base)) 360deg
+  );
+  /* the chamfer where the collar meets the air, and the one where it drops
+     into the field */
+  box-shadow:
+    inset 0 0 0 0.5cqw color-mix(in srgb, var(--coin-sheen) 18%, transparent),
+    inset 0 1cqw 1.6cqw -0.8cqw rgb(255 255 255 / 0.22),
+    inset 0 -1cqw 1.6cqw -0.8cqw rgb(0 0 0 / 0.55);
+}
+
+/* The struck field: a coin is a raised collar around a recessed centre, and
+   that step is what makes the mark read as pressed INTO the metal. */
+.coin-field {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(
+    120% 120% at calc(26% - var(--sy) * 22%) calc(18% + var(--sp) * 20%),
+    color-mix(in srgb, var(--coin-sheen) 19%, var(--coin-base)) 0%,
+    color-mix(in srgb, var(--coin-sheen) 7%, var(--coin-base)) 46%,
+    var(--coin-base) 100%
+  );
+  box-shadow:
+    inset 0 1cqw 2cqw -0.4cqw rgb(0 0 0 / 0.65),
+    inset 0 -0.5cqw 0 -0.2cqw color-mix(in srgb, var(--coin-sheen) 22%, transparent),
+    0 0.4cqw 0 color-mix(in srgb, var(--coin-sheen) 14%, transparent);
+}
+
+/* The one broad highlight flat shading cannot give: matte metal still gathers
+   light where the source faces it — and the gather slides across the face as
+   the face turns, because the source does not move with it. */
+.coin-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 58% at calc(27% - var(--sy) * 26%) calc(19% + var(--sp) * 22%),
+    rgb(255 255 255 / 0.16) 0%,
+    rgb(255 255 255 / 0.05) 44%,
+    transparent 72%
+  );
+}
+
+/* The wrapper tips the cylinder: `rotateY·translateZ` builds the ring on a
+   vertical axis, and `rotateX(90deg)` lays that axis toward the viewer. */
+.coin-rim {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(90deg);
+  transform-style: preserve-3d;
+}
+
+.coin-seg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--coin-seg);
+  height: var(--coin-thick);
+  margin-left: calc(var(--coin-seg) / -2);
+  margin-top: calc(var(--coin-thick) / -2);
+  transform: rotateY(calc(var(--i) * 10deg)) translateZ(var(--coin-apothem));
+  /* The panel normal (--a, --n, 0) carried through the live pose and dotted
+     with L. This is what makes the flick worth the code: the milling lights
+     up panel by panel as it passes the source, instead of a lit ring being
+     dragged round with the coin. */
+  --b: max(
+    0,
+    (var(--a) * var(--cy) + var(--n) * var(--sp) * var(--sy)) * -0.5 +
+      var(--n) * var(--cp) * -0.5 +
+      (var(--n) * var(--sp) * var(--cy) - var(--a) * var(--sy)) * 0.707
+  );
+  /* the rim is the surface whose orientation varies most — every panel faces
+     a different point of the circle — so it is where the light has the most
+     to say. Twice the tonal range of the faces. */
+  background: color-mix(
+    in srgb,
+    var(--coin-sheen) calc(7% + var(--b) * 46%),
+    var(--coin-base)
+  );
+  /* the milling. 36 panels is the count that holds both ends: one seam every
+     10° is a reed the pixel grid can draw, and the flat of each chord sits
+     half a pixel off the true circle, so the silhouette keeps no corners. The
+     old hub drew this as a 1.1° conic repeat, which aliases into a black
+     fringe at every width. */
+  box-shadow: inset 0.3cqw 0 0 rgb(0 0 0 / 0.4);
+  /* the chamfer runs on BOTH edges of the rim, as on a struck piece. Tied to
+     `--b` for the same reason as everything else: a highlight of even weight
+     all the way round reads as a drawn line; one that lights and dies with
+     the source reads as a bevel. */
+  border-top: 0.45cqw solid
+    color-mix(in srgb, var(--coin-teal) calc(5% + var(--b) * 78%), transparent);
+  border-bottom: 0.3cqw solid
+    color-mix(in srgb, var(--coin-violet) calc(4% + var(--b) * 52%), transparent);
+}
+
+/* --- the relief ------------------------------------------------------ *
+ * Two copies of the same contour offset along the light: the shaded one falls
+ * down-right, the light one rises up-left, and the sliver left showing IS the
+ * relief. On black metal that under-copy can no longer be black — a black
+ * sliver on a black field is nothing, and the mark goes back to reading as a
+ * sticker. It is a dimmed grey instead: the chamfer of the strike, the only
+ * value between the white device and the dark field. The old hub pasted the full-colour PNG on top, which
+ * is a sticker on a disc — a struck piece carries its device in its own metal.
+ *
+ * px inside a 397.7-wide viewBox is a user unit, not a screen one: at 300px
+ * of coin, 9 units ≈ 2 real px — the depth of a shallow strike.             */
+.coin-mark {
+  position: absolute;
+  inset: 33% 27%;
+  overflow: visible;
+}
+
+.coin-mark-shade path {
+  fill: color-mix(in srgb, var(--coin-sheen) 26%, var(--coin-base));
+  transform: translate(9px, 9px);
+}
+
+.coin-mark-lit path {
+  fill: #fff;
+  transform: translate(-6px, -6px);
+}
+
+/* THE REVERSE. A piece you can flip has to have a back — same strike, same
+   two-copy relief, legend around the collar and the edition in the middle.
+   4 units of a 200-wide viewBox is the same 2% of diameter as the 9 above. */
+.coin-reverse {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.coin-reverse .coin-mark-shade {
+  fill: color-mix(in srgb, var(--coin-sheen) 22%, var(--coin-base));
+  transform: translate(2.5px, 2.5px);
+}
+
+.coin-reverse .coin-mark-lit {
+  fill: color-mix(in srgb, var(--coin-sheen) 55%, #fff);
+  transform: translate(-1.8px, -1.8px);
+}
+
+.coin-legend {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.coin-year {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* --- the hero print --------------------------------------------------- *
+ * The one unforgettable moment of the first fold. The headline doesn't
+ * appear: it is PRINTED. Each line rises from behind an edge — clip-path,
+ * not opacity — because the brand is stamped typography, and stamped
+ * typography doesn't fade into the page: it comes out from under the roller.
+ *
+ * Runs on load, no observer and no JS: the content already comes from the
+ * server, and a hero that waits for hydration to move flickers. --hero-i is
+ * the position in the sequence; the gap comes from the token, as elsewhere. */
+.hero-print > * {
+  --hero-i: 0;
+  animation: heroPrint var(--dur-lenta) var(--ease-entrada) backwards;
+  animation-delay: calc(var(--hero-cue) + var(--hero-i) * var(--stagger-texto));
+}
+
+@keyframes heroPrint {
+  from {
+    opacity: 0;
+    clip-path: var(--hero-clip);
+    transform: translate3d(0, var(--dist-entrada), 0);
+  }
+  to {
+    opacity: 1;
+    /* Slack on top too: with leading 1.02 the tilde of MILHÕES and the accent
+       of PRÓXIMO poke out of the line box, and a clip at 0 eats both. The
+       revealing edge is still the top one — it just ends its travel above
+       the text's top instead of exactly on it. */
+    clip-path: inset(-30% 0 -30% 0);
+    transform: none;
+  }
+}
+
+:root {
+  /* -30% at the bottom so the clip never cuts a descender or the yellow
+     band's shadow; the only edge that matters is the top one. */
+  --hero-clip: inset(108% 0 -30% 0);
+
+  /* THE CUE. Without a sheet on the press the print starts on load, as
+     always. With the sheet, it has to start the instant the sheet is pulled —
+     otherwise the headline is stamped under an opaque plane and what shows
+     is a still page. The cue shifts the whole sequence without touching any
+     of its internal relations: same order, same stagger, same hierarchy.    */
+  --hero-cue: 0s;
+}
+html:not(.press-done) {
+  /* The cue is not the START of the pull, it is the point where the sheet
+     has already freed the headline's band. Starting with the pull, the print
+     was 78% done when uncovered and the gesture was lost; adding
+     --dur-instant it arrives at ~35%, and what shows under the sheet is
+     typography rising. A sum of tokens, not an eyeballed number. */
+  --hero-cue: calc(var(--dur-media) + var(--dur-instant));
+}
+
+/* After the headline the pace slows: what comes below it is reading, not
+   impact, and enters at list pace, not title pace. */
+.hero-after {
+  --hero-i: 0;
+  animation: heroPrint var(--dur-media) var(--ease-entrada) backwards;
+  animation-delay: calc(var(--hero-cue) + 0.34s + var(--hero-i) * var(--stagger-lista));
+}
+
+/* The yellow band is the word that pays off the promise, so it is the last
+   thing to happen and the only one with overshoot: it sweeps from the left
+   like a hand-run highlighter, after the line has already settled. */
+.hero-marca {
+  position: relative;
+  isolation: isolate;
+}
+.hero-marca::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-yellow);
+  transform-origin: left center;
+  animation: heroMarca var(--dur-rapida) var(--ease-carimbo)
+    calc(var(--hero-cue) + 0.52s) backwards;
+}
+@keyframes heroMarca {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* The ticket is a paper object: it doesn't rise, it is SET DOWN — arrives
+   turned and settles, on the stamp curve. And it settles CROOKED: it no
+   longer bleeds off the margin, so the loose-paper misalignment fits inside
+   the frame without a corner leaving the page. Rest is half a degree of the
+   arrival tilt — the difference between a piece laid on a table and an image
+   aligned by CSS.
+
+   The `to` repeats the rest transform on purpose: the animation is not
+   `forwards`, so a `none` here would snap the ticket straight on the final
+   frame. */
+.hero-ticket {
+  transform: rotate(calc(var(--tilt-papel) * -0.5));
+  animation: heroTicket var(--dur-lenta) var(--ease-carimbo)
+    calc(var(--hero-cue) + 0.28s) backwards;
+}
+@keyframes heroTicket {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--dist-longa), 0) rotate(calc(var(--tilt-papel) * 2.5));
+  }
+  to {
+    opacity: 1;
+    transform: rotate(calc(var(--tilt-papel) * -0.5));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Without a vector the clip becomes a fade: the print's order and rhythm
+       stay readable, just nothing travels. */
+    --hero-clip: inset(-30% 0 -30% 0);
+  }
+  /* The sheet doesn't exist here, so waiting for it would be pure delay. */
+  html:not(.press-done) {
+    --hero-cue: 0s;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * CLOCK PANEL — the last-call counter.
+ *
+ * The block is brutalist: sharp-cornered paper, hard edge and the numeral in
+ * black weight filling the whole box. The number carries the section.
+ *
+ * The change doesn't blink — the new digit is SET DOWN from above, on the
+ * entry curve, and only the numeral that actually changed re-animates (the
+ * `key` is the character itself). The seconds tick alone while the hour's
+ * tens digit stays still.
+ * ------------------------------------------------------------------------- */
+.tique {
+  display: block;
+  animation: tique var(--dur-rapida) var(--ease-entrada) both;
+}
+@keyframes tique {
+  from {
+    transform: translate3d(0, -0.1em, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Falling is displacement. What remains is the change itself — same
+     duration, same curve, nothing travelling through space. */
+  @keyframes tique {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+ * PRIZES ATMOSPHERE — the air around the podium.
+ *
+ * The reference's lesson: the MESH CARRIES THE COLOUR. The gradient isn't
+ * behind the grid, it sits on the plane — the surface is what is lit, and the
+ * lines are what proves it has depth. A thin grid over a flat ground with a
+ * diffuse blur behind is not the effect: it is the average of everything, and
+ * a large colour average in a large frame yields exactly nothing.
+ *
+ * So the order here is: aurora (blotches with SHAPE, not fog), glow, and the
+ * receding plane painted on top — hung from the top, which is where the
+ * reference puts its own and where the well already throws two lines out of
+ * frame.
+ *
+ * Two decisions that go against the generic "aurora dark" preset:
+ *
+ * 1. The ground is light, so the lines are DARK. White line on cream is an
+ *    invisible line; the grid inherits the well wireframe's ink.
+ * 2. The scrim (`.prizes-scrim`) is CREAM, not black. On a light ground with
+ *    dark text, darkening the ground drops the `muted` contrast instead of
+ *    saving it — bringing the paper back is what restores legibility. And it
+ *    works ONLY on the text band: mid-frame the scrim is the enemy.
+ *
+ * The group paints its own cream underneath: the blobs multiply, and
+ * multiplying against a transparent ground does nothing. Without that base
+ * the colour comes out flat.
+ * ------------------------------------------------------------------------- */
+.prizes-atmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--color-surface);
+  contain: paint;
+
+  --prizes-blur: 72px;
+  --prizes-line: color-mix(in oklab, var(--color-emerald-deep) 62%, transparent);
+  --prizes-cell: 28px;
+}
+
+/* AURORA. Three blotches in emerald, yellow and green — the brand palette,
+   not stock purple/cyan. Multiply because on paper colour TINTS; normal over
+   the cream would become a gradient sticker.
+   They are SMALLER than the frame on purpose: a blotch covering the whole
+   screen has no edge, and without an edge there is no shape — just one more
+   tone in the cream. */
+.prizes-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(var(--prizes-blur));
+  mix-blend-mode: multiply;
+  will-change: transform;
+  animation: prizesDeriva var(--dur-ambiente) var(--ease-inout) infinite alternate;
+}
+
+.prizes-blob-a {
+  left: -8%;
+  top: -14%;
+  width: 46%;
+  height: 78%;
+  opacity: 0.62;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-emerald) 78%, transparent) 0%,
+    color-mix(in oklab, var(--color-emerald) 34%, transparent) 52%,
+    transparent 100%
+  );
+  --drift-x: 11%;
+  --drift-y: 6%;
+  --drift-scale: 1.12;
+}
+
+.prizes-blob-b {
+  right: -10%;
+  top: 6%;
+  width: 44%;
+  height: 84%;
+  opacity: 0.58;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-yellow-strong) 82%, transparent) 0%,
+    color-mix(in oklab, var(--color-yellow-strong) 36%, transparent) 52%,
+    transparent 100%
+  );
+  /* Negative delays: the three start at different points of the cycle, or
+     they breathe together and the background becomes synchronised blinking. */
+  animation-delay: -9.5s;
+  --drift-x: -9%;
+  --drift-y: 8%;
+  --drift-scale: 1.09;
+}
+
+.prizes-blob-c {
+  left: 30%;
+  top: 34%;
+  width: 48%;
+  height: 76%;
+  opacity: 0.5;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-green) 72%, transparent) 0%,
+    color-mix(in oklab, var(--color-green) 30%, transparent) 54%,
+    transparent 100%
+  );
+  animation-delay: -17s;
+  --drift-x: -7%;
+  --drift-y: -7%;
+  --drift-scale: 1.14;
+}
+
+@keyframes prizesDeriva {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(var(--drift-scale));
+  }
+}
+
+/* THE GLOW on the horizon, behind the grid. Only opacity pulses — animated
+   scale or blur on a layer this size costs a repaint every frame. */
+.prizes-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    52% 42% at 50% 44%,
+    color-mix(in oklab, var(--color-emerald) 52%, transparent) 0%,
+    color-mix(in oklab, var(--color-emerald) 18%, transparent) 46%,
+    transparent 74%
+  );
+  mix-blend-mode: multiply;
+  filter: blur(30px);
+  animation: prizesRespiro var(--dur-respiro) var(--ease-inout) infinite alternate;
+}
+
+@keyframes prizesRespiro {
+  from {
+    opacity: var(--respiro-min, 0.4);
+  }
+  to {
+    opacity: var(--respiro-max, 0.78);
+  }
+}
+
+/* THE FUNNEL — the inverted mesh, and where the colour lives.
+ *
+ * The grid DESCENDS and closes to a point behind the podium's base: the
+ * portal the piece comes out of. What makes the funnel is not the rotation —
+ * it is where the vanishing point lives. `perspective-origin` pinned to the
+ * container's base puts the vertex exactly on its bottom edge, so moving the
+ * container moves the throat. The plane hangs from its TOP edge
+ * (`transform-origin`) and recedes downward: the wide mouth is the anchored
+ * edge, and everything below it converges.
+ *
+ * Why the throat sits BEHIND the podium and not in the void: an exposed
+ * vertex becomes a starburst instead of a surface. Hidden behind the piece,
+ * what reads is the columns closing around it.
+ *
+ * Colour follows DEPTH, not the screen: faint at the wide mouth, full at the
+ * far end. The surface is what is lit — the lines only prove it has a far
+ * end. And the lines are brand green, not black: on cream `emerald-deep`
+ * still has enough value to draw. */
+.prizes-funnel {
+  position: absolute;
+  inset-inline: -30%;
+  top: -5%;
+  bottom: 34%;
+  perspective: 900px;
+  perspective-origin: 50% 100%;
+}
+
+.prizes-funnel-plane {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(-55deg) translate3d(0, 0, 0) scale(1);
+  transform-origin: 50% 0;
+  mix-blend-mode: multiply;
+  will-change: transform;
+  animation: prizesFunil var(--dur-ambiente) var(--ease-inout) infinite alternate;
+  /* Two masks, both in PLANE space, not screen space. The first dissolves
+     distance: going down it is going to the back of the scene, and without
+     it the plane's far edge shows as a straight line instead of fading into
+     haze. The second removes the side walls — in plane space they converge
+     with the rest, so the funnel narrows cleanly; in screen space each side
+     would vanish at a different distance from the vertex. */
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 30%, #000 52%, rgb(0 0 0 / 0.5) 76%, transparent 96%),
+    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 30%, #000 52%, rgb(0 0 0 / 0.5) 76%, transparent 96%),
+    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  /* The lines come FIRST in the stack (top of the drawing) and the colour
+     plate under them: inverted, the gradient washes the grid and only the
+     blur remains. */
+  background-image:
+    linear-gradient(to right, var(--prizes-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--prizes-line) 1px, transparent 1px),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in oklab, var(--color-emerald) 10%, transparent) 20%,
+      color-mix(in oklab, var(--color-emerald) 30%, transparent) 58%,
+      color-mix(in oklab, var(--color-emerald) 54%, transparent) 100%
+    );
+  background-size: var(--prizes-cell) var(--prizes-cell), var(--prizes-cell) var(--prizes-cell), 100% 100%;
+}
+
+/* The drift moves in PLANE space — going down it is sinking into the
+   corridor, not sliding on screen. Two cells of travel, so the loop closes
+   seamlessly. */
+@keyframes prizesFunil {
+  from {
+    transform: rotateX(-55deg) translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: rotateX(-55deg) translate3d(0, calc(var(--prizes-cell) * 2), 0) scale(1.04);
+  }
+}
+
+/* THE THROAT'S LIGHT. The funnel is not a hole drawn in the paper: it emits.
+   Multiply again, because on cream "lit" is SATURATED colour, not white —
+   lightening a light ground produces no glow, only wash. */
+.prizes-vertex {
+  position: absolute;
+  inset-inline: 30%;
+  bottom: 22%;
+  height: 30%;
+  --respiro-min: 0.34;
+  --respiro-max: 0.56;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-emerald) 74%, transparent) 0%,
+    color-mix(in oklab, var(--color-emerald) 32%, transparent) 46%,
+    transparent 76%
+  );
+  mix-blend-mode: multiply;
+  filter: blur(72px);
+  animation: prizesRespiro var(--dur-respiro) var(--ease-inout) infinite alternate;
+}
+
+/* THE SCRIM. Brings paper back under the header and under the text band —
+   and only there. Mid-frame keeps full colour, because it is the only place
+   where it has room to be seen.
+   The bottom steps are not aesthetic: measured on screen, `muted` (#5a6a5b,
+   14px) drops from 4.82 to 4.10 over the raw aurora — below the AA minimum.
+   With this ramp it returns to ~4.7 without erasing the middle's colour.
+   Touching it means touching text contrast. */
+.prizes-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--color-surface) 0%,
+      color-mix(in oklab, var(--color-surface) 62%, transparent) 6%,
+      color-mix(in oklab, var(--color-surface) 22%, transparent) 15%,
+      transparent 26%
+    ),
+    linear-gradient(
+      to top,
+      var(--color-surface) 0%,
+      color-mix(in oklab, var(--color-surface) 96%, transparent) 18%,
+      color-mix(in oklab, var(--color-surface) 74%, transparent) 28%,
+      color-mix(in oklab, var(--color-surface) 34%, transparent) 42%,
+      transparent 58%
+    );
+}
+
+/* THE GRAIN. Inline feTurbulence — soft-light instead of overlay because on
+   cream, overlay blows out the midtone and the grain turns to dirt. */
+.prizes-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.075;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 190px 190px;
+}
+
+/* A wide screen spreads the same blotch over more pixels and it becomes an
+   average again. The blotches shrink in proportion to keep the EDGE in frame. */
+@media (min-width: 1600px) {
+  .prizes-atmos {
+    --prizes-blur: 88px;
+  }
+
+  .prizes-blob-a,
+  .prizes-blob-b,
+  .prizes-blob-c {
+    width: 38%;
+  }
+}
+
+/* On the phone the blur is the cost, not the drawing: 72px on a layer that
+   fills the screen is expensive compositing on a mobile GPU. Smaller
+   amplitude for the usual reason — the same distance on a narrow screen
+   reads as a jump. */
+@media (max-width: 640px) {
+  .prizes-atmos {
+    --prizes-blur: 46px;
+    --prizes-cell: 38px;
+  }
+
+  .prizes-vertex {
+    filter: blur(44px);
+  }
+
+  .prizes-blob {
+    --drift-x: 6%;
+    --drift-y: 5%;
+    --drift-scale: 1.06;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Drift and breathing are this layer's entire motion: without them the
+     static state remains, which is already the drawing — nothing vanishes. */
+  .prizes-blob,
+  .prizes-glow,
+  .prizes-funnel-plane,
+  .prizes-vertex {
+    animation: none;
+  }
+
+  .prizes-glow {
+    opacity: 0.6;
+  }
+
+  .prizes-vertex {
+    opacity: 0.46;
+  }
+}
+
+/* Lab hero: the fold is what is being judged, so the public footer stays off. */
+body:has([data-lab-hero]) footer {
+  display: none;
 }

@@ -9,7 +9,7 @@ type Contacts = {
 };
 
 const LINK_CLASS =
-  "text-ink/60 transition-colors hover:text-emerald focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow";
+  "text-ink/60 transition-colors ease-entrada hover:text-emerald focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow";
 
 export function ContactIcons({ contacts, size = 20 }: { contacts: Contacts; size?: number }) {
   const items = [

@@ -103,7 +103,7 @@ export function AssignmentGrid({
                       disabled={pending}
                       aria-pressed={on}
                       onClick={() => toggle(project.submissionId, judge.id, assigned)}
-                      className={`min-h-11 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                      className={`min-h-11 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ease-entrada disabled:opacity-60 ${
                         on
                           ? "border-emerald bg-emerald text-white"
                           : "border-green-dark/20 text-muted hover:border-emerald/50 hover:text-ink"

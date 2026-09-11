@@ -68,7 +68,7 @@ export function ContentList({ items, children }: { items: ContentCard[]; childre
         <ul className="mt-8 grid gap-5 sm:grid-cols-2">
           {filtered.map((item) => {
             const card = (
-              <article className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker transition-transform duration-200 hover:-translate-y-0.5">
+              <article className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5">
                 {item.thumb && (
                   <div className="relative aspect-video overflow-hidden border-b-2 border-green-dark/15 bg-green-dark">
                     <Image
@@ -76,12 +76,12 @@ export function ContentList({ items, children }: { items: ContentCard[]; childre
                       alt=""
                       fill
                       sizes="(max-width: 640px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      className="object-cover transition-transform duration-(--dur-rapida) ease-mola group-hover:scale-[1.03]"
                     />
                     {item.isYoutube && (
                       <span
                         aria-hidden
-                        className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-green-dark/85 pl-1 text-xl text-surface transition-transform duration-200 group-hover:scale-110"
+                        className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-green-dark/85 pl-1 text-xl text-surface transition-transform duration-(--dur-instant) ease-mola group-hover:scale-110"
                       >
                         ▶
                       </span>

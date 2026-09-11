@@ -1,0 +1,271 @@
+/* ---------------------------------------------------------------------------
+ * MICROINTERACTIONS
+ *
+ * How the page responds when the person touches it. The yardstick is the
+ * same as the rest of the identity: this is printed paper, and paper has
+ * WEIGHT. Nothing floats, pulses or glows — things lift a hair when the
+ * finger comes close and THUMP when it closes.
+ *
+ * Three decisions that hold for the whole file:
+ *
+ * 1. Every gesture goes and comes back. `:hover` lifts with `--ease-mola`,
+ *    `:active` sinks with `--dur-toque` — the touch confirmation arrives
+ *    BEFORE the action's result, which is what makes a button feel
+ *    mechanical rather than decorative.
+ * 2. Lifting is only for what is clickable. An informational card that moves
+ *    on mouseover promises a click that doesn't exist.
+ * 3. Displacement sits behind `@media (hover: hover)`. On touch, `:hover`
+ *    sticks after the tap and the piece stays lifted until the person taps
+ *    elsewhere — the gesture becomes a bug.
+ *
+ * NOTE on the cascade: the rules in this file are not in `@layer`, so they
+ * beat Tailwind utilities. Where I declare a full `transition` it is on
+ * purpose: `transition-colors` in the JSX sets the property list and would
+ * drop the transform with it. The list here RESTORES what the utility did
+ * and adds the transform — no color transition was lost.
+ * ------------------------------------------------------------------------- */
+
+/* --- THE STAMP ------------------------------------------------------------
+ * The cut-corner CTA is the most clicked piece on the page. It lifts 1px on
+ * hover and sinks 1px on press: 2px of travel in total, deliberately little —
+ * the button has a hard shadow and a chamfer, and any longer travel peels the
+ * piece off the paper instead of pressing it against it.                     */
+.btn-cut {
+  transition:
+    transform var(--dur-toque) var(--ease-mola),
+    background-color var(--dur-instant) var(--ease-entrada),
+    border-color var(--dur-instant) var(--ease-entrada),
+    color var(--dur-instant) var(--ease-entrada);
+}
+
+@media (hover: hover) {
+  .btn-cut:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.btn-cut:active {
+  transform: translate3d(0, 1px, 0);
+  transition-duration: var(--dur-toque);
+}
+
+/* Same pair on the pill button, which already lifted on hover but had no
+   return: without `:active` the click is confirmed nowhere.
+   The secondary only transitioned color, so transform has to join the
+   list — otherwise it snaps instead of sinking. */
+.btn-secondary {
+  transition:
+    transform var(--dur-toque) var(--ease-mola),
+    background-color var(--dur-instant) var(--ease-entrada),
+    border-color var(--dur-instant) var(--ease-entrada),
+    color var(--dur-instant) var(--ease-entrada);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translate3d(0, 1px, 0);
+  transition-duration: var(--dur-toque);
+}
+
+/* --- THE CARD THAT OPENS -------------------------------------------------
+ * Only the clickable version of the cut-corner card. The displacement is
+ * diagonal and the shadow grows along the same vector: the piece lifting off
+ * the paper, not a box sliding across the screen. A shadow that stays put
+ * while the card rises is the classic mistake — it gives away that the shadow
+ * is a painted rectangle and not a shadow.                                   */
+@media (hover: hover) {
+  a.card-cut,
+  button.card-cut {
+    transition:
+      transform var(--dur-rapida) var(--ease-mola),
+      filter var(--dur-rapida) var(--ease-mola);
+  }
+
+  a.card-cut:hover,
+  button.card-cut:hover {
+    transform: translate3d(-2px, -3px, 0);
+    filter: drop-shadow(9px 10px 0 rgb(27 35 29 / 0.2));
+  }
+
+  a.card-cut:active,
+  button.card-cut:active {
+    transform: translate3d(0, 0, 0);
+    filter: drop-shadow(4px 4px 0 rgb(27 35 29 / 0.22));
+    transition-duration: var(--dur-toque);
+  }
+}
+
+/* --- THE RESOURCE TILE --------------------------------------------------
+ * The channels grid is a block of six equal squares, and hover already turns
+ * the whole background green. What's missing is saying WHICH one is under
+ * the finger before the color lands: the icon lifts a hair, and that's what
+ * confirms the aim.                                                         */
+.tile-recurso svg {
+  transition: transform var(--dur-rapida) var(--ease-mola);
+}
+
+@media (hover: hover) {
+  .tile-recurso:hover svg {
+    transform: translate3d(0, -3px, 0) scale(1.06);
+  }
+}
+
+.tile-recurso:active svg {
+  transform: translate3d(0, 0, 0) scale(0.96);
+  transition-duration: var(--dur-toque);
+}
+
+/* --- THE QUESTION ROW ----------------------------------------------------
+ * The FAQ is a list of twelve equal rows separated by dashes. The click
+ * target is the whole row, but visually nothing said so — only the question
+ * changed color. Now the whole row responds: the question number moves
+ * inward, like a bookmark being pushed, and the paper under it warms a
+ * degree.
+ *
+ * The number is `aria-hidden` and the shift is 3px: it exists for the eye to
+ * find the active row while scanning, not to be read again.                 */
+.faq-linha summary {
+  transition: background-color var(--dur-instant) var(--ease-entrada);
+}
+
+.faq-linha summary > span:first-child {
+  transition:
+    transform var(--dur-rapida) var(--ease-mola),
+    color var(--dur-instant) var(--ease-entrada);
+}
+
+@media (hover: hover) {
+  .faq-linha summary:hover {
+    background-color: color-mix(in srgb, var(--color-green-dark) 4%, transparent);
+  }
+
+  .faq-linha summary:hover > span:first-child {
+    transform: translate3d(3px, 0, 0);
+    color: var(--color-emerald-deep);
+  }
+}
+
+/* Once open, the question stays marked while the answer is on screen —
+   without it, someone who opens three and scrolls loses track of which row
+   is which. */
+.faq-linha[open] summary > span:first-child {
+  color: var(--color-emerald-deep);
+}
+
+/* --- THE TICKET ----------------------------------------------------------
+ * The prettiest paper piece in the first fold, and until now inert. Touching
+ * it lifts the ticket and STRAIGHTENS what was crooked: rest is tilted, and
+ * the finger that lifts a sheet off the table is what aligns it. The object
+ * stays loose paper, not an image glued to the background.
+ *
+ * `heroTicket` runs with `backwards`, so the entrance animation leaves no
+ * rest transform behind — hover only exists after it ends, which is exactly
+ * when the person can aim at it.                                             */
+@media (hover: hover) {
+  .hero-ticket {
+    transition: transform var(--dur-rapida) var(--ease-mola);
+  }
+
+  .hero-ticket:hover {
+    transform: translate3d(0, -4px, 0) rotate(calc(var(--tilt-papel) * -0.12));
+  }
+
+  /* The shadow is not written here. It grows with the lift AND moves with
+     the pose tilt, and both must come out of the same `filter` — two rules
+     fighting over one property is how the shadow ended up stuck at the hover
+     value right while the card turns. `styles/bilhete.css` writes it, from
+     `--pose-alt`. */
+}
+
+/* --- THE LINK INK --------------------------------------------------------
+ * Text link inside a dark card. The underline doesn't light up: it is
+ * STROKED left to right, the same gesture as every drawn line on this page.
+ * Outside hover it exists at half height, so the link still reads as a link
+ * at rest — an underline that only appears on hover is an accessibility trap,
+ * not an effect.                                                             */
+.link-tinta {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-tinta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.22em;
+  height: 3px;
+  background-color: var(--color-yellow);
+  transform-origin: left center;
+  transform: scaleY(0.34);
+  transition: transform var(--dur-rapida) var(--ease-mola);
+}
+
+@media (hover: hover) {
+  .link-tinta:hover::after {
+    transform: scaleY(1);
+  }
+}
+
+/* --- THE NAV PILL -------------------------------------------------------
+ * The header's section menu. Two things happen here: hover draws a stroke
+ * under the label, and the section the person IS in gets marked.
+ *
+ * Marking the active section is what turns the nav into a map instead of a
+ * list of shortcuts: without it, the person reads the menu, can't find
+ * themselves in it, and stops consulting it. The component's observer writes
+ * `data-ativo` — only the appearance lives here.                             */
+.nav-pilula {
+  position: relative;
+}
+
+.nav-pilula::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.25rem;
+  height: 2px;
+  background-color: var(--color-emerald-deep);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--dur-rapida) var(--ease-mola);
+}
+
+@media (hover: hover) {
+  .nav-pilula:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+.nav-pilula[data-ativo="true"] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.nav-pilula[data-ativo="true"]::after {
+  background-color: var(--color-yellow-strong, var(--color-yellow));
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Without motion the marking becomes state: the active section's stroke
+     stays — it's information — and only the travel in and out disappears. */
+  .nav-pilula::after,
+  .link-tinta::after {
+    transition: none;
+  }
+
+  .btn-cut:hover,
+  .btn-cut:active,
+  .btn-primary:active,
+  .btn-secondary:active,
+  a.card-cut:hover,
+  button.card-cut:hover,
+  .hero-ticket:hover,
+  .tile-recurso:hover svg,
+  .tile-recurso:active svg,
+  .faq-linha summary:hover > span:first-child {
+    transform: none;
+  }
+}

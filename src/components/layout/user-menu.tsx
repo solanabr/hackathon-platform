@@ -49,7 +49,7 @@ export function UserMenu({
   }, [open]);
 
   const itemClass =
-    "block rounded-lg px-3 py-2 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-green-dark/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark";
+    "block rounded-lg px-3 py-2 text-sm font-semibold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark";
 
   return (
     <div ref={rootRef} className="relative">
@@ -59,9 +59,9 @@ export function UserMenu({
         aria-expanded={open}
         aria-label="Menu da conta"
         onClick={() => setOpen((o) => !o)}
-        className="block rounded-xl transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
+        className="block rounded-xl transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
       >
-        <Avatar src={avatarUrl} name={name ?? email} size="sm" ring="ring-surface/30" />
+        <Avatar src={avatarUrl} name={name ?? email} size="sm" ring="ring-ink/15" />
       </button>
 
       {open && (

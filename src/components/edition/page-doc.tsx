@@ -429,7 +429,7 @@ function OutlineNav({ outline }: { outline: OutlineEntry[] }) {
           <li key={h.id}>
             <a
               href={`#${h.id}`}
-              className="-ml-0.5 block border-l-2 border-transparent py-1 pl-4 text-sm font-semibold text-muted transition-colors hover:border-emerald hover:text-ink"
+              className="-ml-0.5 block border-l-2 border-transparent py-1 pl-4 text-sm font-semibold text-muted transition-colors ease-entrada hover:border-emerald hover:text-ink"
             >
               {h.text}
             </a>
@@ -454,7 +454,7 @@ function ProseDoc({ md, registerHref }: { md: string; registerHref: string | nul
             return (
               <Link
                 href={registerHref}
-                className="mx-0.5 inline-flex items-center rounded-full bg-yellow px-4 py-1.5 align-middle text-sm font-bold text-green-dark no-underline shadow-sticker transition-transform hover:-translate-y-0.5 hover:text-green-dark"
+                className="mx-0.5 inline-flex items-center rounded-full bg-yellow px-4 py-1.5 align-middle text-sm font-bold text-green-dark no-underline shadow-sticker transition-transform ease-mola hover:-translate-y-0.5 hover:text-green-dark"
               >
                 {children}
               </Link>

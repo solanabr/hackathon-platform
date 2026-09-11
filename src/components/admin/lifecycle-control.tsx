@@ -98,7 +98,7 @@ export function LifecycleControl({
             type="button"
             disabled={pending}
             onClick={() => transition(action.target)}
-            className={`min-h-11 rounded-full border-2 text-sm font-bold transition-colors disabled:opacity-50 ${
+            className={`min-h-11 rounded-full border-2 text-sm font-bold transition-colors ease-entrada disabled:opacity-50 ${
               confirming === action.target
                 ? "border-red-700/40 bg-red-700/10 px-5 py-2 text-red-700"
                 : action.primary

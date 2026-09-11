@@ -224,7 +224,7 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {coverUrl && (
-            <div className="relative rotate-2 rounded-2xl border-4 border-green-dark bg-green-dark shadow-[14px_14px_0_rgba(27,35,29,0.9)] transition-transform duration-300 hover:rotate-0">
+            <div className="relative rotate-2 rounded-2xl border-4 border-green-dark bg-green-dark shadow-[14px_14px_0_rgba(27,35,29,0.9)] transition-transform duration-(--dur-rapida) ease-mola hover:rotate-0">
               <div
                 aria-hidden
                 className="absolute -top-4 left-1/2 z-10 h-8 w-28 -translate-x-1/2 -rotate-2 rounded-sm bg-yellow/90 shadow-sm"

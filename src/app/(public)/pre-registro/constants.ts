@@ -1,4 +1,8 @@
 export const COLOSSEUM_SLUG = "colosseum-2026";
+// The countdown on the landing page is the whole point of the closing CTA, so
+// it must not vanish when the edition row fails to load. Same instant the copy
+// already states: 12 Oct, 23:59 California.
+export const COLOSSEUM_DEADLINE_FALLBACK = "2026-10-13T06:59:00.000Z";
 // The hackathon registration inside Colosseum, past the account sign-up.
 // Logged-out visitors get bounced to /signup without our referral, so it is
 // the second link, for people who already have an account.

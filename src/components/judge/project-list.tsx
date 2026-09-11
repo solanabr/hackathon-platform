@@ -69,7 +69,7 @@ export function JudgeProjectList({ projects, slug }: { projects: RatedProject[];
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-raised px-4 text-sm font-bold text-ink outline-none transition-colors hover:border-green-dark focus:border-emerald"
+          className="min-h-11 rounded-full border-2 border-green-dark/15 bg-surface-raised px-4 text-sm font-bold text-ink outline-none transition-colors ease-entrada hover:border-green-dark focus:border-emerald"
         >
           {SORTS.map(({ key, label }) => (
             <option key={key} value={key}>
@@ -95,7 +95,7 @@ export function JudgeProjectList({ projects, slug }: { projects: RatedProject[];
                 >
                   <Card
                     sticker
-                    className="flex h-full flex-col overflow-hidden p-0 transition-transform duration-200 group-hover:-translate-y-1 group-focus-visible:ring-2 group-focus-visible:ring-emerald"
+                    className="flex h-full flex-col overflow-hidden p-0 transition-transform duration-(--dur-instant) ease-mola group-hover:-translate-y-1 group-focus-visible:ring-2 group-focus-visible:ring-emerald"
                   >
                     {project.imageUrl ? (
                       <Image

@@ -1,0 +1,153 @@
+/* ---------------------------------------------------------------------------
+ * MOTION TOKENS
+ *
+ * The Design System's motion layer. Colour, type and spacing were already
+ * tokens; easing, duration and stagger were not — and that is exactly where
+ * mediocrity walks in on its own, because without a token the browser default
+ * wins.
+ *
+ * The grammar comes from the brand, not from a generic premium preset: this
+ * is a print identity — hard shadow, corner cut, halftone, sticker. Paper
+ * does not float. Paper is SET DOWN. So the attack is fast and the tail is
+ * long, and only physical objects (card, ticket, seal) get overshoot; type
+ * never passes its mark.
+ * ------------------------------------------------------------------------- */
+
+@theme {
+  /* Text, section and image reveals. Fast attack, long tail: the element
+     arrives almost fully in the first third and then only settles. */
+  --ease-entrada: cubic-bezier(0.16, 1, 0.28, 1);
+
+  /* Exit. Mirror of the entrance — leaves slowly and vanishes fast, so the
+     eye doesn't follow the element to the end and miss the next beat. */
+  --ease-saida: cubic-bezier(0.7, 0, 0.84, 0);
+
+  /* Loops, long hovers, camera, parallax. Symmetric on both sides. */
+  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* THE STAMP. Short, dry overshoot with no return bounce: the card hits,
+     backs off a hair and stops. It is the gesture of stamping, not of hanging
+     on a spring. Physical objects only — sticker card, ticket, seal, badge.
+     Never on text. */
+  --ease-carimbo: cubic-bezier(0.2, 1.32, 0.36, 1);
+
+  /* Soft overshoot for the hover lift, where the stamp would be aggressive. */
+  --ease-mola: cubic-bezier(0.34, 1.24, 0.64, 1);
+}
+
+:root {
+  /* TIME HIERARCHY — the whole point of the duration tokens. A site where
+     everything lasts the same has no rhythm: it has a metronome. Each step is
+     ~2x the previous, and the values are deliberately non-round because
+     200/400/600 is the signature of someone who measured nothing. */
+  --dur-toque: 0.13s;   /* :active — confirms the tap before the result     */
+  --dur-instant: 0.19s; /* colour hover, focus, state change                */
+  --dur-rapida: 0.37s;  /* micro-interaction with displacement              */
+  --dur-media: 0.82s;   /* section reveal                                   */
+  --dur-lenta: 1.25s;   /* hero and narrative transitions                   */
+
+  /* AMBIENT LOOPS — outside the interaction hierarchy on purpose. This
+     answers to nobody: it is the background breathing. On the scale above it
+     would become animation, and animation on a large decorative layer is
+     what makes a page look like it is blinking at you. */
+  --dur-ambiente: 26s;  /* aurora drift — slow enough to go unnoticed        */
+  --dur-respiro: 7.4s;  /* pulse of the glow on the horizon                 */
+
+  /* STAGGER — the gap between one element and the next of the same family.
+     Title lines are tighter than cards: the eye reads text faster than it
+     recognises an object. */
+  --stagger-texto: 0.065s;
+  --stagger-lista: 0.11s;
+  --stagger-tile: 0.045s; /* small pieces inside one block */
+
+  /* Entry DISTANCE. Three steps, because distance is hierarchy: what comes
+     from farthest is what the section wants you to look at. */
+  --dist-curta: 12px;
+  --dist-entrada: 26px;
+  --dist-longa: 44px;
+
+  /* Rest rotation of paper objects — the misalignment that makes the card
+     look stuck on by hand instead of positioned by CSS. */
+  --tilt-papel: 1.4deg;
+
+  /* DRIFT — how far a layer travels while the page passes over it. It is the
+     entry distance applied to the scroll axis, and follows the same rule:
+     three steps, and the step IS the hierarchy. What travels most is what
+     sits deepest in the scene, never what carries the content.
+
+     In % of the layer itself, not px: the same drift must hold on a phone
+     and on a 27" monitor, and an absolute value is a jump on one and
+     invisible on the other. */
+  --deriva-curta: 3%;
+  --deriva-media: 7%;
+  --deriva-longa: 13%;
+
+  /* How much a background layer grows while crossing the frame. Scale is the
+     depth vector when there is nowhere to translate — a halftone filling the
+     whole card, for example. */
+  --zoom-cena: 1.09;
+}
+
+/* ---------------------------------------------------------------------------
+ * REDUCED MOTION — a considered version, not a switch.
+ *
+ * What causes vestibular discomfort is large displacement, rotation and
+ * scale, not opacity. So reduced mode keeps the whole orchestration — order,
+ * stagger, time hierarchy, curve — and swaps ONLY the vector: what travelled
+ * now appears in place. The person still watches the page assemble in the
+ * order the content asks for; they just aren't carried along.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dist-curta: 0px;
+    --dist-entrada: 0px;
+    --dist-longa: 0px;
+    --tilt-papel: 0deg;
+
+    /* Drift and scene zoom are pure displacement and scale: without a vector
+       there is no orchestration left to keep, only the layer in place. */
+    --deriva-curta: 0%;
+    --deriva-media: 0%;
+    --deriva-longa: 0%;
+    --zoom-cena: 1;
+
+    /* Without displacement the same time feels too slow — a fade is perceived
+       as longer than a move. Shortens the whole scale while keeping the
+       proportions between steps. */
+    --dur-toque: 0.1s;
+    --dur-instant: 0.15s;
+    --dur-rapida: 0.24s;
+    --dur-media: 0.42s;
+    --dur-lenta: 0.6s;
+
+    /* Overshoot is displacement by definition: without a vector nothing of it
+       remains. The physical-object curves fall back to the entry curve. */
+    --ease-carimbo: cubic-bezier(0.16, 1, 0.28, 1);
+    --ease-mola: cubic-bezier(0.16, 1, 0.28, 1);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * REGISTRATION — the plates' offset before they snap into place.
+ *
+ * From the reference's X-ray (technical kit, doc 02): the finish does not
+ * come from post-processing, it comes from the print itself. Only the
+ * magnitude lives here; the behaviour is in `styles/gravura.css`.
+ * ------------------------------------------------------------------------- */
+:root {
+  /* REGISTRATION OFFSET. How far each plate comes in off-axis before
+     snapping. In `em`, not px: the ghost has to grow with the type size, or a
+     76px headline and an 11px seal miss by the same amount and the seal
+     turns to smudge. */
+  --registro-desvio: 0.13em;
+
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Off-axis registration is displacement; without a vector the plate is
+       born in place and what reads is clean typography — the final state. */
+    --registro-desvio: 0em;
+  }
+}

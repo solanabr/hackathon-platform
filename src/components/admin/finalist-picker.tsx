@@ -112,7 +112,7 @@ export function FinalistPicker({
           return (
             <li
               key={c.submissionId}
-              className={`rounded-2xl border-2 bg-surface-raised p-5 transition-all ${
+              className={`rounded-2xl border-2 bg-surface-raised p-5 transition-all ease-entrada ${
                 on ? "border-green-dark shadow-sticker" : "border-green-dark/15"
               }`}
             >
@@ -153,7 +153,7 @@ export function FinalistPicker({
                       value={placement[c.submissionId] ?? ""}
                       placeholder="—"
                       onChange={(e) => updatePlacement(c, e.target.value)}
-                      className="h-9 w-14 rounded-lg border-2 border-green-dark/15 bg-surface-raised px-2 text-center font-mono text-base font-bold tabular-nums text-ink outline-none transition-colors hover:border-green-dark focus:border-emerald"
+                      className="h-9 w-14 rounded-lg border-2 border-green-dark/15 bg-surface-raised px-2 text-center font-mono text-base font-bold tabular-nums text-ink outline-none transition-colors ease-entrada hover:border-green-dark focus:border-emerald"
                     />
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted">
                       colocação · opcional

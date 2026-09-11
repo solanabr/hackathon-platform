@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { withPlatformUtm } from "@/lib/attribution";
+import { PAGE_SHELL } from "./container";
 
 const COLUMNS = [
   {
@@ -39,7 +40,7 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer className="mt-24 overflow-hidden bg-green-dark">
-      <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+      <div className={`${PAGE_SHELL} pt-14`}>
         <div className="grid gap-12 pb-14 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Image
@@ -66,14 +67,14 @@ export function Footer() {
                         href={l.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-semibold text-surface/70 transition-colors duration-150 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
+                        className="text-sm font-semibold text-surface/70 transition-colors duration-(--dur-instant) ease-entrada hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
                       >
                         {l.label}
                       </a>
                     ) : (
                       <Link
                         href={l.href}
-                        className="text-sm font-semibold text-surface/70 transition-colors duration-150 hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
+                        className="text-sm font-semibold text-surface/70 transition-colors duration-(--dur-instant) ease-entrada hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow"
                       >
                         {l.label}
                       </Link>
@@ -85,7 +86,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-surface/15 py-6 text-sm text-surface/50">
+        <div className="border-t border-surface/15 py-6 text-sm text-surface/70">
           <p>© 2026 Superteam Brasil</p>
         </div>
       </div>

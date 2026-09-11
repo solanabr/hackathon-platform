@@ -1,0 +1,144 @@
+/* ---------------------------------------------------------------------------
+ * LOCAL PROGRESS AND REGISTRATION
+ *
+ * The architecture rule from the kit's X-ray (doc 02): **one single progress
+ * per section**. `--p` goes from 0 to 1 as the section arrives, is written
+ * ONCE on it and inherited by everything inside. Handing global scroll numbers
+ * to dozens of components is how a page like this loses control — every piece
+ * gets its own ruler and nothing lines up any more.
+ *
+ * `initial-value: 1` is the whole safety net: without `animation-timeline`,
+ * without JS or under reduced motion, everything reads 1 — the FINISHED
+ * composition. This page's rest state is always the approved drawing, never a
+ * screen waiting for an effect.
+ * ------------------------------------------------------------------------- */
+/* The local progress. `initial-value: 1` is deliberate and is the whole
+   safety net: wherever there is no `animation-timeline`, wherever JS fails,
+   wherever motion is reduced — everything reads 1, the FINISHED composition.
+   This page's rest state is always the approved drawing, never a blank screen
+   waiting for an effect. */
+@property --p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* --- THE DRIVER ----------------------------------------------------------
+ * Three ranges, because the same question ("when is the composition done
+ * being drawn?") has three good answers depending on section height.
+ * `entry` is as long as the subject's height; `cover` adds the viewport.
+ * Choosing explicitly at the call site beats a heuristic that fails silently
+ * on a tall section.                                                        */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .cena-p,
+    .cena-p-curta,
+    .cena-p-longa {
+      animation: cenaProgresso linear both;
+      animation-timeline: view();
+    }
+
+    /* The default: draws while the section enters and finishes before it is
+       fully on screen — whoever reads the text already finds it drawn. */
+    .cena-p {
+      animation-range: entry 8% entry 78%;
+    }
+
+    /* Short section, where `entry` is brief: the drawing has to happen almost
+       entirely on first appearance, or it won't start before it scrolls by. */
+    .cena-p-curta {
+      animation-range: entry 2% entry 44%;
+    }
+
+    /* A composition that keeps evolving through the whole read — one the
+       person travels through rather than looks at. */
+    .cena-p-longa {
+      animation-range: cover;
+    }
+
+    @keyframes cenaProgresso {
+      from {
+        --p: 0;
+      }
+      to {
+        --p: 1;
+      }
+    }
+  }
+}
+
+/* --- 1. REGISTRATION -----------------------------------------------------
+ * The plates come in off-axis and snap into place.
+ *
+ * It is the gesture that opens and closes the page, and the only moment the
+ * brand shows the PROCESS instead of the product: for an instant the headline
+ * is three misaligned impressions, and only then becomes typography.
+ *
+ * `text-shadow`, not duplicated layers: a text shadow paints behind the
+ * glyph, so the ghost shows exactly where the plate would have missed,
+ * without duplicating text in the DOM — the screen reader still hears one
+ * headline.
+ *
+ * The two plates miss in OPPOSITE directions and by different proportions
+ * (one more on X, the other more on Y). Missing both to the same side is not
+ * out-of-square registration: it is a cast shadow, a different thing that
+ * reads as cheap embossing.                                                 */
+.registro {
+  --r: calc(1 - var(--p));
+  --tinta-a: var(--color-emerald);
+  --tinta-b: var(--color-yellow-strong);
+  text-shadow:
+    calc(var(--registro-desvio) * var(--r) * -1)
+      calc(var(--registro-desvio) * var(--r) * 0.44) 0 var(--tinta-a),
+    calc(var(--registro-desvio) * var(--r) * 0.82)
+      calc(var(--registro-desvio) * var(--r) * -0.36) 0 var(--tinta-b);
+}
+
+/* On the dark green the emerald vanishes and the yellow blows out. The plates
+   switch to the pair that exists on that ground: cream and yellow. */
+.registro-escuro {
+  --tinta-a: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  --tinta-b: var(--color-yellow);
+}
+
+/* The fold prints on load, not on scroll: the headline is already on screen
+   when the page opens, so waiting for scroll would be waiting forever. Runs
+   with `heroPrint`, on the same cue, so the plates snap in the instant the
+   line finishes rising from under the roller. */
+.registro-impressao {
+  animation: registroImpressao var(--dur-lenta) var(--ease-entrada) backwards;
+  animation-delay: calc(var(--hero-cue) + var(--hero-i, 0) * var(--stagger-texto));
+}
+
+@keyframes registroImpressao {
+  from {
+    --p: 0;
+  }
+  to {
+    --p: 1;
+  }
+}
+
+/* --- 5. THE GRAIN --------------------------------------------------------
+ * The reference's final composition lays low-intensity blue noise over
+ * everything. It is what keeps the page from looking like a vector: paper
+ * has fibre.
+ *
+ * `soft-light`, not `overlay`: on cream, overlay blows out the midtone and
+ * the grain turns to dirt. Same decision already made in the prizes
+ * atmosphere.                                                               */
+.grao {
+  position: relative;
+}
+
+.grao::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: var(--grao-forca, 0.055);
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 190px 190px;
+}

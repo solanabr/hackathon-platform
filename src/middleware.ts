@@ -29,6 +29,9 @@ export const config = {
     // sentry-tunnel and relay-hx9 must stay excluded: analytics traffic would
     // otherwise pay a Supabase session refresh per event, and under Turbopack
     // the Sentry SDK does not skip its tunnel route by itself.
-    "/((?!_next/static|_next/image|favicon.ico|brand/|sentry-tunnel|relay-hx9|opengraph-image|twitter-image|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // models/ and draco/ are static assets for the hero scene: without the
+    // exclusion the middleware redirects the .glb to /auth and the canvas
+    // renders empty with no error anywhere.
+    "/((?!_next/static|_next/image|favicon.ico|brand/|models/|draco/|sentry-tunnel|relay-hx9|opengraph-image|twitter-image|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

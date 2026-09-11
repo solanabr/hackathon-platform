@@ -130,7 +130,7 @@ export function PreregForm({ profile, email }: { profile: User | null; email: st
       )}
 
       <Button type="submit" fullWidth disabled={pending}>
-        {pending ? "Enviando..." : "Concluir cadastro"}
+        {pending ? "Salvando..." : "Salvar e continuar"}
       </Button>
     </form>
   );

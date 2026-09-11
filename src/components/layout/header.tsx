@@ -5,46 +5,44 @@ import { resolveRoleState } from "@/lib/roles";
 import { resolveSessionClaims } from "@/lib/user-state";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { UserMenu } from "./user-menu";
-import { EntrarLink } from "./entrar-link";
-import { CadastroLink } from "./cadastro-link";
+import { AuthActions } from "./auth-actions";
 import { LpSectionNav } from "./lp-section-nav";
+import { PAGE_SHELL } from "./container";
 
 /**
- * Floating dark dock instead of a hairline bar: the cream page keeps its
- * canvas, the chrome reads as one object sitting on top of it.
+ * A hairline bar on the cream, not an object sitting on it: the page keeps the
+ * whole canvas and the chrome gets out of the way.
  *
  * Only the session claims (a local JWT check) resolve before the shell goes
  * out; the profile and roles reads stream into the menu slot behind a
  * same-size placeholder. Without the boundary every page's first byte waited
  * on those two queries before the browser could even start on CSS and fonts.
  */
-const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark";
-const ENTRAR_CLASS = `rounded-full bg-yellow px-5 py-2 text-sm font-bold text-green-dark transition-transform duration-200 hover:-translate-y-0.5 ${FOCUS_RING}`;
-// Below xl the sticky MobileCtaBar carries the cadastro button: at lg the seven
-// section pills leave no room for it in the dock without crushing the logo.
-const ENTRAR_LP_CLASS = `rounded-full border-2 border-surface/40 px-4 py-1.5 text-sm font-bold text-surface transition-colors duration-200 hover:bg-surface hover:text-green-dark sm:inline-block ${FOCUS_RING}`;
-const CADASTRO_CLASS = `hidden whitespace-nowrap xl:inline-block ${ENTRAR_CLASS}`;
+const ENTRAR_CLASS =
+  "btn-cut btn-cut-outline btn-cut-quiet inline-flex items-center px-3.5 py-1.5 text-[13px] font-semibold text-ink sm:px-5 sm:py-2 sm:text-sm";
+
+const CADASTRO_CLASS =
+  "btn-cut inline-flex items-center whitespace-nowrap bg-emerald-deep px-3.5 py-1.5 text-[13px] font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-5 sm:py-2 sm:text-sm";
 
 export async function Header() {
   const claims = await resolveSessionClaims();
 
   return (
-    <header className="sticky top-3 z-50 px-3 sm:top-4 sm:px-6">
+    <header className="chrome-assenta sticky top-0 z-50 border-b border-ink/10 bg-surface/80 backdrop-blur-md">
       {claims && <PostHogIdentify userId={claims.userId} />}
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border-2 border-green-dark bg-green-dark px-4 py-3 shadow-sticker sm:px-6">
+      <div className={`${PAGE_SHELL} flex h-16 items-center justify-between gap-4`}>
         <Link
           href="/"
-          className="flex shrink-0 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-green-dark"
+          className="flex shrink-0 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
         >
           <Image
-            src="/brand/stbr/logo/horizontal-fwhite.svg"
+            src="/brand/stbr/logo/ST-DARK-GREEN-HORIZONTAL.svg"
             alt="Superteam Brasil"
             width={140}
             height={24}
             priority
             className="h-6 w-auto"
-              style={{ height: "1.5rem", width: "auto" }}
+            style={{ height: "1.5rem", width: "auto" }}
           />
         </Link>
 
@@ -53,27 +51,45 @@ export async function Header() {
         </div>
 
         <nav className="flex items-center gap-2 text-sm sm:gap-3">
-          {!claims && <CadastroLink className={CADASTRO_CLASS} />}
           {claims ? (
             <Suspense
               fallback={
-                <span aria-hidden className="block h-9 w-9 rounded-xl bg-emerald ring-2 ring-surface/30" />
+                <span
+                  aria-hidden
+                  className="block h-9 w-9 rounded-xl bg-emerald ring-2 ring-ink/10"
+                />
               }
             >
               <SignedInMenu />
             </Suspense>
           ) : (
-            <EntrarLink className={ENTRAR_CLASS} lpClassName={ENTRAR_LP_CLASS} />
+            <AuthActions
+              signInClassName={ENTRAR_CLASS}
+              signUpClassName={CADASTRO_CLASS}
+            />
           )}
         </nav>
       </div>
+      {/* The ruler: how much of the sheet has gone by. It sits at the base of
+          the header because that is exactly where the bar meets the content —
+          the line marks the border between chrome and page, and informs too. */}
+      <span
+        aria-hidden
+        className="lp-regua absolute inset-x-0 bottom-[-2px] h-[2px] bg-yellow-strong"
+      />
     </header>
   );
 }
 
 async function SignedInMenu() {
   const roles = await resolveRoleState();
-  if (!roles) return <EntrarLink className={ENTRAR_CLASS} lpClassName={ENTRAR_LP_CLASS} />;
+  if (!roles)
+    return (
+      <AuthActions
+        signInClassName={ENTRAR_CLASS}
+        signUpClassName={CADASTRO_CLASS}
+      />
+    );
   const { state } = roles;
   const admin = roles.isAdmin || roles.adminFor.length > 0;
   // /judge only admits global admins and real judges; a scoped edition admin

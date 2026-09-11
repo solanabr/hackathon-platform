@@ -147,7 +147,7 @@ export function JudgeProjectCard({
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-ink/10 px-3.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-emerald/50 hover:text-ink"
+                className="rounded-full border border-ink/10 px-3.5 py-1.5 text-sm font-semibold text-muted transition-colors ease-entrada hover:border-emerald/50 hover:text-ink"
               >
                 {link.label}
               </a>
@@ -183,7 +183,7 @@ function MemberContactLink({
     <Link
       href={href}
       {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-      className="max-w-full truncate rounded-full border border-emerald/25 px-2.5 py-1 text-[11px] font-semibold text-emerald transition-colors hover:border-emerald/60"
+      className="max-w-full truncate rounded-full border border-emerald/25 px-2.5 py-1 text-[11px] font-semibold text-emerald transition-colors ease-entrada hover:border-emerald/60"
     >
       {children}
     </Link>

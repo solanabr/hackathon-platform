@@ -39,7 +39,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" data-scroll-behavior="smooth" className={`${archivo.variable} ${inter.variable}`}>
+    <html lang="pt-BR" data-scroll-behavior="smooth" suppressHydrationWarning className={`${archivo.variable} ${inter.variable}`}>
+      <head>
+        {/* The press sheet is the LP's first frame, and only on the session's
+            first visit. The marking has to happen BEFORE paint, so the script
+            lives here and not in the component tree — in the body React 19
+            moves it on hydration and takes the sheet along. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var k='stbr-press';if(sessionStorage.getItem(k)){document.documentElement.classList.add('press-done')}else{sessionStorage.setItem(k,'1')}}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <GoogleTagManagerNoScript />
         {children}

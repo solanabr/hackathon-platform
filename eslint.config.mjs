@@ -5,5 +5,5 @@ import nextTypescript from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextCoreWebVitals,
   ...nextTypescript,
-  { ignores: [".next/**", "node_modules/**", "supabase/functions/**", ".claude/**"] },
+  { ignores: [".next/**", ".next-build/**", "node_modules/**", "supabase/functions/**", ".claude/**", "public/**"] },
 ]);

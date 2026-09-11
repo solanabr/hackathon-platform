@@ -9,7 +9,7 @@ export const segmentedContainer =
   "inline-flex max-w-full gap-1 overflow-x-auto rounded-full border-2 border-green-dark bg-surface-raised p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
 export const segmentClass = (active: boolean) =>
-  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
+  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold transition-colors duration-(--dur-instant) ease-entrada focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
     active ? "bg-green-dark text-surface" : "text-ink hover:bg-green-dark/10"
   }`;
 

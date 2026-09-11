@@ -1,0 +1,513 @@
+/* ---------------------------------------------------------------------------
+ * SCROLL SCENES
+ *
+ * The LP's third motion layer. The other two already existed: ENTRANCE
+ * (`.reveal`, an observer that fires once) and AMBIENT (loops that respond
+ * to no one). Missing was the one that responds to the finger: what the
+ * person sees changes because THEY are scrolling, not because a timer fired.
+ *
+ * Everything here is `animation-timeline` — animation tied to scroll
+ * position, not to the clock. Three consequences that justify the whole choice:
+ *
+ * 1. Reversible for free. Scrolling up undoes on the same curve, because
+ *    there is no "fired state" to re-arm — there is a position.
+ * 2. Runs on the compositor, off the main thread. The honest alternative is
+ *    one more rAF `scroll` listener per layer; `JourneyPin` has one, and one
+ *    is the limit before scrolling starts to stutter on phones.
+ * 3. Degrades to nothing. Where the API is missing, `@supports` doesn't
+ *    apply and the layer stays at rest — which is the approved design, not
+ *    a broken version waiting for JS.
+ *
+ * HIERARCHY RULE: scroll scenes move BACKGROUND LAYERS — halftone, kraft,
+ * monument, rails, mesh. Text and CTAs never drift. Content is the still
+ * thing everything else moves relative to; invert that and the page becomes
+ * a carousel and reading becomes impossible.
+ *
+ * GOTCHA that cost time: `view()` measures the element against the nearest
+ * SCROLLPORT, and `overflow: hidden` counts as a scrollport. A layer inside
+ * an `overflow-hidden` section never progresses — the section doesn't
+ * scroll. That's why sections hosting a scene use `overflow-clip`: clips the
+ * same, without becoming a scroll container.
+ * ------------------------------------------------------------------------- */
+
+/* The ruler starts empty and is only filled by scrolling. Outside `@supports`
+   it is never filled — so it stays invisible, the right state for a piece
+   whose only content is progress. */
+.lp-regua {
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* --- DRIFT ------------------------------------------------------------
+     * The parallax. The layer enters ahead of and leaves behind the content,
+     * so it reads as sitting BEHIND the paper rather than glued to it. The
+     * travel is symmetric around rest on purpose: mid-crossing — where the
+     * section is read — the layer is exactly where the design placed it.   */
+    .cena-deriva-curta,
+    .cena-deriva-media,
+    .cena-deriva-longa {
+      animation: cenaDeriva linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    .cena-deriva-curta {
+      --deriva: var(--deriva-curta);
+    }
+    .cena-deriva-media {
+      --deriva: var(--deriva-media);
+    }
+    .cena-deriva-longa {
+      --deriva: var(--deriva-longa);
+    }
+
+    /* Flips the direction: the layer rises as the page descends. For what
+       must look FIXED in the world — a monument resting on the ground does
+       not follow the scroll, it falls behind. */
+    .cena-deriva-contra {
+      --deriva-sinal: -1;
+    }
+
+    @keyframes cenaDeriva {
+      from {
+        transform: translate3d(
+          0,
+          calc(var(--deriva) * -1 * var(--deriva-sinal, 1)),
+          0
+        );
+      }
+      to {
+        transform: translate3d(
+          0,
+          calc(var(--deriva) * var(--deriva-sinal, 1)),
+          0
+        );
+      }
+    }
+
+    /* --- SCENE ZOOM -------------------------------------------------------
+     * For a layer that fills the whole frame and has nowhere to translate
+     * without showing its edge: the dark cards' halftone, the mesh. It
+     * arrives large and settles to rest size on exit — the gesture is a
+     * camera pulling back, not a breathing GIF.                              */
+    .cena-zoom {
+      animation: cenaZoom linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    @keyframes cenaZoom {
+      from {
+        transform: scale(var(--zoom-cena))
+          translate3d(0, calc(var(--deriva-curta) * -1), 0);
+      }
+      to {
+        transform: scale(1) translate3d(0, var(--deriva-curta), 0);
+      }
+    }
+
+    /* --- THE RAILS DRAW THEMSELVES ---------------------------------------
+     * The `SectionRails` lines are technical drawing: the page's ruler
+     * appearing. So they don't fade — they are STROKED, top to bottom, at
+     * the pace the section enters. Same decision as the halftone that is
+     * swept instead of faded: in this brand, drawn things appear from the
+     * tip of the stroke.
+     *
+     * The range is `entry`, whose length is the SECTION HEIGHT: the stroke
+     * is ruled at the pace the section passes, not on a fixed duration that
+     * would be too short on a tall section and too long on a short one.
+     * Closes at 75% so the stroke isn't always incomplete while it's read. */
+    .cena-trilhos {
+      animation: cenaTrilhos linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 75%;
+    }
+
+    @keyframes cenaTrilhos {
+      from {
+        clip-path: inset(0 0 100% 0);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    /* --- THE FIRST FOLD HANDS OVER THE PAGE ------------------------------
+     * The hero isn't replaced by a hard cut: it RECEDES. As it leaves the
+     * scene, the whole fold loses ink and drops a hair, like a sheet going
+     * back onto the pile — and the next section rises over it.
+     *
+     * Only on `exit`, and never to zero: at 0.28 you can still read what's
+     * there when the person changes their mind and scrolls up. A hero that
+     * fully blanks out turns the scroll back into a jolt.                    */
+    /* The ink loss is a cream VEIL on top, not the fold's opacity. Opacity
+       on a section with canvas, plates and drifting layers forces the
+       compositor to paint the whole fold into a separate surface on every
+       scroll frame; a veil is a rectangle. The result is the same — the fold
+       reads over cream — and the flying ticket (z-30, outside this section)
+       still lands on top of the veil, as it landed on top of the faded fold. */
+    .cena-dobra {
+      view-timeline: --dobra block;
+      animation: cenaDobra linear both;
+      animation-timeline: --dobra;
+      animation-range: exit 15% exit 100%;
+    }
+
+    .cena-dobra::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-color: var(--color-surface);
+      opacity: 0;
+      animation: cenaDobraVeu linear both;
+      animation-timeline: --dobra;
+      animation-range: exit 15% exit 100%;
+    }
+
+    @keyframes cenaDobra {
+      from {
+        transform: translate3d(0, 0, 0);
+      }
+      to {
+        transform: translate3d(0, calc(var(--deriva-curta) * -1), 0);
+      }
+    }
+
+    @keyframes cenaDobraVeu {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 0.72;
+      }
+    }
+
+    /* --- THE TICKET FLIPS AND PARKS --------------------------------------
+     * The passage from the first fold to the section that explains the
+     * hackathon. Not a cut, not a piece that evaporates: the TICKET does the
+     * carrying. It leaves the hero corner, grows, turns 180° on the vertical
+     * axis and PARKS in the next section back side up — and the back is the
+     * section's content. The object the person stared at through the whole
+     * first fold is the same one they read afterwards, from the other side.
+     *
+     * Four decisions hold this up:
+     *
+     * 1. THE PIECE LIVES AT THE DESTINATION. It is a child of the section,
+     *    and its rest is the parked state. The hero corner is the
+     *    TRANSFORMED state — and its numbers are measured from the anchor
+     *    left in the hero (`components/campaign/ticket-flip.tsx`), not
+     *    calibrated in `vh`. A landing tuned by eye misses at every viewport
+     *    height other than the one it was tuned on.
+     *
+     * 2. THE FUNCTION LIST IS IDENTICAL IN EVERY KEYFRAME. Different lists
+     *    make the browser fall back to matrix interpolation, and a matrix
+     *    with 180° of `rotateY` degenerates: the card flattens instead of
+     *    turning. So every keyframe writes `translate3d + scale + rotate +
+     *    rotateY`, including the ones that wouldn't need to.
+     *
+     * 3. THE TURN HAPPENS AFTER THE TRIP STARTS. In the first 30% the piece
+     *    mostly just grows; the actual flip happens in the middle, and the
+     *    edge-on instant (90°) lands near two thirds — where the eye expects
+     *    the side change.
+     *
+     * 4. THE RULER IS THE PAGE SCROLL, with the travel written in px by the
+     *    measurer. `view()` would measure the piece against the viewport and
+     *    the range would end too early; the right travel is "from here until
+     *    the destination box reaches a quarter of the screen", and that is a
+     *    distance, not a crossing.
+     *
+     * Below `lg` the scene doesn't exist. Not lack of support: framing. The
+     * ticket's back is a sheet of four clauses, and on a phone that sheet
+     * doesn't fit a ticket's proportions — there the section is the card
+     * grid and the ticket stays in the hero, whole, as it always was.       */
+    @media (min-width: 1024px) {
+      /* The hero copy becomes the ANCHOR: it still occupies the box (it's
+         what gives the measurement) and leaves view and the a11y tree. */
+      .bilhete-ancora {
+        visibility: hidden;
+      }
+
+      /* The piece is still DEPOSITED into the first fold, as it always was:
+         the entrance belongs to the wrapper and touches only opacity, because
+         `transform` on the flight already belongs to scroll and two
+         animations on the same property don't add — the last wins and the
+         landing would stop happening. */
+      .bilhete-vao {
+        animation: bilheteEntra var(--dur-lenta) var(--ease-entrada)
+          calc(var(--hero-cue) + 0.28s) backwards;
+      }
+
+      @keyframes bilheteEntra {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .bilhete-voo {
+        animation: bilheteVoo linear both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 var(--voo-curso, 60vh);
+      }
+    }
+
+    /* THE PHYSICS. A sheet of paper tossed in the air is not a plate pinned
+     * to an axis, and the first version of this scene was exactly that:
+     * uniform rotation, uniform scale, constant brightness. Every keyframe
+     * below exists to undo one of those three things.
+     *
+     * 1. WEIGHT AND DRAG. The drop runs ahead of the lateral crossing: at
+     *    mid-flight the piece has already given up half its height and only
+     *    a third of the sideways path. That bends the trajectory — paper
+     *    falls and then glides, it doesn't walk a straight line between two
+     *    points.
+     *
+     * 2. INERTIA IN THE TURN. The sheet resists, flips all at once in the
+     *    middle and overshoots: crosses 180° and comes back. Same gesture as
+     *    `--ease-carimbo`, written in keyframes, because the ruler here is
+     *    the scroll and there is no timing curve — the keyframe distribution
+     *    sets the rhythm.
+     *
+     * 3. TWIST. `rotateX` and `skewY` take the turn off the single axis. A
+     *    real sheet never spins around a perfect line: it wobbles and
+     *    shears, and those two off-axis degrees are what make the eye read
+     *    SHEET instead of REVOLVING DOOR.
+     *
+     * All three only convince because the surface follows: `--voo-sombra`
+     * darkens the face as it leaves the light axis, `--voo-alto` lifts the
+     * shadow off the ground while the piece is airborne, and `--foil-x`
+     * sweeps the light across the paper during the flip — the same light
+     * source that lights the stub.                                          */
+    @keyframes bilheteVoo {
+      0% {
+        transform: translate3d(var(--voo-dx, 0px), var(--voo-dy, 0px), 0)
+          scale(var(--voo-k, 1)) rotate(-0.7deg) rotateX(0deg) rotateY(0deg)
+          skewY(0deg);
+        --voo-alto: 0;
+        --voo-sombra: 0;
+        --foil-x: 50%;
+      }
+      /* THE PEEL. The piece doesn't depart: it lets go. A short in-plane
+         turn and the trailing edge lifting before any travel — that's how
+         paper leaves a surface. */
+      8% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.96),
+            calc(var(--voo-dy, 0px) * 0.92),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.93 + 0.07)) rotate(-3.2deg)
+          rotateX(-4deg) rotateY(5deg) skewY(0.6deg);
+        --voo-alto: 0.55;
+        --voo-sombra: 0.08;
+        --foil-x: 42%;
+      }
+      22% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.86),
+            calc(var(--voo-dy, 0px) * 0.74),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.8 + 0.2)) rotate(-4.6deg)
+          rotateX(-6.5deg) rotateY(20deg) skewY(1.2deg);
+        --voo-alto: 0.92;
+        --voo-sombra: 0.28;
+        --foil-x: 32%;
+      }
+      40% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.7),
+            calc(var(--voo-dy, 0px) * 0.5),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.62 + 0.38)) rotate(-4.2deg)
+          rotateX(-5.5deg) rotateY(46deg) skewY(1.5deg);
+        --voo-alto: 1;
+        --voo-sombra: 0.55;
+        --foil-x: 46%;
+      }
+      /* EDGE-ON. Here the face is angled to the light and this is where it
+         needs to be darkest — a sheet's flip has a near-black instant, and
+         that instant is exactly what an evenly lit plate lacks. */
+      58% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.52),
+            calc(var(--voo-dy, 0px) * 0.3),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.44 + 0.56)) rotate(-2.8deg)
+          rotateX(-3.5deg) rotateY(82deg) skewY(1.3deg);
+        --voo-alto: 1;
+        --voo-sombra: 0.9;
+        --foil-x: 66%;
+      }
+      68% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.42),
+            calc(var(--voo-dy, 0px) * 0.21),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.34 + 0.66)) rotate(-1.6deg)
+          rotateX(-1.8deg) rotateY(102deg) skewY(0.8deg);
+        --voo-alto: 0.95;
+        --voo-sombra: 0.82;
+        --foil-x: 78%;
+      }
+      82% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.24),
+            calc(var(--voo-dy, 0px) * 0.09),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.17 + 0.83)) rotate(0.8deg)
+          rotateX(1.2deg) rotateY(140deg) skewY(0.15deg);
+        --voo-alto: 0.7;
+        --voo-sombra: 0.42;
+        --foil-x: 72%;
+      }
+      /* THE SLAP. Thirty-five degrees in ten percent of travel: the sheet
+         collapses on the last stretch, like anything light meeting the
+         table. */
+      92% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0.08),
+            calc(var(--voo-dy, 0px) * 0.02),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * 0.04 + 0.98)) rotate(1.3deg)
+          rotateX(1.8deg) rotateY(175deg) skewY(-0.35deg);
+        --voo-alto: 0.34;
+        --voo-sombra: 0.16;
+        --foil-x: 60%;
+      }
+      /* THE REBOUND. Overshoots 180° and comes back. Without it the card
+         STOPS at the exact angle, the signature of interpolated animation —
+         an object with mass always gives back a bit of what it received. */
+      97% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0),
+            calc(var(--voo-dy, 0px) * 0),
+            0
+          )
+          scale(calc(var(--voo-k, 1) * -0.03 + 1.03)) rotate(0.5deg)
+          rotateX(0.6deg) rotateY(186deg) skewY(-0.18deg);
+        --voo-alto: 0.12;
+        --voo-sombra: 0.04;
+        --foil-x: 52%;
+      }
+      /* ZERO WRITTEN AS A FRACTION, not as `0px`. A literal
+         `translate3d(0,0,0)` gets reduced to `translate(0)` by the minifier —
+         a different function NAME — and this keyframe's list stops matching
+         the others'. Consequence: the last stretch falls into matrix
+         interpolation, right on top of 180°, exactly where decomposition is
+         ambiguous and the card flattens. The fraction keeps the whole table's
+         shape and survives the build. */
+      100% {
+        transform: translate3d(
+            calc(var(--voo-dx, 0px) * 0),
+            calc(var(--voo-dy, 0px) * 0),
+            0
+          )
+          scale(1) rotate(0deg) rotateX(0deg) rotateY(180deg) skewY(0deg);
+        --voo-alto: 0;
+        --voo-sombra: 0;
+        --foil-x: 50%;
+      }
+    }
+
+    /* --- THE FAN OPENS ---------------------------------------------------
+     * The three cards in the row are already staggered at rest. Scrolling
+     * opens the stagger: each card travels a bit more than the previous one,
+     * so the gap between them grows while the strip crosses the screen and
+     * closes again as it leaves. The step between cards is the same drift
+     * token — the index sets the difference, written at the call site like
+     * every stagger in this codebase.                                        */
+    .cena-carta {
+      --deriva: calc(var(--deriva-curta) * var(--carta-i, 1));
+      animation: cenaDeriva linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    /* --- THE PANEL IS SET DOWN -------------------------------------------
+     * Large paper object — the dark Solana panel, the last-call block. It
+     * doesn't float in: it arrives a hair larger than its box and settles
+     * into it, the gesture of pressing a sheet against the table. Ends at
+     * `entry 100%`: once the piece is fully on screen it is already still —
+     * the rest of the crossing is reading, not animation.                    */
+    .cena-assenta {
+      animation: cenaAssenta linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 100%;
+    }
+
+    @keyframes cenaAssenta {
+      from {
+        transform: scale(0.965) translate3d(0, var(--dist-entrada), 0);
+      }
+      to {
+        transform: scale(1) translate3d(0, 0, 0);
+      }
+    }
+
+  }
+
+  /* The two pieces below sit OUTSIDE the reduced-motion cut, and that is a
+   * decision, not an oversight. What causes discomfort is large displacement,
+   * rotation and block scaling — not a 2px bar filling up or a background
+   * changing opacity in place. Both also inform: one says where the person
+   * is on the sheet, the other says the header now floats over the content.
+   * Turning them off would take information away from someone who asked for
+   * less motion. */
+
+  /* --- THE CHROME SETTLES -----------------------------------------------
+   * At the top of the page the header is a line over cream; as soon as the
+   * page moves it becomes a bar resting on top of the content. The switch is
+   * continuous and tied to the first 5rem of scroll, not an `if scrollY >
+   * 0` that snaps from one state to the other.
+   *
+   * Color and shadow only: height stays out because shrinking a sticky
+   * header reflows the whole page on every scroll frame.                    */
+  .chrome-assenta {
+    animation: chromeAssenta linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 5rem;
+  }
+
+  @keyframes chromeAssenta {
+    from {
+      background-color: color-mix(in srgb, var(--color-surface) 55%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
+      box-shadow: 0 0 0 0 rgb(27 35 29 / 0);
+    }
+    to {
+      background-color: color-mix(in srgb, var(--color-surface) 92%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--color-ink) 18%, transparent);
+      box-shadow: 0 6px 0 -4px rgb(27 35 29 / 0.1);
+    }
+  }
+
+  /* --- THE RULER -------------------------------------------------------
+   * How much of the sheet has gone by. The only piece on the page that
+   * informs instead of setting mood, hence the most discreet: 2px of ink
+   * running along the header's base, anchored left like a print ruler.
+   * Yellow is the brand's marking color — same as the hero band.            */
+  .lp-regua {
+    animation: lpRegua linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes lpRegua {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}

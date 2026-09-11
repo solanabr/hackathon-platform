@@ -20,7 +20,7 @@ export function Tilt({
   const apply = (rx: number, ry: number, animate: boolean) => {
     const el = ref.current;
     if (!el) return;
-    el.style.transition = animate ? "transform 450ms cubic-bezier(0.2, 0.8, 0.3, 1)" : "none";
+    el.style.transition = animate ? "transform var(--dur-media) var(--ease-inout)" : "none";
     el.style.transform = `perspective(1200px) rotate(var(--tilt-base, 0deg)) rotateX(${rx}deg) rotateY(${ry}deg)`;
   };
 

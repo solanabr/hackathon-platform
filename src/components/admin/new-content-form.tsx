@@ -118,7 +118,7 @@ export function NewContentForm({ hackathonId, slug }: { hackathonId: string; slu
                   type="button"
                   aria-pressed={active}
                   onClick={() => setAttachType(o.value)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
+                  className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold transition-colors duration-(--dur-instant) ease-entrada focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
                     active ? "bg-green-dark text-surface" : "text-ink hover:bg-green-dark/10"
                   }`}
                 >

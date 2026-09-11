@@ -197,7 +197,7 @@ export function ContentRow({
               onClick={() => move("up")}
               disabled={pending || isFirst}
               aria-label="Mover para cima"
-              className="rounded-lg px-2 py-1 text-muted transition-colors hover:text-ink disabled:opacity-30"
+              className="rounded-lg px-2 py-1 text-muted transition-colors ease-entrada hover:text-ink disabled:opacity-30"
             >
               ↑
             </button>
@@ -206,7 +206,7 @@ export function ContentRow({
               onClick={() => move("down")}
               disabled={pending || isLast}
               aria-label="Mover para baixo"
-              className="rounded-lg px-2 py-1 text-muted transition-colors hover:text-ink disabled:opacity-30"
+              className="rounded-lg px-2 py-1 text-muted transition-colors ease-entrada hover:text-ink disabled:opacity-30"
             >
               ↓
             </button>
@@ -247,7 +247,7 @@ export function ContentRow({
                   type="button"
                   aria-pressed={active}
                   onClick={() => setAttachType(o.value)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
+                  className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold transition-colors duration-(--dur-instant) ease-entrada focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-dark focus-visible:ring-inset ${
                     active ? "bg-green-dark text-surface" : "text-ink hover:bg-green-dark/10"
                   }`}
                 >

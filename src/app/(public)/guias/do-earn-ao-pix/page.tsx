@@ -243,7 +243,7 @@ export default function GuiaEarnPixPage() {
                 <li key={s.n}>
                   <a
                     href={`#passo-${s.n}`}
-                    className={`flex items-center gap-4 rounded-2xl border-2 border-green-dark px-5 py-4 shadow-sticker transition-transform duration-150 hover:-translate-y-0.5 ${
+                    className={`flex items-center gap-4 rounded-2xl border-2 border-green-dark px-5 py-4 shadow-sticker transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5 ${
                       s.n === 5 ? "bg-green-dark text-surface" : "bg-surface-raised text-ink"
                     }`}
                   >
@@ -543,7 +543,7 @@ export default function GuiaEarnPixPage() {
                 href={href as string}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark bg-surface-raised px-4 py-2.5 text-sm font-bold text-ink transition-colors duration-200 hover:bg-green-dark hover:text-surface"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-dark bg-surface-raised px-4 py-2.5 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark hover:text-surface"
               >
                 {icon}
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-60">{label}</span>
