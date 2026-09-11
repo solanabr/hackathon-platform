@@ -95,5 +95,14 @@ one upsert each with the fields that changed. Every event carries the tag
 | `cf_global_utm_source` / `_medium` / `_campaign` / `_content` | `hackathon_registrations.utm_*` |
 
 Dates are `YYYY-MM-DD HH:mm:ss` in America/Sao_Paulo (`formatBrt()` in
-`src/lib/dates.ts`). Empty values are dropped from the payload. The field
-identifiers live in `RD_FIELD` so a rename in RD is a one-line change.
+`src/lib/dates.ts`); RD custom fields are plain strings, so these sort but are
+not date-filterable in RD segmentations. Empty values are dropped from the
+payload. The field identifiers live in `RD_FIELD` so a rename in RD is a
+one-line change. Each event fires once per person: the cadastro on the first
+completed registration, the confirmation when the attestation first lands, the
+form on its first completion.
+
+The base that existed before this shipped (2026-09-11) was imported by
+marketing from the admin CSV export; only registrations after the deploy
+create contacts from here. People from that import still get the two update
+events when they confirm or complete the form, matched on e-mail.

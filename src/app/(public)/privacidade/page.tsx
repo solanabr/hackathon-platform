@@ -85,8 +85,9 @@ export default function PrivacidadePage() {
               análise de uso e medição de campanhas, servidores nos EUA, apenas
               com seu consentimento), Sentry (monitoramento de erros) e RD
               Station (CRM da Superteam Brasil, servidores no Brasil, que recebe
-              nome, e-mail, WhatsApp, cidade e a data do seu cadastro para a
-              comunicação sobre o hackathon em que você se inscreveu).
+              nome, e-mail, WhatsApp, as datas do seu cadastro e a origem da
+              campanha pela qual você chegou, para a comunicação sobre o
+              hackathon em que você se inscreveu).
               Dados de premiação podem ser compartilhados com os organizadores e
               patrocinadores da edição conforme o regulamento que você aceitou.
             </p>

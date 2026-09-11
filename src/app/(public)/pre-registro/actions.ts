@@ -209,13 +209,23 @@ export async function saveInterest(
   // came back to edit.
   const supabase = await createServerSupabaseClient();
   const completed = intent === "complete";
+  // Editing an already complete form must not re-date it nor re-fire the RD
+  // event: the first completion is the one that counts.
+  const { data: prior, error: priorError } = await supabase
+    .from("campaign_interest")
+    .select("completed_at")
+    .eq("hackathon_id", hackathon.id)
+    .eq("user_id", state.userId)
+    .maybeSingle();
+  if (priorError) logQueryError("preRegistro.priorInterest", priorError);
+  const firstCompletion = completed && !prior?.completed_at;
   const completedAt = new Date().toISOString();
   const { error } = await supabase.from("campaign_interest").upsert(
     {
       hackathon_id: hackathon.id,
       user_id: state.userId,
       ...validation.values,
-      ...(completed && { completed_at: completedAt }),
+      ...(firstCompletion && { completed_at: completedAt }),
     },
     { onConflict: "hackathon_id,user_id" },
   );
@@ -230,7 +240,7 @@ export async function saveInterest(
     has_project: validation.values.has_project,
     looking_for_team: validation.values.looking_for_team,
   });
-  if (completed) {
+  if (firstCompletion) {
     sendRdConversion({
       identifier: "formulario",
       email: state.email,

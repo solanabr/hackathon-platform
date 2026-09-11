@@ -78,6 +78,8 @@ export function buildRdPayload(input: RdConversion): RdPayload {
 let loggedMissingKey = false;
 
 export function sendRdConversion(input: RdConversion): void {
+  // The session claim can lack an e-mail; without it RD has no contact key.
+  if (!present(input.email)) return;
   const apiKey = process.env.RD_STATION_API_KEY;
   if (!apiKey) {
     if (!loggedMissingKey) {
