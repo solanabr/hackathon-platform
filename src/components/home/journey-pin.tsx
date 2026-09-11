@@ -24,8 +24,8 @@ export function JourneyPin({
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const cue = useSfx();
-  /* O paint roda em rAF e não pode fechar sobre um cue velho: o toggle troca
-     a função a cada mudança de estado e o loop nunca é recriado. */
+  /* The paint runs in rAF and must not close over a stale cue: the toggle
+     swaps the function on every state change and the loop is never recreated. */
   const cueRef = useRef(cue);
   useEffect(() => {
     cueRef.current = cue;
@@ -50,10 +50,10 @@ export function JourneyPin({
       cards.forEach((el, i) => {
         const t = Math.min(1, Math.max(0, (p - i * STEP) / SPAN));
         el.style.setProperty("--t", t.toFixed(4));
-        /* O carimbo soa quando a carta ENCOSTA, não quando começa a viajar —
-           0.88 é onde a curva já entregou o overshoot e o papel bate. Dispara
-           uma vez por carta e rearma se a pessoa subir de volta, para que
-           rolar a seção de novo soe de novo em vez de emudecer. */
+        /* The stamp sounds when the card LANDS, not when it starts moving —
+           0.88 is where the curve has delivered the overshoot and the paper
+           hits. Fires once per card and re-arms if the person scrolls back up,
+           so rolling through the section again sounds again instead of muting. */
         const landed = t > 0.88;
         if (landed !== struck[i]) {
           struck[i] = landed;

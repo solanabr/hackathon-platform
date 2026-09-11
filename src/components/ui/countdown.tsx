@@ -25,9 +25,9 @@ function formatCompact(seg: Segments | null): string {
 const pad = (n: number) => n.toString().padStart(2, "0");
 
 /**
- * Um algarismo do painel. A troca é uma remontagem: a `key` é o próprio
- * caractere, então o dígito só reanima quando MUDA — o "1" de 18 fica parado
- * enquanto o "8" vira 9. Sem isso o placar inteiro pulsaria a cada segundo.
+ * One digit of the board. The swap is a remount: the `key` is the character
+ * itself, so a digit only re-animates when it CHANGES — the "1" of 18 stays
+ * put while the "8" turns into 9. Otherwise the whole board pulsed each second.
  */
 function TickDigit({ char }: { char: string }) {
   return (
@@ -41,8 +41,8 @@ function TickDigit({ char }: { char: string }) {
  * Renders the time-until a deadline. Two variants:
  *   - "compact" (default): single string like "2d 7h", ticks every 30s. Used
  *     in the dashboard and submission page.
- *   - "segments": DIAS / HORAS / MIN / SEG. Sizes md and lg são quatro números
- *     mono; size xl é o painel de relógio da última chamada. `tone`
+ *   - "segments": DIAS / HORAS / MIN / SEG. Sizes md and lg are four mono
+ *     numbers; size xl is the clock board of the closing call. `tone`
  *     switches it between the cream ground and a dark band.
  *
  * SSR renders the `placeholder` (compact) or zeroed tiles (segments) to
@@ -90,11 +90,11 @@ export function Countdown({
     const labelClass = size === "md" ? "mt-1 text-[10px]" : "mt-2 text-[11px]";
     const dotClass = size === "md" ? "mt-3 sm:mt-4" : "mt-5 sm:mt-6";
 
-    /* O tamanho xl (a última chamada da LP) é BRUTALISTA: quatro blocos de
-       papel de canto vivo, aresta de 2px e sombra dura, cada um com o
-       algarismo em peso preto ocupando toda a caixa e uma tarja sólida com o
-       rótulo embaixo. Nada é translúcido e nada transborda — a força vem do
-       contraste do bloco contra o fundo, não de sutileza. */
+    /* The xl size (the LP's closing call) is BRUTALIST: four sharp-cornered
+       paper blocks, 2px edge and hard shadow, each with the digit in black
+       weight filling the whole box and a solid band with the label beneath.
+       Nothing is translucent and nothing overflows — the force comes from the
+       block's contrast against the ground, not from subtlety. */
     if (hero) {
       const chars = (value: number) => (seg !== undefined ? pad(value) : "00").split("");
 

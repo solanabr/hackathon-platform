@@ -1,29 +1,29 @@
 /* ---------------------------------------------------------------------------
- * GRAVAÇÃO — a impressão de segurança do bilhete
+ * ENGRAVING — the ticket's security printing
  *
- * Guilhoché, onda e selo. As três peças que fazem um pedaço de papel ser lido
- * como DOCUMENTO antes de a pessoa conseguir dizer por quê — e as três são a
- * mesma técnica da gravura desta casa: linha fina contínua, sem meio-tom, o
- * escuro nascendo do cruzamento e não da espessura.
+ * Guilloche, wave and seal. The three pieces that make a scrap of paper read
+ * as a DOCUMENT before anyone can say why — and all three are the same
+ * technique as this house's etching: continuous fine line, no halftone, the
+ * dark born from crossings rather than from stroke weight.
  *
- * A geometria é calculada aqui, em TypeScript, e sai no HTML como `path`
- * comum: mesma decisão de `etching.tsx`. Zero filtro SVG, zero JS no cliente,
- * mesma forma no servidor e no navegador.
+ * The geometry is computed here, in TypeScript, and ships in the HTML as a
+ * plain `path`: the same decision as `etching.tsx`. Zero SVG filters, zero
+ * client JS, the same shape on the server and in the browser.
  *
- * O truque que mantém o HTML pequeno: uma rosácea r = R + A·cos(k·t) girada de
- * 2π/k é uma rosácea de fase deslocada. Então o tecido inteiro do guilhoché —
- * que parece meia dúzia de curvas trançadas — é UM path no `defs` e cinco
- * `use` girados. ~1 KB em vez de ~20 KB.
+ * The trick that keeps the HTML small: a rosette r = R + A·cos(k·t) rotated by
+ * 2π/k is a phase-shifted rosette. So the whole guilloche fabric — which looks
+ * like half a dozen braided curves — is ONE path in `defs` and five rotated
+ * `use`s. ~1 KB instead of ~20 KB.
  * ------------------------------------------------------------------------- */
 
 const arred = (v: number) => Math.round(v * 100) / 100;
 
 /**
- * Uma volta de rosácea: r = raio + amplitude·cos(pétalas · t).
+ * One turn of a rosette: r = raio + amplitude·cos(pétalas · t).
  *
- * `pontos` é resolução, não estilo. Abaixo de ~160 a curva mostra os
- * segmentos retos nos vértices das pétalas — e vértice facetado num guilhoché
- * é exatamente o que denuncia desenho gerado.
+ * `pontos` is resolution, not style. Below ~160 the curve shows its straight
+ * segments at the petal vertices — and a faceted vertex in a guilloche is
+ * exactly what gives away generated artwork.
  */
 function rosacea(raio: number, amplitude: number, petalas: number, pontos = 200) {
   const d: string[] = [];
@@ -37,7 +37,7 @@ function rosacea(raio: number, amplitude: number, petalas: number, pontos = 200)
   return `${d.join("")}Z`;
 }
 
-/** Uma senoide vertical — a linha do guilhoché em faixa, para o canhoto. */
+/** A vertical sine wave — the banded guilloche line, for the stub. */
 function onda(altura: number, amplitude: number, ciclos: number, pontos = 120) {
   const d: string[] = [];
   for (let i = 0; i <= pontos; i += 1) {
@@ -52,10 +52,10 @@ const ROSACEA_LARGA = rosacea(52, 15, 9);
 const ROSACEA_FINA = rosacea(33, 8, 14, 240);
 
 /**
- * O MEDALHÃO. A rosácea de cédula, em duas famílias trançadas: nove pétalas
- * largas por fora, catorze finas por dentro. Vai atrás do bloco de datas e é
- * cortada pela linha de picote — como numa cédula, onde o guilhoché nunca
- * respeita a moldura do texto.
+ * THE MEDALLION. The banknote rosette, in two braided families: nine wide
+ * petals outside, fourteen fine ones inside. It sits behind the date block and
+ * is cut by the perforation line — as on a banknote, where the guilloche never
+ * respects the text frame.
  */
 export function Medalhao({ className = "" }: { className?: string }) {
   return (
@@ -71,10 +71,10 @@ export function Medalhao({ className = "" }: { className?: string }) {
         <path id="bilhete-ros-larga" d={ROSACEA_LARGA} />
         <path id="bilhete-ros-fina" d={ROSACEA_FINA} />
       </defs>
-      {/* Três voltas e duas, não cinco e três. Guilhoché é TRAMA: passado
-          dessa densidade as curvas param de se cruzar e passam a se somar, e o
-          medalhão vira mancha atrás do texto — que é o oposto do que uma
-          impressão de segurança faz numa cédula. */}
+      {/* Three turns and two, not five and three. Guilloche is WEAVE: past
+          this density the curves stop crossing and start adding up, and the
+          medallion becomes a smudge behind the text — the opposite of what
+          security printing does on a banknote. */}
       {[0, 13, 26].map((giro) => (
         <use
           key={`larga-${giro}`}
@@ -96,9 +96,9 @@ export function Medalhao({ className = "" }: { className?: string }) {
 }
 
 /**
- * A FAIXA DO CANHOTO. Quatro senoides defasadas correndo no eixo do canhoto,
- * que é vertical. Fica sobre o foil, em `multiply`: a linha gravada interrompe
- * o brilho em vez de recebê-lo.
+ * THE STUB BAND. Four phase-shifted sine waves running along the stub's axis,
+ * which is vertical. It sits over the foil, in `multiply`: the engraved line
+ * interrupts the sheen instead of receiving it.
  */
 export function FaixaGuilhoche({ className = "" }: { className?: string }) {
   const ONDA = onda(240, 7, 9);
@@ -127,15 +127,16 @@ export function FaixaGuilhoche({ className = "" }: { className?: string }) {
 }
 
 /**
- * O MEANDRO — a grega. O único elemento aqui que é romano por citação e não
- * por técnica, e por isso é o mais fácil de errar: desenhada grossa vira
- * clip-art de coluna dórica. Ela entra como FILETE, na espessura de uma linha
- * de gravura, no lugar onde já havia um fio separando o cabeçalho do corpo —
- * ocupa a mesma altura, e o que muda é que o fio passa a ter desenho.
+ * THE MEANDER — the Greek key. The only element here that is Roman by
+ * quotation rather than by technique, which makes it the easiest to get
+ * wrong: drawn thick it becomes Doric-column clip art. It comes in as a
+ * FILLET, at the weight of an etched line, where a rule already separated the
+ * header from the body — same height, and what changes is the rule now has a
+ * drawing.
  *
- * A chave é pendurada num trilho contínuo: um meandro é uma linha SÓ que
- * dobra, e desenhar espiral por espiral solta é o que faz a faixa perder o
- * ritmo nas emendas.
+ * The key hangs off a continuous rail: a meander is ONE line that bends, and
+ * drawing it spiral by loose spiral is what makes the band lose its rhythm at
+ * the joins.
  */
 export function Meandro({ className = "" }: { className?: string }) {
   const CELULA = 14;
@@ -165,13 +166,14 @@ export function Meandro({ className = "" }: { className?: string }) {
 }
 
 /**
- * O SELO. Carimbo em relevo seco: dois anéis, uma coroa de serifas — o louro
- * reduzido ao que sobra dele num carimbo de 4 mm — e o ano em romano no
- * centro. Girado alguns graus no call site, porque carimbo é batido à mão.
+ * THE SEAL. A blind-embossed stamp: two rings, a crown of serifs — the laurel
+ * reduced to what is left of it on a 4 mm stamp — and the year in Roman
+ * numerals at the center. Rotated a few degrees at the call site, because a
+ * stamp is struck by hand.
  *
- * O texto circular é `textPath` num círculo próprio, e não letras posicionadas
- * uma a uma: assim ele acompanha o raio em qualquer tamanho, inclusive quando
- * a peça cresce três vezes na saída da dobra.
+ * The circular text is a `textPath` on its own circle, not letters placed one
+ * by one: that way it follows the radius at any size, including when the
+ * piece grows threefold coming out of the fold.
  */
 export function SeloRomano({ className = "" }: { className?: string }) {
   return (
@@ -193,9 +195,9 @@ export function SeloRomano({ className = "" }: { className?: string }) {
       <circle r="41" strokeWidth="0.8" />
       <circle r="30" strokeWidth="0.8" />
 
-      {/* A coroa. Vinte e quatro traços radiais entre os dois anéis: o louro
-          existe aqui como RITMO, que é tudo o que sobra de uma coroa impressa
-          nesse diâmetro. Desenhar folha por folha viraria borrão. */}
+      {/* The crown. Twenty-four radial strokes between the two rings: the
+          laurel exists here as RHYTHM, which is all that survives of a crown
+          printed at this diameter. Drawing it leaf by leaf would be a blur. */}
       {Array.from({ length: 24 }, (_, i) => (
         <line
           key={i}
@@ -247,9 +249,9 @@ export function SeloRomano({ className = "" }: { className?: string }) {
 }
 
 /**
- * MICROTEXTO. A linha de 4 px na aresta do bilhete que, parada, é só uma
- * textura cinza — e que vira palavra legível quando a peça cresce na saída da
- * dobra. É a recompensa do zoom: a impressão aguenta a aproximação.
+ * MICROTEXT. The 4 px line on the ticket's edge that, at rest, is just a grey
+ * texture — and becomes legible words when the piece grows coming out of the
+ * fold. It is the zoom's reward: the print holds up to a close look.
  */
 export function Microtexto({
   texto,

@@ -3,65 +3,65 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Uma foto passada pela mesma prensa das peças 3D.
+ * A photo run through the same press as the 3D pieces.
  *
- * O Coliseu e a taça chegam ao meio-tom por caminhos diferentes — um pelo vão,
- * outra pela luz — mas os dois desembocam no MESMO traço: risco horizontal na
- * grade da célula, comprimento crescendo com o tom, dois pesos, o mesmo piso de
- * ruído que come as células claras. Isto aqui é a terceira entrada para o mesmo
- * lugar: em vez de profundidade de render, o tom vem da luminância de uma chapa
- * em cinza + alfa.
+ * The Colosseum and the trophy reach the halftone by different paths — one
+ * through the gap, the other through light — but both end in the SAME stroke:
+ * horizontal dash on the cell grid, length growing with tone, two weights, the
+ * same noise floor that eats the light cells. This is the third entrance to
+ * the same place: instead of render depth, tone comes from the luminance of a
+ * grey + alpha plate.
  *
- * Por isso a fonte NÃO é a foto colorida: é um PNG/WebP já recortado e já
- * reduzido a cinza. Nenhuma cor da referência atravessa para a página — o que
- * entra é densidade de tinta, que é a única coisa que esta identidade sabe
- * imprimir.
+ * So the source is NOT the colour photo: it is a PNG/WebP already cut out and
+ * already reduced to grey. No colour from the reference crosses into the page —
+ * what comes in is ink density, the only thing this identity knows how to
+ * print.
  *
- * As constantes de traço são as de `halftoneMarks()` e as de HALFTONE_FRAG,
- * copiadas de propósito em vez de importadas: lá elas vivem em GLSL e aqui em
- * canvas 2D. Se uma mudar, as três mudam juntas.
+ * The stroke constants are those of `halftoneMarks()` and HALFTONE_FRAG,
+ * copied on purpose instead of imported: there they live in GLSL, here in 2D
+ * canvas. If one changes, all three change together.
  */
 
 const UNIT = 8;
 
-/* O mesmo hash do shader, para a peça impressa não ter um granulado diferente
-   do resto da folha. */
+/* The same hash as the shader, so the printed piece does not carry a
+   different grain from the rest of the sheet. */
 function hash(x: number, y: number, salt: number) {
   const value = Math.sin((x + salt) * 127.1 + (y + salt) * 311.7) * 43758.5453123;
   return value - Math.floor(value);
 }
 
 export type HalftoneImageProps = {
-  /** Chapa em cinza + alfa. O alfa é o recorte; o cinza é o tom. */
+  /** Grey + alpha plate. Alpha is the cutout; grey is the tone. */
   src: string;
-  /** Abaixo desta largura a chapa nem é baixada. Uma peça de fundo não gasta
-   * banda de celular para depois ser escondida por CSS. */
+  /** Below this width the plate is not even downloaded. A background piece
+   * does not spend mobile bandwidth only to be hidden by CSS. */
   minWidth?: number;
-  /** Lado da célula, em px de CSS. 1.5 é a grade das peças 3D do hero. */
+  /** Cell side, in CSS px. 1.5 is the grid of the hero's 3D pieces. */
   cell?: number;
-  /** Piso de tinta e ganho — a mesma dupla das cenas 3D. */
+  /** Ink floor and gain — the same pair as the 3D scenes. */
   toneFloor?: number;
   toneGain?: number;
-  /** Gama aplicada à luminância antes do tom: acima de 1 abre as sombras. */
+  /** Gamma applied to luminance before tone: above 1 opens the shadows. */
   gamma?: number;
-  /** Abaixo disto o pixel é fundo e não imprime nada. */
+  /** Below this the pixel is background and prints nothing. */
   alphaCut?: number;
-  /** `contain` deixa a peça de pé no rodapé da caixa — é o enquadramento de um
-   * objeto recortado. `cover` preenche a caixa inteira e corta o que sobra: é o
-   * enquadramento de uma CENA, que não tem pé nem borda, só continua fora do
-   * quadro. */
+  /** `contain` stands the piece on the box's bottom edge — the framing of a
+   * cut-out object. `cover` fills the whole box and crops the rest: the
+   * framing of a SCENE, which has no foot or edge, it just continues past the
+   * frame. */
   fit?: "contain" | "cover";
-  /** Teto de pixels físicos da tela. Uma chapa de cena sangra 28% além da
-   * janela e a 2x de DPR passava de oito milhões de pixels — trinta e tantos
-   * megabytes de textura para um fundo a 40% de tinta. Acima do teto o DPR
-   * cai até caber; a célula continua em px de CSS, então a grade é a mesma. */
+  /** Ceiling on the canvas's physical pixels. A scene plate bleeds 28% past
+   * the viewport and at 2x DPR went over eight million pixels — thirty-odd
+   * megabytes of texture for a background at 40% ink. Above the ceiling DPR
+   * drops until it fits; the cell stays in CSS px, so the grid is the same. */
   maxPixels?: number;
   className?: string;
 };
 
-/* Quantas células cada fatia de pintura processa antes de devolver a thread.
-   Uma chapa de cena tem perto de um milhão; riscá-la de uma vez era uma
-   tarefa de várias centenas de milissegundos bem no meio da rolagem. */
+/* How many cells each paint slice processes before yielding the thread. A
+   scene plate has close to a million; stroking it in one go was a task of
+   several hundred milliseconds right in the middle of scrolling. */
 const CELLS_PER_SLICE = 90_000;
 
 export function HalftoneImage({
@@ -88,17 +88,17 @@ export function HalftoneImage({
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    /* Grade auxiliar do tamanho da GRADE, não da tela: reduzir a foto para uma
-       célula por pixel é o mesmo passo que o shader faz em GPU, e deixa a média
-       da célula por conta do downscale do navegador. */
+    /* Helper canvas the size of the GRID, not the screen: shrinking the photo
+       to one cell per pixel is the same step the shader does on the GPU, and
+       leaves the cell average to the browser's downscale. */
     const sampler = document.createElement("canvas");
     const samplerContext = sampler.getContext("2d", { willReadFrequently: true });
     if (!samplerContext) return;
 
     let disposed = false;
     let image: HTMLImageElement | null = null;
-    /* Cada pintura tem um número; uma fatia que acorda e vê outro número
-       sabe que uma pintura mais nova já limpou a tela e desiste. */
+    /* Each paint has a number; a slice that wakes up and sees another number
+       knows a newer paint already cleared the canvas and gives up. */
     let generation = 0;
     let pending = 0;
 
@@ -121,10 +121,10 @@ export function HalftoneImage({
       sampler.width = cols;
       sampler.height = rows;
 
-      // `contain`, e alinhado embaixo: a peça fica de pé no rodapé da caixa, do
-      // mesmo jeito que o monumento se apoia na margem inferior do hero. Em
-      // `cover` não há pé: a cena transborda o quadro pelos quatro lados e o
-      // corte é o que prova que ela continua fora dele.
+      // `contain`, bottom-aligned: the piece stands on the box's bottom edge,
+      // the same way the monument rests on the hero's lower margin. In `cover`
+      // there is no foot: the scene overflows the frame on all four sides and
+      // the crop is what proves it continues beyond it.
       const cobre = fit === "cover";
       const scale = cobre
         ? Math.max(cols / image.width, rows / image.height)
@@ -151,10 +151,10 @@ export function HalftoneImage({
       const rowsPerSlice = Math.max(1, Math.floor(CELLS_PER_SLICE / cols));
       let row = 0;
 
-      /* A chapa é riscada em fatias, de cima para baixo — a mesma varredura
-         da folha saindo da prensa —, e cada fatia devolve a thread antes da
-         próxima. Dois caminhos por fatia, um por peso: traçar mark a mark
-         custaria uma chamada por célula. */
+      /* The plate is stroked in slices, top to bottom — the same sweep as the
+         sheet leaving the press — and each slice yields the thread before the
+         next. Two paths per slice, one per weight: stroking mark by mark
+         would cost one call per cell. */
       const slice = () => {
         pending = 0;
         if (disposed || mine !== generation || !context) return;
@@ -197,8 +197,8 @@ export function HalftoneImage({
       slice();
     }
 
-    /* Mesma regra das peças 3D: nada de fundo disputa o LCP. A chapa só é
-       pedida depois da primeira pintura, e só na largura em que ela aparece. */
+    /* Same rule as the 3D pieces: no background competes for LCP. The plate is
+       only requested after first paint, and only at the width it shows at. */
     const wide = minWidth ? window.matchMedia(`(min-width: ${minWidth}px)`) : null;
     const loaded = new Image();
     let started = false;
@@ -216,7 +216,7 @@ export function HalftoneImage({
           paint();
         })
         .catch(() => {
-          /* Sem chapa não há peça: a caixa fica vazia em vez de imprimir ruído. */
+          /* No plate, no piece: the box stays empty instead of printing noise. */
         });
     }
 
@@ -230,9 +230,9 @@ export function HalftoneImage({
     const observer = new ResizeObserver(paint);
     observer.observe(host);
 
-    /* Arrastar a janela de um monitor Retina para um 1x não muda o retângulo em
-       CSS — só o devicePixelRatio. Sem isto o traço serrilha até o próximo
-       resize. */
+    /* Dragging the window from a Retina monitor to a 1x does not change the
+       CSS rect — only the devicePixelRatio. Without this the stroke aliases
+       until the next resize. */
     let dprQuery: MediaQueryList | null = null;
     const onDpr = () => {
       paint();

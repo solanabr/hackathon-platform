@@ -2,52 +2,53 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 /**
- * O Coliseu, construído em vez de baixado.
+ * The Colosseum, built rather than downloaded.
  *
- * O GLB anterior era um palpite de IA: de perto virava parede lisa, de longe
- * virava mancha. O meio-tom desta LP desenha RECESSO — ele precisa de vão de
- * verdade atrás da pedra para ter o que descrever, e nenhum ganho de shader
- * inventa geometria que não está na malha. Então a arcada é gerada: cada vão é
- * um furo real numa placa extrudada, cada pilar tem sua semicoluna, e atrás
- * dos vãos existem a galeria, a cávea em degraus e o hipogeu — profundidade
- * que o filtro de mínimo converte em tinta.
+ * The previous GLB was an AI guess: up close it became a smooth wall, from
+ * afar a smudge. This LP's halftone draws RECESS — it needs a real gap behind
+ * the stone to have something to describe, and no shader gain invents
+ * geometry that is not in the mesh. So the arcade is generated: each bay is a
+ * real hole in an extruded plate, each pier has its half-column, and behind
+ * the bays sit the gallery, the stepped cavea and the hypogeum — depth the
+ * minimum filter converts into ink.
  *
- * Unidades: 1 = 100 m, com a base em y = 0 e o centro na origem. As medidas
- * são as do monumento (188 × 156 × 48 m, 80 vãos, quatro pavimentos).
+ * Units: 1 = 100 m, base at y = 0 and centre at the origin. The measurements
+ * are the monument's (188 × 156 × 48 m, 80 bays, four storeys).
  */
 
 const BAYS = 80;
-/** Semi-eixos da fachada externa. */
+/** Semi-axes of the outer facade. */
 const A = 0.94;
 const B = 0.78;
-/** Espessura radial da placa de fachada. */
+/** Radial thickness of the facade plate. */
 const WALL = 0.032;
 
-/** Topo de cada pavimento. O ático é parede cega com janelas quadradas. */
+/** Top of each storey. The attic is a blind wall with square windows. */
 const LEVEL_TOPS = [0.105, 0.212, 0.319, 0.485] as const;
 const CORNICE = 0.011;
-/** Fração da célula que o vão ocupa; o resto é pilar. */
+/** Fraction of the cell the opening takes; the rest is pier. */
 const OPENING_SHARE = 0.6;
-/** Nascença do arco, em fração da altura livre do pavimento. */
+/** Springing of the arch, as a fraction of the storey's clear height. */
 const SPRING_SHARE = 0.52;
 
 const ARENA_A = 0.4;
 const ARENA_B = 0.24;
 const ARENA_Y = 0.035;
-/** Topo da cávea: onde a arquibancada encosta na galeria mais alta. */
+/** Top of the cavea: where the seating meets the highest gallery. */
 const CAVEA_TOP = 0.3;
 const CAVEA_STEPS = 26;
 
-/* Onde a parede externa caiu. O trecho íntegro do lado norte é o que separa o
-   Coliseu de uma arcada qualquer: quatro pavimentos de um lado, o anel interno
-   de dois do outro, com o degrau entre eles no meio do caminho.
+/* Where the outer wall fell. The intact stretch on the north side is what
+   separates the Colosseum from any old arcade: four storeys on one side, the
+   two-storey inner ring on the other, with the step between them midway.
 
-   A janela é posicionada contra o azimute de scene.tsx: a quebra cai dentro do
-   arco que a câmera vê, e não na silhueta, senão o desmoronamento acontece fora
-   do quadro. É por essa fresta que o anel do fundo e a cávea aparecem. */
+   The window is positioned against the azimuth in scene.tsx: the break falls
+   inside the arc the camera sees, not on the silhouette, or the collapse
+   happens out of frame. It is through this gap that the back ring and the
+   cavea show. */
 const INTACT_FROM = 77;
-/** Quantos vãos a fachada íntegra cobre a partir de INTACT_FROM. A janela dá a
-    volta no anel, então girar a peça é mover só INTACT_FROM. */
+/** How many bays the intact facade covers starting at INTACT_FROM. The window
+    wraps around the ring, so rotating the piece means moving only INTACT_FROM. */
 const INTACT_BAYS = 36;
 
 function surviving(bay: number): number {
@@ -57,14 +58,14 @@ function surviving(bay: number): number {
   const beforeStart = BAYS - rel;
   const before = beforeStart <= afterEnd;
   const past = before ? beforeStart : afterEnd;
-  // Degraus, não rampa: a ruína desmorona por trechos de arcada inteiros, e o
-  // dente ímpar impede que os dois lados caiam em espelho.
+  // Steps, not a ramp: the ruin collapses in whole stretches of arcade, and
+  // the odd tooth keeps the two sides from falling as mirror images.
   if (past <= 2) return 3;
   if (past <= (before ? 6 : 9)) return 2;
   return 1;
 }
 
-/** Ponto da elipse e o triedro local: x tangencial, y para cima, z para fora. */
+/** Point on the ellipse and the local frame: x tangential, y up, z outward. */
 function frameAt(t: number, a: number, b: number) {
   const position = new THREE.Vector3(a * Math.cos(t), 0, b * Math.sin(t));
   const outward = new THREE.Vector3(b * Math.cos(t), 0, a * Math.sin(t)).normalize();
@@ -73,7 +74,7 @@ function frameAt(t: number, a: number, b: number) {
   return { position, outward, basis };
 }
 
-/** Largura tangencial de uma célula — a elipse anda mais depressa nas pontas. */
+/** Tangential width of a cell — the ellipse moves faster at the ends. */
 function cellWidth(t: number, a: number, b: number) {
   const speed = Math.hypot(a * Math.sin(t), b * Math.cos(t));
   return (speed * Math.PI * 2) / BAYS;
@@ -98,7 +99,7 @@ function place(
   return geometry;
 }
 
-/** Placa de um vão: retângulo com o arco (ou a janela) recortado de verdade. */
+/** Plate of one bay: a rectangle with the arch (or window) truly cut out. */
 function bayPanel(width: number, height: number, opening: null | {
   width: number;
   sill: number;
@@ -135,14 +136,14 @@ function bayPanel(width: number, height: number, opening: null | {
   }).translate(0, 0, -WALL);
 }
 
-/** Anel elíptico contínuo — cornija, soco, degrau da cávea. */
+/** Continuous elliptical ring — cornice, plinth, cavea step. */
 function ring(a: number, b: number, y: number, height: number, segments = 160) {
   return new THREE.CylinderGeometry(1, 1, height, segments, 1, true)
     .scale(a, 1, b)
     .translate(0, y + height / 2, 0);
 }
 
-/** Disco elíptico horizontal, virado para cima. */
+/** Horizontal elliptical disc, facing up. */
 function disc(a: number, b: number, y: number, segments = 96) {
   return new THREE.CircleGeometry(1, segments)
     .rotateX(-Math.PI / 2)
@@ -166,7 +167,7 @@ export function buildColosseum(): THREE.BufferGeometry {
       const height = top - floor - CORNICE;
       const attic = level === 3;
 
-      // O ático é parede cega: janela quadrada em um vão sim, outro não.
+      // The attic is a blind wall: a square window in every other bay.
       const hole = attic
         ? i % 2 === 0
           ? { width: opening * 0.42, sill: height * 0.3, head: height * 0.62, arched: false }
@@ -180,9 +181,9 @@ export function buildColosseum(): THREE.BufferGeometry {
 
       parts.push(place(bayPanel(width, height, hole), t, floor, 0));
 
-      // Arquivolta: a moldura saliente que acompanha o arco. É o que dá borda
-      // ao vão — sem ela o meio-tom devolve um retângulo escuro no lugar de um
-      // arco, porque a única transição é a do recesso.
+      // Archivolt: the raised moulding following the arch. It gives the bay
+      // its edge — without it the halftone returns a dark rectangle instead
+      // of an arch, because the only transition is the recess one.
       if (hole?.arched) {
         const half = hole.width / 2;
         const spring = hole.head - half;
@@ -202,7 +203,7 @@ export function buildColosseum(): THREE.BufferGeometry {
           );
           parts.push(place(stone, t, 0, 0));
         }
-        // Impostas: o ressalto onde o arco nasce, de cada lado do vão.
+        // Imposts: the ledge where the arch springs, on each side of the bay.
         for (const side of [-1, 1]) {
           parts.push(
             place(
@@ -219,8 +220,8 @@ export function buildColosseum(): THREE.BufferGeometry {
         }
       }
 
-      // Semicoluna engajada no pilar — o relevo que faz a fachada ler como
-      // ordem sobreposta e não como muro furado.
+      // Engaged half-column on the pier — the relief that makes the facade
+      // read as superimposed orders rather than a wall with holes.
       if (!attic) {
         const column = new THREE.CylinderGeometry(width * 0.075, width * 0.075, height, 10, 1, true)
           .translate(0, height / 2, 0);
@@ -235,15 +236,15 @@ export function buildColosseum(): THREE.BufferGeometry {
       }
     }
 
-    // Mísulas do ático: os consolos que seguravam os mastros do velário. Uma
-    // fileira de dentes pequenos no alto — a última linha que o olho lê antes
-    // do céu, e a que impede o ático de virar uma tarja lisa.
+    // Attic corbels: the brackets that held the velarium masts. A row of small
+    // teeth at the top — the last line the eye reads before the sky, and what
+    // keeps the attic from becoming a flat strip.
     if (levels === 4) {
       const corbel = new THREE.BoxGeometry(width * 0.1, 0.008, WALL * 0.9);
       parts.push(place(corbel, t - step / 2, LEVEL_TOPS[3]! - 0.03, WALL * 0.3));
     }
 
-    // A quebra da ruína: a laje de cima não termina reta, ela desmorona.
+    // The ruin's break: the top slab does not end straight, it crumbles.
     if (levels < 4) {
       const top = LEVEL_TOPS[levels - 1]!;
       const rubble = new THREE.BoxGeometry(width * 0.9, width * (0.25 + 0.35 * ((i * 7) % 5) / 5), WALL);
@@ -251,8 +252,8 @@ export function buildColosseum(): THREE.BufferGeometry {
     }
   }
 
-  // Cornijas: uma faixa contínua fechando cada pavimento sobrevivente. A do
-  // térreo dá a volta inteira, as de cima só onde a parede ainda está de pé.
+  // Cornices: a continuous band closing each surviving storey. The ground
+  // floor's goes all the way round, the upper ones only where the wall stands.
   for (let level = 0; level < 4; level++) {
     const y = LEVEL_TOPS[level]! - CORNICE;
     const out = 0.006 * (level + 1);
@@ -274,11 +275,11 @@ export function buildColosseum(): THREE.BufferGeometry {
     }
   }
 
-  // Soco e degrau de entrada.
+  // Plinth and entrance step.
   parts.push(ring(A + 0.014, B + 0.014, -0.012, 0.014));
 
-  // Galeria interna: a parede que fecha o fundo dos vãos. Sem ela o arco vaza
-  // para o papel e o recesso não tem contra o quê medir.
+  // Inner gallery: the wall closing the back of the bays. Without it the arch
+  // leaks into the paper and the recess has nothing to measure against.
   parts.push(ring(A - 0.075, B - 0.075, 0, LEVEL_TOPS[2]!));
   for (let i = 0; i < BAYS; i++) {
     const t = i * step + step / 2;
@@ -287,7 +288,7 @@ export function buildColosseum(): THREE.BufferGeometry {
     parts.push(place(pier, t, 0, -0.025, A - 0.075, B - 0.075));
   }
 
-  // Cávea: a arquibancada em degraus, descendo da galeria até a arena.
+  // Cavea: the stepped seating, descending from the gallery to the arena.
   for (let s = 0; s < CAVEA_STEPS; s++) {
     const k = s / (CAVEA_STEPS - 1);
     const a = THREE.MathUtils.lerp(A - 0.085, ARENA_A + 0.02, k);
@@ -297,8 +298,8 @@ export function buildColosseum(): THREE.BufferGeometry {
     parts.push(ring(a, b, y - rise, rise * 1.4, 120));
   }
 
-  // Arena e hipogeu: a grade de paredes do subsolo, exposta desde que o piso
-  // se foi. É o detalhe que aparece por cima da arcada baixa do lado em ruína.
+  // Arena and hypogeum: the grid of basement walls, exposed since the floor
+  // went. It is the detail that shows above the low arcade on the ruined side.
   parts.push(disc(ARENA_A, ARENA_B, ARENA_Y - 0.03));
   parts.push(ring(ARENA_A, ARENA_B, ARENA_Y - 0.03, 0.03, 96));
   const cells = 11;

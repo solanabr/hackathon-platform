@@ -1,13 +1,14 @@
-/* A ATMOSFERA DA PREMIAÇÃO — o ar em volta do pódio.
+/* THE PRIZES ATMOSPHERE — the air around the podium.
  *
- * Quatro camadas e um véu, na ordem em que a luz chega: a aurora anda atrás de
- * tudo, o brilho respira no horizonte, o funil de malha desce e se fecha atrás
- * da base do pódio, a garganta dele acende e o grão do papel fecha por cima. O
- * véu de creme é o que garante que o texto continue lendo sobre a cor — sem ele
- * a faixa de baixo perde contraste no `muted`.
+ * Four layers and a veil, in the order the light arrives: the aurora moves
+ * behind everything, the glow breathes on the horizon, the mesh funnel drops
+ * and closes behind the podium base, its throat lights up and the paper grain
+ * closes over the top. The cream veil is what keeps the text reading over the
+ * colour — without it the bottom band loses contrast on `muted`.
  *
- * Nada aqui mede, recebe clique ou entra na ordem de leitura: o desenho vive
- * inteiro no CSS (`.prizes-*` em globals.css) e a section só o hospeda. */
+ * Nothing here measures, takes clicks or enters the reading order: the
+ * drawing lives entirely in CSS (`.prizes-*` in globals.css) and the section
+ * only hosts it. */
 export function PrizesAtmosphere({ className }: { className?: string }) {
   return (
     <div aria-hidden className={["prizes-atmos", className].filter(Boolean).join(" ")}>

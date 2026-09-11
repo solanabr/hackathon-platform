@@ -1,9 +1,9 @@
 import { Plate } from "./plate";
 import { PLATE_SRC } from "./plates";
 
-/** Fechamento: textura de meio-tom no mesmo traço das ilustrações. O
- *  chamador põe cor, máscara radial e a cena de zoom no invólucro; a chapa
- *  preenche o quadro por dentro, no enquadramento de `xMidYMid slice`. */
+/** Closing: halftone texture in the same stroke as the illustrations. The
+ *  caller sets colour, radial mask and the zoom scene on the wrapper; the
+ *  plate fills the frame from inside, framed as `xMidYMid slice`. */
 export function CtaHalftone({ className }: { className?: string }) {
   return (
     <div

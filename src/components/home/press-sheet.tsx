@@ -3,17 +3,17 @@ import Image from "next/image";
 const SYMBOL = "/brand/stbr/logo/SYMBOL-EMERALD-GREEN.svg";
 
 /**
- * A folha ainda na prensa — o primeiro frame da página.
+ * The sheet still on the press — the page's first frame.
  *
- * A LP inteira é uma identidade de impressão, e a manchete do hero é
- * literalmente estampada. Então o primeiro frame não é um spinner esperando
- * dado: é a folha antes de sair do rolo. O símbolo se pinta de baixo para
- * cima, a folha é puxada para fora, e o que aparece embaixo é a manchete já
- * saindo do rolo — as duas coisas são o mesmo gesto, não dois efeitos.
+ * The whole LP is a print identity, and the hero headline is literally
+ * stamped. So the first frame is not a spinner waiting for data: it is the
+ * sheet before it leaves the roller. The symbol inks itself bottom to top,
+ * the sheet is pulled away, and what shows underneath is the headline already
+ * coming off the roller — the two are one gesture, not two effects.
  *
- * É Server Component de propósito: sai no HTML e é removida por CSS. Sem JS
- * ela ainda funciona, e não existe o frame de conteúdo aparecendo antes de
- * ser coberto que um preloader montado no cliente sempre produz.
+ * A Server Component on purpose: it ships in the HTML and is removed by CSS.
+ * Without JS it still works, and there is no frame of content showing before
+ * it gets covered, which a client-mounted preloader always produces.
  */
 export function PressSheet() {
   return (

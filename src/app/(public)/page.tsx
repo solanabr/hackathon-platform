@@ -47,9 +47,9 @@ import { SectionRails } from "@/components/home/rails";
 import { SoundToggle } from "@/components/campaign/sound-toggle";
 import { PAGE_SHELL } from "@/components/layout/container";
 
-// A dissolução mora no container, não no SVG: a faixa é recortada de forma
-// diferente em cada largura, e só uma máscara relativa à viewport garante que
-// o topo do que aparece sempre esmaece em vez de cortar reto.
+// The fade lives on the container, not the SVG: the band is cropped
+// differently at every width, and only a viewport-relative mask guarantees
+// the top of whatever shows always fades out instead of cutting straight.
 export const metadata = {
   title: "Hackathon Colosseum | Tire sua ideia do papel",
   description:
@@ -96,9 +96,9 @@ const CASES = [
   },
 ];
 
-// Os quatro fatos que decidem se a pessoa se inscreve: onde ela compete, o que
-// ganha, se o projeto que já existe vale, e se a área dela cabe. Vêm antes do
-// convite porque a dúvida chega antes da vontade.
+// The four facts that decide whether someone signs up: where they compete,
+// what they win, whether an existing project counts, and whether their field
+// fits. They come before the invitation because doubt arrives before desire.
 const COLOSSEUM_FACTS = [
   {
     figure: "8 trilhas",
@@ -123,9 +123,9 @@ const COLOSSEUM_FACTS = [
   },
 ];
 
-/* A mesma linha nos dois lugares: rodapé da grade no telefone, última cláusula
-   do verso no desktop. Duas cópias literais divergiriam na primeira correção
-   de data. */
+/* The same line in both places: the grid's footer on phones, the back's last
+   clause on desktop. Two literal copies would diverge at the first date
+   correction. */
 const COLOSSEUM_NOTA = "Jurados e regras completas saem em 14 de setembro.";
 
 const SOLANA_STATS = [
@@ -292,11 +292,11 @@ function SectionHat({
 // sphere, the four numbers hanging off it on dotted wires. Coordinates below
 // live in the 1200x620 viewBox the lg+ diagram is locked to, so the wires and
 // the absolutely placed cards land on the same points at any width.
-/* Quatro fios espelhados ao pixel faziam um diagrama, não uma rede: o
-   argumento e o apoio chegavam à moeda pelo mesmo caminho e com o mesmo peso.
-   Agora o 33B encara a moeda de frente pelo fio mais curto e mais reto — é a
-   conexão direta — e os três apoios orbitam à direita por fios dobrados de
-   comprimentos diferentes. A ordem segue SOLANA_STATS: 33B, 70M, 700K, 972B. */
+/* Four pixel-mirrored wires made a diagram, not a network: argument and
+   support reached the coin by the same path with the same weight. Now the 33B
+   faces the coin head-on through the shortest, straightest wire — the direct
+   connection — and the three supports orbit on the right on bent wires of
+   different lengths. Order follows SOLANA_STATS: 33B, 70M, 700K, 972B. */
 const WIRES = [
   { d: "M 368 240 H 446", cx: 368, cy: 240 },
   { d: "M 844 398 H 780 L 712 342", cx: 844, cy: 398 },
@@ -311,10 +311,10 @@ const STAT_SLOTS = [
   "right-0 top-[49%] w-[22%]",
 ];
 
-/* O stagger tem que seguir o caminho do olho, não a ordem do array. No palco
-   os apoios ficam em topo/meio/base à direita, então o argumento entra
-   primeiro e a varredura desce em volta da moeda. Ordem de SOLANA_STATS
-   (33B, 70M, 700K, 972B) mapeada para posição na entrada. */
+/* The stagger has to follow the eye's path, not the array order. On stage the
+   supports sit top/middle/bottom on the right, so the argument enters first
+   and the sweep descends around the coin. SOLANA_STATS order
+   (33B, 70M, 700K, 972B) mapped to entry position. */
 const STAT_ENTRY_ORDER = [1, 4, 2, 3];
 
 function StatWires() {
@@ -343,9 +343,9 @@ function StatWires() {
   );
 }
 
-/* `lead` é o argumento da seção, não mais um número: ganha corpo maior, mais
-   respiro e o ângulo de repouso do papel, para o olho pousar nele antes dos
-   outros três. Sem isso são quatro caixas de peso igual e nenhuma voz. */
+/* `lead` is the section's argument, not just another number: it gets a larger
+   body, more breathing room and the paper's resting angle, so the eye lands on
+   it before the other three. Otherwise it is four equal boxes and no voice. */
 function StatCard({
   stat,
   lead = false,
@@ -500,14 +500,14 @@ export default async function HomePage() {
           standing behind it, closing the right side. The two pieces reach the
           halftone by different routes (render depth, photographic luminance)
           and come out in the same ink, on the same 1.5px grid. */}
-      {/* A dobra não corta nada. O ticket é DEPOSITADO no canto e a aresta de
-          baixo dele descansa SOBRE a seção seguinte — objeto de papel pousado
-          na página, não forma recortada por ela. Um `overflow-x: clip` aqui
-          não serviria: o Chromium corta os dois eixos nessa combinação e o
-          ticket voltaria a ser cerceado. Quem sangra são os fundos, e eles já
-          têm o próprio quadro de corte; a garantia contra rolagem horizontal
-          continua no `main`. O `z-10` é o que mantém a aba pendurada por cima
-          de `#cases`, que pinta depois na ordem do DOM. */}
+      {/* The fold clips nothing. The ticket is SET DOWN in the corner and its
+          bottom edge rests ON the next section — a paper object placed on the
+          page, not a shape cropped by it. An `overflow-x: clip` here would
+          not do: Chromium clips both axes in that combination and the ticket
+          would be hemmed in again. The backdrops are what bleed, and they
+          already have their own clipping frame; the guard against horizontal
+          scroll stays on `main`. The `z-10` is what keeps the tab hanging
+          over `#cases`, which paints later in DOM order. */}
       <section className="cena-dobra relative z-10 flex min-h-[calc(100dvh-4rem)] flex-col justify-center lg:justify-start">
         {/* One still frame clips every drifting backdrop, because the fold
             itself no longer clips on Y — and the clip cannot ride on the
@@ -518,17 +518,17 @@ export default async function HomePage() {
           aria-hidden
           className="pointer-events-none absolute inset-0 overflow-clip"
         >
-          {/* A tinta que sobra nos cantos altos. O monumento e o legionário
-            fecham a base do quadro e deixam o topo lateral em papel liso; a
-            textura ocupa esse vão sem virar objeto. Deriva curta: ela está
-            atrás do monumento, então anda menos que ele — e a camada é maior
-            que a seção nos dois sentidos, senão o curso da deriva descobre uma
-            faixa de papel limpo na borda onde a mancha é mais densa.
+          {/* The ink left over in the upper corners. The monument and the
+            legionary close the bottom of the frame and leave the upper sides
+            as plain paper; the texture fills that gap without becoming an
+            object. Short drift: it sits behind the monument, so it moves less
+            — and the layer is larger than the section both ways, or the drift
+            uncovers a strip of clean paper at the edge where the stain is densest.
 
-            Só a partir de `lg`: o vão que ela preenche é o das laterais da
-            manchete centrada. Abaixo disso o texto é alinhado à esquerda e
-            ocupa a largura inteira — a mesma mancha, ali, não preenche canto
-            nenhum, ela entra por baixo da leitura. */}
+            Only from `lg` up: the gap it fills is the one beside the centered
+            headline. Below that the text is left-aligned and spans the full
+            width — the same stain there fills no corner at all, it slips in
+            under the reading. */}
           <div className="cena-deriva-curta absolute inset-x-0 -top-[4%] hidden h-[108%] lg:block">
             <HeroHalftone
               side="left"
@@ -566,12 +566,12 @@ export default async function HomePage() {
               <SectionHat>Hackathon Colosseum</SectionHat>
             </div>
 
-            {/* A manchete não aparece: ela é IMPRESSA, e agora o processo
-                inteiro está à vista. As chapas esmeralda e amarela entram
-                fora do eixo e encaixam no mesmo instante em que a linha
-                termina de subir de baixo do rolo. O `--p` é escrito UMA vez,
-                aqui, e as três linhas o herdam: uma passagem de prensa, não
-                três registros independentes. */}
+            {/* The headline does not appear: it is PRINTED, and now the whole
+                process is in view. The emerald and yellow plates come in off
+                axis and lock in at the very instant the line finishes rising
+                from under the roller. `--p` is written ONCE, here, and the
+                three lines inherit it: one press pass, not three independent
+                registrations. */}
             <h1
               className="hero-print registro-impressao font-heading text-[clamp(1.7rem,7.7vw,3.2rem)] font-black uppercase leading-[1.02] tracking-tight text-ink [font-stretch:108%] lg:whitespace-nowrap lg:text-[clamp(3rem,4.6vw,4.8rem)]"
               style={{ "--hero-i": 1 } as CSSProperties}
@@ -632,11 +632,11 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* A ÂNCORA. De `lg` para cima este bilhete fica invisível e o que
-              a pessoa vê aqui é a peça de verdade, trazida da seção seguinte
-              pelo voo. Mas a caixa continua ocupada, e é ela que diz ao voo
-              onde é o canto do hero — e é ela que fica no lugar, visível,
-              quando não há régua de rolagem ou o movimento é reduzido. */}
+          {/* THE ANCHOR. From `lg` up this ticket goes invisible and what the
+              person sees here is the real piece, brought from the next section
+              by the flight. But the box stays occupied, and it is what tells
+              the flight where the hero corner is — and what stays in place,
+              visible, when there is no scroll timeline or motion is reduced. */}
           <div
             id="bilhete-ancora"
             className="bilhete-ancora lg:mt-6 lg:flex lg:w-full lg:max-w-[min(40vw,37rem)] lg:flex-col lg:self-end lg:[margin-bottom:calc((var(--hero-pb)+2rem)*-1)] lg:[@media(max-height:780px)]:origin-bottom-right lg:[@media(max-height:780px)]:scale-90"
@@ -648,60 +648,61 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* O bilhete pousa AQUI. O título fica de fora porque título é da
-          página; o resto do conteúdo desta seção é o verso da peça — e é por
-          isso que a grade de cards só existe abaixo de `lg`, onde a virada não
-          acontece. Nos dois casos o conteúdo é o mesmo e sai da mesma fonte. */}
+      {/* The ticket lands HERE. The title stays out because a title belongs
+          to the page; the rest of this section's content is the piece's back
+          — which is why the card grid only exists below `lg`, where the flip
+          does not happen. Either way the content is the same, from one source. */}
       <section
         id="colosseum"
         aria-label="O que é o Colosseum"
         className={`${LP_SECTION} relative bg-surface pb-16 lg:pb-20`}
       >
-        {/* A ARENA. O hero mostra o monumento por fora; aqui a página já está
-            DENTRO dele — arquibancada cheia, arcada em volta, areia embaixo — e
-            é sobre essa areia que o bilhete pousa. A cena inteira entra, sem
-            recorte: `cover`, sangrando pelos quatro lados, porque arena não tem
-            pé nem borda, ela continua fora do quadro.
+        {/* THE ARENA. The hero shows the monument from outside; here the page
+            is already INSIDE it — full stands, arcade all around, sand below —
+            and it is on that sand that the ticket lands. The whole scene comes
+            in, uncropped: `cover`, bleeding on all four sides, because an arena
+            has no foot and no edge, it carries on outside the frame.
 
-            Duas coisas a mantêm fundo e não ilustração. A tinta é curta — o
-            mesmo alfa das manchas de meio-tom do hero, não o do legionário, que
-            é peça. E a máscara come as bordas: a cena nasce do papel no topo,
-            onde a dobra anterior termina, e volta a ser papel embaixo, antes de
-            `#cases` começar. Sem isso o fundo teria arestas, e aresta em fundo
-            de seção lê como imagem colada.
+            Two things keep it a background and not an illustration. The ink is
+            light — the same alpha as the hero's halftone stains, not the
+            legionary's, which is a piece. And the mask eats the edges: the
+            scene is born from the paper at the top, where the previous fold
+            ends, and goes back to paper at the bottom, before `#cases` starts.
+            Without that the background would have edges, and an edge on a
+            section background reads as a pasted image.
 
-            A MÁSCARA MORA NO QUADRO QUE CORTA, não na caixa da chapa. A caixa
-            deriva com a rolagem, e uma máscara presa nela viaja junto: a borda
-            de cima sai do corte no meio do curso e a arena reaparece com uma
-            aresta reta atravessando a página. Quem corta é este quadro, que
-            está parado — então é ele quem desmancha.
+            THE MASK LIVES ON THE FRAME THAT CLIPS, not on the plate's box. The
+            box drifts with the scroll, and a mask pinned to it travels along:
+            the top edge leaves the clip mid-travel and the arena reappears
+            with a straight edge across the page. This frame does the clipping,
+            and it stands still — so it is the one that dissolves.
 
-            NEM `isolate` NEM `-z-10` AQUI. O bilhete em voo é filho desta
-            seção e sobrevoa a dobra anterior graças ao `z-index: 30` dele
-            valendo contra o `z-10` do hero — no MESMO contexto de empilhamento.
-            Isolar a seção prende esse 30 aqui dentro, a dobra inteira passa a
-            pintar por cima, e o Coliseu do hero decepa a peça no meio do voo.
-            Um `z-0` posicionado já sobe acima do fundo da própria seção, que é
-            tudo o que esta camada precisa. */}
+            NEITHER `isolate` NOR `-z-10` HERE. The ticket in flight is a child
+            of this section and flies over the previous fold thanks to its
+            `z-index: 30` counting against the hero's `z-10` — in the SAME
+            stacking context. Isolating the section traps that 30 in here, the
+            whole fold starts painting on top, and the hero's Colosseum lops
+            the piece off mid-flight. A positioned `z-0` already rises above
+            the section's own background, which is all this layer needs. */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0 overflow-clip [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_9%,#000_27%,#000_72%,transparent_99%)]"
         >
-          {/* A caixa tem a PROPORÇÃO da chapa e mora no topo da seção. É o que
-              faz a cena inteira caber — arquibancada, arcada, areia — em vez de
-              um recorte central dela: com a caixa na razão certa, `cover` não
-              tem o que cortar. Ancorada em cima porque a arcada é a parte que
-              lê como Coliseu, e ela tem que ficar atrás do título e da aba do
-              bilhete; a areia desce e morre na máscara, que é onde o cartão
-              pousa. */}
+          {/* The box has the plate's PROPORTION and lives at the top of the
+              section. It is what makes the whole scene fit — stands, arcade,
+              sand — instead of a central crop of it: with the box at the right
+              ratio, `cover` has nothing to cut. Anchored at the top because the
+              arcade is the part that reads as Colosseum, and it has to sit
+              behind the title and the ticket's tab; the sand runs down and dies
+              in the mask, which is where the card lands. */}
           <div className="cena-deriva-curta absolute inset-x-[-14%] top-[7%] aspect-[1199/692]">
             <HalftoneImage
               src="/home/arena.webp"
               fit="cover"
-              /* A mesma régua do legionário: a chapa só é pedida onde ela
-                 aparece. Abaixo de `lg` a seção é uma grade de cards opacos —
-                 a arena ficaria escondida atrás deles e o telefone teria
-                 pagado 190 kB para não ver nada. */
+              /* The same rule as the legionary: the plate is only fetched
+                 where it shows. Below `lg` the section is a grid of opaque
+                 cards — the arena would hide behind them and the phone would
+                 have paid 190 kB to see nothing. */
               minWidth={1024}
               gamma={1.5}
               toneFloor={0.09}
@@ -718,12 +719,12 @@ export default async function HomePage() {
             </h2>
           </Reveal>
 
-          {/* A peça estacionada não precisa ocupar a coluna inteira. O que
-              governa o tamanho dela é `--bu` — a razão entre esta caixa e a
-              âncora do hero —, então encolher a caixa encolhe a peça e a
-              chegada do voo junto, numa conta só. Com margem dos dois lados a
-              arena continua visível em volta do bilhete, que é o que faz o
-              cartão parecer POUSADO na areia em vez de colado por cima dela. */}
+          {/* The parked piece need not fill the whole column. What governs its
+              size is `--bu` — the ratio between this box and the hero anchor —
+              so shrinking the box shrinks the piece and the flight's landing
+              with it, in one calculation. With margin on both sides the arena
+              stays visible around the ticket, which is what makes the card
+              look SET DOWN on the sand instead of pasted over it. */}
           <div className="mx-auto mt-8 hidden sm:mt-10 lg:block lg:max-w-[84%] xl:max-w-[78%]">
             <BilheteVirando
               fatos={COLOSSEUM_FACTS}
@@ -812,7 +813,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* A Jornada: trilho horizontal — pílula de tempo, marcador e cartão por passo. */}
+      {/* The Journey: horizontal rail — time pill, marker and card per step. */}
       <JourneyPin
         containerClassName={PAGE_SHELL}
         header={
@@ -1014,10 +1015,10 @@ export default async function HomePage() {
             </p>
           </Reveal>
 
-          {/* 50/50 é ausência de decisão. O calendário é a carta densa — cinco
-              marcos com data e corpo — e fica na entrada da leitura, então
-              recebe a fatia maior; a Trilha Brasil é parágrafo mais mock e
-              comprime sem perder nada. */}
+          {/* 50/50 is the absence of a decision. The calendar is the dense
+              card — five milestones with date and body — and sits at the start
+              of the read, so it gets the bigger share; the Trilha Brasil is a
+              paragraph plus a mock and compresses without losing anything. */}
           <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)]">
             <Reveal index={1} tone="papel" className="h-full min-w-0">
               <article className="relative flex h-full flex-col overflow-clip rounded-2xl border-2 border-green-dark bg-emerald-deep shadow-sticker">
@@ -1032,8 +1033,8 @@ export default async function HomePage() {
                   <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-surface">
                     Da abertura das inscrições ao anúncio dos vencedores.
                   </p>
-                  {/* O card abre com o único número que muda sozinho: sem ele
-                      o calendário é uma tabela, com ele é um relógio. */}
+                  {/* The card opens with the only number that changes by itself:
+                      without it the calendar is a table, with it a clock. */}
                   <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-surface/25 bg-green-dark/25 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-surface-raised">
                     <span
                       aria-hidden
@@ -1221,10 +1222,10 @@ export default async function HomePage() {
             ))}
           </div>
 
-          {/* A saída de emergência vem DEPOIS das perguntas: quem ainda não
-              achou a resposta é quem precisa dela, e no topo ela aparecia
-              antes de a pessoa ter procurado. De quebra fecha o vazio que
-              sobrava entre a última linha e a seção seguinte. */}
+          {/* The emergency exit comes AFTER the questions: whoever still has
+              not found the answer is who needs it, and at the top it showed up
+              before the person had even looked. It also closes the gap that
+              was left between the last row and the next section. */}
           <Reveal index={2} tone="texto">
             <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-pretty font-heading text-lg font-bold leading-snug text-ink">
@@ -1258,11 +1259,11 @@ export default async function HomePage() {
                   <SectionHat centered onDark>
                     Última chamada
                   </SectionHat>
-                  {/* O mesmo gesto da primeira dobra, fechando o ciclo: a
-                      manchete que abriu a página impressa é a que a encerra,
-                      e aqui o registro é comandado pela rolagem em vez do
-                      load. Sobre o verde as chapas trocam para creme e
-                      amarelo — esmeralda sobre esmeralda não erra visível. */}
+                  {/* The same gesture as the first fold, closing the loop: the
+                      headline that opened the page in print is the one that
+                      closes it, and here the registration is driven by scroll
+                      instead of load. On the green the plates switch to cream
+                      and yellow — emerald on emerald misregisters invisibly. */}
                   <h2 className="registro registro-escuro mt-5 mx-auto max-w-4xl font-heading font-black uppercase leading-[1.06] tracking-tight text-surface [font-stretch:108%]">
                     <span className="block text-balance text-[clamp(1.75rem,7vw,2.75rem)] lg:text-[3.1rem]">
                       O próximo time a captar

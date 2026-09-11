@@ -1,6 +1,6 @@
-/* A taça é desenhada, não fotografada: a LP inteira é impressão — traço de
-   tinta fechado e chapado por dentro. Por isso o brilho não é um degradê, é
-   uma metade pintada mais escura, como numa serigrafia de duas cores. */
+/* The cup is drawn, not photographed: the whole LP is print — closed ink
+   stroke, flat fill inside. That is why the highlight is not a gradient but
+   a half painted darker, as in a two-colour screen print. */
 export function Trophy({ className = "" }: { className?: string }) {
   return (
     <svg

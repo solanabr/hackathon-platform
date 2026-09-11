@@ -1,26 +1,27 @@
 /* ---------------------------------------------------------------------------
- * A PASSAGEM ENTRE PÁGINAS
+ * THE PASSAGE BETWEEN PAGES
  *
- * Trocar de rota era o único corte seco que sobrava: a página some, a próxima
- * aparece, e o site inteiro que se apresenta como uma gráfica dá um pulo de
- * slide.
+ * Changing route was the last hard cut left: the page vanishes, the next one
+ * appears, and a site that presents itself as a print shop jumps like a
+ * slideshow.
  *
- * A resposta não é inventar um efeito novo — é usar o gesto que a marca já
- * tem. `PressSheet` estabeleceu que a primeira folha da sessão sai da prensa e
- * é PUXADA PARA BAIXO, liberando o topo primeiro para que a manchete apareça
- * enquanto ainda está sendo estampada. Cada página seguinte é outra folha da
- * mesma prensa. Mesmo sentido, mesma curva, mesma leitura: a página nova já
- * está impressa embaixo, e o que a revela é a folha anterior saindo.
+ * The answer is not to invent a new effect — it's to use the gesture the
+ * brand already has. `PressSheet` established that the session's first sheet
+ * leaves the press and is PULLED DOWN, freeing the top first so the headline
+ * shows while it is still being printed. Every following page is another
+ * sheet from the same press. Same direction, same curve, same reading: the
+ * new page is already printed underneath, and the previous sheet leaving is
+ * what reveals it.
  *
- * Por que só a ENTRADA e não um par entrada/saída: no App Router o template
- * remonta quando a rota nova já renderizou — a anterior não existe mais nesse
- * instante. Animar uma saída exigiria segurar a árvore velha (View
- * Transitions, hoje experimental no Next) para ganhar ~150ms de cortina. O
- * gesto que importa é o da revelação, e esse dá para fazer sem flag.
+ * Why only the ENTRANCE and not an enter/exit pair: in the App Router the
+ * template remounts once the new route has rendered — the previous one no
+ * longer exists at that instant. Animating an exit would mean holding the
+ * old tree (View Transitions, still experimental in Next) to gain ~150ms of
+ * curtain. The gesture that matters is the reveal, and that needs no flag.
  *
- * `PressSheet` é z-60 e esta folha é z-55: na primeira visita à LP as duas
- * coexistem por um instante, e a da prensa — que é a que tem o símbolo — fica
- * por cima. Nenhuma das duas sabe da outra.
+ * `PressSheet` is z-60 and this sheet is z-55: on the first LP visit both
+ * coexist for an instant, and the press one — the one with the symbol —
+ * stays on top. Neither knows about the other.
  * ------------------------------------------------------------------------- */
 
 .rota-folha {
@@ -32,10 +33,10 @@
   animation: rotaFolha var(--dur-rapida) var(--ease-saida) forwards;
 }
 
-/* A ARESTA DO ROLO. A borda de cima da folha é o que varre a tela, e uma
-   borda de creme sobre creme é invisível — o movimento acontece mas ninguém
-   vê o que se moveu. Três pixels de tinta transformam a mesma translação num
-   gesto legível: é a linha do rolo passando. */
+/* THE ROLLER EDGE. The sheet's top edge is what sweeps the screen, and a
+   cream edge over cream is invisible — the movement happens but nobody sees
+   what moved. Three pixels of ink turn the same translation into a legible
+   gesture: the roller's line passing by. */
 .rota-folha::before {
   content: "";
   position: absolute;
@@ -52,13 +53,13 @@
   }
 }
 
-/* A página nova aparece POR BAIXO da folha, então ela não pode começar em
-   zero: a folha já cobriu o quadro, e o que se vê pela fresta tem que ser
-   conteúdo, não vazio. Começa em 0.45 e fecha na curva de entrada, terminando
-   depois de a folha ter saído — a tinta ainda está assentando quando o papel
-   já foi embora, que é o que acontece numa impressão de verdade.
-   Só opacidade: um transform aqui viraria bloco de contenção e prenderia
-   qualquer elemento `fixed` da página dentro do wrapper. */
+/* The new page appears UNDER the sheet, so it can't start at zero: the sheet
+   already covered the frame, and what shows through the gap has to be
+   content, not void. Starts at 0.45 and closes on the entrance curve, ending
+   after the sheet has left — the ink is still settling when the paper is
+   already gone, which is what happens in a real print.
+   Opacity only: a transform here would become a containing block and trap
+   any `fixed` element of the page inside the wrapper. */
 .rota-entra {
   animation: rotaEntra var(--dur-media) var(--ease-entrada) backwards;
 }
@@ -72,10 +73,10 @@
   }
 }
 
-/* Como na folha da prensa: aqui "versão pensada" é NÃO acontecer. A passagem
-   não carrega informação nenhuma — ela é inteiramente transição, e preservar
-   a orquestração de algo cujo único conteúdo é o movimento seria só atrasar a
-   página de quem pediu menos movimento. */
+/* As with the press sheet: here the "considered version" is NOT happening.
+   The passage carries no information — it is entirely transition, and
+   preserving the orchestration of something whose only content is motion
+   would just delay the page for someone who asked for less motion. */
 @media (prefers-reduced-motion: reduce) {
   .rota-folha {
     display: none;

@@ -1,9 +1,9 @@
 import { Plate } from "./plate";
 import { PLATE_SRC } from "./plates";
 
-/** O anfiteatro subindo da base do hero — a única imagem da dobra, no mesmo
- *  traço de meio-tom das ilustrações da jornada. O desenho mora em
- *  `plates.ts` e chega como arquivo; aqui só o enquadramento. */
+/** The amphitheatre rising from the base of the hero — the only image above
+ *  the fold, in the same halftone stroke as the journey illustrations. The
+ *  drawing lives in `plates.ts` and arrives as a file; only the framing here. */
 export function ColosseumBackdrop({ className = "" }: { className?: string }) {
   return (
     <Plate

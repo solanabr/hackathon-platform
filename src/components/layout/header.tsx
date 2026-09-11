@@ -70,9 +70,9 @@ export async function Header() {
           )}
         </nav>
       </div>
-      {/* A régua: quanto da folha já passou. Fica na base do cabeçalho porque é
-          exatamente ali que a barra encosta no conteúdo — a linha marca a
-          fronteira entre o chrome e a página, e de quebra informa. */}
+      {/* The ruler: how much of the sheet has gone by. It sits at the base of
+          the header because that is exactly where the bar meets the content —
+          the line marks the border between chrome and page, and informs too. */}
       <span
         aria-hidden
         className="lp-regua absolute inset-x-0 bottom-[-2px] h-[2px] bg-yellow-strong"

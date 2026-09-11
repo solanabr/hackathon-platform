@@ -1,33 +1,34 @@
 /* ---------------------------------------------------------------------------
- * PROGRESSO LOCAL E REGISTRO
+ * LOCAL PROGRESS AND REGISTRATION
  *
- * A regra de arquitetura do raio-X do kit (doc 02): **um único progresso por
- * seção**. `--p` vai de 0 a 1 enquanto a seção chega, é escrito UMA vez nela e
- * herdado por tudo que estiver dentro. Distribuir números de scroll globais por
- * dezenas de componentes é como se perde o controle de uma página assim — cada
- * peça passa a ter a própria régua e nada mais encaixa.
+ * The architecture rule from the kit's X-ray (doc 02): **one single progress
+ * per section**. `--p` goes from 0 to 1 as the section arrives, is written
+ * ONCE on it and inherited by everything inside. Handing global scroll numbers
+ * to dozens of components is how a page like this loses control — every piece
+ * gets its own ruler and nothing lines up any more.
  *
- * `initial-value: 1` é a rede de segurança inteira: sem `animation-timeline`,
- * sem JS ou em movimento reduzido, tudo lê 1 — a composição PRONTA. O repouso
- * desta página é sempre o desenho aprovado, nunca uma tela esperando efeito.
+ * `initial-value: 1` is the whole safety net: without `animation-timeline`,
+ * without JS or under reduced motion, everything reads 1 — the FINISHED
+ * composition. This page's rest state is always the approved drawing, never a
+ * screen waiting for an effect.
  * ------------------------------------------------------------------------- */
-/* O progresso local. `initial-value: 1` é deliberado e é a rede de segurança
-   inteira: onde não houver `animation-timeline`, onde o JS falhar, onde o
-   movimento for reduzido — tudo lê 1, que é a composição PRONTA. O estado de
-   repouso desta página é sempre o desenho aprovado, nunca uma tela em branco
-   esperando um efeito. */
+/* The local progress. `initial-value: 1` is deliberate and is the whole
+   safety net: wherever there is no `animation-timeline`, wherever JS fails,
+   wherever motion is reduced — everything reads 1, the FINISHED composition.
+   This page's rest state is always the approved drawing, never a blank screen
+   waiting for an effect. */
 @property --p {
   syntax: "<number>";
   inherits: true;
   initial-value: 1;
 }
 
-/* --- O DRIVER ------------------------------------------------------------
- * Três faixas, porque a mesma pergunta ("quando a composição termina de ser
- * desenhada?") tem três respostas boas dependendo da altura da seção.
- * `entry` tem comprimento igual à altura do sujeito; `cover` soma a viewport.
- * Escolher explicitamente no call site é melhor que uma heurística que erra
- * em silêncio numa seção alta.                                              */
+/* --- THE DRIVER ----------------------------------------------------------
+ * Three ranges, because the same question ("when is the composition done
+ * being drawn?") has three good answers depending on section height.
+ * `entry` is as long as the subject's height; `cover` adds the viewport.
+ * Choosing explicitly at the call site beats a heuristic that fails silently
+ * on a tall section.                                                        */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .cena-p,
@@ -37,20 +38,20 @@
       animation-timeline: view();
     }
 
-    /* O padrão: desenha enquanto a seção entra e fecha antes de ela estar
-       inteira na tela — quem lê o texto já encontra o desenho pronto. */
+    /* The default: draws while the section enters and finishes before it is
+       fully on screen — whoever reads the text already finds it drawn. */
     .cena-p {
       animation-range: entry 8% entry 78%;
     }
 
-    /* Seção baixa, onde `entry` é curto: o desenho tem que acontecer quase
-       todo na primeira aparição, senão nem começa antes de a seção passar. */
+    /* Short section, where `entry` is brief: the drawing has to happen almost
+       entirely on first appearance, or it won't start before it scrolls by. */
     .cena-p-curta {
       animation-range: entry 2% entry 44%;
     }
 
-    /* Composição que continua evoluindo durante a leitura inteira — a que a
-       pessoa atravessa em vez de olhar. */
+    /* A composition that keeps evolving through the whole read — one the
+       person travels through rather than looks at. */
     .cena-p-longa {
       animation-range: cover;
     }
@@ -66,21 +67,22 @@
   }
 }
 
-/* --- 1. REGISTRO ---------------------------------------------------------
- * As chapas entram fora do eixo e encaixam.
+/* --- 1. REGISTRATION -----------------------------------------------------
+ * The plates come in off-axis and snap into place.
  *
- * É o gesto que abre e fecha a página, e o único momento em que a marca
- * mostra o PROCESSO em vez do produto: por um instante a manchete é três
- * impressões mal alinhadas, e só depois vira tipografia.
+ * It is the gesture that opens and closes the page, and the only moment the
+ * brand shows the PROCESS instead of the product: for an instant the headline
+ * is three misaligned impressions, and only then becomes typography.
  *
- * `text-shadow` e não camadas duplicadas: sombra de texto pinta atrás do
- * glifo, então o fantasma aparece exatamente onde a chapa teria errado, sem
- * duplicar o texto no DOM — o leitor de tela continua ouvindo uma manchete só.
+ * `text-shadow`, not duplicated layers: a text shadow paints behind the
+ * glyph, so the ghost shows exactly where the plate would have missed,
+ * without duplicating text in the DOM — the screen reader still hears one
+ * headline.
  *
- * As duas chapas erram em direções OPOSTAS e em proporções diferentes (uma
- * mais no eixo X, outra mais no Y). Errar as duas para o mesmo lado não é
- * registro fora de esquadro: é sombra projetada, que é outra coisa e lê como
- * relevo barato.                                                            */
+ * The two plates miss in OPPOSITE directions and by different proportions
+ * (one more on X, the other more on Y). Missing both to the same side is not
+ * out-of-square registration: it is a cast shadow, a different thing that
+ * reads as cheap embossing.                                                 */
 .registro {
   --r: calc(1 - var(--p));
   --tinta-a: var(--color-emerald);
@@ -92,17 +94,17 @@
       calc(var(--registro-desvio) * var(--r) * -0.36) 0 var(--tinta-b);
 }
 
-/* Sobre o verde escuro a esmeralda some e o amarelo estoura. As chapas trocam
-   para o par que existe nesse fundo: creme e amarelo. */
+/* On the dark green the emerald vanishes and the yellow blows out. The plates
+   switch to the pair that exists on that ground: cream and yellow. */
 .registro-escuro {
   --tinta-a: color-mix(in srgb, var(--color-surface) 70%, transparent);
   --tinta-b: var(--color-yellow);
 }
 
-/* A dobra imprime no load, não na rolagem: a manchete já está na tela quando
-   a página abre, então esperar scroll seria esperar para sempre. Roda junto
-   com `heroPrint`, na mesma deixa, para as chapas encaixarem no instante em
-   que a linha termina de subir de baixo do rolo. */
+/* The fold prints on load, not on scroll: the headline is already on screen
+   when the page opens, so waiting for scroll would be waiting forever. Runs
+   with `heroPrint`, on the same cue, so the plates snap in the instant the
+   line finishes rising from under the roller. */
 .registro-impressao {
   animation: registroImpressao var(--dur-lenta) var(--ease-entrada) backwards;
   animation-delay: calc(var(--hero-cue) + var(--hero-i, 0) * var(--stagger-texto));
@@ -117,12 +119,14 @@
   }
 }
 
-/* --- 5. O GRÃO -----------------------------------------------------------
- * A composição final da referência aplica ruído azul de baixa intensidade por
- * cima de tudo. É o que impede a página de parecer um vetor: papel tem fibra.
+/* --- 5. THE GRAIN --------------------------------------------------------
+ * The reference's final composition lays low-intensity blue noise over
+ * everything. It is what keeps the page from looking like a vector: paper
+ * has fibre.
  *
- * `soft-light` e não `overlay`: sobre creme o overlay estoura o meio-tom e o
- * grão vira sujeira. Mesma decisão já tomada na atmosfera da premiação.      */
+ * `soft-light`, not `overlay`: on cream, overlay blows out the midtone and
+ * the grain turns to dirt. Same decision already made in the prizes
+ * atmosphere.                                                               */
 .grao {
   position: relative;
 }

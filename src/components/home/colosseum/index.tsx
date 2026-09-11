@@ -9,9 +9,9 @@ const ColosseumCanvas = dynamic(
   { ssr: false },
 );
 
-/* O desenho 2D chega de fora: ele é gerado no servidor e servido como
-   arquivo, e este componente é de cliente — importá-lo aqui arrastaria o
-   gerador da chapa para o bundle do navegador. */
+/* The 2D drawing comes from outside: it is generated on the server and served
+   as a file, and this component is a client one — importing it here would drag
+   the plate generator into the browser bundle. */
 export function ColosseumScene({ backdrop }: { backdrop: ReactNode }) {
   const showScene = useSceneEligible();
 

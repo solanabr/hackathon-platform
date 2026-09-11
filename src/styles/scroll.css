@@ -1,38 +1,38 @@
 /* ---------------------------------------------------------------------------
- * CENAS DE ROLAGEM
+ * SCROLL SCENES
  *
- * A terceira camada de movimento da LP. As outras duas já existiam: a ENTRADA
- * (`.reveal`, um observer que dispara uma vez) e a AMBIENTE (loops que não
- * respondem a ninguém). Falta a que responde ao dedo: o que a pessoa vê muda
- * porque ELA está rolando, e não porque um cronômetro disparou.
+ * The LP's third motion layer. The other two already existed: ENTRANCE
+ * (`.reveal`, an observer that fires once) and AMBIENT (loops that respond
+ * to no one). Missing was the one that responds to the finger: what the
+ * person sees changes because THEY are scrolling, not because a timer fired.
  *
- * Tudo aqui é `animation-timeline` — animação amarrada à posição do scroll,
- * não ao relógio. Três consequências que justificam a escolha inteira:
+ * Everything here is `animation-timeline` — animation tied to scroll
+ * position, not to the clock. Three consequences that justify the whole choice:
  *
- * 1. É reversível de graça. Subir desfaz na mesma curva, porque não existe
- *    "estado disparado" para rearmar — existe uma posição.
- * 2. Roda no compositor, fora da main thread. A alternativa honesta seria mais
- *    um `scroll` listener em rAF por camada; a `JourneyPin` tem um, e um é o
- *    limite antes de a rolagem começar a engasgar em telefone.
- * 3. Degrada para nada. Onde a API não existe, o `@supports` não entra e a
- *    camada fica no estado de repouso — que é o desenho aprovado, não uma
- *    versão quebrada esperando JS.
+ * 1. Reversible for free. Scrolling up undoes on the same curve, because
+ *    there is no "fired state" to re-arm — there is a position.
+ * 2. Runs on the compositor, off the main thread. The honest alternative is
+ *    one more rAF `scroll` listener per layer; `JourneyPin` has one, and one
+ *    is the limit before scrolling starts to stutter on phones.
+ * 3. Degrades to nothing. Where the API is missing, `@supports` doesn't
+ *    apply and the layer stays at rest — which is the approved design, not
+ *    a broken version waiting for JS.
  *
- * REGRA DE HIERARQUIA: cena de rolagem mexe em CAMADA DE FUNDO — halftone,
- * kraft, monumento, trilho, malha. Texto e CTA não derivam. O conteúdo é a
- * coisa parada em relação à qual o resto se move; invertido, a página vira um
- * carrossel e a leitura fica impossível.
+ * HIERARCHY RULE: scroll scenes move BACKGROUND LAYERS — halftone, kraft,
+ * monument, rails, mesh. Text and CTAs never drift. Content is the still
+ * thing everything else moves relative to; invert that and the page becomes
+ * a carousel and reading becomes impossible.
  *
- * GOTCHA que custou tempo: `view()` mede o elemento contra o SCROLLPORT mais
- * próximo, e `overflow: hidden` conta como scrollport. Uma camada dentro de
- * uma seção `overflow-hidden` nunca progride — a seção não rola. Por isso as
- * seções que hospedam cena usam `overflow-clip`: corta igual, sem virar
- * container de rolagem.
+ * GOTCHA that cost time: `view()` measures the element against the nearest
+ * SCROLLPORT, and `overflow: hidden` counts as a scrollport. A layer inside
+ * an `overflow-hidden` section never progresses — the section doesn't
+ * scroll. That's why sections hosting a scene use `overflow-clip`: clips the
+ * same, without becoming a scroll container.
  * ------------------------------------------------------------------------- */
 
-/* A régua nasce vazia e só é preenchida pela rolagem. Fora do `@supports` ela
-   nunca é preenchida — então fica invisível, que é o estado certo para uma
-   peça cujo único conteúdo é o progresso. */
+/* The ruler starts empty and is only filled by scrolling. Outside `@supports`
+   it is never filled — so it stays invisible, the right state for a piece
+   whose only content is progress. */
 .lp-regua {
   transform-origin: left center;
   transform: scaleX(0);
@@ -40,12 +40,11 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    /* --- DERIVA -----------------------------------------------------------
-     * O paralaxe. A camada entra adiantada e sai atrasada em relação ao
-     * conteúdo, então ela lê como se estivesse ATRÁS do papel em vez de
-     * colada nele. O curso é simétrico em torno do repouso de propósito: no
-     * meio da travessia — que é onde a seção é lida — a camada está exatamente
-     * onde o design a colocou.                                              */
+    /* --- DRIFT ------------------------------------------------------------
+     * The parallax. The layer enters ahead of and leaves behind the content,
+     * so it reads as sitting BEHIND the paper rather than glued to it. The
+     * travel is symmetric around rest on purpose: mid-crossing — where the
+     * section is read — the layer is exactly where the design placed it.   */
     .cena-deriva-curta,
     .cena-deriva-media,
     .cena-deriva-longa {
@@ -64,9 +63,9 @@
       --deriva: var(--deriva-longa);
     }
 
-    /* Inverte o sentido: a camada sobe enquanto a página desce. Serve para o
-       que precisa parecer FIXO no mundo — um monumento apoiado no chão não
-       acompanha a rolagem, ele fica para trás. */
+    /* Flips the direction: the layer rises as the page descends. For what
+       must look FIXED in the world — a monument resting on the ground does
+       not follow the scroll, it falls behind. */
     .cena-deriva-contra {
       --deriva-sinal: -1;
     }
@@ -88,11 +87,11 @@
       }
     }
 
-    /* --- ZOOM DE CENA -----------------------------------------------------
-     * Para camada que preenche o quadro inteiro e não tem para onde
-     * transladar sem mostrar a borda: o halftone dos cards escuros, a malha.
-     * Ela chega grande e assenta no tamanho de repouso na saída — o gesto é o
-     * de uma câmera recuando, não o de um GIF respirando.                    */
+    /* --- SCENE ZOOM -------------------------------------------------------
+     * For a layer that fills the whole frame and has nowhere to translate
+     * without showing its edge: the dark cards' halftone, the mesh. It
+     * arrives large and settles to rest size on exit — the gesture is a
+     * camera pulling back, not a breathing GIF.                              */
     .cena-zoom {
       animation: cenaZoom linear both;
       animation-timeline: view();
@@ -109,17 +108,17 @@
       }
     }
 
-    /* --- O TRILHO SE DESENHA ---------------------------------------------
-     * As linhas do `SectionRails` são desenho técnico: a régua da página
-     * aparecendo. Então elas não fazem fade — elas são TRAÇADAS, de cima para
-     * baixo, no ritmo em que a seção entra. É a mesma decisão do halftone que
-     * é varrido em vez de desbotado: nesta marca, coisa desenhada aparece
-     * pela ponta do traço.
+    /* --- THE RAILS DRAW THEMSELVES ---------------------------------------
+     * The `SectionRails` lines are technical drawing: the page's ruler
+     * appearing. So they don't fade — they are STROKED, top to bottom, at
+     * the pace the section enters. Same decision as the halftone that is
+     * swept instead of faded: in this brand, drawn things appear from the
+     * tip of the stroke.
      *
-     * A faixa é `entry`, cujo comprimento é a ALTURA DA SEÇÃO: o traço é
-     * ruled no ritmo em que a seção passa, e não numa duração fixa que ficaria
-     * curta demais numa seção alta e longa demais numa baixa. Fecha em 75%
-     * para o traço não estar sempre incompleto enquanto a seção é lida.      */
+     * The range is `entry`, whose length is the SECTION HEIGHT: the stroke
+     * is ruled at the pace the section passes, not on a fixed duration that
+     * would be too short on a tall section and too long on a short one.
+     * Closes at 75% so the stroke isn't always incomplete while it's read. */
     .cena-trilhos {
       animation: cenaTrilhos linear both;
       animation-timeline: view();
@@ -135,20 +134,20 @@
       }
     }
 
-    /* --- A PRIMEIRA DOBRA ENTREGA A PÁGINA -------------------------------
-     * O hero não é substituído por corte seco: ele RECUA. Enquanto sai de
-     * cena, a dobra inteira perde tinta e desce um fio, como uma folha que
-     * volta para a pilha — e a seção seguinte sobe por cima dela.
+    /* --- THE FIRST FOLD HANDS OVER THE PAGE ------------------------------
+     * The hero isn't replaced by a hard cut: it RECEDES. As it leaves the
+     * scene, the whole fold loses ink and drops a hair, like a sheet going
+     * back onto the pile — and the next section rises over it.
      *
-     * Só na saída (`exit`), e nunca até zero: a 0.28 ainda dá para ler o que
-     * está lá quando a pessoa muda de ideia e sobe. Um hero que apaga de vez
-     * transforma o scroll de volta num susto.                                */
-    /* A perda de tinta é um VÉU de creme por cima, não a opacidade da dobra.
-       Opacidade numa seção com canvas, chapas e camadas em deriva obriga o
-       compositor a pintar a dobra inteira num quadro à parte a cada frame de
-       rolagem; um véu é um retângulo. O resultado é o mesmo — a dobra é lida
-       sobre creme —, e o bilhete em voo (z-30, fora desta seção) continua
-       pousando por cima do véu, como pousava por cima da dobra apagada. */
+     * Only on `exit`, and never to zero: at 0.28 you can still read what's
+     * there when the person changes their mind and scrolls up. A hero that
+     * fully blanks out turns the scroll back into a jolt.                    */
+    /* The ink loss is a cream VEIL on top, not the fold's opacity. Opacity
+       on a section with canvas, plates and drifting layers forces the
+       compositor to paint the whole fold into a separate surface on every
+       scroll frame; a veil is a rectangle. The result is the same — the fold
+       reads over cream — and the flying ticket (z-30, outside this section)
+       still lands on top of the veil, as it landed on top of the faded fold. */
     .cena-dobra {
       view-timeline: --dobra block;
       animation: cenaDobra linear both;
@@ -186,54 +185,56 @@
       }
     }
 
-    /* --- O BILHETE VIRA E ESTACIONA --------------------------------------
-     * A passagem da primeira dobra para a seção que explica o hackathon. Ela
-     * não é um corte nem uma peça que evapora: é o BILHETE que faz o
-     * transporte. Ele sai do canto do hero, cresce, gira 180° sobre o eixo
-     * vertical e ESTACIONA na seção seguinte com o verso para cima — e o verso
-     * é o conteúdo da seção. O objeto que a pessoa passou a primeira dobra
-     * inteira olhando é o mesmo que ela lê depois, do outro lado.
+    /* --- THE TICKET FLIPS AND PARKS --------------------------------------
+     * The passage from the first fold to the section that explains the
+     * hackathon. Not a cut, not a piece that evaporates: the TICKET does the
+     * carrying. It leaves the hero corner, grows, turns 180° on the vertical
+     * axis and PARKS in the next section back side up — and the back is the
+     * section's content. The object the person stared at through the whole
+     * first fold is the same one they read afterwards, from the other side.
      *
-     * Quatro decisões seguram isso de pé:
+     * Four decisions hold this up:
      *
-     * 1. A PEÇA MORA NO DESTINO. Ela é filha da seção, e o repouso dela é o
-     *    estado estacionado. O canto do hero é o estado TRANSFORMADO — e os
-     *    números desse estado são medidos da âncora que ficou no hero
-     *    (`components/campaign/ticket-flip.tsx`), não calibrados em `vh`. Um
-     *    pouso calibrado a olho erra em toda altura de janela diferente
-     *    daquela em que foi calibrado.
+     * 1. THE PIECE LIVES AT THE DESTINATION. It is a child of the section,
+     *    and its rest is the parked state. The hero corner is the
+     *    TRANSFORMED state — and its numbers are measured from the anchor
+     *    left in the hero (`components/campaign/ticket-flip.tsx`), not
+     *    calibrated in `vh`. A landing tuned by eye misses at every viewport
+     *    height other than the one it was tuned on.
      *
-     * 2. A LISTA DE FUNÇÕES É IDÊNTICA EM TODOS OS QUADROS. Listas diferentes
-     *    fazem o browser cair para interpolação de matriz, e matriz com 180°
-     *    de `rotateY` degenera: o cartão achata em vez de virar. Por isso todo
-     *    quadro escreve `translate3d + scale + rotate + rotateY`, inclusive os
-     *    que não precisariam.
+     * 2. THE FUNCTION LIST IS IDENTICAL IN EVERY KEYFRAME. Different lists
+     *    make the browser fall back to matrix interpolation, and a matrix
+     *    with 180° of `rotateY` degenerates: the card flattens instead of
+     *    turning. So every keyframe writes `translate3d + scale + rotate +
+     *    rotateY`, including the ones that wouldn't need to.
      *
-     * 3. O GIRO ACONTECE DEPOIS DA VIAGEM COMEÇAR. Nos primeiros 30% a peça
-     *    quase só cresce; a virada mesmo acontece no meio, e o instante de
-     *    perfil (90°) cai perto de dois terços — que é onde o olho espera a
-     *    troca de lado.
+     * 3. THE TURN HAPPENS AFTER THE TRIP STARTS. In the first 30% the piece
+     *    mostly just grows; the actual flip happens in the middle, and the
+     *    edge-on instant (90°) lands near two thirds — where the eye expects
+     *    the side change.
      *
-     * 4. A RÉGUA É A ROLAGEM DA PÁGINA, com o curso escrito em px pelo
-     *    medidor. `view()` mediria a peça contra a janela e a faixa acabaria
-     *    cedo demais; o curso certo é "daqui até a caixa de destino chegar a
-     *    um quarto da tela", e isso é uma distância, não uma travessia.
+     * 4. THE RULER IS THE PAGE SCROLL, with the travel written in px by the
+     *    measurer. `view()` would measure the piece against the viewport and
+     *    the range would end too early; the right travel is "from here until
+     *    the destination box reaches a quarter of the screen", and that is a
+     *    distance, not a crossing.
      *
-     * Abaixo de `lg` a cena não existe. Não é falta de suporte: é
-     * enquadramento. O verso do bilhete é uma folha de quatro cláusulas, e num
-     * telefone essa folha não cabe na proporção de um ingresso — ali a seção é
-     * a grade de cards e o bilhete fica no hero, inteiro, como sempre esteve. */
+     * Below `lg` the scene doesn't exist. Not lack of support: framing. The
+     * ticket's back is a sheet of four clauses, and on a phone that sheet
+     * doesn't fit a ticket's proportions — there the section is the card
+     * grid and the ticket stays in the hero, whole, as it always was.       */
     @media (min-width: 1024px) {
-      /* A cópia do hero vira ÂNCORA: continua ocupando a caixa (é ela que dá
-         a medida) e sai da vista e da árvore de acessibilidade. */
+      /* The hero copy becomes the ANCHOR: it still occupies the box (it's
+         what gives the measurement) and leaves view and the a11y tree. */
       .bilhete-ancora {
         visibility: hidden;
       }
 
-      /* A peça continua sendo DEPOSITADA na primeira dobra, como sempre foi:
-         a entrada é do invólucro e mexe só em opacidade, porque `transform` no
-         voo já é do scroll e duas animações na mesma propriedade não somam —
-         a última vence e o pouso deixaria de acontecer. */
+      /* The piece is still DEPOSITED into the first fold, as it always was:
+         the entrance belongs to the wrapper and touches only opacity, because
+         `transform` on the flight already belongs to scroll and two
+         animations on the same property don't add — the last wins and the
+         landing would stop happening. */
       .bilhete-vao {
         animation: bilheteEntra var(--dur-lenta) var(--ease-entrada)
           calc(var(--hero-cue) + 0.28s) backwards;
@@ -255,30 +256,33 @@
       }
     }
 
-    /* A FÍSICA. Uma folha de papel jogada no ar não é uma placa presa a um
-     * eixo, e a primeira versão desta cena era exatamente isso: rotação
-     * uniforme, escala uniforme, brilho constante. Cada quadro abaixo existe
-     * para desfazer uma dessas três coisas.
+    /* THE PHYSICS. A sheet of paper tossed in the air is not a plate pinned
+     * to an axis, and the first version of this scene was exactly that:
+     * uniform rotation, uniform scale, constant brightness. Every keyframe
+     * below exists to undo one of those three things.
      *
-     * 1. PESO E ARRASTO. A queda vai na frente da travessia lateral: no meio
-     *    do voo a peça já cedeu metade da altura e só um terço do caminho de
-     *    lado. Isso curva a trajetória — papel cai e depois plana, não anda em
-     *    linha reta entre dois pontos.
+     * 1. WEIGHT AND DRAG. The drop runs ahead of the lateral crossing: at
+     *    mid-flight the piece has already given up half its height and only
+     *    a third of the sideways path. That bends the trajectory — paper
+     *    falls and then glides, it doesn't walk a straight line between two
+     *    points.
      *
-     * 2. INÉRCIA NO GIRO. A folha resiste, vira de vez no meio e passa do
-     *    ponto: cruza os 180° e volta. É o mesmo gesto de `--ease-carimbo`
-     *    escrito em quadros, porque a régua aqui é a rolagem e a curva de
-     *    tempo não existe — quem faz o ritmo é a distribuição dos quadros.
+     * 2. INERTIA IN THE TURN. The sheet resists, flips all at once in the
+     *    middle and overshoots: crosses 180° and comes back. Same gesture as
+     *    `--ease-carimbo`, written in keyframes, because the ruler here is
+     *    the scroll and there is no timing curve — the keyframe distribution
+     *    sets the rhythm.
      *
-     * 3. TORÇÃO. `rotateX` e `skewY` tiram o giro do eixo único. Uma folha
-     *    real nunca gira em torno de uma reta perfeita: ela balança e
-     *    cisalha, e são esses dois graus fora do eixo que fazem o olho ler
-     *    FOLHA em vez de PORTA GIRATÓRIA.
+     * 3. TWIST. `rotateX` and `skewY` take the turn off the single axis. A
+     *    real sheet never spins around a perfect line: it wobbles and
+     *    shears, and those two off-axis degrees are what make the eye read
+     *    SHEET instead of REVOLVING DOOR.
      *
-     * E as três só convencem porque a superfície acompanha: `--voo-sombra`
-     * apaga a face conforme ela sai do eixo da luz, `--voo-alto` afasta a
-     * sombra do chão enquanto a peça está no ar e `--foil-x` faz a luz varrer
-     * o papel durante a virada — a mesma fonte de luz que acende o canhoto.  */
+     * All three only convince because the surface follows: `--voo-sombra`
+     * darkens the face as it leaves the light axis, `--voo-alto` lifts the
+     * shadow off the ground while the piece is airborne, and `--foil-x`
+     * sweeps the light across the paper during the flip — the same light
+     * source that lights the stub.                                          */
     @keyframes bilheteVoo {
       0% {
         transform: translate3d(var(--voo-dx, 0px), var(--voo-dy, 0px), 0)
@@ -288,9 +292,9 @@
         --voo-sombra: 0;
         --foil-x: 50%;
       }
-      /* O DESCOLAR. A peça não parte: ela solta. Um giro curto no plano e a
-         borda de fuga levantando antes de qualquer viagem — é assim que papel
-         sai de uma superfície. */
+      /* THE PEEL. The piece doesn't depart: it lets go. A short in-plane
+         turn and the trailing edge lifting before any travel — that's how
+         paper leaves a surface. */
       8% {
         transform: translate3d(
             calc(var(--voo-dx, 0px) * 0.96),
@@ -327,10 +331,9 @@
         --voo-sombra: 0.55;
         --foil-x: 46%;
       }
-      /* O PERFIL. Aqui a face está de canto para a luz e é onde ela precisa
-         estar mais escura — a virada de uma folha tem um instante quase preto,
-         e é justamente esse instante que uma placa iluminada por igual não
-         tem. */
+      /* EDGE-ON. Here the face is angled to the light and this is where it
+         needs to be darkest — a sheet's flip has a near-black instant, and
+         that instant is exactly what an evenly lit plate lacks. */
       58% {
         transform: translate3d(
             calc(var(--voo-dx, 0px) * 0.52),
@@ -367,9 +370,9 @@
         --voo-sombra: 0.42;
         --foil-x: 72%;
       }
-      /* O TAPA. Trinta e cinco graus em dez por cento de curso: a folha
-         desaba no último trecho, como qualquer coisa leve que encontra a
-         mesa. */
+      /* THE SLAP. Thirty-five degrees in ten percent of travel: the sheet
+         collapses on the last stretch, like anything light meeting the
+         table. */
       92% {
         transform: translate3d(
             calc(var(--voo-dx, 0px) * 0.08),
@@ -382,9 +385,9 @@
         --voo-sombra: 0.16;
         --foil-x: 60%;
       }
-      /* O RECUO. Passa dos 180° e volta. Sem isto o cartão PARA no ângulo
-         exato, que é a assinatura de coisa animada por interpolação — objeto
-         com massa sempre devolve um pouco do que recebeu. */
+      /* THE REBOUND. Overshoots 180° and comes back. Without it the card
+         STOPS at the exact angle, the signature of interpolated animation —
+         an object with mass always gives back a bit of what it received. */
       97% {
         transform: translate3d(
             calc(var(--voo-dx, 0px) * 0),
@@ -397,13 +400,13 @@
         --voo-sombra: 0.04;
         --foil-x: 52%;
       }
-      /* ZERO ESCRITO COMO FRAÇÃO, e não como `0px`. Um `translate3d(0,0,0)`
-         literal é reduzido a `translate(0)` pelo minificador — outro NOME de
-         função — e a lista deste quadro deixa de casar com a dos demais.
-         Consequência: o último trecho cai na interpolação de matriz, bem em
-         cima dos 180°, que é justamente onde a decomposição é ambígua e o
-         cartão achata. A fração mantém a forma da tabela inteira e sobrevive
-         ao build. */
+      /* ZERO WRITTEN AS A FRACTION, not as `0px`. A literal
+         `translate3d(0,0,0)` gets reduced to `translate(0)` by the minifier —
+         a different function NAME — and this keyframe's list stops matching
+         the others'. Consequence: the last stretch falls into matrix
+         interpolation, right on top of 180°, exactly where decomposition is
+         ambiguous and the card flattens. The fraction keeps the whole table's
+         shape and survives the build. */
       100% {
         transform: translate3d(
             calc(var(--voo-dx, 0px) * 0),
@@ -417,13 +420,13 @@
       }
     }
 
-    /* --- O LEQUE ABRE ----------------------------------------------------
-     * As três cartas da fila já estão em escada no repouso. A rolagem abre a
-     * escada: cada carta anda um pouco mais que a anterior, então o intervalo
-     * entre elas cresce enquanto a faixa atravessa a tela e volta a fechar
-     * quando ela sai. O passo entre as cartas é o mesmo token de deriva —
-     * quem define a diferença é o índice, escrito no call site como todo
-     * stagger desta base.                                                    */
+    /* --- THE FAN OPENS ---------------------------------------------------
+     * The three cards in the row are already staggered at rest. Scrolling
+     * opens the stagger: each card travels a bit more than the previous one,
+     * so the gap between them grows while the strip crosses the screen and
+     * closes again as it leaves. The step between cards is the same drift
+     * token — the index sets the difference, written at the call site like
+     * every stagger in this codebase.                                        */
     .cena-carta {
       --deriva: calc(var(--deriva-curta) * var(--carta-i, 1));
       animation: cenaDeriva linear both;
@@ -431,12 +434,12 @@
       animation-range: cover;
     }
 
-    /* --- O PAINEL É DEPOSITADO -------------------------------------------
-     * Objeto de papel grande — o quadro escuro da Solana, o bloco da última
-     * chamada. Ele não entra flutuando: chega um fio maior do que a caixa e
-     * assenta nela, que é o gesto de prensar uma folha contra a mesa. Termina
-     * em `entry 100%`: quando a peça está inteira na tela, ela já está
-     * parada — o resto da travessia é leitura, não animação.                 */
+    /* --- THE PANEL IS SET DOWN -------------------------------------------
+     * Large paper object — the dark Solana panel, the last-call block. It
+     * doesn't float in: it arrives a hair larger than its box and settles
+     * into it, the gesture of pressing a sheet against the table. Ends at
+     * `entry 100%`: once the piece is fully on screen it is already still —
+     * the rest of the crossing is reading, not animation.                    */
     .cena-assenta {
       animation: cenaAssenta linear both;
       animation-timeline: view();
@@ -454,22 +457,22 @@
 
   }
 
-  /* As duas peças abaixo ficam FORA do corte de movimento reduzido, e isso é
-   * uma decisão, não um esquecimento. O que causa desconforto é deslocamento
-   * grande, rotação e escala de bloco — não uma barra de 2px sendo preenchida
-   * nem um fundo trocando de opacidade no lugar. Além disso as duas informam:
-   * uma diz onde a pessoa está na folha, a outra diz que o cabeçalho passou a
-   * flutuar sobre o conteúdo. Desligá-las seria tirar informação de quem
-   * pediu menos movimento. */
+  /* The two pieces below sit OUTSIDE the reduced-motion cut, and that is a
+   * decision, not an oversight. What causes discomfort is large displacement,
+   * rotation and block scaling — not a 2px bar filling up or a background
+   * changing opacity in place. Both also inform: one says where the person
+   * is on the sheet, the other says the header now floats over the content.
+   * Turning them off would take information away from someone who asked for
+   * less motion. */
 
-  /* --- O CHROME ASSENTA -------------------------------------------------
-   * O cabeçalho no topo da página é uma linha sobre o creme; assim que a
-   * página anda, ele vira uma barra apoiada em cima do conteúdo. A troca é
-   * contínua e amarrada aos primeiros 5rem de rolagem, não um `if scrollY >
-   * 0` que estala de um estado para o outro.
+  /* --- THE CHROME SETTLES -----------------------------------------------
+   * At the top of the page the header is a line over cream; as soon as the
+   * page moves it becomes a bar resting on top of the content. The switch is
+   * continuous and tied to the first 5rem of scroll, not an `if scrollY >
+   * 0` that snaps from one state to the other.
    *
-   * Só cor e sombra: a altura fica fora porque encolher um header sticky
-   * reflui a página inteira a cada frame de rolagem.                        */
+   * Color and shadow only: height stays out because shrinking a sticky
+   * header reflows the whole page on every scroll frame.                    */
   .chrome-assenta {
     animation: chromeAssenta linear both;
     animation-timeline: scroll(root block);
@@ -489,11 +492,11 @@
     }
   }
 
-  /* --- A RÉGUA ---------------------------------------------------------
-   * Quanto da folha já passou. É a única peça da página que informa em vez
-   * de ambientar, e por isso é a mais discreta: 2px de tinta correndo na
-   * base do cabeçalho, ancorada à esquerda como uma régua de impressão.
-   * Amarelo é a cor de marcação da marca — a mesma da tarja do hero.        */
+  /* --- THE RULER -------------------------------------------------------
+   * How much of the sheet has gone by. The only piece on the page that
+   * informs instead of setting mood, hence the most discreet: 2px of ink
+   * running along the header's base, anchored left like a print ruler.
+   * Yellow is the brand's marking color — same as the hero band.            */
   .lp-regua {
     animation: lpRegua linear both;
     animation-timeline: scroll(root block);

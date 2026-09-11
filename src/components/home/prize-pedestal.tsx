@@ -1,16 +1,16 @@
 import { Reveal } from "@/components/ui/reveal";
 import { TrophyScene } from "@/components/home/trophy-scene";
 
-/* Larguras e alturas dos degraus vieram de medir a referência em pixel e
-   normalizar pelo degrau mais externo — é a proporção, e não a cor, que faz o
-   desenho ler como poço. */
+/* Step widths and heights came from measuring the reference in pixels and
+   normalising by the outermost step — it is the proportion, not the colour,
+   that makes the drawing read as a well. */
 const LEVELS = [0.78, 0.608, 0.438, 0.264, 0.086];
 const JUNCTIONS = [0, 0.219, 0.44, 0.659, 0.844];
 
-/* A junção AFUNDA no centro, não sobe: é o que a câmera da referência devolve
-   ao olhar para dentro do poço, e a barriga some conforme os degraus recuam. */
-/* Proporção do quadro: a malha da referência mede 2,33 de largura por 1 de
-   altura, e o degrau mais externo ocupa 78% do quadro. */
+/* The junction SAGS at the centre, it does not rise: that is what the reference
+   camera returns looking into the well, and the belly fades as steps recede. */
+/* Frame proportion: the reference mesh measures 2.33 wide by 1 tall, and the
+   outermost step takes up 78% of the frame. */
 const FRAME_RATIO = 2.99;
 
 const SAG = 0.055;
@@ -53,10 +53,10 @@ const FUNNEL_CLIP = `polygon(${OUTLINE.map(
 
 const OUTLINE_PATH = `M ${OUTLINE.map(([x, y]) => `${(x * 100).toFixed(2)} ${(y * 100).toFixed(2)}`).join(" L ")} Z`;
 
-/* O wireframe da referência: as linhas seguem as mesmas curvas e as duas de
-   cima atravessam o quadro inteiro, continuando no creme — é isso que amarra a
-   peça ao fundo. Escuras, nunca creme: linha clara em cima da junção lê como
-   fresta entre placas soltas, não como vinco. */
+/* The reference wireframe: the lines follow the same curves and the top two
+   cross the whole frame, continuing into the cream — that is what ties the
+   piece to the background. Dark, never cream: a light line over the junction
+   reads as a gap between loose plates, not as a crease. */
 const GRID_ROWS = LEVELS.map(
   (_, index) =>
     `M ${sample(index, -0.06, 1.06, 28)
@@ -65,15 +65,15 @@ const GRID_ROWS = LEVELS.map(
 );
 const GRID_COLUMNS = Array.from({ length: 13 }, (_, i) => (i * 100) / 12);
 
-/* O viewBox é esticado sem manter proporção, então um traço de 1 unidade sai
-   três vezes mais grosso na horizontal que na vertical: cada eixo pede a sua
-   própria espessura para as duas famílias saírem com o mesmo peso na tela. */
+/* The viewBox is stretched without keeping proportion, so a 1-unit stroke
+   comes out three times thicker horizontally than vertically: each axis needs
+   its own thickness for the two families to land with the same weight. */
 const ROW_STROKE = 0.28;
 const COLUMN_STROKE = ROW_STROKE / FRAME_RATIO;
 
-/* Cada degrau é uma faixa curva com sombra própria na quina: é o que a malha
-   3D da referência devolve de graça e o gradiente global sozinho não dá — sem
-   isso os degraus escorrem uns nos outros. */
+/* Each step is a curved band with its own shadow at the corner: what the
+   reference's 3D mesh gives for free and the global gradient alone does not —
+   without it the steps bleed into one another. */
 const STEP_BANDS = LEVELS.map((width, index) => {
   const left = (1 - width) / 2;
   const right = 1 - left;
@@ -87,8 +87,8 @@ const STEP_BANDS = LEVELS.map((width, index) => {
     .join(" L ")} Z`;
 });
 
-/* Claro em cima, saturado embaixo — e nunca preto: a referência satura sem
-   perder luz, que é o que mantém a peça legível contra o fundo. */
+/* Light on top, saturated below — and never black: the reference saturates
+   without losing light, which keeps the piece legible against the background. */
 const FUNNEL = {
   clipPath: FUNNEL_CLIP,
   backgroundImage: `linear-gradient(to bottom,
@@ -121,8 +121,9 @@ const TOP_HALO = {
   WebkitMaskImage: "linear-gradient(to bottom, black 0%, transparent 48%)",
 } as const;
 
-/* O centro do poço recebe mais luz que as paredes: é o que separa a peça do
-   fundo sem contorno e o que a referência faz com o blur do topo. */
+/* The centre of the well gets more light than the walls: it is what separates
+   the piece from the background without an outline, and what the reference
+   does with the blur at the top. */
 const SPOT = {
   clipPath: FUNNEL_CLIP,
   backgroundImage: `radial-gradient(30% 42% at 50% 30%, color-mix(in oklab, var(--color-surface-raised) 30%, transparent) 0%, transparent 78%),

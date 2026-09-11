@@ -1,6 +1,6 @@
-/* Meio-tom gerado a partir do desenho: cada célula da grade guarda a densidade
-   da arte em base36, e o traço cresce com ela. Guardar o mapa em vez do path
-   deixa passo, ganho e corte ajustáveis sem redesenhar tudo. */
+/* Halftone generated from the drawing: each grid cell stores the art's density
+   in base36, and the stroke grows with it. Storing the map instead of the path
+   keeps pitch, gain and cutoff adjustable without redrawing everything. */
 export function halftoneMarks(
   tones: string,
   {
@@ -13,9 +13,9 @@ export function halftoneMarks(
     cols: number;
     cellW: number;
     cellH: number;
-    /* Quanto cada risco sai do centro da célula. O padrão é o desvio mínimo
-       que tira a régua da grade sem soltar o desenho; textura de fundo pede
-       muito mais, senão a mancha lê como tela de impressão em vez de tinta. */
+    /* How far each dash strays from the cell centre. The default is the least
+       offset that breaks the grid's ruler without loosening the drawing; a
+       background texture needs far more, or the blot reads as screen, not ink. */
     jitterX?: number;
     jitterY?: number;
   },

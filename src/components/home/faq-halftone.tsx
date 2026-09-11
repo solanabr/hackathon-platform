@@ -48,7 +48,7 @@ const TONES =
 
 const { light, dark } = halftoneMarks(TONES, { cols: COLS, cellW: CELL_W, cellH: CELL_H });
 
-/** FAQ: o balão da pergunta com a resposta chegando, desenhado em meio-tom. */
+/** FAQ: the question bubble with the answer arriving, drawn in halftone. */
 export function FaqHalftone({ className }: { className?: string }) {
   return (
     <svg

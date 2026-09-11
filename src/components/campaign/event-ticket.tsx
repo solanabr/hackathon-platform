@@ -17,47 +17,47 @@ import {
   SeloRomano,
 } from "@/components/campaign/gravacao";
 
-/* O canhoto que atravessa a página carrega este mesmo número. Se ele existisse
-   nos dois lugares como literal, um dia divergiria — e o número igual é
-   justamente a prova de que é o mesmo ticket, não dois objetos parecidos. */
+/* The stub that travels across the page carries this same number. As a literal
+   in two places it would drift one day — and the matching number is exactly
+   the proof that it is the same ticket, not two similar objects. */
 export const TICKET_SERIAL = "001417";
 
-/* O mesmo número na numeração da casa. Não é enfeite: é o segundo registro que
-   toda peça numerada de verdade carrega, e é ele que dá ao bilhete a data
-   romana do selo sem precisar escrever "2026" duas vezes. */
+/* The same number in the house numerals. Not decoration: it is the second
+   register every real numbered piece carries, and it gives the ticket the
+   seal's Roman date without writing "2026" twice. */
 const TICKET_SERIAL_ROMANO = "MCDXVII";
 
 const MICROTEXTO =
   "SUPERTEAM BRASIL · HACKATHON COLOSSEUM · CRYPTO WORLD'S FAIR · MMXXVI · ";
 
-/* Curso da pose, em graus. Sete é o teto que mantém o retângulo lendo como
-   retângulo: acima disso a perspectiva começa a estreitar visivelmente um dos
-   lados e o bilhete vira placa de vitrine girando. */
+/* Pose travel, in degrees. Seven is the ceiling that keeps the rectangle
+   reading as a rectangle: past it the perspective visibly narrows one side
+   and the ticket turns into a spinning shop sign. */
 const POSE_MAX = 7;
 
 /* ---------------------------------------------------------------------------
- * `--bu` — A UNIDADE DO BILHETE
+ * `--bu` — THE TICKET UNIT
  *
- * O bilhete vive em dois tamanhos: pequeno no canto do hero e grande, virado,
- * estacionado na seção seguinte. É a MESMA peça — então ela não pode ter dois
- * desenhos, e também não pode ser só um `scale` do outro: escalar um cartão de
- * papel escala o serrilhado, o furo e o corpo da letra junto, e o que era
- * impressão vira ampliação de impressão.
+ * The ticket lives at two sizes: small in the hero corner and large, flipped,
+ * parked in the next section. It is the SAME piece — so it cannot have two
+ * drawings, and it cannot be a plain `scale` of the other either: scaling a
+ * paper card scales the perforation, the punch hole and the type size along
+ * with it, and what was print becomes an enlargement of print.
  *
- * Então toda medida interna é escrita em `calc(x * var(--bu))`. Uma unidade só
- * governa corpo de letra, respiro, largura do canhoto, passo do picote e
- * tamanho do selo. Quem escreve `--bu` é a instância: 1 no hero, e a razão
- * entre as duas larguras quando estacionado — e é essa mesma razão, invertida,
- * que o voo usa como `scale`. As duas pontas fecham por construção.
+ * So every internal measure is written as `calc(x * var(--bu))`. One unit
+ * governs type size, breathing room, stub width, perforation pitch and seal
+ * size. The instance writes `--bu`: 1 in the hero, and the ratio between the
+ * two widths when parked — and that same ratio, inverted, is what the flight
+ * uses as `scale`. The two ends close by construction.
  * ------------------------------------------------------------------------- */
 
 /**
- * O PAPEL — a chapa que as duas faces dividem.
+ * THE PAPER — the plate both faces share.
  *
- * Recorte serrilhado, trama, vergatura, mancha de polpa e a luz. Tudo o que é
- * suporte mora aqui; o que é conteúdo entra como `children`. Sem isso as duas
- * faces divergiriam na primeira correção de textura — e um cartão cuja frente e
- * cujo verso são de papéis diferentes deixa de ser um cartão.
+ * Deckled cut, weave, laid lines, pulp stain and the light. Everything that is
+ * substrate lives here; content comes in as `children`. Without this the two
+ * faces would diverge at the first texture tweak — and a card whose front and
+ * back are different papers stops being a card.
  */
 function Papel({
   children,
@@ -72,8 +72,8 @@ function Papel({
         espelhado ? "flex-row-reverse" : ""
       }`}
     >
-      {/* A trama do papel, a mesma da página. Ela mora no fundo e o miolo
-          passa a ser posicionado, senão a camada absoluta cobre o texto. */}
+      {/* The paper weave, the same as the page's. It lives at the bottom and
+          the body becomes positioned, or the absolute layer covers the text. */}
       <PaperTexture className="opacity-50 [mask-image:radial-gradient(120%_100%_at_50%_50%,rgb(0_0_0/0.08)_18%,#000_88%)] [-webkit-mask-image:radial-gradient(120%_100%_at_50%_50%,rgb(0_0_0/0.08)_18%,#000_88%)]" />
       <span
         aria-hidden
@@ -86,8 +86,8 @@ function Papel({
 
       {children}
 
-      {/* A LUZ. Última camada, atravessando papel e canhoto no mesmo eixo:
-          uma fonte só para a peça inteira. */}
+      {/* THE LIGHT. Last layer, crossing paper and stub on the same axis:
+          one source for the whole piece. */}
       <span
         aria-hidden
         className="bilhete-luz pointer-events-none absolute inset-0"
@@ -96,13 +96,13 @@ function Papel({
   );
 }
 
-/** O canhoto amarelo com o hot stamp. Igual nas duas faces: o canhoto de um
- *  ingresso é a mesma tira de foil vista dos dois lados. */
+/** The yellow stub with the hot stamp. Same on both faces: a ticket's stub
+ *  is the same strip of foil seen from either side. */
 function Canhoto() {
   return (
     <div className="bilhete-canhoto relative flex shrink-0 items-center bg-yellow gap-[calc(0.5rem*var(--bu))] px-[calc(0.5rem*var(--bu))] sm:gap-[calc(0.75rem*var(--bu))] sm:px-[calc(0.75rem*var(--bu))]">
-      {/* AS CAMADAS DO HOT STAMP, na ordem física: pérola, íris, especular,
-          tinta. Trocar a ordem é o que faz um foil parecer adesivo colorido. */}
+      {/* THE HOT STAMP LAYERS, in physical order: pearl, iris, specular,
+          ink. Swapping the order is what makes foil look like a colored sticker. */}
       <span aria-hidden className="foil-perola absolute inset-0" />
       <span aria-hidden className="foil-iris absolute inset-0" />
       <span aria-hidden className="foil-brilho absolute inset-0" />
@@ -125,8 +125,8 @@ function Canhoto() {
   );
 }
 
-/** A linha de picote: furos vazados até o creme, com a rebarba que o punção
- *  deixa no papel. */
+/** The perforation line: holes punched through to the cream, with the burr
+ *  the punch leaves in the paper. */
 function Picote() {
   return (
     <div
@@ -136,16 +136,16 @@ function Picote() {
   );
 }
 
-/* --- A FRENTE ------------------------------------------------------------
- * O que está impresso no bilhete desde o começo: a edição, o número, o período
- * e a condição. É o lado que a pessoa vê na primeira dobra.                  */
+/* --- THE FRONT -----------------------------------------------------------
+ * What has been printed on the ticket from the start: the edition, the number,
+ * the period and the terms. It is the side people see above the fold.        */
 export function TicketFrente() {
   return (
     <Papel>
       <div className="relative min-w-0 flex-1 px-[calc(1rem*var(--bu))] py-[calc(1rem*var(--bu))] sm:px-[calc(1.75rem*var(--bu))] sm:py-[calc(1.5rem*var(--bu))] lg:pb-[calc(3.5rem*var(--bu))] lg:pt-[calc(1.75rem*var(--bu))]">
-        {/* O MEDALHÃO. Sai do quadro pela direita e é cortado pelo picote,
-            como numa cédula — guilhoché que respeita a moldura do texto parece
-            carimbo de fundo de página, não impressão de segurança. */}
+        {/* THE MEDALLION. Runs off the frame to the right and is cut by the
+            perforation, as on a banknote — guilloche that respects the text
+            frame reads as a page-background stamp, not security printing. */}
         <Medalhao className="top-1/2 h-[calc(13rem*var(--bu))] w-[calc(13rem*var(--bu))] -translate-y-1/2 text-green-dark/[0.085] [right:calc(-6.5rem*var(--bu))] sm:h-[calc(15rem*var(--bu))] sm:w-[calc(15rem*var(--bu))] sm:[right:calc(-7.5rem*var(--bu))] lg:h-[calc(17rem*var(--bu))] lg:w-[calc(17rem*var(--bu))] lg:[right:calc(-8.5rem*var(--bu))]" />
 
         <div className="relative flex items-baseline justify-between gap-[calc(0.75rem*var(--bu))]">
@@ -169,8 +169,8 @@ export function TicketFrente() {
           </div>
         </div>
 
-        {/* Onde havia um fio separando o cabeçalho do corpo agora corre a
-            grega. Mesma altura, mesma função — o fio só passou a ter desenho. */}
+        {/* Where a rule once separated the header from the body, the meander
+            now runs. Same height, same job — the rule just gained a drawing. */}
         <Meandro className="relative my-[calc(0.75rem*var(--bu))] h-[calc(8px*var(--bu))] w-full text-green-dark/35 sm:my-[calc(1.25rem*var(--bu))] sm:h-[calc(11px*var(--bu))]" />
 
         <dl className="relative flex flex-wrap items-end">
@@ -204,15 +204,15 @@ export function TicketFrente() {
           100% online · inscrição gratuita
         </p>
 
-        {/* O SELO. Batido por cima do picote e fora do eixo, porque carimbo é
-            gesto de mão. Só de `lg` para cima, e isso é o enquadramento
-            decidindo: abaixo desse ponto o bilhete é largo e baixo, a linha do
-            rodapé quebra em duas e o canto de baixo à direita — o único lugar
-            onde um carimbo cai bem — é onde ela termina. */}
+        {/* THE SEAL. Struck over the perforation and off-axis, because a
+            stamp is a hand gesture. Only from `lg` up, and that is the framing
+            deciding: below that point the ticket is wide and short, the footer
+            line wraps onto two and the bottom-right corner — the only place a
+            stamp sits well — is where it ends. */}
         <SeloRomano className="absolute bottom-[calc(0.75rem*var(--bu))] right-[calc(1.25rem*var(--bu))] hidden h-[calc(4.75rem*var(--bu))] w-[calc(4.75rem*var(--bu))] -rotate-[9deg] text-emerald-deep/25 lg:block" />
 
-        {/* O microtexto corre na aresta de baixo do miolo. Parado é uma
-            textura; na aproximação vira palavra. */}
+        {/* The microtext runs along the bottom edge of the body. At rest it is
+            a texture; up close it becomes words. */}
         <Microtexto
           texto={MICROTEXTO}
           className="bilhete-microtexto absolute inset-x-0 bottom-0 h-[calc(7px*var(--bu))] text-green-dark/45"
@@ -232,15 +232,15 @@ export type FatoBilhete = {
   accent?: boolean;
 };
 
-/* --- O VERSO -------------------------------------------------------------
- * O que um ingresso de verdade tem atrás: as condições, na mesma tinta e em
- * corpo miúdo. É por isso que o conteúdo da seção cabe aqui sem virar outra
- * coisa — a seção É a letra miúda deste bilhete. O título dela fica de fora
- * porque título é da PÁGINA, não da peça: quem anuncia a seção é a folha.
+/* --- THE BACK ------------------------------------------------------------
+ * What a real ticket has on the back: the terms, in the same ink and in small
+ * type. That is why the section's content fits here without becoming something
+ * else — the section IS this ticket's fine print. Its title stays out because
+ * a title belongs to the PAGE, not the piece: the sheet announces the section.
  *
- * O canhoto troca de lado, e não é detalhe gratuito: vire um ingresso na mão e
- * o canhoto aparece do outro lado. Mantê-lo à direita denunciaria que o verso
- * é uma segunda imagem, e não o outro lado da mesma folha.                   */
+ * The stub switches sides, and that is no gratuitous detail: flip a ticket in
+ * your hand and the stub shows up on the other side. Keeping it on the right
+ * would give away the back as a second image, not the other side of one sheet. */
 export function TicketVerso({
   fatos,
   nota,
@@ -250,11 +250,11 @@ export function TicketVerso({
 }) {
   return (
     <Papel espelhado>
-      {/* O verso é escrito em MEIA unidade do que a frente usaria. Não é
-          inconsistência: a frente só é vista reduzida pelo voo (`--bu` para
-          cima, `scale` para baixo, uma anula a outra), e o verso é visto no
-          tamanho grande, sem redução. Escrever os dois na mesma escala daria
-          um verso com corpo de letra de cartaz. */}
+      {/* The back is set at HALF the unit the front would use. Not an
+          inconsistency: the front is only ever seen reduced by the flight
+          (`--bu` up, `scale` down, one cancels the other), while the back is
+          seen at the large size, unreduced. Setting both at the same scale
+          would give the back poster-sized type. */}
       <div className="relative flex min-w-0 flex-1 flex-col px-[calc(1.25rem*var(--bu))] py-[calc(1rem*var(--bu))]">
         <Medalhao className="top-1/2 h-[calc(9rem*var(--bu))] w-[calc(9rem*var(--bu))] -translate-y-1/2 text-green-dark/[0.07] [left:calc(-4.5rem*var(--bu))]" />
 
@@ -269,10 +269,10 @@ export function TicketVerso({
 
         <Meandro className="relative my-[calc(0.6rem*var(--bu))] h-[calc(6px*var(--bu))] w-full text-green-dark/35" />
 
-        {/* As quatro cláusulas. Sem moldura e sem sombra: elas estão IMPRESSAS
-            no papel, não coladas nele — um sticker card por cima do bilhete
-            faria o bilhete virar fundo de outro objeto. O que separa uma da
-            outra é o fio, que é como um documento separa cláusula. */}
+        {/* The four clauses. No frame and no shadow: they are PRINTED on the
+            paper, not stuck onto it — a sticker card on top of the ticket
+            would turn the ticket into another object's background. What parts
+            them is the rule, which is how a document separates clauses. */}
         <dl className="relative grid flex-1 content-start gap-x-[calc(1.75rem*var(--bu))] gap-y-[calc(0.8rem*var(--bu))] sm:grid-cols-2">
           {fatos.map((fato) => (
             <div
@@ -320,19 +320,19 @@ export function TicketVerso({
   );
 }
 
-/* --- A PEÇA NO HERO ------------------------------------------------------
- * Uma face só, com a pose de ponteiro. É o bilhete do canto da primeira dobra
- * e o estado de repouso de quem não recebe a virada — e, quando o voo está
- * ativo, é a ÂNCORA: fica `visibility: hidden` mas continua ocupando a caixa,
- * porque é a caixa dela que diz ao voo onde fica o canto do hero.            */
+/* --- THE PIECE IN THE HERO -----------------------------------------------
+ * One face only, with the pointer pose. It is the ticket in the corner of the
+ * first fold and the resting state for whoever gets no flip — and, when the
+ * flight is active, it is the ANCHOR: `visibility: hidden` yet still filling
+ * its box, because that box is what tells the flight where the hero corner is. */
 export function EventTicket() {
   const cena = useRef<HTMLDivElement>(null);
   const [pousado, setPousado] = useState(true);
 
-  /* A luz e a pose saem do MESMO ponto: é uma fonte de luz só, na posição do
-     ponteiro. Escrever as duas coisas de dois handlers diferentes é como o
-     brilho e a inclinação acabam discordando — e um foil que acende do lado
-     errado da inclinação é pior do que foil nenhum. */
+  /* Light and pose come from the SAME point: a single light source at the
+     pointer's position. Writing the two from two different handlers is how
+     the sheen and the tilt end up disagreeing — and a foil that lights up on
+     the wrong side of the tilt is worse than no foil at all. */
   const seguirPonteiro = useCallback((e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse") return;
     const el = cena.current;
@@ -352,9 +352,9 @@ export function EventTicket() {
   const pousar = useCallback(() => {
     const el = cena.current;
     if (el) {
-      /* Remover em vez de zerar: o repouso volta a ser o valor inicial do
-         `@property`, que é o desenho aprovado — e não um zero que esta função
-         precisaria manter em sincronia com o CSS para sempre. */
+      /* Remove rather than zero: rest goes back to the `@property` initial
+         value, which is the approved drawing — not a zero this function would
+         have to keep in sync with the CSS forever. */
       for (const v of ["--pose-x", "--pose-y", "--foil-x", "--foil-y"]) {
         el.style.removeProperty(v);
       }
@@ -371,9 +371,9 @@ export function EventTicket() {
       className="bilhete-cena ticket-shadow mt-8 w-full max-w-sm text-left md:max-w-xl lg:mt-0 lg:max-w-none"
     >
       <div className="bilhete-pose relative">
-        {/* O LADO DO CARTÃO. Mesmo recorte, em tinta, atrás da peça — e é o
-            deslocamento contra a inclinação que o transforma em espessura em
-            vez de contorno. */}
+        {/* THE CARD'S EDGE. Same cut, in ink, behind the piece — and it is the
+            offset against the tilt that turns it into thickness instead of
+            an outline. */}
         <div aria-hidden className="bilhete-espessura ticket-cut" />
         <TicketFrente />
       </div>

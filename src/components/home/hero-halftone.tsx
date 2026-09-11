@@ -1,16 +1,16 @@
 import { halftoneMarks } from "./halftone";
 
-/* Grade curta de propósito. A chapa ocupa menos de um terço da largura da
-   dobra, então o número de colunas é o que decide o tamanho FÍSICO da célula:
-   com a contagem do fechamento o risco chegaria à tela com metade do corpo e
-   a mancha leria como retícula de scanner em vez de tinta. */
+/* Short grid on purpose. The plate takes under a third of the fold's width,
+   so the column count is what decides the PHYSICAL cell size: with the
+   closing's count the dash would reach the screen at half its body and the
+   blot would read as scanner screen instead of ink. */
 const COLS = 34;
 const ROWS = 46;
 const CELL = 12.5;
 
-/* Mesmo campo contínuo do fechamento, uma oitava abaixo: as manchas da dobra
-   dividem o quadro com manchete e monumento, e textura miúda nessa escala lê
-   como sujeira de tela em vez de tinta. */
+/* The closing's continuous field, one octave down: the fold's blots share the
+   frame with headline and monument, and fine texture at that scale reads as
+   screen dirt instead of ink. */
 function field(x: number, y: number) {
   return (
     0.38 * Math.sin(x * 5.1 + y * 3.3) +
@@ -21,15 +21,15 @@ function field(x: number, y: number) {
   );
 }
 
-/* A mancha é recortada no próprio campo, não por máscara radial no CSS: uma
-   elipse deformada por senoides lentas tem borda de nuvem, e o traço já chega
-   rareando nela. Gradiente daria a mesma queda de tinta com contorno de
-   círculo — que é exatamente a forma que a dobra não pode ter. */
+/* The blot is cut in the field itself, not by a radial mask in CSS: an ellipse
+   warped by slow sines has a cloud edge, and the stroke already thins into it.
+   A gradient would give the same ink falloff with a circular outline — exactly
+   the shape the fold cannot have. */
 function presence(x: number, y: number, rx: number, ry: number) {
   const base = Math.hypot((x + 0.06) / rx, (y + 0.04) / ry);
-  /* O deslocamento solta ilhas fora da elipse, que é metade da graça — mas
-     sem um teto elas aparecem longe da mancha, no meio do papel limpo, e o
-     que era respingo vira sujeira. Só sobrevive a ilha encostada na borda. */
+  /* The warp lets islands loose outside the ellipse, which is half the charm —
+     but without a ceiling they show up far from the blot, in clean paper, and
+     what was splatter becomes dirt. Only the island touching the edge survives. */
   if (base > 1.18) return 0;
   const warp =
     0.15 * Math.sin(x * 5.2 + y * 7.4) +
@@ -39,10 +39,10 @@ function presence(x: number, y: number, rx: number, ry: number) {
   return d >= 1 ? 0 : Math.pow(1 - d, 0.75);
 }
 
-/* Duas nuvens independentes em vez de um plano só. A chapa é sempre desenhada
-   com a nuvem no canto superior esquerdo e presa ali pelo preserveAspectRatio;
-   a do outro lado é a mesma chapa espelhada. Assim nenhuma largura de tela
-   empurra a mancha para debaixo da manchete nem corta o topo dela. */
+/* Two independent clouds instead of a single plane. The plate is always drawn
+   with the cloud in the top-left corner and pinned there by preserveAspectRatio;
+   the other side is the same plate mirrored. So no screen width pushes the
+   blot under the headline or crops its top. */
 function plate(rx: number, ry: number) {
   const tones = Array.from({ length: COLS * ROWS }, (_, i) => {
     const x = (i % COLS) / COLS;
@@ -50,18 +50,18 @@ function plate(rx: number, ry: number) {
     const m = presence(x, y, rx, ry);
     if (m <= 0) return "0";
     const n = (field(x, y) + 1.2) / 2.4;
-    /* Faixa larga em vez da curta do fechamento: lá o traço cheio encosta na
-       célula vizinha e a textura vira listra, aqui a mancha é rala e precisa
-       do contraste interno para ter blocos claros e escuros em vez de um
-       cinza chapado. */
+    /* Wide band instead of the closing's short one: there the full stroke
+       touches the neighbouring cell and the texture turns to stripes; here the
+       blot is sparse and needs internal contrast to have light and dark blocks
+       instead of flat grey. */
     const raw = Math.min(1, Math.max(0, (n - 0.34) / 0.52)) * m;
     const tone = raw < 0.08 ? 0 : 0.22 + raw * 0.62;
     return Math.round(tone * 35).toString(36);
   }).join("");
 
-  /* Desvio grande de propósito: com o traço curto da mancha fraca, a grade
-     apertada da prensa aparece como fileira de pontos. Soltando a célula, a
-     borda da nuvem vira granulado. */
+  /* Large offset on purpose: with the faint blot's short stroke, the press's
+     tight grid shows as a row of dots. Loosening the cell turns the cloud's
+     edge into grain. */
   return halftoneMarks(tones, {
     cols: COLS,
     cellW: CELL,
@@ -76,7 +76,7 @@ const PLATES = {
   right: plate(0.9, 0.66),
 };
 
-/** Primeira dobra: a tinta que sobra nos cantos altos do quadro. */
+/** First fold: the ink left over in the frame's upper corners. */
 export function HeroHalftone({
   side,
   className,

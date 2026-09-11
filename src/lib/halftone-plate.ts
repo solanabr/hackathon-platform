@@ -1,11 +1,11 @@
-/* Uma chapa de meio-tom servida como arquivo, não como marcação.
+/* A halftone plate served as a file, not as markup.
  *
- * Os halftones grandes da LP são milhares de riscos. Inline, cada um deles ia
- * duas vezes ao navegador — no HTML e de novo no payload de hidratação — e o
- * documento passava de um megabyte antes de qualquer imagem. Como arquivo, o
- * desenho vai uma vez, fica no cache e sai da árvore que o React precisa
- * percorrer. A cor continua sendo do chamador: a chapa é uma MÁSCARA, e quem
- * pinta é o `currentColor` da caixa que a usa. */
+ * The LP's large halftones are thousands of dashes. Inline, each of them went
+ * to the browser twice — in the HTML and again in the hydration payload — and
+ * the document passed a megabyte before any image. As a file, the drawing
+ * goes once, stays in cache and leaves the tree React has to walk. Colour
+ * still belongs to the caller: the plate is a MASK, and what paints is the
+ * `currentColor` of the box using it. */
 
 export type PlateSpec = {
   viewBox: string;
@@ -24,9 +24,9 @@ export function plateSvg({ viewBox, light, dark, lightWidth, darkWidth }: PlateS
   );
 }
 
-/* FNV-1a de 32 bits. O nome do arquivo carrega o conteúdo: mudar um único
-   risco muda a URL, e é isso que permite dizer ao navegador que a chapa nunca
-   muda — `immutable` sem risco de servir a versão velha. */
+/* 32-bit FNV-1a. The filename carries the content: changing a single dash
+   changes the URL, which is what lets us tell the browser the plate never
+   changes — `immutable` with no risk of serving the old version. */
 export function plateHash(svg: string): string {
   let hash = 0x811c9dc5;
   for (let i = 0; i < svg.length; i++) {
@@ -42,7 +42,7 @@ export function plateFilename(key: string, svg: string): string {
   return `${key}-${plateHash(svg)}.svg`;
 }
 
-/** Lê a chave de volta de um nome de arquivo: `colosseum-1a2b3c4d.svg` → `colosseum`. */
+/** Reads the key back from a filename: `colosseum-1a2b3c4d.svg` → `colosseum`. */
 export function plateKeyFromFilename(filename: string): string | null {
   const match = /^([a-z][a-z0-9-]*)-[0-9a-f]{8}\.svg$/.exec(filename);
   return match ? match[1]! : null;

@@ -21,8 +21,8 @@ import {
   YoutubeLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-/* A trama de papel mora dentro do palco, não no card inteiro: os pontos
-   emolduram a peça pelas bordas e clareiam no miolo, onde ela se apoia. */
+/* The paper weave lives inside the stage, not on the whole card: the dots
+   frame the piece at the edges and lighten in the middle, where it rests. */
 const CORNERS = [
   "left-0 top-0",
   "right-0 top-0",
@@ -46,9 +46,9 @@ function StageTexture() {
   );
 }
 
-/* Palco recuado, com respiro largo: a peça se apoia nele inteira. A altura é
-   travada no desktop para os dois cards do bento emoldurarem igual — a folga
-   de cada card sobra no bloco de texto, não entre o recorte e ele. */
+/* Recessed stage with wide breathing room: the piece rests on it whole. The
+   height is locked on desktop so the two bento cards frame alike — each
+   card's slack ends up in the text block, not between the cutout and it. */
 function PreviewStage({
   children,
   tone = "bg-surface-deeper",
@@ -72,8 +72,8 @@ function PreviewStage({
   );
 }
 
-/* Dentro do palco a profundidade vem da sombra, não da borda: a linha dura
-   fica reservada ao card do bento, senão o recorte lê como adesivo. */
+/* Inside the stage depth comes from shadow, not from the border: the hard
+   line is reserved for the bento card, or the cutout reads as a sticker. */
 const CARD =
   "rounded-2xl shadow-[0_1px_2px_rgb(27_35_29/0.1),0_14px_30px_-10px_rgb(27_35_29/0.3)]";
 const CARD_OVER =
@@ -83,12 +83,13 @@ const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2";
 
 /* ---------------------------------------------------------------------------
- * Navegação por abas com tabindex itinerante.
+ * Tab navigation with roving tabindex.
  *
- * Os dois recortes são a mesma coisa por baixo — uma lista de opções e um
- * painel que responde — e a diferença é só a orientação. Sem isto cada mock
- * viraria um punhado de <button> soltos: o leitor de tela não anunciaria a
- * relação, e o teclado gastaria um Tab por canal em vez de uma seta.
+ * The two cutouts are the same thing underneath — a list of options and a
+ * panel that responds — and the difference is only the orientation. Without
+ * this each mock would become a handful of loose <button>s: the screen reader
+ * would not announce the relation, and the keyboard would spend one Tab per
+ * channel instead of one arrow.
  * ------------------------------------------------------------------------- */
 function useRovingTabs(
   count: number,
@@ -140,9 +141,9 @@ function useRovingTabs(
   return { tabProps };
 }
 
-/* O mock só começa a girar quando entra em tela e para de vez no primeiro
-   gesto: um carrossel que continua avançando debaixo do cursor tira o
-   controle de quem estava lendo. Movimento reduzido nunca inicia. */
+/* The mock only starts cycling once it enters the screen and stops for good
+   on the first gesture: a carousel that keeps advancing under the cursor
+   takes control away from whoever was reading. Reduced motion never starts. */
 const DWELL_MS = 5_200;
 
 function useAutoCycle(count: number) {
@@ -170,7 +171,7 @@ function useAutoCycle(count: number) {
 const rowStyle = (i: number) => ({ "--row-i": i }) as CSSProperties;
 
 /* ---------------------------------------------------------------------------
- * TRILHA BRASIL — recorte do feed do Superteam Earn.
+ * TRILHA BRASIL — cutout of the Superteam Earn feed.
  * ------------------------------------------------------------------------- */
 
 const EARN_URL = "https://superteam.fun/earn/s/superteambr";
@@ -207,7 +208,7 @@ const KIND_LABEL: Record<Listing["kind"], string> = {
   project: "Project",
 };
 
-/** Recorte do feed do Superteam Earn com a Trilha Brasil no topo. */
+/** Cutout of the Superteam Earn feed with Trilha Brasil at the top. */
 export function EarnPreview() {
   const [tab, setTab] = useState(0);
   const { tabProps } = useRovingTabs(
@@ -220,8 +221,8 @@ export function EarnPreview() {
   const key = EARN_TABS[tab].key;
   const matches =
     key === "todos" ? LISTINGS : LISTINGS.filter((l) => l.kind === key);
-  /* Sempre três linhas: o palco tem altura travada e uma lista que encolhe
-     faria o card inteiro pular a cada troca de filtro. */
+  /* Always three rows: the stage has a locked height and a list that shrinks
+     would make the whole card jump on every filter change. */
   const rows = matches.slice(0, 3);
 
   return (
@@ -250,8 +251,8 @@ export function EarnPreview() {
           </span>
         </header>
 
-        {/* A barra de filtros é a parte jogável do recorte: mexer nela é o que
-            transforma a captura de tela em produto. */}
+        {/* The filter bar is the playable part of the cutout: using it is what
+            turns the screenshot into a product. */}
         <div
           role="tablist"
           aria-label="Filtrar oportunidades por tipo"
@@ -278,8 +279,8 @@ export function EarnPreview() {
           id="earn-panel"
           role="tabpanel"
           aria-labelledby={`earn-tab-${tab}`}
-          /* O selo amarelo desce 12px por cima da borda: a folga extra aqui
-             embaixo é para ele cobrir vazio, não a última linha do feed. */
+          /* The yellow badge drops 12px over the border: the extra slack down
+             here is so it covers empty space, not the feed's last row. */
           className="divide-y divide-green-dark/8 pb-2"
         >
           {rows.map((l, i) => (
@@ -327,9 +328,9 @@ export function EarnPreview() {
                     </span>
                   </p>
                 </div>
-                {/* A seta ocupa a vaga da etiqueta em vez de abrir uma nova:
-                    a coluna é estreita e qualquer largura extra quebra o
-                    título em duas linhas. */}
+                {/* The arrow takes the label's slot instead of opening a new
+                    one: the column is narrow and any extra width breaks the
+                    title into two lines. */}
                 <span className="relative hidden h-6 w-[4.5rem] shrink-0 sm:block">
                   <span className="absolute inset-0 flex items-center justify-end">
                     <span className="rounded-full bg-surface px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-green-dark/80 transition-opacity duration-(--dur-instant) ease-entrada group-hover:opacity-0 group-focus-visible:opacity-0">
@@ -350,8 +351,8 @@ export function EarnPreview() {
         </ul>
       </div>
 
-      {/* Escalonado como na referência: desce por cima da borda do painel e
-          desloca para a direita, para as duas peças não lerem como uma pilha. */}
+      {/* Staggered as in the reference: drops over the panel edge and shifts
+          right, so the two pieces do not read as a stack. */}
       <div
         className={`relative -mt-3 ml-auto w-[90%] bg-yellow px-5 py-4 ${CARD_OVER}`}
       >
@@ -371,7 +372,7 @@ export function EarnPreview() {
 }
 
 /* ---------------------------------------------------------------------------
- * COMUNIDADE — recorte do Discord com o grupo do WhatsApp por baixo.
+ * COMMUNITY — Discord cutout with the WhatsApp group underneath.
  * ------------------------------------------------------------------------- */
 
 type Message = { author: string; tone: string; body: string };
@@ -480,11 +481,11 @@ const CHANNELS: Channel[] = [
   },
 ];
 
-/** Recorte da comunidade: servidor no Discord com o grupo do WhatsApp por baixo. */
+/** Community cutout: Discord server with the WhatsApp group underneath. */
 export function CommunityPreview() {
   const { ref, index, select, hold } = useAutoCycle(CHANNELS.length);
-  /* Canal visitado perde o contador de não lidas. É o detalhe que separa um
-     mock de uma interface: a ação da pessoa deixa marca no estado. */
+  /* A visited channel loses its unread count. The detail that separates a
+     mock from an interface: the person's action leaves a mark on the state. */
   const [seen, setSeen] = useState<number[]>([0]);
   const { tabProps } = useRovingTabs(
     CHANNELS.length,
@@ -573,8 +574,8 @@ export function CommunityPreview() {
             ))}
           </ul>
 
-          {/* Reserva a linha mesmo sem ninguém digitando: senão a altura do
-              painel muda a cada troca de canal e o card inteiro respira. */}
+          {/* Reserves the line even with nobody typing: otherwise the panel
+              height changes on every channel switch and the whole card breathes. */}
           <p className="mt-3.5 flex h-4 items-center gap-1.5 text-[11px] text-surface/50">
             {channel.typing && (
               <>

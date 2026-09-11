@@ -1,19 +1,19 @@
 @import "tailwindcss";
 @import "../styles/tokens/motion.css";
-/* As três camadas de movimento que não são entrada: a passagem entre rotas, o
-   que responde à rolagem e o que responde ao dedo. Ficam fora do globals para
-   que cada uma possa ser lida (e revista) como um sistema fechado. */
+/* The three motion layers that are not entrances: the passage between routes,
+   what answers scroll and what answers the finger. Kept out of globals so
+   each can be read (and reviewed) as a closed system. */
 @import "../styles/rota.css";
 @import "../styles/scroll.css";
 @import "../styles/gravura.css";
 @import "../styles/interactions.css";
-/* A linguagem de impressão do bilhete: papel, gravação, foil e pose. */
+/* The ticket's print language: paper, engraving, foil and pose. */
 @import "../styles/bilhete.css";
 
 @theme {
   --shadow-sticker: 6px 6px 0 rgb(27 35 29 / 0.18);
-  /* Mesma sombra, na escala das peças pequenas: 6px numa pá de 30px de largura
-     não é adesivo, é borrão. */
+  /* Same shadow at small-piece scale: 6px on a 30px-wide shovel is not a
+     sticker, it is a smear. */
   --shadow-sticker-sm: 3px 3px 0 rgb(27 35 29 / 0.22);
   --color-surface: #f7eacb;
   --color-surface-raised: #fffdf6;
@@ -317,8 +317,8 @@
 
   .animate-fade-in { animation: fadeIn var(--dur-rapida) var(--ease-entrada) forwards; }
   .animate-slide-up { animation: slideUp var(--dur-media) var(--ease-entrada) forwards; }
-  /* Os três flutuam com períodos que não reencontram a mesma fase, então o
-     conjunto não pulsa em bloco como se fosse um objeto só. */
+  /* The three float with periods that never meet the same phase again, so
+     the set doesn't pulse as one block like a single object. */
   .animate-float-a { animation: floatA 6s var(--ease-inout) infinite; }
   .animate-float-b { animation: floatA 7s var(--ease-inout) -2.3s infinite; }
   .animate-float-c { animation: floatA 8s var(--ease-inout) -4.7s infinite; }
@@ -349,15 +349,15 @@
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* O fundo escurece antes de o painel chegar, senão os dois disputam o olho. */
+/* The backdrop darkens before the panel arrives, or the two fight for the eye. */
 .auth-overlay-in { animation: authOverlayIn var(--dur-instant) var(--ease-entrada); }
 .auth-panel-in { animation: authPanelIn var(--dur-rapida) var(--ease-carimbo); }
 
-/* Movimento reduzido não é um interruptor: a escala de tempo, as distâncias e
-   as curvas já foram reescritas em tokens/motion.css, e toda a orquestração
-   continua rodando lá. O que sobra aqui é o único caso que nenhum token
-   resolve — o loop decorativo infinito, que não tem estado final para onde
-   convergir e por isso precisa parar no seu quadro de repouso. */
+/* Reduced motion is not a switch: the time scale, distances and curves are
+   already rewritten in tokens/motion.css, and the whole orchestration keeps
+   running there. What is left here is the one case no token solves — the
+   infinite decorative loop, which has no final state to converge to and so
+   must stop on its rest frame. */
 @media (prefers-reduced-motion: reduce) {
   .animate-float-a,
   .animate-float-b,
@@ -368,11 +368,11 @@
 }
 
 /* ---------------------------------------------------------------------------
- * CHAPA — um halftone servido como arquivo e aplicado como máscara.
+ * PLATE — a halftone served as a file and applied as a mask.
  *
- * O desenho vem de `/halftone/*.svg` (ver `components/home/plates.ts`); a
- * tinta é o `currentColor` da caixa, alfa incluído. Os três `fit` espelham o
- * `preserveAspectRatio` que o SVG inline tinha antes de virar arquivo.
+ * The drawing comes from `/halftone/*.svg` (see `components/home/plates.ts`);
+ * the ink is the box's `currentColor`, alpha included. The three `fit` values
+ * mirror the `preserveAspectRatio` the inline SVG had before becoming a file.
  * ------------------------------------------------------------------------- */
 .chapa {
   background-color: currentColor;
@@ -415,16 +415,16 @@
   }
 }
 
-/* A FOLHA NA PRENSA — o primeiro frame.
+/* THE SHEET ON THE PRESS — the first frame.
  *
- * Duas metades do mesmo gesto: a tinta sobe no símbolo (--dur-media) e, no
- * instante em que ela fecha, a folha é PUXADA para fora (--dur-rapida, curva
- * de saída — sai devagar e some rápido, que é exatamente o gesto de arrancar
- * papel da prensa). Total 1.19s, e nem um valor fora de token.
+ * Two halves of one gesture: the ink rises in the symbol (--dur-media) and,
+ * the instant it closes, the sheet is PULLED out (--dur-rapida, exit curve —
+ * leaves slowly and vanishes fast, exactly the gesture of tearing paper off
+ * a press). Total 1.19s, and not one value outside a token.
  *
- * A manchete do hero começa a imprimir junto com o load, embaixo da folha,
- * então o que aparece quando ela levanta não é uma página parada: é tipografia
- * ainda saindo do rolo. Os dois movimentos se encavalam de propósito.        */
+ * The hero headline starts printing on load, under the sheet, so what shows
+ * when it lifts is not a still page: it is typography still coming off the
+ * roller. The two movements overlap on purpose.                              */
 .press-sheet {
   position: fixed;
   inset: 0;
@@ -435,11 +435,11 @@
   animation: pressLift var(--dur-rapida) var(--ease-saida) var(--dur-media)
     forwards;
 }
-/* A folha sai para BAIXO, como na bandeja de saída da prensa — e não para
-   cima. A direção é o ponto: saindo para baixo o topo é liberado primeiro, e
-   a manchete aparece ENQUANTO está sendo estampada, na mesma ordem em que a
-   página é lida. Subindo, a manchete era a última coisa a surgir e chegava
-   pronta, o que anula o único momento autoral da primeira dobra. */
+/* The sheet exits DOWNWARD, as into the press's output tray — not upward.
+   Direction is the point: exiting down frees the top first, and the headline
+   appears WHILE it is being stamped, in the order the page is read. Going up,
+   the headline was the last thing to show and arrived finished, which cancels
+   the first fold's one authorial moment. */
 @keyframes pressLift {
   to {
     transform: translate3d(0, 100%, 0);
@@ -463,15 +463,15 @@
   }
 }
 
-/* Já viu nesta sessão: a folha nem entra no jogo. */
+/* Already seen this session: the sheet doesn't even come into play. */
 .press-done .press-sheet {
   display: none;
 }
 
-/* Movimento reduzido. Aqui "versão pensada" é NÃO acontecer: a folha não
-   carrega informação nenhuma — ela é inteiramente transição. Preservar a
-   orquestração de algo cujo único conteúdo é o movimento seria só atrasar a
-   página de quem pediu menos movimento. */
+/* Reduced motion. Here the "considered version" is NOT happening: the sheet
+   carries no information — it is entirely transition. Keeping the
+   orchestration of something whose only content is motion would just delay
+   the page for whoever asked for less motion. */
 @media (prefers-reduced-motion: reduce) {
   .press-sheet {
     display: none;
@@ -488,18 +488,18 @@
 .animate-brand-fill { animation: brandFill 1.9s var(--ease-inout) infinite; }
 
 /* ---------------------------------------------------------------------------
- * BENTO — os recortes de produto do bloco Informações.
+ * BENTO — the product cutouts of the Informações block.
  *
- * Um mock parado é uma captura de tela; o que faz o recorte ler como produto
- * é ele responder. As três peças abaixo são o mínimo para isso: o sinal de
- * "ao vivo", a entrada escalonada quando a lista troca de filtro ou de canal,
- * e o "está digitando". Todas são loop decorativo ou micro-interação, então
- * seguem a mesma regra dos floats: escala de tempo em token e parada seca no
- * modo reduzido.
+ * A still mock is a screenshot; what makes the cutout read as product is that
+ * it responds. The three pieces below are the minimum for that: the "live"
+ * signal, the staggered entry when the list switches filter or channel, and
+ * the "typing" indicator. All are decorative loops or micro-interactions, so
+ * they follow the floats' rule: time scale in tokens, dead stop in reduced
+ * mode.
  * ------------------------------------------------------------------------- */
-/* O anel é um pseudo-elemento com sombra FIXA que escala e apaga: transform e
-   opacidade rodam no compositor. Animar a própria box-shadow repintava o
-   ponto a cada quadro, para sempre, em dois lugares da página. */
+/* The ring is a pseudo-element with a FIXED shadow that scales and fades:
+   transform and opacity run on the compositor. Animating the box-shadow
+   itself repainted the dot every frame, forever, in two places on the page. */
 @keyframes bentoPulse {
   0% { transform: scale(0.8); opacity: 1; }
   70%, 100% { transform: scale(2.4); opacity: 0; }
@@ -516,15 +516,15 @@
   box-shadow: 0 0 0 2.5px rgb(var(--pulse-rgb) / 0.45);
   animation: bentoPulse 2.1s var(--ease-inout) infinite;
 }
-/* Sobre o verde escuro o halo esmeralda some; o sinal herda o amarelo. */
+/* On the dark green the emerald halo vanishes; the signal inherits yellow. */
 .bento-pulse-yellow { --pulse-rgb: 255 210 63; }
 
 @keyframes bentoRowIn {
   from { opacity: 0; transform: translate3d(0, calc(var(--dist-curta) / 2), 0); }
   to { opacity: 1; transform: none; }
 }
-/* --row-i é a posição da linha na lista; quem escreve o índice é o
-   componente, e o intervalo entre uma e a próxima sai do token. */
+/* --row-i is the row's position in the list; the component writes the index,
+   and the gap between one and the next comes from the token. */
 .bento-row {
   animation: bentoRowIn var(--dur-rapida) var(--ease-entrada) both;
   animation-delay: calc(var(--row-i, 0) * var(--stagger-tile));
@@ -545,12 +545,12 @@
   .bento-typing > span { opacity: 0.6; }
 }
 
-/* Scroll reveal. A opacidade sobe um pouco mais rápido que o deslocamento:
-   o elemento termina de aparecer antes de terminar de chegar, e é essa
-   defasagem que faz a entrada parecer assentar em vez de frear.
+/* Scroll reveal. Opacity rises slightly faster than displacement: the
+   element finishes appearing before it finishes arriving, and that lag is
+   what makes the entrance look like settling instead of braking.
 
-   --reveal-i é o índice do elemento na sua família; quem escreve o índice é
-   o componente, e o stagger sai do token, não de um delay digitado à mão. */
+   --reveal-i is the element's index within its family; the component writes
+   the index, and the stagger comes from the token, not a hand-typed delay. */
 .reveal {
   --reveal-i: 0;
   --reveal-stagger: var(--stagger-lista);
@@ -567,17 +567,17 @@
   opacity: 1;
   transform: none;
 }
-/* Texto anda menos e mais junto que objeto: o olho varre uma linha mais
-   rápido do que reconhece um card. */
+/* Text travels less and closer together than objects: the eye scans a line
+   faster than it recognises a card. */
 .reveal-texto {
   --reveal-stagger: var(--stagger-texto);
   --reveal-dist: var(--dist-curta);
 }
-/* O que a seção quer que você olhe vem de mais longe. */
+/* What the section wants you to look at comes from farther away. */
 .reveal-longe {
   --reveal-dist: var(--dist-longa);
 }
-/* Objeto de papel entra carimbado, não flutuando. */
+/* Paper objects enter stamped, not floating. */
 .reveal-papel {
   transition-timing-function: var(--ease-carimbo);
 }
@@ -591,16 +591,16 @@
   }
 }
 
-/* A ESTAMPA SAINDO DA PRENSA.
-   Halftone não flutua para dentro do quadro: ele é revelado de baixo para
-   cima, no gesto da folha que sai do cilindro — o mesmo que o press-sheet já
-   sugere na primeira dobra. Varredura, e não desenho de traço: aqui são
-   milhares de segmentos curtos, e animar stroke-dashoffset em cada um custa
-   caro e lê como ruído em vez de traço.
+/* THE PRINT COMING OFF THE PRESS.
+   Halftone doesn't float into the frame: it is revealed bottom to top, in
+   the gesture of the sheet leaving the cylinder — the one the press-sheet
+   already suggests in the first fold. A sweep, not a stroke drawing: these
+   are thousands of short segments, and animating stroke-dashoffset on each
+   is expensive and reads as noise instead of a stroke.
 
-   Quem abre o clip é o estado que o elemento já tinha: .reveal-in para os
-   que entram por observador, --t para os que entram presos ao scroll da
-   jornada. Nenhum laço de quadro novo. */
+   The clip is opened by the state the element already had: .reveal-in for
+   those entering via observer, --t for those tied to the journey scroll. No
+   new frame loop. */
 .reveal .halftone-press {
   clip-path: inset(100% 0 0 0);
   transition: clip-path var(--dur-media) var(--ease-entrada)
@@ -612,16 +612,16 @@
 .journey-card .halftone-press {
   clip-path: inset(calc(100% * (1 - var(--t))) 0 0 0);
 }
-/* Onde o meio-tom É o bloco (e não a textura de fundo de um card), a
-   varredura substitui a entrada: as duas juntas embaralham o gesto. */
+/* Where the halftone IS the block (not a card's background texture), the
+   sweep replaces the entrance: both together muddle the gesture. */
 .reveal-estampa {
   opacity: 1;
   transform: none;
   transition: none;
 }
 
-/* Movimento reduzido zera o vetor, não a orquestração: sem a varredura o
-   desenho ainda entra no seu lugar da fila, só que aparecendo. */
+/* Reduced motion zeroes the vector, not the orchestration: without the sweep
+   the drawing still enters at its place in the queue, just by appearing. */
 @media (prefers-reduced-motion: reduce) {
   .reveal .halftone-press {
     clip-path: none;
@@ -634,7 +634,7 @@
   }
 }
 
-/* Ninguém escreve .reveal-in nem --t sem JS, então o clip nunca abriria. */
+/* Nobody writes .reveal-in or --t without JS, so the clip would never open. */
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   .journey-card .halftone-press {
     clip-path: none;
@@ -653,20 +653,21 @@
    --enter-x is the offset from the card's resting column to the centre of the
    screen, in its own width: the trip is a straight line between the two.
 
-   As duas distâncias verticais descem juntas porque --pp e --t compartilham a
-   mesma fórmula de progresso: se a carta viaja muito mais que o pitch, ela
-   fica para trás e abre um rasgo de kraft vazio entre os dois no meio do voo.
-   12vh e 38vh são o par anterior menos a mesma sobra — a entrada inteira
-   começa mais alta, sem espaço morto no topo do quadro, e a borda da primeira
-   carta já está dentro dele: você vê a chegada começar em vez de esperá-la. */
+   The two vertical distances drop together because --pp and --t share the
+   same progress formula: if the card travels much farther than the pitch, it
+   lags behind and opens a gap of bare kraft between the two mid-flight. 12vh
+   and 38vh are the previous pair minus the same slack — the whole entrance
+   starts higher, with no dead space at the top of the frame, and the first
+   card's edge is already inside it: you see the arrival begin instead of
+   waiting for it. */
 .journey-card {
   --t: 0;
   --side: -1;
-  /* As três convergem no centro do container, como um baralho fanado antes de
-     ser distribuído — e não em x arbitrários, que faziam a 03 pousar em cima
-     da 01 e o visitante ver o passo errado chegando primeiro. O empilhamento
-     segue a ordem de chegada: 01 na frente. Cada coluna dista uma largura de
-     carta mais o gap do centro, então o deslocamento é 100% + 1.5rem. */
+  /* All three converge on the container's centre, like a fanned deck before
+     being dealt — not at arbitrary x values, which made 03 land on top of 01
+     and the visitor see the wrong step arrive first. Stacking follows arrival
+     order: 01 in front. Each column is one card width plus the gap from the
+     centre, so the offset is 100% + 1.5rem. */
   --enter-x: calc(100% + 1.5rem);
   z-index: 3;
   transform: translate3d(
@@ -754,11 +755,11 @@ details[open] > .faq-answer {
   filter: drop-shadow(0 16px 22px rgb(27 35 29 / 0.26));
 }
 
-/* A ESPESSURA DO PAPEL. Um ingresso não é um retângulo pintado: ele tem canto
-   vivo virado para a luz e sombra própria acumulada na base. Duas sombras
-   internas — o fio claro na aresta de cima, a tinta que assenta embaixo — e o
-   cartão passa a ter LADO. Vai dentro da máscara, então o recorte serrilhado
-   leva a espessura junto em vez de revelar uma borda reta por baixo. */
+/* THE PAPER'S THICKNESS. A ticket is not a painted rectangle: it has a sharp
+   edge turned to the light and its own shadow pooled at the base. Two inset
+   shadows — the light hairline on the top edge, the ink settling below — and
+   the card gains a SIDE. It goes inside the mask, so the die-cut takes the
+   thickness with it instead of revealing a straight edge underneath. */
 .ticket-paper {
   box-shadow:
     inset 0 calc(1px * var(--bu, 1)) 0 rgb(255 255 255 / 0.55),
@@ -862,10 +863,10 @@ details[open] > .faq-answer {
                                  silhouette the panels stand edge-on, and only
                                  an overlap this wide keeps the next corner
                                  from showing as a sawtooth */
-  /* O disco é o token da Solana, não uma peça da marca da Superteam: metal
-     preto e prata frio, marca branca. As duas cores da rede aparecem só no
-     chanfro do serrilhado — a cor no campo tingia a peça inteira e ela
-     deixava de ser metal. */
+  /* The disc is the Solana token, not a Superteam brand piece: black metal
+     and cold silver, white mark. The network's two colours appear only on the
+     milling chamfer — colour on the field tinted the whole piece and it
+     stopped being metal. */
   --coin-base: #08080d;
   --coin-sheen: #e7eaf5;
   --coin-violet: #9945ff;
@@ -897,8 +898,8 @@ details[open] > .faq-answer {
   border-radius: 50%;
   background: rgb(0 0 0 / 0.38);
   filter: blur(6.5cqw);
-  /* A pose move a sombra a cada quadro; sem a própria camada, cada quadro
-     refazia o blur inteiro na thread principal. */
+  /* The pose moves the shadow every frame; without its own layer, each frame
+     redid the whole blur on the main thread. */
   will-change: transform;
   /* It travels with the lean and narrows as the piece turns edge-on — a coin
      standing on its rim casts a stripe, not a disc. `max(x, -x)` is |cos|:
@@ -1135,15 +1136,15 @@ details[open] > .faq-answer {
   letter-spacing: -0.02em;
 }
 
-/* --- a impressão do hero ---------------------------------------------- *
- * O único momento inesquecível da primeira dobra. A manchete não aparece:
- * ela é IMPRESSA. Cada linha sobe de trás de uma borda — clip-path, não
- * opacidade — porque a marca é tipografia estampada, e tipografia estampada
- * não desbota para dentro da página: ela sai de baixo do rolo.
+/* --- the hero print --------------------------------------------------- *
+ * The one unforgettable moment of the first fold. The headline doesn't
+ * appear: it is PRINTED. Each line rises from behind an edge — clip-path,
+ * not opacity — because the brand is stamped typography, and stamped
+ * typography doesn't fade into the page: it comes out from under the roller.
  *
- * Roda no load, sem observer e sem JS: o conteúdo já vem do servidor, e um
- * hero que espera hidratar para se mover pisca. --hero-i é a posição na
- * sequência; o intervalo sai do token, como em todo o resto.               */
+ * Runs on load, no observer and no JS: the content already comes from the
+ * server, and a hero that waits for hydration to move flickers. --hero-i is
+ * the position in the sequence; the gap comes from the token, as elsewhere. */
 .hero-print > * {
   --hero-i: 0;
   animation: heroPrint var(--dur-lenta) var(--ease-entrada) backwards;
@@ -1158,47 +1159,47 @@ details[open] > .faq-answer {
   }
   to {
     opacity: 1;
-    /* Folga em cima também: com leading 1.02 o til de MILHÕES e o acento de
-       PRÓXIMO saem para fora da caixa de linha, e um clip em 0 come os dois.
-       A borda que revela continua sendo a de cima — ela só termina o curso
-       acima do topo do texto em vez de exatamente nele. */
+    /* Slack on top too: with leading 1.02 the tilde of MILHÕES and the accent
+       of PRÓXIMO poke out of the line box, and a clip at 0 eats both. The
+       revealing edge is still the top one — it just ends its travel above
+       the text's top instead of exactly on it. */
     clip-path: inset(-30% 0 -30% 0);
     transform: none;
   }
 }
 
 :root {
-  /* -30% embaixo para o clip nunca cortar descendente nem a sombra da
-     tarja amarela; a borda que interessa é só a de cima. */
+  /* -30% at the bottom so the clip never cuts a descender or the yellow
+     band's shadow; the only edge that matters is the top one. */
   --hero-clip: inset(108% 0 -30% 0);
 
-  /* A DEIXA. Sem folha na prensa a impressão começa no load, como sempre. Com
-     a folha, ela tem que começar no instante em que a folha é puxada — senão
-     a manchete é estampada debaixo de um plano opaco e o que aparece é uma
-     página parada. A deixa desloca a sequência inteira sem tocar em nenhuma
-     relação interna dela: mesma ordem, mesmo stagger, mesma hierarquia.     */
+  /* THE CUE. Without a sheet on the press the print starts on load, as
+     always. With the sheet, it has to start the instant the sheet is pulled —
+     otherwise the headline is stamped under an opaque plane and what shows
+     is a still page. The cue shifts the whole sequence without touching any
+     of its internal relations: same order, same stagger, same hierarchy.    */
   --hero-cue: 0s;
 }
 html:not(.press-done) {
-  /* A deixa não é o INÍCIO do puxão, é o ponto em que a folha já liberou a
-     faixa da manchete. Começando junto com o puxão, a impressão chegava 78%
-     pronta ao ser descoberta e o gesto se perdia; somando --dur-instant ela
-     chega ~35%, e o que aparece embaixo da folha é tipografia subindo. Soma
-     de tokens, não um número escolhido no olho. */
+  /* The cue is not the START of the pull, it is the point where the sheet
+     has already freed the headline's band. Starting with the pull, the print
+     was 78% done when uncovered and the gesture was lost; adding
+     --dur-instant it arrives at ~35%, and what shows under the sheet is
+     typography rising. A sum of tokens, not an eyeballed number. */
   --hero-cue: calc(var(--dur-media) + var(--dur-instant));
 }
 
-/* Depois da manchete o ritmo desacelera: o que vem abaixo dela é leitura,
-   não impacto, e entra com o passo de lista, não com o de título. */
+/* After the headline the pace slows: what comes below it is reading, not
+   impact, and enters at list pace, not title pace. */
 .hero-after {
   --hero-i: 0;
   animation: heroPrint var(--dur-media) var(--ease-entrada) backwards;
   animation-delay: calc(var(--hero-cue) + 0.34s + var(--hero-i) * var(--stagger-lista));
 }
 
-/* A tarja amarela é a palavra que paga a promessa, então ela é a última coisa
-   a acontecer e a única com overshoot: varre da esquerda como um marca-texto
-   passado com a mão, depois de a linha já ter assentado. */
+/* The yellow band is the word that pays off the promise, so it is the last
+   thing to happen and the only one with overshoot: it sweeps from the left
+   like a hand-run highlighter, after the line has already settled. */
 .hero-marca {
   position: relative;
   isolation: isolate;
@@ -1218,15 +1219,16 @@ html:not(.press-done) {
   to { transform: scaleX(1); }
 }
 
-/* O ticket é objeto de papel: não sobe, é DEPOSITADO — chega girado e assenta,
-   com a curva de carimbo. E assenta TORTO: ele não sangra mais pela margem,
-   então o desalinho de papel solto cabe dentro do quadro sem que o canto saia
-   da página. O repouso é meio grau da inclinação de chegada — a diferença
-   entre uma peça pousada na mesa e uma imagem alinhada por CSS.
+/* The ticket is a paper object: it doesn't rise, it is SET DOWN — arrives
+   turned and settles, on the stamp curve. And it settles CROOKED: it no
+   longer bleeds off the margin, so the loose-paper misalignment fits inside
+   the frame without a corner leaving the page. Rest is half a degree of the
+   arrival tilt — the difference between a piece laid on a table and an image
+   aligned by CSS.
 
-   O `to` repete o transform de repouso de propósito: a animação não é
-   `forwards`, então um `none` aqui devolveria o ticket ao reto num estalo no
-   quadro final. */
+   The `to` repeats the rest transform on purpose: the animation is not
+   `forwards`, so a `none` here would snap the ticket straight on the final
+   frame. */
 .hero-ticket {
   transform: rotate(calc(var(--tilt-papel) * -0.5));
   animation: heroTicket var(--dur-lenta) var(--ease-carimbo)
@@ -1245,25 +1247,26 @@ html:not(.press-done) {
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    /* Sem vetor, o clip vira um fade: a ordem e o ritmo da impressão
-       continuam legíveis, só que nada viaja. */
+    /* Without a vector the clip becomes a fade: the print's order and rhythm
+       stay readable, just nothing travels. */
     --hero-clip: inset(-30% 0 -30% 0);
   }
-  /* A folha não existe aqui, então esperar por ela seria só atraso. */
+  /* The sheet doesn't exist here, so waiting for it would be pure delay. */
   html:not(.press-done) {
     --hero-cue: 0s;
   }
 }
 
 /* ---------------------------------------------------------------------------
- * PAINEL DE RELÓGIO — o contador da última chamada.
+ * CLOCK PANEL — the last-call counter.
  *
- * O bloco é brutalista: papel de canto vivo, aresta dura e o algarismo em
- * peso preto ocupando a caixa inteira. Quem carrega a seção é o número.
+ * The block is brutalist: sharp-cornered paper, hard edge and the numeral in
+ * black weight filling the whole box. The number carries the section.
  *
- * A troca não pisca — o dígito novo é DEPOSITADO de cima, na curva de
- * entrada, e só o algarismo que de fato mudou reanima (a `key` é o próprio
- * caractere). O segundo bate sozinho enquanto a dezena da hora fica parada.
+ * The change doesn't blink — the new digit is SET DOWN from above, on the
+ * entry curve, and only the numeral that actually changed re-animates (the
+ * `key` is the character itself). The seconds tick alone while the hour's
+ * tens digit stays still.
  * ------------------------------------------------------------------------- */
 .tique {
   display: block;
@@ -1280,8 +1283,8 @@ html:not(.press-done) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  /* Cair é deslocamento. O que sobra é a troca em si — mesma duração, mesma
-     curva, sem nada viajando no espaço. */
+  /* Falling is displacement. What remains is the change itself — same
+     duration, same curve, nothing travelling through space. */
   @keyframes tique {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -1290,29 +1293,31 @@ html:not(.press-done) {
 
 
 /* ---------------------------------------------------------------------------
- * ATMOSFERA DA PREMIAÇÃO — o ar em volta do pódio.
+ * PRIZES ATMOSPHERE — the air around the podium.
  *
- * A lição da referência: a MALHA CARREGA A COR. O gradiente não fica atrás da
- * grade, ele está em cima do plano — é a superfície que está acesa, e as linhas
- * são o que prova que ela tem profundidade. Grade fininha sobre fundo chapado
- * com um borrão difuso por trás não é o efeito: é a média de tudo, e média de
- * cor grande num quadro grande dá exatamente nada.
+ * The reference's lesson: the MESH CARRIES THE COLOUR. The gradient isn't
+ * behind the grid, it sits on the plane — the surface is what is lit, and the
+ * lines are what proves it has depth. A thin grid over a flat ground with a
+ * diffuse blur behind is not the effect: it is the average of everything, and
+ * a large colour average in a large frame yields exactly nothing.
  *
- * Por isso a ordem aqui é: aurora (manchas com FORMA, não névoa), brilho, e o
- * plano em fuga pintado por cima — pendurado no alto, que é onde a referência
- * põe o dele e onde o poço já joga duas linhas para fora do quadro.
+ * So the order here is: aurora (blotches with SHAPE, not fog), glow, and the
+ * receding plane painted on top — hung from the top, which is where the
+ * reference puts its own and where the well already throws two lines out of
+ * frame.
  *
- * Duas decisões que vão contra o preset genérico de "aurora dark":
+ * Two decisions that go against the generic "aurora dark" preset:
  *
- * 1. O chão é claro, então as linhas são ESCURAS. Linha branca sobre creme é
- *    linha invisível; a grade herda a mesma tinta do wireframe do poço.
- * 2. O véu (`.prizes-scrim`) é de CREME, não de preto. Num fundo claro com
- *    texto escuro, escurecer o fundo derruba o contraste do `muted` em vez de
- *    salvá-lo — o que devolve legibilidade é trazer o papel de volta. E ele
- *    trabalha SÓ na faixa de texto: no meio do quadro o véu é o inimigo.
+ * 1. The ground is light, so the lines are DARK. White line on cream is an
+ *    invisible line; the grid inherits the well wireframe's ink.
+ * 2. The scrim (`.prizes-scrim`) is CREAM, not black. On a light ground with
+ *    dark text, darkening the ground drops the `muted` contrast instead of
+ *    saving it — bringing the paper back is what restores legibility. And it
+ *    works ONLY on the text band: mid-frame the scrim is the enemy.
  *
- * O grupo pinta o próprio creme por baixo: os blobs multiplicam, e multiplicar
- * contra um fundo transparente não faz nada. Sem essa base a cor sai chapada.
+ * The group paints its own cream underneath: the blobs multiply, and
+ * multiplying against a transparent ground does nothing. Without that base
+ * the colour comes out flat.
  * ------------------------------------------------------------------------- */
 .prizes-atmos {
   position: absolute;
@@ -1328,11 +1333,12 @@ html:not(.press-done) {
   --prizes-cell: 28px;
 }
 
-/* AURORA. Três manchas em emerald, amarelo e verde — a paleta da marca, não o
-   roxo/ciano de stock. Multiply porque sobre papel a cor TINGE; normal por
-   cima do creme viraria adesivo de gradiente.
-   Elas são MENORES que o quadro de propósito: uma mancha que cobre a tela
-   inteira não tem borda, e sem borda não há forma — só um tom a mais no creme. */
+/* AURORA. Three blotches in emerald, yellow and green — the brand palette,
+   not stock purple/cyan. Multiply because on paper colour TINTS; normal over
+   the cream would become a gradient sticker.
+   They are SMALLER than the frame on purpose: a blotch covering the whole
+   screen has no edge, and without an edge there is no shape — just one more
+   tone in the cream. */
 .prizes-blob {
   position: absolute;
   border-radius: 50%;
@@ -1371,8 +1377,8 @@ html:not(.press-done) {
     color-mix(in oklab, var(--color-yellow-strong) 36%, transparent) 52%,
     transparent 100%
   );
-  /* Atrasos negativos: as três já entram em pontos diferentes do ciclo, senão
-     respiram juntas e o fundo vira um pisca-pisca sincronizado. */
+  /* Negative delays: the three start at different points of the cycle, or
+     they breathe together and the background becomes synchronised blinking. */
   animation-delay: -9.5s;
   --drift-x: -9%;
   --drift-y: 8%;
@@ -1406,8 +1412,8 @@ html:not(.press-done) {
   }
 }
 
-/* O BRILHO no horizonte, atrás da grade. Só opacidade pulsa — escala ou blur
-   animados numa camada deste tamanho custam repaint a cada frame. */
+/* THE GLOW on the horizon, behind the grid. Only opacity pulses — animated
+   scale or blur on a layer this size costs a repaint every frame. */
 .prizes-glow {
   position: absolute;
   inset: 0;
@@ -1431,24 +1437,24 @@ html:not(.press-done) {
   }
 }
 
-/* O FUNIL — a malha invertida, e o lugar onde a cor mora.
+/* THE FUNNEL — the inverted mesh, and where the colour lives.
  *
- * A grade DESCE e se fecha num ponto atrás da base do pódio: o portal de onde
- * a peça sai. O que faz o funil não é a rotação — é onde mora o ponto de fuga.
- * `perspective-origin` colado na base do container põe o vértice exatamente na
- * borda de baixo dele, então reposicionar o container é reposicionar a
- * garganta. O plano fica pendurado pela borda de CIMA (`transform-origin`) e
- * foge para baixo: a boca larga é a aresta ancorada, e tudo abaixo dela
- * converge.
+ * The grid DESCENDS and closes to a point behind the podium's base: the
+ * portal the piece comes out of. What makes the funnel is not the rotation —
+ * it is where the vanishing point lives. `perspective-origin` pinned to the
+ * container's base puts the vertex exactly on its bottom edge, so moving the
+ * container moves the throat. The plane hangs from its TOP edge
+ * (`transform-origin`) and recedes downward: the wide mouth is the anchored
+ * edge, and everything below it converges.
  *
- * Por que a garganta fica ATRÁS do pódio e não no vazio: vértice exposto vira
- * estrela de raios em vez de superfície. Escondido atrás da peça, o que se lê
- * são as colunas se fechando ao redor dela.
+ * Why the throat sits BEHIND the podium and not in the void: an exposed
+ * vertex becomes a starburst instead of a surface. Hidden behind the piece,
+ * what reads is the columns closing around it.
  *
- * A cor segue a PROFUNDIDADE e não a tela: fraca na boca larga, cheia lá no
- * fundo. É a superfície que está acesa — as linhas só provam que ela tem
- * fundo. E as linhas são verdes de marca, não pretas: sobre creme o
- * `emerald-deep` ainda tem valor suficiente para desenhar. */
+ * Colour follows DEPTH, not the screen: faint at the wide mouth, full at the
+ * far end. The surface is what is lit — the lines only prove it has a far
+ * end. And the lines are brand green, not black: on cream `emerald-deep`
+ * still has enough value to draw. */
 .prizes-funnel {
   position: absolute;
   inset-inline: -30%;
@@ -1466,12 +1472,12 @@ html:not(.press-done) {
   mix-blend-mode: multiply;
   will-change: transform;
   animation: prizesFunil var(--dur-ambiente) var(--ease-inout) infinite alternate;
-  /* Duas máscaras, as duas no espaço do PLANO e não no da tela. A primeira
-     dissolve a distância: descer nela é ir para o fundo da cena, e sem ela a
-     aresta final do plano sai como um risco reto em vez de sumir na bruma. A
-     segunda tira as paredes laterais — em espaço de plano elas convergem
-     junto com o resto, então o funil afina de forma limpa; em espaço de tela
-     cada lado sumiria a uma distância diferente do vértice. */
+  /* Two masks, both in PLANE space, not screen space. The first dissolves
+     distance: going down it is going to the back of the scene, and without
+     it the plane's far edge shows as a straight line instead of fading into
+     haze. The second removes the side walls — in plane space they converge
+     with the rest, so the funnel narrows cleanly; in screen space each side
+     would vanish at a different distance from the vertex. */
   mask-image:
     linear-gradient(to bottom, transparent 0%, #000 30%, #000 52%, rgb(0 0 0 / 0.5) 76%, transparent 96%),
     linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
@@ -1480,8 +1486,9 @@ html:not(.press-done) {
     linear-gradient(to bottom, transparent 0%, #000 30%, #000 52%, rgb(0 0 0 / 0.5) 76%, transparent 96%),
     linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
   -webkit-mask-composite: source-in;
-  /* As linhas vêm PRIMEIRO na pilha (topo do desenho) e a chapa de cor por
-     baixo delas: invertido, o gradiente lava a grade e sobra só o borrão. */
+  /* The lines come FIRST in the stack (top of the drawing) and the colour
+     plate under them: inverted, the gradient washes the grid and only the
+     blur remains. */
   background-image:
     linear-gradient(to right, var(--prizes-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--prizes-line) 1px, transparent 1px),
@@ -1495,8 +1502,9 @@ html:not(.press-done) {
   background-size: var(--prizes-cell) var(--prizes-cell), var(--prizes-cell) var(--prizes-cell), 100% 100%;
 }
 
-/* A deriva anda no espaço do PLANO — descer nele é afundar no corredor, não
-   escorregar na tela. Duas células de curso, para o loop fechar sem costura. */
+/* The drift moves in PLANE space — going down it is sinking into the
+   corridor, not sliding on screen. Two cells of travel, so the loop closes
+   seamlessly. */
 @keyframes prizesFunil {
   from {
     transform: rotateX(-55deg) translate3d(0, 0, 0) scale(1);
@@ -1506,9 +1514,9 @@ html:not(.press-done) {
   }
 }
 
-/* A LUZ DA GARGANTA. O funil não é desenho furado no papel: ele emite. Multiply
-   de novo, porque sobre creme "aceso" é cor SATURADA, não branco — clarear um
-   fundo claro não produz brilho, produz lavagem. */
+/* THE THROAT'S LIGHT. The funnel is not a hole drawn in the paper: it emits.
+   Multiply again, because on cream "lit" is SATURATED colour, not white —
+   lightening a light ground produces no glow, only wash. */
 .prizes-vertex {
   position: absolute;
   inset-inline: 30%;
@@ -1527,13 +1535,13 @@ html:not(.press-done) {
   animation: prizesRespiro var(--dur-respiro) var(--ease-inout) infinite alternate;
 }
 
-/* O VÉU. Devolve papel embaixo do chapéu e embaixo da faixa de texto — e só
-   ali. O meio do quadro fica com a cor cheia, porque é o único lugar onde ela
-   tem espaço para ser vista.
-   Os degraus de baixo não são estéticos: medidos na tela, o `muted` (#5a6a5b,
-   14px) cai de 4,82 para 4,10 sobre a aurora crua — abaixo do mínimo AA. Com
-   esta rampa volta para ~4,7 sem apagar a cor do meio. Mexer nela é mexer no
-   contraste do texto. */
+/* THE SCRIM. Brings paper back under the header and under the text band —
+   and only there. Mid-frame keeps full colour, because it is the only place
+   where it has room to be seen.
+   The bottom steps are not aesthetic: measured on screen, `muted` (#5a6a5b,
+   14px) drops from 4.82 to 4.10 over the raw aurora — below the AA minimum.
+   With this ramp it returns to ~4.7 without erasing the middle's colour.
+   Touching it means touching text contrast. */
 .prizes-scrim {
   position: absolute;
   inset: 0;
@@ -1555,8 +1563,8 @@ html:not(.press-done) {
     );
 }
 
-/* O GRÃO. feTurbulence embutido — soft-light em vez de overlay porque sobre
-   creme o overlay estoura o meio-tom e o grão vira sujeira. */
+/* THE GRAIN. Inline feTurbulence — soft-light instead of overlay because on
+   cream, overlay blows out the midtone and the grain turns to dirt. */
 .prizes-grain {
   position: absolute;
   inset: 0;
@@ -1566,8 +1574,8 @@ html:not(.press-done) {
   background-size: 190px 190px;
 }
 
-/* Tela larga espalha a mesma mancha por mais pixel e ela volta a virar média.
-   As manchas encolhem em proporção para manter a BORDA dentro do quadro. */
+/* A wide screen spreads the same blotch over more pixels and it becomes an
+   average again. The blotches shrink in proportion to keep the EDGE in frame. */
 @media (min-width: 1600px) {
   .prizes-atmos {
     --prizes-blur: 88px;
@@ -1580,9 +1588,10 @@ html:not(.press-done) {
   }
 }
 
-/* No telefone o blur é o custo, não o desenho: 72px numa camada que ocupa a
-   tela inteira é composição cara em GPU móvel. Amplitude menor pelo mesmo
-   motivo de sempre — a mesma distância numa tela estreita lê como salto. */
+/* On the phone the blur is the cost, not the drawing: 72px on a layer that
+   fills the screen is expensive compositing on a mobile GPU. Smaller
+   amplitude for the usual reason — the same distance on a narrow screen
+   reads as a jump. */
 @media (max-width: 640px) {
   .prizes-atmos {
     --prizes-blur: 46px;
@@ -1601,8 +1610,8 @@ html:not(.press-done) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Deriva e respiro são o movimento inteiro desta camada: sem eles sobra o
-     estado estático, que já é o desenho — nada some. */
+  /* Drift and breathing are this layer's entire motion: without them the
+     static state remains, which is already the drawing — nothing vanishes. */
   .prizes-blob,
   .prizes-glow,
   .prizes-funnel-plane,

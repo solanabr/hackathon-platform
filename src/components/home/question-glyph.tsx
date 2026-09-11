@@ -1,8 +1,8 @@
 import { halftoneMarks } from "./halftone";
 
-/* O ponto de interrogação no mesmo meio-tom das outras ilustrações: o mapa
-   guarda a densidade de cada célula em base36 e a engine cresce o traço com
-   ela. O tom escurece de cima para baixo — é tinta, não um caractere. */
+/* The question mark in the same halftone as the other illustrations: the map
+   stores each cell's density in base36 and the engine grows the stroke with
+   it. Tone darkens top to bottom — it is ink, not a character. */
 const GRID = { cols: 30, cellW: 4.5, cellH: 5 };
 
 const TONES =

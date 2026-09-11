@@ -8,8 +8,8 @@ const LegionaryCanvas = dynamic(
   { ssr: false },
 );
 
-/* Sem poster 2D: no laboratório a pergunta é como a peça 3D lê ao lado do
-   Coliseu. Se ela for para a LP, o desenho de espera entra aqui. */
+/* No 2D poster: in the lab the question is how the 3D piece reads next to
+   the Colosseum. If it goes to the LP, the placeholder drawing goes here. */
 export function LegionaryScene() {
   const showScene = useSceneEligible();
 

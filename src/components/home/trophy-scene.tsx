@@ -9,34 +9,34 @@ const GlyphScene = dynamic(() => import("@/components/home/glyph-scene"), {
   ssr: false,
 });
 
-/* A malha vem do Tripo com a base em y=0 e a boca da taça em y≈0.97: o alvo é
-   a metade dessa altura e o raio é o que faz as alças caberem na largura do
-   quadro no formato retrato em que a peça é enquadrada. */
+/* The mesh comes from Tripo with the base at y=0 and the cup's mouth at y≈0.97:
+   the target is half that height and the radius is what fits the handles in
+   the frame's width in the portrait format the piece is framed in. */
 const TARGET: [number, number, number] = [0, 0.45, 0];
 const RADIUS = 2.32;
 const ELEVATION = 0.15;
 const FOV_RADIANS = 0.46;
 const AZIMUTH = 0;
 const AZIMUTH_SWING = Math.PI * 0.05;
-/* Vaivém, não volta completa: de perfil a taça perde as alças e vira vaso —
-   este é o arco em que ela continua sendo uma taça o tempo todo. */
+/* Sway, not a full turn: in profile the cup loses its handles and becomes a
+   vase — this is the arc where it stays a trophy the whole time. */
 const SWAY_RADIANS = 0.3;
 const SWAY_SECONDS = 16;
 
-/* Numa taça não existe vão: o volume vem da luz e o ornamento vem da pintura,
-   não do recesso — invertido em relação ao Colosseum. */
+/* A cup has no gap: volume comes from light and ornament from paint, not
+   from recess — the inverse of the Colosseum. */
 const TONE_FLOOR = 0.3;
 const RECESS_GAIN = 0.12;
 const FORM_GAIN = 0.82;
 const ALBEDO_MIX = 0.85;
 
-/* O desenho fica no lugar até a cena ter pintado um quadro de verdade, e volta
-   se o contexto cair. Trocar na montagem abria uma janela de quadro vazio, e
-   uma falha depois dela não tinha para onde degradar.
+/* The drawing stays in place until the scene has painted a real frame, and
+   comes back if the context is lost. Swapping on mount opened a window of
+   empty frame, and a failure after it had nowhere to degrade to.
 
-   Contexto perdido desmonta a tela em vez de só revelar o desenho: um canvas
-   sem contexto continua ocupando o quadro e o navegador o pinta como imagem
-   quebrada — opaca, e por cima do que deveria substituí-la. */
+   A lost context unmounts the canvas instead of just revealing the drawing: a
+   canvas without a context keeps occupying the frame and the browser paints
+   it as a broken image — opaque, and on top of what should replace it. */
 export function TrophyScene({ className = "" }: { className?: string }) {
   const showScene = useSceneEligible();
   const [painted, setPainted] = useState(false);

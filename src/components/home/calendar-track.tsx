@@ -9,16 +9,16 @@ export type CalendarItem = {
   title: string;
   body: string;
   href?: string;
-  /* Momento em que a etapa começa. Sem data a etapa nunca vira a atual
-     sozinha — é o caso do "Em breve", que só o anúncio resolve. */
+  /* When the step starts. Without a date a step never becomes current on
+     its own — the case of "Em breve", which only the announcement resolves. */
   startsAt?: string;
-  /* A etapa cujo fim é o deadline: ganha o contador ao vivo e a agenda. */
+  /* The step whose end is the deadline: gets the live counter and the calendar. */
   isDeadline?: boolean;
 };
 
-/* Um calendário que marca a mesma etapa em setembro e em outubro é uma
-   imagem, não um calendário. O estado sai da data: tudo que já começou é
-   passado, a última coisa que começou é o agora, o resto ainda vem. */
+/* A calendar that marks the same step in September and in October is a
+   picture, not a calendar. State comes from the date: everything that has
+   started is past, the last thing that started is now, the rest is yet to come. */
 function stepFromDates(items: CalendarItem[], nowMs: number): number {
   let current = 0;
   items.forEach((item, i) => {
@@ -42,8 +42,8 @@ function googleCalendarUrl(deadlineIso: string): string {
 }
 
 const RAIL = "absolute left-[5.25rem] w-px -translate-x-1/2";
-/* O corte do gradiente é exatamente a altura do ponto: o trilho chega
-   colorido até o marcador da etapa atual e segue apagado depois dele. */
+/* The gradient cut is exactly the dot's height: the rail arrives coloured up
+   to the current step's marker and continues faded after it. */
 const RAIL_SPLIT =
   "[background:linear-gradient(to_bottom,var(--color-emerald)_0_2.125rem,rgb(27_35_29/0.15)_2.125rem)]";
 
@@ -70,14 +70,14 @@ export function CalendarTrack({
         const now = i === current;
         const first = i === 0;
         const last = i === items.length - 1;
-        /* A etapa cujo rótulo já é a palavra "agora" não ganha o selo: dizer
-           duas vezes a mesma coisa no mesmo par de linhas é ruído. */
+        /* A step whose label is already the word "agora" does not get the
+           badge: saying the same thing twice in the same pair of lines is noise. */
         const saysNow = item.label.trim().toLowerCase() === "agora";
 
-        /* O trilho é uma linha só cortada pelos pontos: chega colorido até o
-           marcador da etapa atual e segue apagado dali para baixo. Na primeira
-           etapa só existe o trecho de baixo, na última só o de cima — por isso
-           o gradiente cabe apenas no miolo. */
+        /* The rail is a single line broken only by the dots: coloured up to
+           the current step's marker and faded from there down. The first step
+           has only the lower stretch, the last only the upper — which is why
+           the gradient fits only in the middle. */
         const railTone =
           done || (now && last)
             ? "bg-emerald"
@@ -93,9 +93,9 @@ export function CalendarTrack({
               i > 0 ? "border-t border-green-dark/15" : ""
             }`}
           >
-            {/* O realce sangra até a borda do painel em vez de parar no
-                padding da lista: uma faixa que morre a meio caminho lê como
-                erro de alinhamento, não como estado. */}
+            {/* The highlight bleeds to the panel edge instead of stopping at
+                the list padding: a band that dies halfway reads as an
+                alignment error, not as state. */}
             <span
               aria-hidden
               className={`pointer-events-none absolute inset-y-0 -left-5 -right-5 transition-colors duration-(--dur-instant) ease-entrada sm:-left-6 sm:-right-6 ${
@@ -182,7 +182,7 @@ export function CalendarTrack({
                 {item.body}
               </p>
 
-              {/* A etapa que decide o hackathon é a única que ganha uma ação. */}
+              {/* The step that decides the hackathon is the only one that gets an action. */}
               {item.isDeadline && (
                 <a
                   href={googleCalendarUrl(deadlineIso)}

@@ -1,10 +1,10 @@
-/* Uma chapa de meio-tom servida como arquivo e aplicada como MÁSCARA: o
-   desenho vem de `/halftone/*.svg`, a tinta vem do `currentColor` da caixa.
-   É o que tira os halftones grandes do HTML sem perder a cor do chamador —
-   `text-ink/40` continua valendo, alfa incluído.
+/* A halftone plate served as a file and applied as a MASK: the drawing comes
+   from `/halftone/*.svg`, the ink from the box's `currentColor`. This is what
+   takes the large halftones out of the HTML without losing the caller's
+   colour — `text-ink/40` still applies, alpha included.
 
-   `fit` espelha o `preserveAspectRatio` que o SVG inline tinha: `cover`
-   (xMidYMid slice), `cover-bottom` (xMidYMax slice) ou `contain`. */
+   `fit` mirrors the `preserveAspectRatio` the inline SVG had: `cover`
+   (xMidYMid slice), `cover-bottom` (xMidYMax slice) or `contain`. */
 export function Plate({
   src,
   fit = "cover",

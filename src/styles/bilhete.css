@@ -1,41 +1,41 @@
 /* ---------------------------------------------------------------------------
- * O BILHETE
+ * THE TICKET
  *
- * A peça mais cara da primeira dobra ganha o tratamento que uma peça cara
- * recebe na vida real: papel com estrutura, impressão de segurança, hot stamp
- * no canhoto e uma pose. Cada uma dessas quatro coisas existe por um motivo
- * físico, e é o motivo que decide o valor — não o efeito.
+ * The most expensive piece of the first fold gets the treatment an expensive
+ * piece gets in real life: paper with structure, security printing, hot stamp
+ * on the stub and a pose. Each of those four exists for a physical reason,
+ * and the reason is what decides the value — not the effect.
  *
- * 1. PAPEL. Um ingresso não é uma cor de fundo. Papel tem trama (o ponto que
- *    já vinha de `PaperTexture`), tem VERGATURA — as linhas de forma que ficam
- *    marcadas na folha — e tem espessura. Sem as três, o retângulo continua
- *    sendo um retângulo pintado por mais sombra que se empilhe em cima.
+ * 1. PAPER. A ticket is not a background colour. Paper has grain (the dot
+ *    that already came from `PaperTexture`), it has LAID LINES — the mould
+ *    lines left in the sheet — and it has thickness. Without all three the
+ *    rectangle stays a painted rectangle however much shadow is piled on top.
  *
- * 2. IMPRESSÃO DE SEGURANÇA. Guilhoché, microtexto e selo em relevo. É o que
- *    o olho lê como "documento" antes de conseguir dizer por quê, e é a mesma
- *    técnica da gravura desta marca: linha fina, cruzada, sem meio-tom.
+ * 2. SECURITY PRINTING. Guilloche, microtext and an embossed seal. It is what
+ *    the eye reads as "document" before it can say why, and it is the same
+ *    technique as this brand's engraving: fine crossed lines, no halftone.
  *
- * 3. FOIL. O canhoto amarelo vira holográfico — e holográfico de verdade não é
- *    um arco-íris estampado, é uma GRADE DE DIFRAÇÃO que só devolve cor no
- *    ângulo em que pega luz. Por isso a íris inteira mora atrás de uma máscara
- *    estreita ancorada em `--foil-x`: o resto do canhoto fica amarelo, e a cor
- *    só acontece na banda que o ponteiro está iluminando.
+ * 3. FOIL. The yellow stub becomes holographic — and real holographic is not
+ *    a printed rainbow, it is a DIFFRACTION GRATING that only returns colour
+ *    at the angle that catches light. So the whole iris lives behind a narrow
+ *    mask anchored on `--foil-x`: the rest of the stub stays yellow, and the
+ *    colour only happens in the band the pointer is lighting.
  *
- * 4. POSE. Perspectiva de verdade, com espessura que aparece do lado oposto à
- *    inclinação e sombra que anda contra a peça. O cartão continua sendo um
- *    plano — é isso que um bilhete é —, mas um plano POSICIONADO no espaço.
+ * 4. POSE. Real perspective, with thickness showing on the side opposite the
+ *    tilt and a shadow that moves against the piece. The card is still a
+ *    plane — that is what a ticket is — but a plane POSITIONED in space.
  *
- * Tudo degrada: sem ponteiro fino, a luz do foil faz uma varredura de ambiente
- * e a pose fica em repouso; sem `@property`, as máscaras param no valor
- * inicial, que é o desenho centrado e aprovado.
+ * Everything degrades: without a fine pointer the foil light does an ambient
+ * sweep and the pose stays at rest; without `@property` the masks stop at the
+ * initial value, which is the centred, approved drawing.
  * ------------------------------------------------------------------------- */
 
-/* Registrados porque são interpolados: `--foil-x` dentro de máscara e
-   gradiente (que só transiciona se o browser souber que aquilo é uma
-   porcentagem) e os dois ângulos da pose. O valor inicial de cada um é o
-   estado de repouso — a peça nasce pronta, nunca esperando JS. */
-/* A unidade do bilhete. Registrada para nascer valendo 1 em qualquer
-   instância: a peça do hero não precisa saber que existe uma peça grande. */
+/* Registered because they are interpolated: `--foil-x` inside a mask and a
+   gradient (which only transitions if the browser knows it is a percentage)
+   and the two pose angles. Each initial value is the rest state — the piece
+   is born ready, never waiting for JS. */
+/* The ticket unit. Registered so it starts at 1 in any instance: the hero
+   piece does not need to know a large piece exists. */
 @property --bu {
   syntax: "<number>";
   inherits: true;
@@ -67,13 +67,14 @@
   initial-value: 0;
 }
 
-/* O VOO. Duas grandezas físicas que o giro do bilhete escreve e as camadas de
-   papel leem: quanto a peça está NO AR (governa a sombra) e quanto a face
-   está VIRADA PARA LONGE DA LUZ (governa o quanto ela escurece). Papel que
-   gira sem escurecer é a razão principal de uma virada parecer pedra girando
-   num torno: uma superfície real perde luz conforme a normal dela sai do
-   eixo, e o olho lê essa perda antes de ler a rotação. Zero nas duas pontas —
-   no canto do hero e estacionada, a peça é exatamente o desenho aprovado. */
+/* THE FLIGHT. Two physical quantities the ticket's turn writes and the paper
+   layers read: how much the piece is IN THE AIR (drives the shadow) and how
+   much the face is TURNED AWAY FROM THE LIGHT (drives how much it darkens).
+   Paper that turns without darkening is the main reason a flip looks like a
+   stone spinning on a lathe: a real surface loses light as its normal leaves
+   the axis, and the eye reads that loss before it reads the rotation. Zero at
+   both ends — in the hero corner and parked, the piece is exactly the
+   approved drawing. */
 @property --voo-alto {
   syntax: "<number>";
   inherits: true;
@@ -85,11 +86,11 @@
   initial-value: 0;
 }
 
-/* --- A POSE --------------------------------------------------------------
- * A perspectiva mora no invólucro e a rotação na peça, porque quem observa
- * não é o cartão: é a página. Perspectiva curta demais deforma o retângulo em
- * trapézio de vitrine; a distância aqui é ~4x a largura da peça, que é a
- * distância de quem está segurando um ingresso na mão.                      */
+/* --- THE POSE ------------------------------------------------------------
+ * Perspective lives on the wrapper and rotation on the piece, because the
+ * observer is not the card: it is the page. Too short a perspective warps the
+ * rectangle into a shop-window trapezoid; the distance here is ~4x the piece
+ * width, which is the distance of someone holding a ticket in hand.        */
 .bilhete-cena {
   perspective: 1400px;
   perspective-origin: 50% 42%;
@@ -98,22 +99,22 @@
 .bilhete-pose {
   transform: rotateX(var(--pose-x)) rotateY(var(--pose-y));
   transform-style: preserve-3d;
-  /* Amortecimento. O ponteiro chega em degraus de frame; sem o atraso curto a
-     peça copia o ruído da mão em vez de responder ao gesto. */
+  /* Damping. The pointer arrives in frame steps; without the short lag the
+     piece copies hand jitter instead of answering the gesture. */
   transition: transform var(--dur-instant) linear;
 }
 
-/* Ao soltar, o cartão não desliga: ele volta a assentar, com a mesma curva de
-   objeto físico do resto da base. */
+/* On release the card does not switch off: it settles back, with the same
+   physical-object curve as the rest of the base. */
 .bilhete-cena[data-pousado="true"] .bilhete-pose {
   transition: transform var(--dur-media) var(--ease-mola);
 }
 
-/* --- A ESPESSURA ---------------------------------------------------------
- * O lado do cartão. É uma cópia do mesmo recorte serrilhado, em tinta, atrás
- * da peça e deslocada CONTRA a inclinação: incline para a esquerda e a borda
- * direita é a que aparece, como em qualquer objeto com lado. O deslocamento é
- * proporcional ao ângulo, então a espessura nasce e some junto com a pose.   */
+/* --- THE THICKNESS -------------------------------------------------------
+ * The card's side. A copy of the same die-cut outline, in ink, behind the
+ * piece and offset AGAINST the tilt: tilt left and the right edge is the one
+ * that shows, as on any object with a side. The offset is proportional to the
+ * angle, so the thickness appears and vanishes together with the pose.      */
 .bilhete-espessura {
   position: absolute;
   inset: 0;
@@ -124,8 +125,8 @@
     #46442f 42%,
     #2b3128 100%
   );
-  /* Um fio de base mais o que a pose acrescenta: o cartão tem lado mesmo
-     parado — papel de 300 g tem espessura antes de alguém inclinar. */
+  /* A base hairline plus whatever the pose adds: the card has a side even at
+     rest — 300 g paper has thickness before anyone tilts it. */
   transform: translate3d(
     calc(1.2px + var(--pose-y) / 1deg * -0.5px),
     calc(1.4px + var(--pose-x) / 1deg * 0.5px),
@@ -138,11 +139,11 @@
   transition: transform var(--dur-media) var(--ease-mola);
 }
 
-/* --- A SOMBRA ANDA -------------------------------------------------------
- * Sombra parada embaixo de peça que se inclina é o detalhe que denuncia todo
- * efeito 3D falso. Ela é `filter` porque precisa seguir o serrilhado, e o
- * deslocamento é o dobro do da espessura — a sombra está mais longe do
- * cartão do que a própria borda dele.                                       */
+/* --- THE SHADOW MOVES ----------------------------------------------------
+ * A still shadow under a tilting piece is the detail that gives away every
+ * fake 3D effect. It is a `filter` because it must follow the die-cut, and
+ * the offset is twice the thickness's — the shadow is farther from the card
+ * than the card's own edge.                                                 */
 .bilhete-cena.ticket-shadow {
   filter: drop-shadow(
     calc(var(--pose-y) / 1deg * -1.1px)
@@ -156,21 +157,21 @@
   transition: filter var(--dur-media) var(--ease-mola);
 }
 
-/* A ELEVAÇÃO. Encostar levanta a peça da mesa, e a sombra tem que crescer e
-   afastar junto — peça que sobe com a sombra parada denuncia que a sombra é um
-   desenho colado no fundo. Um número só, lido pelo `filter` acima, para o
-   levantar e o inclinar não brigarem por quem escreve a sombra. */
+/* THE LIFT. Touching raises the piece off the table, and the shadow has to
+   grow and move away with it — a piece that rises over a still shadow gives
+   away that the shadow is a drawing glued to the background. One number, read
+   by the `filter` above, so lift and tilt don't fight over who writes it. */
 @media (hover: hover) {
   .bilhete-cena:hover {
     --pose-alt: 1;
   }
 }
 
-/* --- VERGATURA -----------------------------------------------------------
- * As linhas da forma de papel: as finas juntas (pontusais) e as grossas
- * espaçadas (vergaturas). Alfa baixíssimo de propósito — se der para VER a
- * listra, virou padrão decorativo; ela tem que ser sentida como estrutura da
- * folha quando a luz do foil passa por cima.                                */
+/* --- LAID LINES ----------------------------------------------------------
+ * The paper mould's lines: the fine close ones (laid) and the thick spaced
+ * ones (chain). Very low alpha on purpose — if you can SEE the stripe it has
+ * become a decorative pattern; it must be felt as the sheet's structure when
+ * the foil light passes over it.                                            */
 .bilhete-vergatura {
   background-image:
     repeating-linear-gradient(
@@ -185,12 +186,12 @@
     );
 }
 
-/* --- A MANCHA DA FOLHA ---------------------------------------------------
- * Papel de verdade não tem tom uniforme: a polpa assenta desigual e a folha
- * fica mais quente em algumas regiões e mais fria em outras. Quatro manchas
- * largas e fora de qualquer grade, com alfa na casa dos dois por cento — o
- * bastante para o creme deixar de ser uma cor chapada quando a peça cresce
- * três vezes, e pouco o bastante para ninguém conseguir apontar onde estão.  */
+/* --- THE SHEET'S MOTTLE --------------------------------------------------
+ * Real paper has no uniform tone: the pulp settles unevenly and the sheet is
+ * warmer in some regions and cooler in others. Four wide blotches off any
+ * grid, with alpha around two percent — enough for the cream to stop being a
+ * flat colour when the piece grows three times, and little enough that nobody
+ * can point to where they are.                                              */
 .bilhete-mancha {
   background-image:
     radial-gradient(
@@ -215,12 +216,12 @@
     );
 }
 
-/* --- A LUZ NO PAPEL ------------------------------------------------------
- * Papel não é foil, então aqui não há cor: há uma faixa larga de luz quente
- * atravessando a folha no mesmo eixo do canhoto. É o que amarra as duas
- * metades — a mesma fonte de luz acende a íris de um lado e o creme do outro.
- * `soft-light` porque a folha tem que continuar clara: `screen` estouraria o
- * branco e apagaria a impressão.                                            */
+/* --- THE LIGHT ON THE PAPER ----------------------------------------------
+ * Paper is not foil, so there is no colour here: a wide band of warm light
+ * crossing the sheet on the same axis as the stub. It is what ties the two
+ * halves — the same light source lights the iris on one side and the cream
+ * on the other. `soft-light` because the sheet must stay light: `screen`
+ * would blow out the white and erase the print.                             */
 .bilhete-luz {
   background-image: linear-gradient(
     102deg,
@@ -228,11 +229,12 @@
     rgb(255 252 235 / 0.85) 48%,
     rgb(255 255 255 / 0) 100%
   );
-  /* A faixa é a camada inteira, 2,2x mais larga que a folha, e quem a move é
-     um transform — não `background-position`. Deslocar o fundo repintava a
-     face inteira a cada quadro do voo; deslocar a camada é só compor. A conta
-     reproduz a posição em porcentagem de antes: (100% − 220%) × X da folha,
-     que em largura da própria camada é −0,5455 × X. */
+  /* The band is the whole layer, 2.2x wider than the sheet, moved by a
+     transform — not `background-position`. Shifting the background repainted
+     the whole face every frame of the flight; shifting the layer is just
+     compositing. The maths reproduces the old percentage position:
+     (100% − 220%) × X of the sheet, which in the layer's own width is
+     −0.5455 × X. */
   width: 220%;
   transform: translate3d(calc(var(--foil-x) * -0.5455), 0, 0);
   will-change: transform;
@@ -240,17 +242,17 @@
   opacity: 0.75;
 }
 
-/* --- O CANHOTO É HOT STAMP ----------------------------------------------- */
+/* --- THE STUB IS HOT STAMP ----------------------------------------------- */
 
-/* O canhoto isola: sem isto as camadas em blend procuram fundo abaixo dele e
-   acabam borrando o papel do miolo em vez do amarelo. */
+/* The stub isolates: without this the blended layers look for a backdrop
+   below it and end up smearing the body's paper instead of the yellow. */
 .bilhete-canhoto {
   isolation: isolate;
 }
 
-/* Camada 1 — a base perolada. Não é o holograma ainda: é o amarelo deixando
-   de ser chapado. Existe o tempo todo, inclusive parado, e é ela que impede o
-   canhoto de parecer uma tarja de cor quando não há ponteiro na tela. */
+/* Layer 1 — the pearl base. Not the hologram yet: it is the yellow ceasing to
+   be flat. It exists all the time, even at rest, and it is what keeps the
+   stub from looking like a colour strip when no pointer is on screen. */
 .foil-perola {
   background-image: conic-gradient(
     from calc(var(--foil-x) * 2.4),
@@ -265,24 +267,23 @@
   opacity: 0.8;
 }
 
-/* Camada 2 — A ÍRIS. Um espectro contínuo, sem grade.
-   A primeira versão desta camada era uma grade de difração literal — linhas de
-   2px em arco-íris — e era tecnicamente correta e visualmente errada: no
-   tamanho em que o canhoto vive, ranhura microgravada não lê como microgravura,
-   lê como RISCO. Foil de verdade visto a olho nu não mostra a ranhura; mostra o
-   matiz escorregando. Então o espectro é contínuo e quem o move é a posição da
-   luz, deslocando um gradiente três vezes maior que a peça: em qualquer
-   instante só um trecho do arco-íris está sobre o amarelo, e ele desliza em vez
-   de piscar. Sem máscara, porque máscara com borda é a outra forma de criar
-   uma linha onde não deve haver nenhuma. */
+/* Layer 2 — THE IRIS. A continuous spectrum, no grating.
+   The first version of this layer was a literal diffraction grating — 2px
+   rainbow lines — and it was technically right and visually wrong: at the
+   size the stub lives at, a micro-engraved groove does not read as engraving,
+   it reads as a SCRATCH. Real foil seen by eye does not show the groove; it
+   shows the hue sliding. So the spectrum is continuous and the light position
+   moves it, shifting a gradient three times taller than the piece: at any
+   instant only a stretch of rainbow sits over the yellow, and it slides
+   instead of flickering. No mask, because a mask with an edge is the other
+   way to create a line where there should be none. */
 .foil-iris {
-  /* O ESPECTRO REPETE TRÊS VEZES dentro da imagem. Uma passada só de arco-íris
-     numa imagem de três alturas deixa UMA faixa de matiz sobre o canhoto — e
-     `hard-light` com um verde saturado inteiro apaga o amarelo: o canhoto vira
-     verde, não vira foil. Com três ciclos, qualquer janela de uma altura
-     mostra o espectro inteiro, a média volta a ser neutra, o amarelo
-     sobrevive, e o que `--foil-x` faz é escorregar o matiz — que é o gesto do
-     holograma. */
+  /* THE SPECTRUM REPEATS THREE TIMES inside the image. A single rainbow pass
+     over a three-height image leaves ONE band of hue over the stub — and
+     `hard-light` with a whole saturated green wipes the yellow: the stub goes
+     green, not foil. With three cycles any one-height window shows the whole
+     spectrum, the average is neutral again, the yellow survives, and what
+     `--foil-x` does is slide the hue — which is the hologram's gesture. */
   background-image: linear-gradient(
     163deg,
     hsl(340 88% 54% / 0.85) 0.0%,
@@ -309,27 +310,27 @@
     hsl(340 88% 54% / 0.85) 100%
   );
   background-size: 100% 300%;
-  /* A conta da posição em porcentagem é `p × (caixa − imagem)`: com a imagem
-     valendo três alturas, `--foil-x` de 0 a 100% já varre duas alturas
-     inteiras de espectro. Multiplicar ou negar aqui joga o gradiente para fora
-     da caixa e o canhoto volta a ser amarelo chapado — sem erro visível de
-     sintaxe, só sem cor. */
+  /* The percentage position formula is `p × (box − image)`: with the image at
+     three heights, `--foil-x` from 0 to 100% already sweeps two full heights
+     of spectrum. Multiplying or negating here throws the gradient out of the
+     box and the stub goes back to flat yellow — no visible syntax error,
+     just no colour. */
   background-position: 0 var(--foil-x);
-  /* `hard-light` e não `overlay`: sobre um amarelo saturado o `overlay`
-     preserva o matiz da base e o que sobra do espectro é claro-escuro — foil
-     sem cor. A difração precisa DESLOCAR o matiz. */
+  /* `hard-light`, not `overlay`: over a saturated yellow `overlay` keeps the
+     base hue and what is left of the spectrum is light-dark — foil without
+     colour. Diffraction needs to SHIFT the hue. */
   mix-blend-mode: hard-light;
-  /* O AMARELO É A MARCA, a íris é o acabamento. `hard-light` com espectro
-     claro demais vira pastel e come o amarelo — o canhoto deixa de ser o
-     canhoto amarelo do Superteam e vira uma tira de arco-íris. Espectro em
-     meia-luz e opacidade curta: o matiz escorrega POR CIMA do amarelo em vez
-     de substituí-lo. */
+  /* THE YELLOW IS THE BRAND, the iris is the finish. `hard-light` with too
+     light a spectrum goes pastel and eats the yellow — the stub stops being
+     Superteam's yellow stub and becomes a rainbow strip. Half-lit spectrum
+     and short opacity: the hue slides OVER the yellow instead of replacing
+     it. */
   opacity: 0.34;
 }
 
-/* Camada 3 — o especular. Uma lâmina de luz larga, com as duas pontas mortas
-   em transparente: em foil real o branco chega antes da cor porque é reflexão
-   direta, e ele é uma REGIÃO, não uma faixa com aresta. */
+/* Layer 3 — the specular. A wide blade of light with both ends dying into
+   transparent: on real foil the white arrives before the colour because it
+   is direct reflection, and it is a REGION, not a band with an edge. */
 .foil-brilho {
   background-image: linear-gradient(
     168deg,
@@ -340,20 +341,20 @@
   mix-blend-mode: soft-light;
 }
 
-/* Camada 4 — a impressão de segurança do canhoto, em tinta. Fica ACIMA do
-   foil e em `multiply`: a linha gravada não recebe o brilho, ela o interrompe
-   — que é a diferença entre tinta sobre foil e tinta sob foil.              */
+/* Layer 4 — the stub's security printing, in ink. Sits ABOVE the foil and in
+   `multiply`: the engraved line does not receive the shine, it interrupts it
+   — which is the difference between ink over foil and ink under foil.       */
 .foil-linha {
   mix-blend-mode: multiply;
   opacity: 0.5;
 }
 
-/* --- VARREDURA DE AMBIENTE ----------------------------------------------
- * Sem ponteiro fino (telefone, tablet) o foil não pode ficar congelado: um
- * holograma parado é uma mancha. Então a luz faz um curso lento e contínuo, na
- * casa dos treze segundos — metade da deriva de ambiente da página, porque é
- * um objeto na mão e não um fundo. Vale também no desktop enquanto ninguém
- * encostou: a peça está viva antes de ser tocada.                           */
+/* --- AMBIENT SWEEP ------------------------------------------------------
+ * Without a fine pointer (phone, tablet) the foil cannot stay frozen: a still
+ * hologram is a smudge. So the light runs a slow continuous course, around
+ * thirteen seconds — half the page's ambient drift, because this is an object
+ * in the hand, not a background. Also applies on desktop until someone
+ * touches it: the piece is alive before being touched.                      */
 @media (hover: none) and (prefers-reduced-motion: no-preference) {
   .bilhete-cena[data-pousado="true"] {
     animation: bilheteRonda calc(var(--dur-ambiente) / 2) var(--ease-inout)
@@ -373,10 +374,10 @@
   }
 }
 
-/* Inclinar é deslocamento e rotação — o que o movimento reduzido pede para
-   não acontecer. O foil FICA: cor e brilho não têm vetor, e desligá-los
-   entregaria um canhoto chapado a quem pediu menos movimento, não menos
-   movimento. A espessura vira o valor de base: o cartão continua tendo lado. */
+/* Tilting is displacement and rotation — what reduced motion asks not to
+   happen. The foil STAYS: colour and shine have no vector, and switching them
+   off would hand a flat stub to someone who asked for less motion, not less
+   motion. Thickness falls to its base value: the card still has a side. */
 @media (prefers-reduced-motion: reduce) {
   .bilhete-pose {
     transform: none;
@@ -386,28 +387,27 @@
   }
 }
 
-/* --- A PEÇA QUE VIRA ------------------------------------------------------
- * A estrutura das duas faces. O comportamento — quando e quanto ela vira —
- * está em `styles/scroll.css`, junto com as outras cenas de rolagem; aqui
- * mora só o que a peça É.
+/* --- THE PIECE THAT FLIPS -------------------------------------------------
+ * The structure of the two faces. The behaviour — when and how much it flips
+ * — lives in `styles/scroll.css` with the other scroll scenes; here lives
+ * only what the piece IS.
  *
- * O REPOUSO É O DESTINO. `.bilhete-voo` nasce com `rotateY(180deg)`, ou seja
- * estacionada e com o verso para cima. Sem `animation-timeline`, sem JS, com
- * movimento reduzido ou abaixo de `lg`, o que fica na tela é a seção pronta e
- * legível — nunca um cartão parado no meio de um giro à espera de um efeito.
- * O canto do hero é que é o estado transformado.                             */
+ * REST IS THE DESTINATION. `.bilhete-voo` is born with `rotateY(180deg)`,
+ * i.e. parked with the back face up. Without `animation-timeline`, without
+ * JS, with reduced motion or below `lg`, what stays on screen is the finished,
+ * readable section — never a card stuck mid-turn waiting for an effect. The
+ * hero corner is the transformed state.                                      */
 .bilhete-vao {
   position: relative;
-  /* A dobra tem `z-10` e é pintada antes. Sem isto a peça atravessaria a
-     primeira dobra por baixo dela durante o voo inteiro. */
+  /* The fold has `z-10` and paints first. Without this the piece would pass
+     under the first fold for the whole flight. */
   z-index: 30;
-  /* Distância de câmera proporcional à peça: ~2x a largura dela estacionada.
-     A primeira medida era quase o dobro disto e o efeito colateral era o
-     defeito: com a câmera tão longe a projeção fica quase ortográfica, as
-     duas bordas verticais encolhem igual e o giro perde a única pista de que
-     existe profundidade. Perto o bastante para a borda que se afasta
-     encolher visivelmente, longe o bastante para o retângulo não virar
-     trapézio de vitrine ao passar dos 45°. */
+  /* Camera distance proportional to the piece: ~2x its parked width. The
+     first value was nearly double this and the side effect was the defect:
+     with the camera that far the projection is almost orthographic, both
+     vertical edges shrink alike and the turn loses the only cue that depth
+     exists. Close enough for the receding edge to shrink visibly, far enough
+     that the rectangle does not become a shop-window trapezoid past 45°. */
   perspective: 1900px;
   perspective-origin: 50% 44%;
 }
@@ -415,9 +415,10 @@
 .bilhete-voo {
   position: relative;
   transform-style: preserve-3d;
-  /* A lista de funções é a MESMA dos quadros do voo, inclusive as que aqui
-     valem zero: quadro com lista diferente força interpolação de matriz, e
-     matriz com 180° de `rotateY` degenera — o cartão achata em vez de virar. */
+  /* The function list is the SAME as the flight keyframes', including the
+     ones that are zero here: a frame with a different list forces matrix
+     interpolation, and a matrix with 180° of `rotateY` degenerates — the card
+     flattens instead of turning. */
   transform: translate3d(
       calc(var(--voo-dx, 0px) * 0),
       calc(var(--voo-dy, 0px) * 0),
@@ -426,20 +427,22 @@
     scale(1) rotate(0deg) rotateX(0deg) rotateY(180deg) skewY(0deg);
 }
 
-/* Cada face esconde as próprias costas — é o que faz uma virada mostrar o
-   outro lado em vez de mostrar o mesmo lado espelhado. */
+/* Each face hides its own back — that is what makes a flip show the other
+   side instead of the same side mirrored. */
 .bilhete-face {
   position: relative;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* A sombra é `filter` porque tem que seguir o serrilhado, e mora na FACE e
-     não no invólucro: o invólucro é quem guarda o `preserve-3d`, e um filtro
-     ali achataria a cena inteira — a virada viraria um retângulo encolhendo. */
-  /* A FACE PERDE LUZ AO VIRAR e a sombra sai de baixo dela quando ela sobe.
-     `brightness` e não uma véu absoluto por cima porque o filtro segue o
-     recorte serrilhado de graça — véu retangular vazaria no picote e no canto
-     cortado. A ordem importa: escurece a peça primeiro, projeta a sombra
-     depois, senão a sombra sairia lavada junto com o papel. */
+  /* The shadow is a `filter` because it must follow the die-cut, and it lives
+     on the FACE, not the wrapper: the wrapper holds the `preserve-3d`, and a
+     filter there would flatten the whole scene — the flip would become a
+     shrinking rectangle. */
+  /* THE FACE LOSES LIGHT AS IT TURNS and the shadow slides out from under it
+     as it rises. `brightness` rather than an absolute veil on top because the
+     filter follows the die-cut for free — a rectangular veil would leak at
+     the perforation and the cut corner. Order matters: darken the piece
+     first, cast the shadow after, or the shadow would wash out with the
+     paper. */
   filter: brightness(calc(1 - var(--voo-sombra, 0) * 0.28))
     contrast(calc(1 + var(--voo-sombra, 0) * 0.07))
     drop-shadow(
@@ -450,26 +453,27 @@
     );
 }
 
-/* A frente fica em fluxo e é ela quem define a ALTURA da peça; o verso é
-   sobreposto. Duas faces em fluxo dariam duas alturas, e um cartão com duas
-   alturas não é um cartão. */
+/* The front stays in flow and defines the piece's HEIGHT; the back is
+   overlaid. Two faces in flow would give two heights, and a card with two
+   heights is not a card. */
 .bilhete-face-verso {
   position: absolute;
   inset: 0;
   transform: rotateY(180deg);
 }
 
-/* --- TINTA PRENSADA ------------------------------------------------------
- * Tipografia de tipografia: a letra afunda no papel, então ela tem um fio de
- * luz na aresta de baixo — o papel levantado que o tipo empurrou. Um pixel, e
- * é a diferença entre texto renderizado sobre creme e texto IMPRESSO nele.   */
+/* --- PRESSED INK ---------------------------------------------------------
+ * Letterpress typography: the letter sinks into the paper, so it has a
+ * hairline of light on its bottom edge — the paper the type pushed up. One
+ * pixel, and it is the difference between text rendered on cream and text
+ * PRINTED into it.                                                          */
 .bilhete-prensa {
   text-shadow: 0 1px 0 rgb(255 255 255 / 0.62);
 }
 
-/* O microtexto é impressão de segurança, não conteúdo: some do fluxo de
-   leitura e da árvore de acessibilidade, e existe para ser descoberto quando
-   a peça cresce. */
+/* Microtext is security printing, not content: it leaves the reading flow
+   and the accessibility tree, and exists to be discovered when the piece
+   grows. */
 .bilhete-microtexto {
   opacity: 0.5;
 }

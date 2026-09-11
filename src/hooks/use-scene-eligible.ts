@@ -19,9 +19,9 @@ function afterLcp(callback: () => void) {
   setTimeout(callback, 1200);
 }
 
-/* Uma peça 3D nunca disputa com o LCP nem entra onde não cabe: só depois da
-   primeira pintura, só no tamanho em que foi enquadrada, só com WebGL2 e
-   nunca em movimento reduzido — nesse caso o desenho 2D atrás dela é a peça. */
+/* A 3D piece never competes with the LCP nor enters where it does not fit:
+   only after first paint, only at the size it was framed for, only with WebGL2
+   and never under reduced motion — there the 2D drawing behind it is the piece. */
 export function useSceneEligible(minWidth = 1024) {
   const [eligible, setEligible] = useState(false);
 

@@ -1,7 +1,7 @@
-/* A trama de papel da página. Nasceu dentro do palco do bento e virou peça
-   própria quando a seção de prêmios passou a se apoiar nela: o mesmo ponto,
-   a mesma cadência, um lugar só para mexer. A máscara é do chamador — num
-   palco ela emoldura pelas bordas, numa seção inteira ela some no meio. */
+/* The page's paper weave. It was born inside the bento stage and became its
+   own piece when the prizes section started leaning on it: same dot, same
+   cadence, one place to tweak. The mask belongs to the caller — on a stage it
+   frames the edges, on a whole section it fades out in the middle. */
 const DOTS =
   "bg-[radial-gradient(circle,rgb(27_35_29/0.22)_1px,transparent_1px)] [background-size:10px_10px]";
 

@@ -27,20 +27,20 @@ const NAV: Record<string, PageNav> = {
   },
 };
 
-/** Qual seção está sendo lida.
+/** Which section is being read.
  *
- * Sem isto o menu é uma lista de atalhos: a pessoa consulta uma vez, não se
- * acha nele e não volta. Com a marcação ele vira um mapa — a página inteira
- * passa a ter um "você está aqui".
+ * Without this the menu is a list of shortcuts: people check it once, don't
+ * find themselves in it and never come back. With the marker it becomes a map
+ * — the whole page gains a "you are here".
  *
- * É posição, não `IntersectionObserver`: metade das âncoras da LP são marcas
- * de 1px dentro de seções altas (a da jornada, por exemplo), e uma faixa de
- * observador em cima de um alvo de 1px pisca entre ativo e inativo a cada
- * frame. Comparar a distância até a linha de leitura é determinístico e
- * responde igual para âncora, seção e card.
+ * It is position, not `IntersectionObserver`: half the LP's anchors are 1px
+ * marks inside tall sections (the journey's, for one), and an observer band
+ * over a 1px target flickers between active and inactive every frame.
+ * Comparing the distance to the reading line is deterministic and answers the
+ * same for an anchor, a section and a card.
  *
- * Um único listener passivo, coalescido em rAF: a LP já paga um para a
- * jornada, e esse é o teto antes de a rolagem começar a engasgar no telefone.
+ * A single passive listener, coalesced into rAF: the LP already pays one for
+ * the journey, and that is the ceiling before scroll starts to stutter on phones.
  */
 function useSecaoAtiva(hrefs: string) {
   const [ativa, setAtiva] = useState<string | null>(null);
@@ -52,9 +52,9 @@ function useSecaoAtiva(hrefs: string) {
     let raf = 0;
     const medir = () => {
       raf = 0;
-      // A linha de leitura fica no primeiro terço da tela, não no meio: é
-      // onde o olho está quando uma seção começa a ser lida, e é o que faz a
-      // marcação trocar junto com o título em vez de meia tela depois.
+      // The reading line sits in the first third of the screen, not the middle:
+      // it is where the eye is when a section starts being read, and what makes
+      // the marker switch along with the title instead of half a screen later.
       const linha = window.innerHeight * 0.34;
       let atual: string | null = null;
       for (const href of alvos) {
@@ -84,8 +84,8 @@ function useSecaoAtiva(hrefs: string) {
 export function LpSectionNav() {
   const pathname = usePathname();
   const nav = NAV[pathname];
-  /* A lista entra como string: um array literal seria uma referência nova a
-     cada render e remontaria o listener a cada frame de rolagem. */
+  /* The list comes in as a string: an array literal would be a new reference
+     on every render and would remount the listener on every scroll frame. */
   const ativa = useSecaoAtiva(nav?.links.map((l) => l.href).join(" ") ?? "");
   if (!nav) return null;
 

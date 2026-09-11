@@ -8,32 +8,32 @@ import {
 } from "@/components/campaign/event-ticket";
 
 /* ---------------------------------------------------------------------------
- * O BILHETE VIRA
+ * THE TICKET FLIPS
  *
- * Uma peça só, com duas faces, que sai do canto da primeira dobra e vai
- * ESTACIONAR na seção seguinte — virada, com o verso para cima. O verso é o
- * conteúdo da seção. Não é uma transição entre dois objetos parecidos: é o
- * mesmo objeto, e é isso que a rolagem tem que provar.
+ * One piece, two faces, that leaves the corner of the first fold and goes to
+ * PARK in the next section — flipped, back side up. The back is the section's
+ * content. This is not a transition between two similar objects: it is the
+ * same object, and that is what the scroll has to prove.
  *
- * ONDE A PEÇA MORA. No destino, não na origem. Ela é filha da seção "O que é o
- * Colosseum" e o repouso dela é o estado ESTACIONADO — verso à mostra, no
- * lugar, em fluxo normal. O canto do hero é o estado transformado, e quem diz
- * onde fica esse canto é a âncora: a cópia de uma face só que continua no hero
- * ocupando a caixa (invisível quando o voo está ativo). Assim o pouso é exato
- * por construção, em vez de um `translate` em `vh` calibrado a olho que erra
- * em toda altura de janela diferente da que foi usada para calibrar.
+ * WHERE THE PIECE LIVES. At the destination, not the origin. It is a child of
+ * the "O que é o Colosseum" section and its rest is the PARKED state — back
+ * showing, in place, in normal flow. The hero corner is the transformed state,
+ * and the anchor says where that corner is: the single-face copy that stays in
+ * the hero occupying the box (invisible while the flight is active). So the
+ * landing is exact by construction, instead of a `translate` in `vh` tuned by
+ * eye that misses at every window height other than the one it was tuned on.
  *
- * O QUE ESTE COMPONENTE FAZ. Só medir. Ele lê as duas caixas, escreve quatro
- * números em custom properties e sai do caminho — a animação inteira é
- * `animation-timeline` no compositor (styles/bilhete.css). Não há listener de
- * rolagem aqui: medida é coisa de layout, e layout muda quando a janela muda,
- * não a cada quadro de scroll.
+ * WHAT THIS COMPONENT DOES. Measure, only. It reads the two boxes, writes four
+ * numbers into custom properties and gets out of the way — the whole animation
+ * is `animation-timeline` on the compositor (styles/bilhete.css). No scroll
+ * listener here: measuring is a layout concern, and layout changes when the
+ * window changes, not on every scroll frame.
  *
- * `--bu` FECHA O CÍRCULO. A unidade interna do bilhete é a razão entre as duas
- * larguras, e a escala do voo é essa mesma razão invertida. Então a peça
- * estacionada é grande de verdade — serrilhado, furo e corpo de letra todos na
- * escala grande — e no canto do hero ela reduz para exatamente o desenho
- * aprovado da primeira dobra. Uma conta só governa as duas pontas.
+ * `--bu` CLOSES THE LOOP. The ticket's internal unit is the ratio between the
+ * two widths, and the flight's scale is that same ratio inverted. So the
+ * parked piece is truly large — perforation, hole and type all at the large
+ * scale — and in the hero corner it shrinks to exactly the approved drawing of
+ * the first fold. One calculation governs both ends.
  * ------------------------------------------------------------------------- */
 
 const arred = (v: number) => Math.round(v * 1000) / 1000;
@@ -59,16 +59,16 @@ export function BilheteVirando({
       const ra = ancora.getBoundingClientRect();
       if (rc.width < 1 || ra.width < 1) return;
 
-      /* Primeiro a unidade, porque ela muda a ALTURA da peça — e a altura
-         entra no deslocamento. Medir tudo de uma vez daria um `dy` calculado
-         contra a caixa antiga, e o cartão pousaria alguns pixels fora. */
+      /* The unit first, because it changes the piece's HEIGHT — and height
+         feeds the offset. Measuring everything at once would give a `dy`
+         computed against the old box, and the card would land a few px off. */
       const bu = arred(rc.width / ra.width);
       peca.style.setProperty("--bu", String(bu));
       peca.style.setProperty("--voo-k", String(arred(1 / bu)));
 
-      /* Segundo passe, já com a caixa no tamanho novo: o vetor entre os dois
-         CENTROS. Centro e não canto porque o giro e a escala do voo têm origem
-         no centro; medir pelo canto pousaria a peça deslocada de meia caixa. */
+      /* Second pass, with the box at its new size: the vector between the two
+         CENTERS. Center and not corner because the flight's spin and scale
+         originate at the center; by corner the piece would land half a box off. */
       requestAnimationFrame(() => {
         const c2 = vao.current?.getBoundingClientRect();
         const a2 = document
@@ -81,11 +81,11 @@ export function BilheteVirando({
         voo.current.style.setProperty("--voo-dx", `${Math.round(dx)}px`);
         voo.current.style.setProperty("--voo-dy", `${Math.round(dy)}px`);
 
-        /* O CURSO. Quanta rolagem até estacionar. O fim é o instante em que a
-           caixa de destino chega a um quarto da janela — alto o bastante para
-           a peça pousar dentro do quadro e não colada na borda de baixo. O
-           piso existe para telas muito altas, onde a conta daria um curso
-           curto demais e a virada viraria um estalo. */
+        /* THE TRAVEL. How much scroll until it parks. The end is the instant
+           the destination box reaches a quarter of the window — high enough
+           for the piece to land inside the frame, not glued to the bottom
+           edge. The floor exists for very tall screens, where the math would
+           give too short a travel and the flip would become a snap. */
         const alvo = c2.top + window.scrollY;
         const curso = Math.max(
           360,
@@ -102,8 +102,8 @@ export function BilheteVirando({
     const ancora = document.getElementById("bilhete-ancora");
     if (ancora) ro.observe(ancora);
     window.addEventListener("resize", medir);
-    /* As fontes mudam a altura das duas caixas quando trocam. Sem isto o
-       primeiro pouso é medido em Times New Roman. */
+    /* Font swaps change the height of both boxes. Without this the first
+       landing is measured in Times New Roman. */
     document.fonts?.ready.then(medir).catch(() => {});
 
     return () => {

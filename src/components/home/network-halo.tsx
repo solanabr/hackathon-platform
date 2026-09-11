@@ -1,9 +1,9 @@
 import { Plate } from "./plate";
 import { PLATE_SRC } from "./plates";
 
-/** A esfera de pontos atrás da moeda. Setecentos círculos como arquivo em vez
- *  de setecentos nós no DOM — duas vezes, porque o palco existe em duas
- *  larguras. A chapa é quadrada, então a caixa também é. */
+/** The dot sphere behind the coin. Seven hundred circles as a file instead of
+ *  seven hundred DOM nodes — twice, because the stage exists at two widths.
+ *  The plate is square, so the box is too. */
 export function NetworkHalo({ className = "" }: { className?: string }) {
   return (
     <Plate

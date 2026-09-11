@@ -1,15 +1,15 @@
 /**
- * A camada sonora da LP — papel, carimbo e picote.
+ * The LP's sound layer — paper, stamp and perforation.
  *
- * Os sons são SINTETIZADOS, não arquivos. Três razões, nessa ordem: (1) o que
- * a marca faz é percussão de papel, e percussão de papel é transiente de
- * ruído com envelope curto — exatamente o que o Web Audio faz bem e o que
- * amostra de banco faz soar genérico; (2) custo de rede zero, e a LP já é
- * julgada por performance; (3) o timbre fica amarrado aos mesmos tokens de
- * tempo do resto, então som e movimento envelhecem juntos.
+ * The sounds are SYNTHESIZED, not files. Three reasons, in this order: (1)
+ * what the brand does is paper percussion, and paper percussion is a noise
+ * transient with a short envelope — exactly what Web Audio does well and what
+ * a stock sample makes sound generic; (2) zero network cost, and the LP is
+ * already judged on performance; (3) the timbre stays tied to the same timing
+ * tokens as everything else, so sound and motion age together.
  *
- * O contexto só nasce num gesto do usuário — o toggle. Nada aqui toca sem
- * alguém ter ligado antes, nesta sessão, com a mão.
+ * The context is only born on a user gesture — the toggle. Nothing here plays
+ * unless someone turned it on first, in this session, by hand.
  */
 
 type Voice = "carimbo" | "papel" | "picote";
@@ -18,7 +18,7 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 
-/** Um segundo de ruído branco, reusado por todas as vozes. */
+/** One second of white noise, reused by every voice. */
 function noiseBuffer(ac: AudioContext) {
   if (noise) return noise;
   const buf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
@@ -29,8 +29,8 @@ function noiseBuffer(ac: AudioContext) {
 }
 
 /**
- * Cria (ou retoma) o contexto. Só deve ser chamado de dentro de um handler de
- * gesto, senão o navegador nasce suspenso e o primeiro som sai mudo.
+ * Creates (or resumes) the context. Must only be called from inside a gesture
+ * handler, or the browser creates it suspended and the first sound is silent.
  */
 export function armAudio() {
   if (typeof window === "undefined") return null;
@@ -39,8 +39,8 @@ export function armAudio() {
     if (!AC) return null;
     ctx = new AC();
     master = ctx.createGain();
-    // Baixo de propósito: som de interface que compete com a trilha mental de
-    // quem está lendo vira irritação, não acabamento.
+    // Deliberately low: interface sound that competes with the reader's inner
+    // soundtrack becomes irritation, not finish.
     master.gain.value = 0.22;
     master.connect(ctx.destination);
   }
@@ -95,9 +95,9 @@ function burst(
 }
 
 /**
- * O carimbo. Duas camadas, como o gesto real: o estalo do borracha no papel
- * (ruído grave e curto) e o baque da mão na mesa embaixo (seno caindo de 92
- * para 54 Hz). Uma camada só soa a clique de mouse.
+ * The stamp. Two layers, like the real gesture: the snap of rubber on paper
+ * (low, short noise) and the thud of the hand on the desk beneath (a sine
+ * falling from 92 to 54 Hz). A single layer sounds like a mouse click.
  */
 function carimbo(ac: AudioContext, out: GainNode) {
   burst(ac, out, { type: "lowpass", freq: 1400, peak: 0.5, attack: 0.002, decay: 0.055 });
@@ -117,9 +117,9 @@ function carimbo(ac: AudioContext, out: GainNode) {
 }
 
 /**
- * O rasgo. Um rasgo não é um chiado contínuo: é uma sequência rápida de
- * micro-estalos enquanto a fibra cede. Por isso o envelope é serrilhado à mão
- * em vez de ser uma queda lisa — a queda lisa soa a sopro.
+ * The tear. A tear is not a continuous hiss: it is a rapid sequence of
+ * micro-snaps as the fiber gives way. That is why the envelope is jagged by
+ * hand instead of a smooth decay — a smooth decay sounds like a breath.
  */
 function papel(ac: AudioContext, out: GainNode) {
   const t = ac.currentTime;
@@ -151,7 +151,7 @@ function papel(ac: AudioContext, out: GainNode) {
   src.stop(t + 0.26);
 }
 
-/** O picote. Um furo só: agudo, seco, 30ms. */
+/** The perforation. A single hole: high, dry, 30ms. */
 function picote(ac: AudioContext, out: GainNode) {
   burst(ac, out, { type: "highpass", freq: 2800, peak: 0.34, attack: 0.001, decay: 0.03 });
 }
@@ -163,9 +163,9 @@ const VOICES: Record<Voice, (ac: AudioContext, out: GainNode) => void> = {
 };
 
 /**
- * Toca uma voz. Silencioso e barato quando o áudio nunca foi armado — é essa
- * checagem que garante que nenhum beat da página consegue emitir som sem a
- * pessoa ter ligado o toggle.
+ * Plays a voice. Silent and cheap when audio was never armed — this check is
+ * what guarantees no beat on the page can make a sound without the person
+ * having turned the toggle on.
  */
 export function play(voice: Voice) {
   if (!ctx || !master || ctx.state !== "running") return;

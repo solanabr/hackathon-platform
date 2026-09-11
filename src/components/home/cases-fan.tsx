@@ -12,14 +12,14 @@ export type CaseCard = {
   tagline: string;
   body?: ReactNode;
   tone?: "light" | "dark";
-  /** Carta-ilustração: só este sinal no meio do quadro, sem uma linha de
-   * texto. A leitura fica com o leitor de tela, pelo rótulo da carta. */
+  /** Illustration card: only this glyph in the middle of the frame, not a
+   * line of text. Reading is left to the screen reader, via the card label. */
   glyph?: string;
 };
 
-/* Assinatura da carta: selo, nome e uma linha de contexto. Mora fora da
-   CaseTile porque a carta-ilustração fecha do mesmo jeito — só o miolo dela é
-   que muda. */
+/* Card signature: badge, name and one line of context. Lives outside CaseTile
+   because the illustration card closes the same way — only its middle
+   changes. */
 function TileFooter({ item }: { item: CaseCard }) {
   const dark = item.tone === "dark";
   return (
@@ -64,8 +64,8 @@ function TileFooter({ item }: { item: CaseCard }) {
   );
 }
 
-/* Carta-ilustração: o meio-tom ocupa o quadro inteiro no lugar do número e do
-   parágrafo, e só a assinatura fica embaixo. */
+/* Illustration card: the halftone fills the whole frame in place of the number
+   and the paragraph, and only the signature stays below. */
 function GlyphTile({ item }: { item: CaseCard }) {
   return (
     <div className="card-cut card-cut-dark flex h-full min-h-[17rem] flex-col p-6 sm:p-8 xl:p-9">
@@ -126,12 +126,12 @@ function CaseTile({ item }: { item: CaseCard }) {
   );
 }
 
-/* Uma faixa só para as três cartas, em escada: cada uma desce um degrau
-   igual da anterior e as das pontas passam dos trilhos, então a fila ocupa o
-   palco inteiro. O passo é constante de propósito — o que solta a composição
-   é a inclinação e a sangria, não um desalinho aleatório em cada carta. A
-   preta fecha a fila mais estreita: é a única de fundo cheio e ficaria pesada
-   na mesma largura das outras duas. */
+/* One band for the three cards, stepped: each drops one equal step from the
+   previous and the end ones run past the rails, so the row fills the whole
+   stage. The step is constant on purpose — what loosens the composition is
+   the tilt and the bleed, not a random misalignment on each card. The black
+   one closes the row narrowest: it is the only solid-fill one and would feel
+   heavy at the same width as the other two. */
 const SLOT = [
   "z-30 lg:col-start-1 lg:col-span-7 lg:ml-[calc(-1*clamp(1rem,(100vw-72rem)/2+1rem,2.5rem))] lg:max-w-none xl:ml-[calc(-1*clamp(2rem,(100vw-80rem)/2+2rem,4rem))]",
   "z-20 max-lg:-mt-4 max-lg:self-end lg:col-start-8 lg:col-span-8 lg:mt-12 lg:-ml-4 lg:max-w-none xl:-ml-6",
@@ -150,18 +150,18 @@ export function CasesFan({
 }) {
   return (
     <div className="relative">
-      {/* Manchete e texto de apoio dividem a primeira linha: o título ocupa a
-          coluna larga e o parágrafo fecha a direita, descido até a segunda
-          linha da manchete — encostado no topo dela os dois blocos empatam e
-          nenhum manda. A faixa de cartas herda o palco inteiro embaixo. */}
+      {/* Headline and supporting text share the first row: the title takes the
+          wide column and the paragraph closes on the right, dropped to the
+          headline's second line — flush with its top the two blocks tie and
+          neither leads. The card band inherits the whole stage below. */}
       <div className="lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-10">
         <div className="lg:col-span-8">{title}</div>
         <div className="mt-8 lg:col-span-4 lg:col-start-9 lg:mt-24">{intro}</div>
       </div>
 
-      {/* A fila sobe pelo lado esquerdo: quem define a altura da linha de cima é
-          o parágrafo, à direita, e sem esse puxão a primeira carta ficaria
-          pendurada longe da manchete. O degrau entre as três continua igual. */}
+      {/* The row climbs on the left side: the paragraph on the right sets the
+          height of the top line, and without this pull the first card would
+          hang far from the headline. The step between the three stays the same. */}
       <div className="relative mt-12 flex flex-col items-start sm:mt-14 lg:-mt-4 lg:grid lg:grid-cols-20 lg:items-start lg:gap-0">
         {cases.map((item, i) => (
           <Reveal
@@ -170,11 +170,11 @@ export function CasesFan({
             tone="papel"
             className={`relative w-full max-w-lg lg:w-auto ${SLOT[i] ?? ""}`}
           >
-            {/* A escada abre com a rolagem: cada carta anda um degrau a mais
-                que a anterior, então o intervalo entre as três cresce
-                enquanto a faixa atravessa a tela e fecha de novo na saída. O
-                índice é a única coisa escrita aqui — a distância sai do token
-                de deriva, como todo stagger desta base. */}
+            {/* The staircase opens with scroll: each card travels one step more
+                than the previous, so the gap between the three grows while the
+                band crosses the screen and closes again on exit. The index is
+                the only thing written here — the distance comes from the drift
+                token, like every stagger on this base. */}
             <div
               className="cena-carta h-full"
               style={{ "--carta-i": i + 1 } as CSSProperties}

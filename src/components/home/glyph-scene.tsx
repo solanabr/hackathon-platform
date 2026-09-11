@@ -33,9 +33,9 @@ void main() {
 }
 `;
 
-/* Onde o ornamento está pintado e não esculpido — filigrana, canelura, voluta —
-   a luz sozinha devolve uma peça lisa. A albedo entra como tinta: onde a
-   pintura escurece, o meio-tom engrossa o traço. */
+/* Where the ornament is painted rather than carved — filigree, fluting,
+   volutes — light alone returns a flat piece. The albedo comes in as ink:
+   where the paint darkens, the halftone thickens the stroke. */
 const PAINTED_FRAG = /* glsl */ `
 precision highp float;
 varying vec3 vNormal;
@@ -46,8 +46,8 @@ uniform float uAlbedoMix;
 void main() {
   float lambert = max(dot(normalize(vNormal), uLight), 0.0);
   float albedo = dot(texture2D(tAlbedo, vUv).rgb, vec3(0.299, 0.587, 0.114));
-  // Normalizado no cinza médio: a textura entra como desvio em torno de 1.0,
-  // senão ela só rebaixa a peça inteira em vez de desenhar nela.
+  // Normalised at mid grey: the texture enters as a deviation around 1.0,
+  // otherwise it only darkens the whole piece instead of drawing on it.
   float paint = mix(1.0, albedo / 0.5, uAlbedoMix);
   gl_FragColor = vec4(vec3(clamp(lambert * paint, 0.0, 1.0)), 1.0);
 }
@@ -64,43 +64,43 @@ function readRgb(value: string, fallback: [number, number, number]) {
 }
 
 export type GlyphSceneProps = {
-  /** Peça baixada. Exclusivo com `build`. */
+  /** Downloaded piece. Mutually exclusive with `build`. */
   modelUrl?: string;
-  /** Peça construída em código — a arcada do Colosseum é gerada, não baixada.
-   * Tem que ser uma referência estável: um literal novo remonta a cena. */
+  /** Piece built in code — the Colosseum arcade is generated, not downloaded.
+   * Must be a stable reference: a fresh literal remounts the scene. */
   build?: () => THREE.BufferGeometry;
-  /** Ponto que a câmera olha, em unidades do modelo. */
+  /** Point the camera looks at, in model units. */
   target: [number, number, number];
-  /** Distância da câmera ao alvo. */
+  /** Camera distance to the target. */
   radius: number;
-  /** Altura da órbita, em radianos. */
+  /** Orbit height, in radians. */
   elevation: number;
   fovRadians: number;
   azimuth: number;
-  /** Quanto o azimute anda com o ponteiro, em radianos. */
+  /** How far the azimuth follows the pointer, in radians. */
   azimuthSwing?: number;
-  /** Giro contínuo, em radianos por segundo. Zero deixa a peça parada. */
+  /** Continuous spin, in radians per second. Zero keeps the piece still. */
   spin?: number;
-  /** Vaivém em torno do azimute: amplitude em radianos e período em segundos.
-   * Mostra que a peça é volume sem nunca levá-la a um ângulo em que ela deixa
-   * de se reconhecer — o que um giro completo faz. */
+  /** Sway around the azimuth: amplitude in radians and period in seconds.
+   * Shows the piece is a volume without ever taking it to an angle where it
+   * stops being recognisable — which a full turn does. */
   swayRadians?: number;
   swaySeconds?: number;
-  /** Câmera presa ao progresso da peça atravessando a janela: amplitude em
-   * radianos para cada lado do repouso, e o eixo em que ela anda. O relógio
-   * aqui é o scroll, não o tempo — parada a página, parada a câmera. */
+  /** Camera bound to the piece's progress through the viewport: amplitude in
+   * radians to each side of rest, and the axis it moves on. The clock here
+   * is scroll, not time — page still, camera still. */
   scrollSwing?: number;
-  /** `azimuth` roda em volta da peça; `elevation` sobe a linha do horizonte. */
+  /** `azimuth` orbits around the piece; `elevation` raises the horizon line. */
   scrollAxis?: "azimuth" | "elevation";
-  /** Lado da célula do meio-tom, em px de CSS. */
+  /** Halftone cell side, in CSS px. */
   cell?: number;
   light?: [number, number, number];
-  /** Luz presa à câmera, e não ao mundo: numa peça que gira, luz fixa no mundo
-   * atravessa o ângulo frontal e chapa o volume por alguns segundos. */
+  /** Light bound to the camera, not the world: on a spinning piece, world-fixed
+   * light crosses the frontal angle and flattens the volume for a few seconds. */
   lightTracksCamera?: boolean;
-  /** Piso de tinta, ganho do recesso e ganho da luz — a assinatura da peça. */
-  /** Quanto da albedo do modelo vira tinta, de 0 a 1. Zero mantém a peça só
-   * com a luz — é o que o Colosseum usa, onde o relevo é geometria. */
+  /** Ink floor, recess gain and light gain — the piece's signature. */
+  /** How much of the model's albedo becomes ink, 0 to 1. Zero keeps the piece
+   * lit only — what the Colosseum uses, where the relief is geometry. */
   albedoMix?: number;
   toneFloor?: number;
   recessGain?: number;
@@ -108,24 +108,24 @@ export type GlyphSceneProps = {
   recessDeadZone?: number;
   recessDepth?: number;
   minRadiusCells?: number;
-  /** Se a passada pinta o próprio papel. Falso deixa a tela transparente e só
-   * o traço sai — é o que permite pôr desenho atrás da peça. */
+  /** Whether the pass paints its own paper. False leaves the canvas transparent
+   * and only the stroke comes out — what allows a drawing behind the piece. */
   paper?: boolean;
-  /** Dissolve medido do topo do quadro: 0..1 do começo ao fim da rampa. */
+  /** Dissolve measured from the top of the frame: 0..1 from ramp start to end. */
   fadeStart?: number;
   fadeEnd?: number;
-  /* Deixas para quem chama trocar o desenho 2D pela cena: `onReady` no primeiro
-     quadro efetivamente pintado, `onLost` quando o contexto cai. Sem elas o
-     poster teria de sumir na montagem, antes de existir o que o substitui. */
+  /* Cues for the caller to swap the 2D drawing for the scene: `onReady` on the
+     first frame actually painted, `onLost` when the context drops. Without them
+     the poster would have to vanish on mount, before its replacement exists. */
   onReady?: () => void;
   onLost?: () => void;
   className?: string;
 };
 
-/* Um só pipeline de meio-tom para qualquer peça 3D da LP: render de luz em
-   alvo próprio, redução por célula, mínimo separável da vizinhança e o traço
-   final na mesma grade do halftone 2D. O que muda de uma peça para outra é
-   enquadramento e os três ganhos de tom — não o caminho de render. */
+/* One halftone pipeline for every 3D piece on the LP: light render into its
+   own target, per-cell reduction, separable neighbourhood minimum and the
+   final stroke on the same grid as the 2D halftone. What changes from piece
+   to piece is framing and the three tone gains — not the render path. */
 export default function GlyphScene({
   modelUrl,
   build,
@@ -158,15 +158,15 @@ export default function GlyphScene({
   className = "h-full w-full bg-surface text-ink",
 }: GlyphSceneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
-  /* Por referência, não por dependência: um callback novo a cada render do pai
-     derrubaria e reconstruiria a cena inteira. */
+  /* By ref, not by dependency: a new callback on every parent render would
+     tear down and rebuild the whole scene. */
   const onReadyRef = useRef(onReady);
   const onLostRef = useRef(onLost);
 
-  /* A lente também entra por referência. Mudar enquadramento é mover a câmera,
-     não reconstruir a peça: com estes cinco na lista de dependências, um
-     grau de giro derrubava a cena, regerava os 80 vãos e realocava os render
-     targets. O laço lê daqui a cada quadro e os valores saem das deps. */
+  /* The lens also comes in by ref. Changing framing means moving the camera,
+     not rebuilding the piece: with these five in the deps, one degree of
+     rotation tore down the scene, regenerated the 80 bays and reallocated the
+     render targets. The loop reads from here each frame; values stay out of deps. */
   const lensRef = useRef({ target, radius, elevation, fovRadians, azimuth });
 
   useEffect(() => {
@@ -184,8 +184,8 @@ export default function GlyphScene({
     host.appendChild(canvas);
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: !paper });
-    // Linear, não sRGB: o shader já quantiza a luminância, e qualquer gama
-    // aplicada antes dele torce a rampa de tom contra o meio-tom 2D.
+    // Linear, not sRGB: the shader already quantises luminance, and any gamma
+    // applied before it skews the tone ramp against the 2D halftone.
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;
 
@@ -204,9 +204,9 @@ export default function GlyphScene({
       fragmentShader: SHADE_FRAG,
       uniforms: { uLight: lightUniform },
     });
-    // Com albedo cada malha precisa do seu próprio mapa, então o material sai
-    // de override e passa a ser trocado peça a peça — dividindo o mesmo objeto
-    // de uniform da luz, que muda a cada quadro.
+    // With albedo each mesh needs its own map, so the material leaves the
+    // override and is swapped mesh by mesh — sharing the same light uniform
+    // object, which changes every frame.
     const paintedMaterials: THREE.ShaderMaterial[] = [];
     if (!albedoMix) scene.overrideMaterial = shadeMaterial;
 
@@ -296,9 +296,9 @@ export default function GlyphScene({
     const pointer = { target: 0, current: 0 };
     const smoothing = 1 - Math.exp(-1 / (readMotionSeconds("--dur-toque", 0.62) * 60));
 
-    /* Movimento ligado ao scroll é deslocamento por definição: sem vetor não
-       sobra nada dele. O gate de elegibilidade já barra 3D em movimento
-       reduzido; isto é o cinto além do suspensório. */
+    /* Scroll-bound motion is displacement by definition: without the vector
+       nothing of it remains. The eligibility gate already blocks 3D under
+       reduced motion; this is belt on top of braces. */
     const scrollBound = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? 0
       : scrollSwing;
@@ -316,12 +316,12 @@ export default function GlyphScene({
     let cellHeight = 0;
     let cellPx = cell;
 
-    /* Onde o host está na página, medido quando o layout muda — não a cada
-       quadro. Um `getBoundingClientRect` dentro do laço, depois de outro
-       componente ter escrito estilo no mesmo quadro, força layout síncrono
-       toda vez; `scrollY` não custa nada. A deriva de rolagem da camada-mãe
-       desloca o host uns 3% do que esta conta diz, e a conta alimenta um
-       giro de 1° — invisível. */
+    /* Where the host sits on the page, measured when layout changes — not
+       every frame. A `getBoundingClientRect` inside the loop, after another
+       component wrote style in the same frame, forces synchronous layout
+       every time; `scrollY` is free. The parent layer's scroll drift shifts
+       the host about 3% off what this says, and the number feeds a 1°
+       rotation — invisible. */
     let hostTop = 0;
     let hostHeight = 0;
     function measureHost(rect: DOMRect) {
@@ -329,10 +329,10 @@ export default function GlyphScene({
       hostHeight = rect.height;
     }
 
-    /* A última pose pintada. A cena só pinta de novo quando a câmera andou
-       pelo menos uma fração de célula: o vaivém ambiente move meio pixel a
-       cada dez quadros, e repintar cinco passes de GPU para um quadro igual
-       ao anterior era a maior parte do custo da dobra em repouso. */
+    /* The last painted pose. The scene only repaints once the camera has
+       moved at least a fraction of a cell: the ambient sway moves half a
+       pixel every ten frames, and repainting five GPU passes for a frame
+       identical to the last was most of the fold's cost at rest. */
     let dirty = true;
     let lastHeading = 0;
     let lastRise = 0;
@@ -389,8 +389,8 @@ export default function GlyphScene({
       raf = requestAnimationFrame(frame);
       if (!model) return;
 
-      // Segundos reais, não um passo por quadro: num monitor de 120Hz a peça
-      // giraria no dobro da velocidade.
+      // Real seconds, not one step per frame: on a 120Hz monitor the piece
+      // would spin twice as fast.
       const delta = last ? Math.min((now - last) / 1000, 1 / 15) : 0;
       last = now;
       spun += spin * delta;
@@ -400,11 +400,11 @@ export default function GlyphScene({
 
       pointer.current += (pointer.target - pointer.current) * smoothing;
 
-      /* Progresso da peça atravessando a janela, lido do próprio host: -1
-         quando a borda de cima entra pelo rodapé, +1 quando a de baixo sai
-         pelo topo. Um rect por quadro, dentro do laço que já existe — nada de
-         um segundo laço nem de um ouvinte de scroll para isto. É posição, não
-         acúmulo: a cena pode parar e voltar sem saltar. */
+      /* The piece's progress through the viewport, read from the host itself:
+         -1 when the top edge enters at the bottom, +1 when the bottom edge
+         leaves at the top. One rect per frame, inside the loop that already
+         exists — no second loop, no scroll listener. Position, not
+         accumulation: the scene can stop and resume without jumping. */
       let travel = 0;
       if (scrollBound) {
         const top = hostTop - window.scrollY;
@@ -454,8 +454,8 @@ export default function GlyphScene({
       camera.lookAt(focus);
 
       if (lightTracksCamera) {
-        // Chave alta à esquerda de quem olha: a mesma posição de luz de um
-        // estúdio de produto, mantida enquanto a peça roda.
+        // High key to the viewer's left: the same light position as a product
+        // studio, held while the piece turns.
         toCamera.subVectors(camera.position, focus).normalize();
         sideways.crossVectors(WORLD_UP, toCamera).normalize();
         lightUniform.value
@@ -488,8 +488,8 @@ export default function GlyphScene({
 
       quad.material = glyphMaterial;
       renderer.setRenderTarget(null);
-      // Sem papel, o quadro sai em alfa: o limpa tem que ir a zero, senão o
-      // preto do alvo de cena volta como fundo da tela.
+      // Without paper the frame comes out in alpha: the clear has to go to
+      // zero, or the scene target's black comes back as the canvas ground.
       renderer.setClearColor(0x000000, paper ? 1 : 0);
       quad.render(renderer);
 
@@ -499,9 +499,9 @@ export default function GlyphScene({
       }
     }
 
-    /* A cena só queima GPU enquanto está no quadro e a aba está à frente. Parar
-       é só suspender o laço: nada aqui encosta nos disposes, que continuam
-       exclusivos do cleanup. */
+    /* The scene only burns GPU while in view and the tab is in front. Stopping
+       just suspends the loop: nothing here touches the disposes, which stay
+       exclusive to the cleanup. */
     function start() {
       if (running || disposed || !model || !onScreen || document.hidden) return;
       running = true;
@@ -531,9 +531,9 @@ export default function GlyphScene({
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
 
-    /* O ResizeObserver não vê a troca de monitor: arrastando a janela de um
-       Retina para um 1x o retângulo em CSS continua igual e só o
-       devicePixelRatio muda — o traço serrilharia até o próximo resize. */
+    /* The ResizeObserver does not see a monitor switch: dragging the window
+       from a Retina to a 1x display keeps the CSS rect the same and only the
+       devicePixelRatio changes — the stroke would alias until the next resize. */
     let dprQuery: MediaQueryList | null = null;
     const onDpr = () => {
       resize();
@@ -546,9 +546,9 @@ export default function GlyphScene({
     }
     watchDpr();
 
-    /* Contexto perdido devolve o desenho 2D em vez de deixar buraco. Não há
-       tentativa de restaurar: cada alvo, material e shader teria de ser
-       reconstruído, e o poster já é a peça em movimento reduzido. */
+    /* A lost context brings back the 2D drawing instead of leaving a hole. No
+       restore attempt: every target, material and shader would have to be
+       rebuilt, and the poster already is the piece under reduced motion. */
     const onContextLost = (event: Event) => {
       if (disposed) return;
       event.preventDefault();
@@ -591,8 +591,8 @@ export default function GlyphScene({
           loaded.traverse((node) => {
             if (!(node instanceof THREE.Mesh)) return;
             const map = (node.material as THREE.MeshStandardMaterial).map ?? null;
-            // Sem conversão de espaço de cor: o shader quer o valor tal como
-            // pintado, e é o meio-tom que decide o que é escuro.
+            // No colour space conversion: the shader wants the value as
+            // painted, and the halftone decides what counts as dark.
             if (map) map.colorSpace = THREE.NoColorSpace;
             const painted = new THREE.ShaderMaterial({
               vertexShader: SHADE_VERT,
@@ -610,7 +610,7 @@ export default function GlyphScene({
         mount(loaded);
       })
       .catch(() => {
-        /* O desenho 2D continua atrás: falha de carga degrada para ele. */
+        /* The 2D drawing stays behind: a load failure degrades to it. */
       });
     }
 
@@ -642,10 +642,10 @@ export default function GlyphScene({
       renderer.dispose();
       canvas.remove();
     };
-    // Arrays entram por valor: um literal novo a cada render do pai não pode
-    // derrubar e reconstruir a cena inteira.
-    // `target`, `radius`, `elevation`, `fovRadians` e `azimuth` ficam de fora
-    // de propósito: vivem em lensRef e são lidos por quadro.
+    // Arrays enter by value: a fresh literal on every parent render must not
+    // tear down and rebuild the whole scene.
+    // `target`, `radius`, `elevation`, `fovRadians` and `azimuth` are left out
+    // on purpose: they live in lensRef and are read per frame.
   }, [
     modelUrl,
     build,

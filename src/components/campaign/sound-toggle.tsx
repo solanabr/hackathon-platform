@@ -6,14 +6,14 @@ import { armAudio, play, releaseAudio } from "@/lib/sfx";
 
 const KEY = "stbr-sfx";
 
-/* A preferência mora fora do React, num store minúsculo.
+/* The preference lives outside React, in a tiny store.
  *
- * Lê-la num efeito e chamar setState em seguida custa um render em cascata —
- * é o que o `react-hooks/set-state-in-effect` reclama, com razão. E iniciar o
- * estado direto do localStorage quebraria a hidratação, porque o servidor não
- * tem como saber a preferência. useSyncExternalStore resolve os dois: o
- * snapshot do servidor é sempre "desligado" e o cliente assume em seguida,
- * sem render extra e sem descasamento. */
+ * Reading it in an effect and calling setState right after costs a cascading
+ * render — which is what `react-hooks/set-state-in-effect` complains about,
+ * rightly. And seeding state straight from localStorage would break hydration,
+ * because the server has no way to know the preference. useSyncExternalStore
+ * solves both: the server snapshot is always "off" and the client takes over
+ * right after, with no extra render and no mismatch. */
 let listeners: Array<() => void> = [];
 let cached: boolean | null = null;
 
@@ -33,7 +33,7 @@ function write(next: boolean) {
   try {
     localStorage.setItem(KEY, next ? "1" : "0");
   } catch {
-    /* modo privado: a preferência não sobrevive, o som funciona igual */
+    /* private mode: the preference does not survive, sound works the same */
   }
   listeners.forEach((l) => l());
 }
@@ -45,15 +45,15 @@ function subscribe(l: () => void) {
   };
 }
 
-/** Se o som está ligado nesta sessão. */
+/** Whether sound is on in this session. */
 export function useSoundOn() {
   return useSyncExternalStore(subscribe, read, () => false);
 }
 
 /**
- * Toca um beat. Não faz nada com o som desligado, e nada mesmo enquanto
- * ninguém tiver feito um gesto: `play` sai cedo se o contexto não existir ou
- * estiver suspenso.
+ * Plays a beat. Does nothing with sound off, and nothing at all until someone
+ * has made a gesture: `play` bails early if the context does not exist or is
+ * suspended.
  */
 export function useSfx() {
   const on = useSoundOn();
@@ -67,15 +67,15 @@ export function useSfx() {
 }
 
 /**
- * O controle. Chip de papel no canto oposto ao canhoto, sempre presente e
- * sempre no mesmo lugar — som que aparece sem aviso e não tem como desligar é
- * o motivo de a maioria dos sites com áudio ser insuportável.
+ * The control. A paper chip in the corner opposite the stub, always present
+ * and always in the same place — sound that starts unannounced and cannot be
+ * turned off is why most sites with audio are unbearable.
  *
- * Também é aqui que mora a arma tardia: preferência ligada de uma visita
- * anterior deixava o botão aceso e a página muda, porque o contexto de áudio
- * só nascia no clique do próprio toggle. Agora ele nasce no primeiro gesto
- * que a pessoa fizer, seja qual for — que é o que a política de autoplay
- * exige, e nada além disso.
+ * The late arming also lives here: a preference left on from an earlier visit
+ * kept the button lit and the page silent, because the audio context was only
+ * born on a click of the toggle itself. Now it is born on the first gesture
+ * the person makes, whatever it is — which is what the autoplay policy
+ * requires, and nothing beyond that.
  */
 export function SoundToggle() {
   const on = useSoundOn();
@@ -100,8 +100,8 @@ export function SoundToggle() {
     const next = !read();
     write(next);
     if (next) {
-      // Armar dentro do handler do clique é obrigatório: fora dele o contexto
-      // nasce suspenso e o primeiro beat sai mudo.
+      // Arming inside the click handler is mandatory: outside it the context
+      // is born suspended and the first beat comes out silent.
       armed.current = true;
       armAudio();
       play("picote");

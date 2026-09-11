@@ -6,13 +6,13 @@ import {
   plateSvg,
 } from "@/lib/halftone-plate";
 
-/* As chapas grandes da LP, geradas uma vez no servidor e servidas como
-   arquivo por `app/halftone/[plate]/route.ts`. Este módulo é só servidor:
-   quem precisa da chapa no cliente recebe a URL, nunca o desenho. */
+/* The LP's large plates, generated once on the server and served as files by
+   `app/halftone/[plate]/route.ts`. This module is server-only: whoever needs
+   a plate on the client gets the URL, never the drawing. */
 
-/* --- O COLISEU DE FUNDO -------------------------------------------------
- * O anfiteatro subindo da base do hero — a peça 2D que fica atrás da cena
- * 3D e é a peça inteira onde a cena não roda. */
+/* --- THE BACKGROUND COLOSSEUM -------------------------------------------
+ * The amphitheatre rising from the hero's base — the 2D piece behind the 3D
+ * scene, and the whole piece wherever the scene does not run. */
 function colosseum() {
   const COLS = 200;
   const ROWS = 78;
@@ -27,10 +27,10 @@ function colosseum() {
   const CORNICE = 238;
   const EDGE_DROP = 165;
 
-  // Faixas de cada pavimento como fração da altura do próprio vão, para que
-  // os andares encurtem junto com a curva em vez de cisalhar. Os intervalos
-  // entre elas são as cornijas: sem essa amarração horizontal a fachada vira
-  // cerca.
+  // Each storey's band as a fraction of the bay's own height, so the floors
+  // shorten along with the curve instead of shearing. The gaps between them
+  // are the cornices: without that horizontal tie the facade turns into a
+  // fence.
   const BANDS = {
     attic: [0, 0.155],
     tier3: [0.2, 0.415],
@@ -38,8 +38,8 @@ function colosseum() {
     tier1: [0.72, 1],
   } as const;
 
-  // Onde a parede externa caiu: primeiro o ático, depois a terceira arcada. É
-  // esse degrau que separa o Coliseu de uma arcada qualquer.
+  // Where the outer wall fell: first the attic, then the third arcade. That
+  // step is what separates the Colosseum from any old arcade.
   const ATTIC_ENDS = 11;
   const TIER3_ENDS = 15;
 
@@ -93,8 +93,8 @@ function colosseum() {
 
   type Opening = { w: number; top: number; bottom: number; square: boolean };
 
-  // Janelas do ático são quadradas; as arcadas são em arco. Guardar as duas no
-  // mesmo formato deixa o teste de dentro/fora com um caminho só.
+  // Attic windows are square; the arcades are arched. Keeping both in the
+  // same shape leaves the inside/outside test with a single path.
   function openingsOf(bay: Bay, index: number): Opening[] {
     const list: Opening[] = [];
     if (bay.level === 0 && index % 2 === 0) {
@@ -142,11 +142,11 @@ function colosseum() {
     return tone;
   }
 
-  /* O mapa de tons não vem de foto: a fachada é desenhada e só depois passa
-     pelo meio-tom. Rastrear fotografia neste tamanho vira ruído — sem figura
-     contra o vazio o traço não tem o que descrever. O topo já sai esmaecido
-     aqui, então a dissolução acontece no comprimento do risco, não numa
-     máscara por cima. */
+  /* The tone map does not come from a photo: the facade is drawn and only
+     then goes through the halftone. Tracing photography at this size turns to
+     noise — with no figure against the void the stroke has nothing to
+     describe. The top already comes out faded here, so the dissolve happens
+     in the dash length, not in a mask on top. */
   const FADE_START = 238;
   const FADE_END = 430;
   const tones = Array.from({ length: COLS * ROWS }, (_, i) => {
@@ -168,17 +168,17 @@ function colosseum() {
   });
 }
 
-/* --- O FECHAMENTO --------------------------------------------------------
- * Textura de meio-tom no mesmo traço das ilustrações, para os painéis
- * escuros: o calendário e a última chamada. */
+/* --- THE CLOSING ---------------------------------------------------------
+ * Halftone texture in the same stroke as the illustrations, for the dark
+ * panels: the calendar and the last call. */
 function fechamento() {
   const COLS = 96;
   const ROWS = 56;
   const CELL = 12.5;
 
-  /* Campo contínuo em vez de mapa desenhado: a textura do fechamento não é um
-     objeto, é fundo. Somando senoides em frequências diferentes as manchas
-     saem orgânicas e sempre iguais entre servidor e cliente. */
+  /* Continuous field instead of a drawn map: the closing's texture is not an
+     object, it is ground. Summing sines at different frequencies makes the
+     blots organic and always identical between server and client. */
   function field(x: number, y: number) {
     return (
       0.36 * Math.sin(x * 9.3 + y * 4.1) +
@@ -189,8 +189,8 @@ function fechamento() {
     );
   }
 
-  /* O traço fica preso na faixa curta: com o tom cheio os riscos de células
-     vizinhas se encostam e a textura vira listra. Só os picos ganham peso. */
+  /* The stroke stays in the short band: at full tone the dashes of adjacent
+     cells touch and the texture turns into stripes. Only the peaks gain weight. */
   const tones = Array.from({ length: COLS * ROWS }, (_, i) => {
     const x = (i % COLS) / COLS;
     const y = Math.floor(i / COLS) / ROWS;
@@ -210,10 +210,10 @@ function fechamento() {
   });
 }
 
-/* --- A REDE --------------------------------------------------------------
- * Esfera de Fibonacci projetada no plano: uniforme na superfície é denso na
- * borda e ralo no meio, que é o que faz ler como esfera e não como disco. A
- * profundidade governa o raio e a opacidade de cada ponto. */
+/* --- THE NETWORK ---------------------------------------------------------
+ * Fibonacci sphere projected onto the plane: uniform on the surface means
+ * dense at the edge and sparse in the middle, which is what reads as a sphere
+ * rather than a disc. Depth governs each dot's radius and opacity. */
 function rede() {
   const POINTS = 720;
   const RADIUS = 250;
@@ -252,7 +252,7 @@ const FILES: Record<PlateKey, string> = {
   rede: plateFilename("rede", SVG.rede),
 };
 
-/** A URL de cada chapa, com o hash do conteúdo no nome. */
+/** Each plate's URL, with the content hash in the name. */
 export const PLATE_SRC: Record<PlateKey, string> = {
   colosseum: `${PLATE_ROUTE}/${FILES.colosseum}`,
   fechamento: `${PLATE_ROUTE}/${FILES.fechamento}`,
@@ -261,7 +261,7 @@ export const PLATE_SRC: Record<PlateKey, string> = {
 
 export const PLATE_FILES: string[] = Object.values(FILES);
 
-/** O SVG de um arquivo pedido, ou null se o nome não é de nenhuma chapa. */
+/** The SVG for a requested file, or null if the name matches no plate. */
 export function plateByFilename(filename: string): string | null {
   const key = plateKeyFromFilename(filename);
   if (!key || !(key in FILES)) return null;

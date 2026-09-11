@@ -5,10 +5,10 @@ export const BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxy
 export const ATLAS_COLS = 8;
 export const ATLAS_CELL = 64;
 
-/* O atlas guarda um campo de distância, não a cobertura chapada do caractere.
-   Um bitmap não tem gradiente interno: o limiar só morde a borda antialiasada e
-   o glifo sai sempre com a mesma espessura. Com distância, o limiar vira peso —
-   é o que deixa o tom engordar e afinar o traço como uma fonte variável. */
+/* The atlas stores a distance field, not the character's flat coverage. A
+   bitmap has no inner gradient: the threshold only bites the antialiased edge
+   and the glyph always comes out the same thickness. With distance, threshold
+   becomes weight — tone can fatten and thin the stroke like a variable font. */
 const SDF_SPREAD = 4;
 
 function chamferDistance(seed: Uint8Array, size: number) {
@@ -69,8 +69,8 @@ export function buildGlyphAtlas(): THREE.CanvasTexture {
   const inside = new Uint8Array(ATLAS_CELL * ATLAS_CELL);
   const outside = new Uint8Array(ATLAS_CELL * ATLAS_CELL);
 
-  // Por célula, não pelo atlas inteiro: a distância não pode vazar de um
-  // caractere para o vizinho.
+  // Per cell, not over the whole atlas: distance must not leak from one
+  // character into its neighbour.
   for (let g = 0; g < BASE58.length; g++) {
     const ox = (g % ATLAS_COLS) * ATLAS_CELL;
     const oy = Math.floor(g / ATLAS_COLS) * ATLAS_CELL;
@@ -108,8 +108,8 @@ export function buildGlyphAtlas(): THREE.CanvasTexture {
   return texture;
 }
 
-/* A escolha do glifo vem da posição na sequência, nunca da densidade — é isso
-   que impede o campo de virar sopa de caractere com a média certa de tinta. */
+/* Glyph choice comes from position in the sequence, never from density — what
+   keeps the field from becoming character soup with the right average ink. */
 export function buildSignatureTexture(buffer: string): THREE.DataTexture {
   const width = Math.min(buffer.length, 4096);
   const data = new Uint8Array(width * 4);
@@ -135,9 +135,9 @@ void main() {
 }
 `;
 
-/* Passo 1 — reduz cena e profundidade para a grade de célula. Guarda a maior e
-   a menor profundidade do bloco separadamente: reduzir só ao mínimo apagaria o
-   vão dentro da célula, que é justamente o que precisa virar tinta. */
+/* Step 1 — reduce scene and depth to the cell grid. Keeps the block's largest
+   and smallest depth separately: reducing to the minimum alone would erase the
+   gap inside the cell, which is exactly what needs to become ink. */
 export const CELL_REDUCE_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
@@ -174,21 +174,21 @@ void main() {
     }
   }
   if (hit < 0.5) {
-    // Sem geometria: profundidade máxima zera e a mínima vai ao infinito para
-    // não contaminar o filtro de vizinhança.
+    // No geometry: max depth goes to zero and min depth to infinity so it
+    // does not contaminate the neighbourhood filter.
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1e9);
     return;
   }
-  // .r é a profundidade MÉDIA da célula, .a a da pedra mais à frente. A média,
-  // e não o máximo: com o máximo qualquer célula que encoste na borda de um vão
-  // salta para o fundo e o campo inteiro satura.
+  // .r is the cell's MEAN depth, .a the depth of the frontmost stone. Mean,
+  // not max: with max, any cell touching the edge of a gap jumps to the back
+  // and the whole field saturates.
   gl_FragColor = vec4(total / hit, shade / hit, 1.0, nearest);
 }
 `;
 
-/* Passos 2 e 3 — mínimo separável da profundidade da pedra na vizinhança. Rodam
-   em resolução de célula, custam nada, e são o que transforma "está atrás do
-   vizinho" em tinta. */
+/* Steps 2 and 3 — separable minimum of stone depth over the neighbourhood. They
+   run at cell resolution, cost nothing, and are what turns "sits behind its
+   neighbour" into ink. */
 export const MIN_BLUR_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
@@ -211,11 +211,11 @@ void main() {
 }
 `;
 
-/* Passo final — o campo de profundidade sai no MESMO traço de halftoneMarks():
-   risco horizontal na grade, comprimento modulado pelo tom, dois pesos, mesmo
-   piso de ruído. Testamos emitir um caractere base58 por célula e o resultado
-   foi sopa: 58 formas diferentes em 8px são ruído de alta frequência que destrói
-   o campo de tom em vez de carregá-lo. O hash entra onde se lê, não como textura. */
+/* Final step — the depth field comes out in the SAME stroke as halftoneMarks():
+   horizontal dash on the grid, length modulated by tone, two weights, same
+   noise floor. We tried emitting one base58 character per cell and got soup:
+   58 different shapes at 8px are high-frequency noise that destroys the tone
+   field instead of carrying it. The hash goes where it is read, not as texture. */
 export const HALFTONE_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
@@ -226,8 +226,8 @@ uniform vec2 uCellResolution;
 uniform float uCell;
 uniform vec3 uInk;
 uniform vec3 uSurface;
-/* 1 = a passada pinta o papel dela mesma; 0 = só o traço sai, em alfa
-   pré-multiplicado, e o que estiver atrás da tela atravessa. */
+/* 1 = the pass paints its own paper; 0 = only the stroke comes out, in
+   premultiplied alpha, and whatever is behind the canvas shows through. */
 uniform float uPaper;
 uniform float uFadeStart;
 uniform float uFadeEnd;
@@ -253,18 +253,18 @@ void main() {
   }
 
   float nearest = texture2D(tMin, cellUv).a;
-  // Escala log, não linear: em perspectiva a diferença de profundidade é
-  // multiplicativa, e entre a pedra e o vão ela varia por um fator de ~30.
+  // Log scale, not linear: in perspective the depth difference is
+  // multiplicative, and between stone and gap it varies by a factor of ~30.
   float delta = max(packed.r - nearest, 1e-6);
   float recess = clamp(log(delta / uRecessDeadZone) / log(uRecessDepth / uRecessDeadZone), 0.0, 1.0);
   float form = 1.0 - packed.g;
-  // Os três ganhos são a única diferença entre uma peça de arcada e uma peça
-  // maciça: na arcada o tom vem do vão (recesso), numa taça não há vão nenhum
-  // e quem desenha o volume é a luz (form). Ancorado nos mesmos dois valores
-  // do componente 2D: pedra em 0.26, vão em 0.95.
+  // The three gains are the only difference between an arcade piece and a
+  // solid one: in the arcade tone comes from the gap (recess), a trophy has no
+  // gap at all and light draws the volume (form). Anchored to the same two
+  // values as the 2D component: stone at 0.26, gap at 0.95.
   float tone = clamp(uToneFloor + uRecessGain * pow(recess, 1.15) + uFormGain * form * (1.0 - recess), 0.0, 1.0);
 
-  // v cresce de baixo para cima: a distância a dissolver é medida do topo.
+  // v grows bottom to top: the dissolve distance is measured from the top.
   float fromTop = 1.0 - fragPx.y / uResolution.y;
   float ramp = clamp((fromTop - uFadeStart) / (uFadeEnd - uFadeStart), 0.0, 1.0);
   tone *= 0.5 + 0.5 * pow(ramp, 1.2);
@@ -274,8 +274,8 @@ void main() {
     return;
   }
 
-  // A grade de referência é a de halftoneMarks(): o risco cresce de 0.4 a 7.9
-  // numa célula de 8, e a espessura salta de 1.6 para 3.0 em tom > 0.7.
+  // The reference grid is the one from halftoneMarks(): the dash grows from
+  // 0.4 to 7.9 in an 8 cell, and the weight jumps from 1.6 to 3.0 at tone > 0.7.
   const float UNIT = 8.0;
   float length01 = (0.4 + pow(tone, 1.2) * (UNIT - 0.5)) / UNIT;
   float weight01 = (tone > 0.7 ? 3.0 : 1.6) / UNIT;
@@ -284,7 +284,7 @@ void main() {
   vec2 inCell = (fragPx - cell * uCell) / uCell;
   vec2 p = inCell - (vec2(0.5) + jitter);
 
-  // Cápsula, não retângulo: o traço do SVG tem ponta redonda.
+  // Capsule, not rectangle: the SVG stroke has round caps.
   float span = max(length01 * 0.5 - weight01 * 0.5, 0.0);
   p.x = max(abs(p.x) - span, 0.0);
   float dist = length(p);

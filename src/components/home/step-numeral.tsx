@@ -1,14 +1,14 @@
 import { halftoneMarks } from "./halftone";
 
-/* A mesma prensa das outras peças: grade de 44 colunas, risco horizontal por
-   célula, dois pesos. O que muda é o assunto — em vez de um desenho, o próprio
-   número do passo, grande o bastante para ser lido de longe. */
+/* The same press as the other pieces: 44-column grid, one horizontal stroke
+   per cell, two weights. What changes is the subject — instead of a drawing,
+   the step number itself, big enough to be read from afar. */
 const GRID = { cols: 44, cellW: 200 / 44, cellH: 5 };
 const ROWS = 28;
 
-/* A tinta desce: topo aberto, base fechada, e um empurrão para a direita — a
-   mesma luz de cima e à esquerda que modela o Coliseu e a taça. O ruído tira a
-   régua da faixa onde o traço troca de peso. */
+/* The ink descends: open top, closed base, and a push to the right — the same
+   light from above-left that models the Colosseum and the trophy. The noise
+   breaks the ruler line in the band where the stroke changes weight. */
 function inkField() {
   let tone = "";
   for (let row = 0; row < ROWS; row++) {
@@ -25,8 +25,8 @@ function inkField() {
 
 const FIELD = inkField();
 
-/** O número do passo, recortado sobre o campo de tinta — sem asset e sem SVG
- * de dígito: quem dá a forma é a Archivo, a mesma dos títulos. */
+/** The step number, cut out over the ink field — no asset and no digit SVG:
+ * the shape comes from Archivo, the same face as the headings. */
 export function StepNumeral({
   digit,
   className,

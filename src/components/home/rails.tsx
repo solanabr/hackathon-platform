@@ -1,8 +1,8 @@
 import { PAGE_SHELL } from "@/components/layout/container";
 
-// As linhas são desenho técnico, não decoração: elas caem exatamente nas
-// bordas do PAGE_SHELL, então o mesmo trilho que segura o header e o rodapé
-// fica visível. Qualquer outra largura faria a página parecer desalinhada.
+// The lines are technical drawing, not decoration: they land exactly on the
+// PAGE_SHELL edges, so the same rail that holds the header and the footer
+// becomes visible. Any other width would make the page look misaligned.
 
 function Cross({ className }: { className: string }) {
   return (
@@ -35,8 +35,8 @@ export function SectionRails({
   );
 }
 
-// Sangra para fora do padding do PAGE_SHELL: só assim a régua horizontal
-// termina exatamente onde os trilhos verticais correm, e não 48px para dentro.
+// Bleeds past the PAGE_SHELL padding: only then does the horizontal rule end
+// exactly where the vertical rails run, and not 48px inward.
 export function StageRule({ className = "" }: { className?: string }) {
   return (
     <div

@@ -41,10 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" data-scroll-behavior="smooth" suppressHydrationWarning className={`${archivo.variable} ${inter.variable}`}>
       <head>
-        {/* A folha da prensa é o primeiro frame da LP, e só na primeira visita
-            da sessão. A marcação tem que acontecer ANTES da pintura, então o
-            script mora aqui e não na árvore de componentes — no corpo o React
-            19 o reposiciona na hidratação e leva a folha junto. */}
+        {/* The press sheet is the LP's first frame, and only on the session's
+            first visit. The marking has to happen BEFORE paint, so the script
+            lives here and not in the component tree — in the body React 19
+            moves it on hydration and takes the sheet along. */}
         <script
           dangerouslySetInnerHTML={{
             __html:

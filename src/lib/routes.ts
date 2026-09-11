@@ -14,10 +14,9 @@ const PUBLIC_EDITION_LANDING = /^\/h\/[^/]+$/;
 // Gallery (/projetos) and one detail level under it, plus builder profiles.
 const PUBLIC_EDITION_PROJECTS = /^\/h\/[^/]+\/projetos(\/[^/]+)?$/;
 const PUBLIC_BUILDER_PROFILE = /^\/u\/[^/]+$/;
-/* Previews do laboratório: páginas noindex, sem dado de usuário, e sem as
-   quais nenhuma variante de hero pode ser vista sem sessão. Fora de produção
-   apenas — em produção /lab continua atrás do /auth como qualquer outra rota
-   não listada. */
+/* Lab previews: noindex pages, no user data, and without them no hero
+   variant can be seen without a session. Outside production only — in
+   production /lab stays behind /auth like any other unlisted route. */
 const PUBLIC_LAB = /^\/lab(\/|$)/;
 
 export function isPublicRoute(path: string): boolean {

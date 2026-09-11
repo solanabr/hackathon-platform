@@ -1,9 +1,9 @@
-/** Lê um token de tempo do CSS para quem anima em JS.
+/** Reads a CSS timing token for whoever animates in JS.
  *
- * O ponto não é a conveniência: é que animação em JS não pode ter a própria
- * escala de tempo. Se o rAF usa 1300ms cravado e o CSS usa var(--dur-lenta),
- * as duas camadas divergem — e divergem de vez em movimento reduzido, onde o
- * token encolhe e o número cravado não. Uma fonte só. */
+ * The point is not convenience: JS animation cannot have its own time scale.
+ * If the rAF uses a hardcoded 1300ms and the CSS uses var(--dur-lenta), the
+ * two layers diverge — and diverge for good under reduced motion, where the
+ * token shrinks and the hardcoded number does not. One source. */
 export function readMotionSeconds(token: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
   const raw = getComputedStyle(document.documentElement)

@@ -1,8 +1,8 @@
 import { PLATE_FILES, plateByFilename } from "@/components/home/plates";
 
-/* As chapas de meio-tom da LP, como arquivo. O nome carrega o hash do
-   conteúdo, então o cache pode ser eterno: uma chapa redesenhada nasce com
-   outra URL. Pré-renderizada no build; em dev, gerada no primeiro pedido. */
+/* The LP's halftone plates, as files. The name carries the content hash, so
+   the cache can be eternal: a redrawn plate is born with another URL.
+   Prerendered at build; in dev, generated on first request. */
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
