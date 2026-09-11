@@ -40,6 +40,9 @@
 - Dumps PM2 e toda a árvore legada do Kimi tiveram acesso de grupo/outros removido.
 - O LaunchAgent PM2 descarregado foi arquivado com rollback; seu dump referenciava dois scripts inexistentes. O único daemon órfão restante foi encerrado e não restaram PID ou sockets.
 - O carregador sob demanda ganhou a rota `ai-key-load openai`; nenhuma chave foi criada ou gravada pelo agente.
+- O ownership dos 5.082 itens e quatro links do PM2 no prefixo pessoal foi corrigido para o usuário.
+- A duplicata idêntica do TypeScript 5.8.3 em `/usr/local` foi arquivada com checksum e removida; a cópia pessoal permaneceu funcional.
+- `/usr/local/bin`, onde está o runtime Node, foi declarado no `.zshenv`; shells com ambiente vazio executam `node` e `tsc` sem depender de herança do terminal.
 
 ## Estado final medido
 
@@ -59,8 +62,8 @@
 - Nenhum banco de memória do Codex foi alterado enquanto sessões estavam ativas.
 - As credenciais listadas em `ROTATION-REQUIRED.md` precisam ser giradas nos provedores; redigir arquivos locais não invalida credenciais.
 - Context7 e Kofre agora exigem `ai-key-load context7` ou `kofre-env-load` antes da sessão que realmente os utiliza.
-- O Homebrew pertence corretamente a `felixrodrigues:admin`; o aviso de escrita veio do sandbox. O problema de ownership dentro do prefixo pessoal está restrito ao PM2; a duplicata do TypeScript em `/usr/local` é root-owned por estar no prefixo de sistema.
-- As duas instalações locais do TypeScript são 5.8.3 e byte a byte iguais; a cópia `/usr/local` depende de `sudo` para remoção. O catálogo upstream consultado oferece 7.0.2, que exige teste separado.
-- PM2 6.0.5 permanece abaixo do catálogo 7.0.4 e contém 5.082 itens com owner `root` no prefixo pessoal. O autostart e os processos órfãos foram neutralizados; corrija ownership antes de testar a atualização.
+- O Homebrew pertence corretamente a `felixrodrigues:admin`; o aviso de escrita veio do sandbox.
+- TypeScript permanece em 5.8.3 no prefixo pessoal. O catálogo upstream consultado oferece 7.0.2, que exige teste separado.
+- PM2 6.0.5 permanece abaixo do catálogo 7.0.4; ownership, autostart e processos órfãos já foram corrigidos.
 - Kimi Code 0.28.1 permanece abaixo da release oficial 0.42.0. O `kimi-cli` legado 1.43.0 ocupa aproximadamente 229 MiB e ainda guarda o estado que precisa passar por `kimi migrate`; não o remova antes de validar migração, login e uma sessão real.
 - O volume continua com 89% de uso. A meta operacional é recuperar mais 20–25 GiB em uma janela própria, revisando dados pessoais e projetos grandes em vez de apagar caches de projetos ativos.

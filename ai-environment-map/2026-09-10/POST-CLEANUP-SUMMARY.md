@@ -9,8 +9,8 @@
 - LiqPay somente com o checkout principal; as branches dos dois últimos worktrees removidos foram preservadas.
 - QVAC local e seu LaunchAgent removidos.
 - Shell limpo sem variáveis sensíveis monitoradas exportadas.
-- Shells de login e interativos resolvem `tsc` pelo prefixo npm pessoal; a duplicata `/usr/local` aguarda a etapa administrativa com backup.
-- PM2 sem daemon, PID, sockets ou autostart ativo; ownership do pacote aguarda a mesma etapa administrativa.
+- Shells não-login, login e interativos resolvem `node` e o `tsc` pessoal; a duplicata `/usr/local` foi arquivada com checksum e removida.
+- PM2 sem daemon, PID, sockets ou autostart ativo; ownership do pacote e dos links corrigido para o usuário.
 - 48 GiB livres no volume de dados; aproximadamente 31 GiB recuperados nesta intervenção.
 - Históricos receberam passes de redação e JSONL foi revalidado; sessões ativas exigem scan final ao encerrar.
 

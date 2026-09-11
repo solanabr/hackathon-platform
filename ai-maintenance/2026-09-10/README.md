@@ -1,14 +1,14 @@
 # Manutenção do ambiente de IA — 2026-09-10
 
-Este pacote registra a limpeza feita no Mac do Felix e oferece um roteiro seguro para a Laura. Ele não contém settings, históricos, tokens, backups nem outros dados pessoais. Os scripts fazem prévia por padrão; qualquer mutação exige uma ação explícita (`--apply` ou `--restore`) e, quando o risco é maior, uma confirmação adicional.
+Este pacote registra a limpeza feita no Mac do Felix e oferece um roteiro seguro para a Laura. A cópia compartilhada não contém settings, históricos, tokens, backups nem outros dados pessoais. Execuções locais podem criar backups privados em `~/ai-maintenance/2026-09-10/backups/`; eles não devem ser copiados para a branch. Os scripts fazem prévia por padrão; qualquer mutação exige uma ação explícita (`--apply` ou `--restore`) e, quando o risco é maior, uma confirmação adicional.
 
 ## Ordem de leitura
 
 1. `CLEANUP-REPORT.md`: o que existia, o que mudou e o que ficou pendente.
 2. `ROTATION-REQUIRED.md`: credenciais que precisam ser substituídas fora do terminal de IA.
 3. `LAURA-REMEDIATION-RUNBOOK.md`: coleta rápida, A/B e correções em sessões separadas.
-4. `OWNER-ACTIONS.md`: correções no Mac do Felix que exigem senha administrativa.
-5. `owner-finish.sh`: pré-validação e aplicação guardada dessas duas correções; execute primeiro com `--check`.
+4. `OWNER-ACTIONS.md`: registro e rollback das correções administrativas concluídas no Mac do Felix.
+5. `owner-finish.sh`: verificação idempotente e rollback guardado dessas correções.
 6. `scripts/`: utilitários defensivos e reversíveis. Laura deve executar primeiro sem `--apply`.
 
 O baseline em `ai-environment-map/2026-09-10/evidence/felix-ai-environment.redacted.json` é um snapshot histórico anterior à limpeza. Ele serve para comparar mecanismos e não deve ser copiado como configuração.

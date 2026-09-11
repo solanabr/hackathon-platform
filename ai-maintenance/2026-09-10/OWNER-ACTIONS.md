@@ -1,52 +1,24 @@
-# Ações que exigem a senha local do Felix
+# Ações administrativas do Mac do Felix
 
-Estas ações não foram executadas porque exigem a senha administrativa digitada pelo dono da máquina. O daemon PM2 órfão já foi encerrado, o autostart foi arquivado e o shell já resolve o TypeScript pessoal em sessões de login e interativas.
+**Status em 2026-09-11: concluídas e verificadas.** Felix executou `owner-finish.sh --apply` no terminal local. O executor não atualizou versões.
 
-O executor faz nova pré-validação, cria backup do TypeScript, pede `sudo` uma vez e não atualiza versões:
+## 1. PM2 no prefixo npm pessoal — concluído
 
-```bash
-~/ai-maintenance/2026-09-10/owner-finish.sh --check
-~/ai-maintenance/2026-09-10/owner-finish.sh --apply
-```
+Os 5.082 itens e os quatro links do PM2 agora pertencem a `felixrodrigues:staff`. O LaunchAgent continua arquivado e não há daemon, PID ou sockets PM2. O pacote permanece em 6.0.5; qualquer atualização para 7 deve ocorrer em outra janela.
 
-O segundo comando deve ser executado pelo Felix em um terminal local. Não cole a senha em uma IA.
+Não use `pm2 --version` como verificação, pois esse comando pode iniciar um daemon. Leia a versão no `package.json`.
 
-## 1. Reparar PM2 no prefixo npm pessoal
+## 2. TypeScript redundante em `/usr/local` — concluído
 
-O pacote PM2 tem 5.082 arquivos pertencentes a `root` dentro do prefixo npm do usuário.
+A cópia de sistema 5.8.3, antes confirmada como idêntica à cópia pessoal, foi removida. Shells não-login, login e interativos resolvem `node` em `/usr/local/bin` e `tsc` em `~/.npm-global/bin/tsc`, versão 5.8.3.
 
-```bash
-sudo chown -R "$USER":staff "$HOME/.npm-global/lib/node_modules/pm2"
-sudo chown -h "$USER":staff \
-  "$HOME/.npm-global/bin/pm2" \
-  "$HOME/.npm-global/bin/pm2-dev" \
-  "$HOME/.npm-global/bin/pm2-docker" \
-  "$HOME/.npm-global/bin/pm2-runtime"
-
-find "$HOME/.npm-global/lib/node_modules/pm2" ! -user "$USER" -print -quit
-```
-
-O último comando deve ficar vazio. O pacote continua em 6.0.5; teste a atualização para 7 em outra janela. Não use `pm2 --version` nesta validação, pois esse comando pode iniciar um daemon; leia a versão no `package.json`.
-
-## 2. Remover a cópia legada do TypeScript em `/usr/local`
-
-As duas instalações locais medidas são 5.8.3 e byte a byte iguais. A resolução atual escolhe `~/.npm-global`; a cópia root-owned em `/usr/local` é redundante. O catálogo upstream consultado oferece 7.0.2, que não deve ser misturado com esta remoção.
+O backup íntegro e privado está em `~/ai-maintenance/2026-09-10/backups/typescript-usr-local-5.8.3.tar`. O rollback permanece disponível em:
 
 ```bash
-mkdir -p -m 700 "$HOME/ai-maintenance/2026-09-10/backups"
-tar -cpf "$HOME/ai-maintenance/2026-09-10/backups/typescript-usr-local-5.8.3.tar" \
-  -C /usr/local lib/node_modules/typescript bin/tsc bin/tsserver
-chmod 600 "$HOME/ai-maintenance/2026-09-10/backups/typescript-usr-local-5.8.3.tar"
-
-sudo env NPM_CONFIG_PREFIX=/usr/local NPM_CONFIG_USERCONFIG=/dev/null \
-  /usr/local/bin/npm uninstall -g typescript
-
-env -i HOME="$HOME" USER="$USER" LOGNAME="$USER" \
-  PATH="/usr/bin:/bin:/usr/sbin:/sbin" TERM=dumb SHELL=/bin/zsh \
-  /bin/zsh -lc 'command -v tsc; tsc --version'
+~/ai-maintenance/2026-09-10/owner-finish.sh --rollback-typescript
 ```
 
-O resultado esperado aponta para `~/.npm-global/bin/tsc`, versão 5.8.3. O rollback está implementado em `owner-finish.sh --rollback-typescript` e recusa sobrescrever uma instalação existente.
+Ele valida o checksum e recusa sobrescrever uma instalação existente.
 
 ## Homebrew
 
