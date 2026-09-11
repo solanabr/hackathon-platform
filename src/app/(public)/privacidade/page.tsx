@@ -83,7 +83,10 @@ export default function PrivacidadePage() {
               autenticação), Vercel (hospedagem), Resend (e-mails
               transacionais), PostHog e Google (Tag Manager, Analytics e Ads, para
               análise de uso e medição de campanhas, servidores nos EUA, apenas
-              com seu consentimento) e Sentry (monitoramento de erros).
+              com seu consentimento), Sentry (monitoramento de erros) e RD
+              Station (CRM da Superteam Brasil, servidores no Brasil, que recebe
+              nome, e-mail, WhatsApp, cidade e a data do seu cadastro para a
+              comunicação sobre o hackathon em que você se inscreveu).
               Dados de premiação podem ser compartilhados com os organizadores e
               patrocinadores da edição conforme o regulamento que você aceitou.
             </p>
