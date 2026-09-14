@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { useEffect, useRef } from "react";
 import {
   TicketFront,
@@ -43,7 +45,7 @@ export function TicketFlip({
   note,
 }: {
   facts: readonly TicketFact[];
-  note?: string;
+  note?: ReactNode;
 }) {
   const gap = useRef<HTMLDivElement>(null);
   const flight = useRef<HTMLDivElement>(null);

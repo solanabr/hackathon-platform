@@ -1,11 +1,13 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { Reveal } from "@/components/ui/reveal";
+import { TrackedCta } from "@/components/ui/tracked-cta";
 import { QuestionGlyph } from "./question-glyph";
 
 export type CaseCard = {
   name: string;
   url?: string;
+  href?: string;
   logo?: string;
   figure?: string;
   result?: string;
@@ -67,13 +69,27 @@ function TileFooter({ item }: { item: CaseCard }) {
 /* Illustration card: the halftone fills the whole frame in place of the number
    and the paragraph, and only the signature stays below. */
 function GlyphTile({ item }: { item: CaseCard }) {
-  return (
-    <div className="card-cut card-cut-dark flex h-full min-h-[17rem] flex-col p-6 sm:p-8 xl:p-9">
+  const inner = (
+    <>
       <div className="flex min-h-0 flex-1 items-center justify-center py-2">
         <QuestionGlyph className="h-full max-h-[12rem] w-auto text-yellow" />
       </div>
       <TileFooter item={item} />
-    </div>
+    </>
+  );
+  const shell =
+    "card-cut card-cut-dark flex h-full min-h-[17rem] flex-col p-6 sm:p-8 xl:p-9";
+  return item.href ? (
+    <TrackedCta
+      href={item.href}
+      event="cta_clicked"
+      properties={{ cta: "cadastro", location: "cases" }}
+      className={`${shell} transition-transform duration-(--dur-instant) ease-entrada hover:-translate-y-0.5`}
+    >
+      {inner}
+    </TrackedCta>
+  ) : (
+    <div className={shell}>{inner}</div>
   );
 }
 

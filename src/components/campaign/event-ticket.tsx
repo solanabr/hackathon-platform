@@ -246,7 +246,7 @@ export function TicketBack({
   note,
 }: {
   facts: readonly TicketFact[];
-  note?: string;
+  note?: ReactNode;
 }) {
   return (
     <Paper mirrored>
