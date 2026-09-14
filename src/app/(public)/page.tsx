@@ -5,14 +5,13 @@ import {
   WHATSAPP_COMMUNITY_URL,
 } from "./pre-registro/constants";
 import { getHackathonBySlug } from "@/lib/hackathon";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { logQueryError } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { withPlatformUtm } from "@/lib/attribution";
+import { faqItems } from "./faq-items";
 import {
+  ArrowUpRightIcon,
   BookOpenIcon,
   CheckIcon,
-  CoinsIcon,
   DiscordLogoIcon,
   GraduationCapIcon,
   WhatsappLogoIcon,
@@ -35,7 +34,6 @@ import { TicketFlip } from "@/components/campaign/ticket-flip";
 import { CasesFan } from "@/components/home/cases-fan";
 import {
   CommunityPreview,
-  EarnPreview,
 } from "@/components/home/bento-previews";
 import {
   CalendarTrack,
@@ -102,31 +100,38 @@ const CASES = [
 const COLOSSEUM_FACTS = [
   {
     figure: "8 trilhas",
-    title: "Uma trilha por rede",
-    body: "Solana, Ethereum, Base, Arbitrum, Hyperliquid, Tempo, Zcash e Robinhood Chain. Uma única submissão no Colosseum concorre à trilha da sua rede, bancada pelo parceiro e julgada pelo Colosseum, e ao prêmio geral entre todas as redes. As trilhas já anunciadas pagam US$ 100 mil entre os 10 melhores.",
+    title: "Uma trilha por rede, mais os prêmios gerais",
+    body: "Solana, Tempo, Hyperliquid e Zcash pagam US$ 100 mil entre os 10 melhores de cada rede. Ethereum, Base, Arbitrum e Robinhood Chain pagam US$ 25 mil entre os 5 melhores. Uma única submissão concorre à trilha da sua rede e aos prêmios gerais: US$ 30 mil para o campeão, US$ 15 mil para cada um dos 20 times de destaque, e prêmios de bem público e universitário.",
   },
   {
-    figure: "US$ 250 mil",
+    figure: "US$ 2,5 mi",
     accent: true,
-    title: "O cheque do acelerador",
-    body: "Vencedores selecionados entram no acelerador do Colosseum com US$ 250 mil de investimento. Exige alguma integração com a Solana.",
+    title: "Do fundo do Colosseum, além de US$ 800 mil em prêmios",
+    body: "Pelo menos 10 times entram no acelerador do Colosseum com US$ 250 mil de investimento cada. O acelerador pede integração com a Solana.",
   },
   {
     figure: "Projeto existente",
-    title: "Pode, com regras",
-    body: "Vale se a startup ainda não captou capital relevante. Só conta o que for construído entre 14 de setembro e 12 de outubro, e código anterior precisa ser declarado.",
+    title: "Da ideia à startup que já captou",
+    body: "Vale tudo: uma ideia começando do zero ou uma startup que já levantou até R$ 3 milhões. Código antigo é válido, desde que o produto tenha alguma integração com uma blockchain.",
   },
   {
     figure: "Qualquer área",
     title: "DeFi, pagamentos, RWA, consumer, IA",
-    body: "As trilhas são por rede, não por tema. Os jurados olham produto, tração e plano de distribuição. Sozinho ou em time, uma submissão por pessoa.",
+    body: "As trilhas são por rede, não por tema. Os jurados olham produto, tração e plano de distribuição. Sozinho ou em time, um time por pessoa.",
   },
 ];
 
-/* The same line in both places: the grid's footer on phones, the back's last
-   clause on desktop. Two literal copies would diverge at the first date
-   correction. */
-const COLOSSEUM_NOTE = "Jurados e regras completas saem em 14 de setembro.";
+const COLOSSEUM_RULES_URL = "https://colosseum.com/worldsfair";
+const rulesLink = (
+  <a
+    href={COLOSSEUM_RULES_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="underline decoration-yellow decoration-2 underline-offset-4 hover:text-emerald-deep"
+  >
+    Regras completas em colosseum.com/worldsfair
+  </a>
+);
 
 const SOLANA_STATS = [
   {
@@ -177,11 +182,6 @@ const CALENDAR: CalendarItem[] = [
 
 const RESOURCES = [
   {
-    label: "Grupo do WhatsApp",
-    href: WHATSAPP_COMMUNITY_URL,
-    icon: WhatsappLogoIcon,
-  },
-  {
     label: "Aulas no YouTube",
     href: "https://www.youtube.com/@SuperteamBrasil",
     icon: YoutubeLogoIcon,
@@ -192,14 +192,6 @@ const RESOURCES = [
     icon: BookOpenIcon,
   },
   {
-    label: "Superteam Earn",
-    href: withPlatformUtm("https://superteam.fun/earn/s/superteambr", {
-      content: "lp_recursos",
-      campaign: "colosseum-2026",
-    }),
-    icon: CoinsIcon,
-  },
-  {
     label: "Academy",
     href: "https://www.st.academy/",
     icon: GraduationCapIcon,
@@ -208,56 +200,6 @@ const RESOURCES = [
     label: "Discord",
     href: "https://discord.gg/superteambrasil",
     icon: DiscordLogoIcon,
-  },
-];
-const FAQ_ITEMS = [
-  {
-    q: "Preciso saber programar?",
-    a: "Não. Você também pode contribuir com design, comunicação, marketing ou negócios. A Colosseum permite a participação de pessoas sem formação técnica.",
-  },
-  {
-    q: "Ainda não tenho uma ideia. Posso começar?",
-    a: "Pode. Crie sua conta, indique suas habilidades e conheça a comunidade enquanto procura um projeto de que gostaria de participar.",
-  },
-  {
-    q: "Preciso ter uma equipe formada?",
-    a: "Não. Você pode começar sem uma equipe e indicar no cadastro que está procurando pessoas para construir com você.",
-  },
-  {
-    q: "Criar a conta aqui já me inscreve no evento?",
-    a: "Não. A conta é da plataforma da Superteam Brasil. Depois, você precisa concluir sua inscrição oficial na Colosseum. Mostramos esse próximo passo durante o cadastro.",
-  },
-  {
-    q: "Posso completar minhas informações depois?",
-    a: "Sim. As informações complementares sobre sua ideia e sua equipe podem ser salvas e concluídas depois. A inscrição oficial e a entrega do projeto seguem os prazos do evento.",
-  },
-  {
-    q: "Quanto custa?",
-    a: "Nada. Criar a conta, participar da comunidade e entrar no hackathon são gratuitos.",
-  },
-  {
-    q: "Preciso falar inglês?",
-    a: "A submissão na Colosseum é em inglês. Toda a Trilha Brasil, as mentorias e o suporte da Superteam Brasil são em português.",
-  },
-  {
-    q: "Quais são os prêmios?",
-    a: "As trilhas por rede já anunciadas pagam US$ 100 mil entre os 10 melhores, e todo projeto concorre também ao prêmio geral entre todas as redes. Vencedores selecionados entram no acelerador da Colosseum com US$ 250 mil de investimento, que pede integração com a Solana. A lista completa de trilhas, valores e critérios sai em 14 de setembro.",
-  },
-  {
-    q: "Ganhar o hackathon garante investimento?",
-    a: "Não. Prêmios e investimento seguem processos diferentes. A entrada em um programa de aceleração ou investimento depende da avaliação e dos critérios de seleção.",
-  },
-  {
-    q: "Preciso usar Solana no meu projeto?",
-    a: "O evento aceita projetos de diferentes blockchains, incluindo Solana. A Superteam Brasil faz parte da comunidade Solana, mas essa edição da Colosseum é aberta a todas essas redes. A Trilha Brasil no Superteam Earn e o acelerador de US$ 250 mil pedem integração com a Solana.",
-  },
-  {
-    q: "O que é a Trilha Brasil?",
-    a: "Mentoria e premiação da Superteam Brasil só para times brasileiros com projetos na Solana, publicadas no Superteam Earn. Para concorrer, além de enviar o projeto na Colosseum, você submete o mesmo projeto no desafio da Trilha Brasil. Valores e condições saem no Earn.",
-  },
-  {
-    q: "Posso entrar no grupo antes de criar minha conta?",
-    a: "Sim. Você pode conhecer a comunidade pelo WhatsApp e criar sua conta quando decidir avançar. Entrar no grupo não conclui a inscrição no hackathon.",
   },
 ];
 
@@ -398,35 +340,35 @@ export default async function HomePage() {
     resolveAuthenticatedUserState().catch(() => null),
   ]);
 
-  // Step 2's button only goes straight to Colosseum for who already did the
-  // cadastro; everyone else is routed through /pre-registro first.
-  let registered = false;
-  if (state && colosseum) {
-    const supabase = await createServerSupabaseClient();
-    const { data, error } = await supabase
-      .from("hackathon_registrations")
-      .select("hackathon_id")
-      .eq("hackathon_id", colosseum.id)
-      .eq("user_id", state.userId)
-      .maybeSingle();
-    // The landing page never dies on this lookup: an error just means the
-    // button routes through /pre-registro, which is the safe default.
-    if (error) logQueryError("home.checkRegistration", error);
-    registered = Boolean(data);
-  }
   // Logged-out visitors skip the /pre-registro round trip and land on the
   // login step with the deep link already attached.
   const cadastroHref = state ? "/pre-registro" : "/auth?next=/pre-registro";
-  const ctaLabel = state ? "Continuar meu cadastro" : "Criar conta";
+  const ctaLabel = state ? "Continuar meu cadastro" : "Quero participar";
   const submissionDeadline =
     colosseum?.submission_deadline_at ?? COLOSSEUM_DEADLINE_FALLBACK;
+  const cases = CASES.map((c) => (c.glyph ? { ...c, href: cadastroHref } : c));
+  const colosseumHref = colosseum?.external_url
+    ? withPlatformUtm(colosseum.external_url, {
+        content: "lp_jornada",
+        campaign: "colosseum-2026",
+      })
+    : null;
+
+  const faq = faqItems({
+    colosseumHref,
+    earnHref: withPlatformUtm("https://superteam.fun/earn/s/superteambr", {
+      content: "lp_faq",
+      campaign: "colosseum-2026",
+    }),
+    whatsappHref: WHATSAPP_COMMUNITY_URL,
+  });
 
   const journey = [
     {
       marker: "Agora",
-      title: "Crie sua conta.",
+      title: "Crie sua conta na Superteam Brasil.",
       items: [
-        "Entre na plataforma da Superteam Brasil e preencha seus dados",
+        "É por aqui que você recebe o apoio: mentorias, workshops e a Trilha Brasil",
         "Você pode contar sobre sua ideia e sua equipe agora ou depois",
         "Leva dois minutos",
       ],
@@ -435,34 +377,28 @@ export default async function HomePage() {
           href={cadastroHref}
           event="cta_clicked"
           properties={{ cta: "cadastro", location: "jornada" }}
-          className="btn-cut inline-flex w-fit items-center whitespace-nowrap bg-yellow px-6 py-3 text-sm font-bold text-green-dark transition-colors duration-(--dur-instant) ease-entrada hover:bg-yellow-strong"
+          className="btn-cut inline-flex w-fit items-center whitespace-nowrap bg-yellow px-8 py-3.5 text-base font-bold text-green-dark transition-colors duration-(--dur-instant) ease-entrada hover:bg-yellow-strong"
         >
           <span>{ctaLabel}</span>
         </TrackedCta>
       ),
     },
     {
-      marker: "Em seguida",
-      title: "Conclua a inscrição oficial.",
+      marker: "O mais importante",
+      title: "Faça a inscrição oficial no Colosseum.",
       items: [
-        "Siga o link para a Colosseum e faça sua inscrição no hackathon",
-        "Cada integrante precisa ter uma conta na plataforma oficial",
+        "É a plataforma do hackathon: sem ela, o projeto não concorre",
+        "Cada integrante precisa ter uma conta lá",
         "Não precisa ter ideia nem time ainda",
       ],
-      cta: colosseum?.external_url ? (
+      cta: colosseumHref ? (
         <TrackedCta
-          href={registered ? colosseum.external_url : cadastroHref}
-          event={registered ? "campaign_link_clicked" : "cta_clicked"}
-          properties={
-            registered
-              ? { target: "colosseum", location: "lp" }
-              : { cta: "cadastro", location: "jornada_colosseum" }
-          }
+          href={colosseumHref}
+          event="campaign_link_clicked"
+          properties={{ target: "colosseum", location: "jornada" }}
           className="btn-cut btn-cut-outline inline-flex w-fit items-center whitespace-nowrap px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"
         >
-          <span>
-            {registered ? "Abrir Colosseum" : "Libera depois de criar a conta"}
-          </span>
+          <span>Inscrever no Colosseum</span>
         </TrackedCta>
       ) : (
         <p className="font-mono text-xs font-bold uppercase tracking-widest text-muted">
@@ -471,11 +407,11 @@ export default async function HomePage() {
       ),
     },
     {
-      marker: "Antes de 14 set",
-      title: "Construa com a comunidade.",
+      marker: "Sempre",
+      title: "Entre no grupo do WhatsApp.",
       items: [
+        "Todas as novidades, datas e avisos saem por lá",
         "Workshops e mentorias ao vivo",
-        "Contato direto com a Superteam Brasil",
         "Onde quem chega sozinho encontra time",
       ],
       cta: (
@@ -617,7 +553,7 @@ export default async function HomePage() {
                 href={cadastroHref}
                 event="cta_clicked"
                 properties={{ cta: "cadastro", location: "hero" }}
-                className="btn-cut inline-flex items-center whitespace-nowrap bg-emerald-deep px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-10 sm:text-base"
+                className="btn-cut inline-flex items-center whitespace-nowrap bg-emerald-deep px-9 py-4 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-12 sm:text-lg"
               >
                 <span>{ctaLabel}</span>
               </TrackedCta>
@@ -625,7 +561,7 @@ export default async function HomePage() {
                 href={WHATSAPP_COMMUNITY_URL}
                 event="campaign_link_clicked"
                 properties={{ target: "whatsapp", location: "hero" }}
-                className="btn-cut btn-cut-outline btn-cut-quiet inline-flex items-center px-8 py-3.5 text-sm font-semibold text-ink sm:px-9 sm:text-base sm:whitespace-nowrap"
+                className="btn-cut btn-cut-outline btn-cut-quiet inline-flex items-center px-6 py-3 text-sm font-semibold text-ink sm:whitespace-nowrap"
               >
                 <span>Entrar no grupo do WhatsApp</span>
               </TrackedCta>
@@ -728,7 +664,7 @@ export default async function HomePage() {
           <div className="mx-auto mt-8 hidden sm:mt-10 lg:block lg:max-w-[84%] xl:max-w-[78%]">
             <TicketFlip
               facts={COLOSSEUM_FACTS}
-              note={COLOSSEUM_NOTE}
+              note={rulesLink}
             />
           </div>
 
@@ -763,7 +699,7 @@ export default async function HomePage() {
 
           <Reveal index={5} tone="texto">
             <p className="mt-6 font-mono text-[11px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65 lg:hidden">
-              {COLOSSEUM_NOTE}
+              {rulesLink}
             </p>
           </Reveal>
         </div>
@@ -777,7 +713,7 @@ export default async function HomePage() {
         <SectionRails />
         <div className={PAGE_SHELL}>
           <CasesFan
-            cases={CASES}
+            cases={cases}
             title={
               <Reveal>
                 <SectionHat>Colosseum</SectionHat>
@@ -791,13 +727,6 @@ export default async function HomePage() {
             intro={
               <Reveal tone="texto">
                 <div className="max-w-[48ch] space-y-4 text-pretty text-[0.95rem] leading-relaxed text-ink/80">
-                  <p>
-                    Um hackathon é uma competição em que você desenvolve uma
-                    ideia e apresenta o resultado. Na Colosseum, a proposta é
-                    construir um produto com potencial para virar um negócio.
-                    Esta edição se chama Crypto World&apos;s Fair e acontece
-                    online.
-                  </p>
                   <p>
                     Durante quatro semanas, você pode testar sua ideia,
                     trabalhar com outras pessoas e mostrar o que criou.{" "}
@@ -830,9 +759,9 @@ export default async function HomePage() {
               </span>
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-pretty text-center font-mono text-[13px] uppercase leading-[1.7] tracking-[0.06em] text-ink/65">
-              Programação, design, comunicação e negócios: habilidades
-              diferentes ajudam uma ideia a ganhar forma. Você pode começar sem
-              ideia e sem time.
+              Desde uma ideia até empresas já rodando, qualquer pessoa pode
+              participar. Já tivemos ganhadores de todos os tipos. Para
+              participar é muito simples:
             </p>
           </div>
         }
@@ -1073,34 +1002,74 @@ export default async function HomePage() {
               <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-green-dark bg-surface shadow-sticker">
                 <header className="relative p-5 pb-0 sm:p-6 sm:pb-0">
                   <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-dark/80">
-                    Superteam Earn
+                    Só para times brasileiros
                   </p>
                   <h3 className="mt-2 font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">
                     Trilha Brasil
                   </h3>
                   <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
-                    Para projetos na Solana: os brasileiros têm uma trilha
-                    extra, publicada no Superteam Earn, com mentoria e premiação
-                    da Superteam Brasil. Dá para concorrer nas duas ao mesmo
-                    tempo, com apoio da Superteam Brasil da conta à submissão.
-                    Valores e condições saem no Earn.
+                    Além dos prêmios da competição global, times brasileiros
+                    com projeto na Solana concorrem à Trilha Brasil: US$ 5 mil
+                    em prêmios e mentoria da Superteam Brasil, publicada no
+                    Superteam Earn. O mesmo projeto concorre nas duas.
                   </p>
                 </header>
-                <EarnPreview />
+                <div className="relative mx-6 mt-7 sm:mx-8">
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 translate-x-2.5 translate-y-2.5 rounded-2xl bg-green-dark"
+                    style={{ transform: "translate(10px, 10px) rotate(-1.5deg)" }}
+                  />
+                  <div
+                    className="relative overflow-hidden rounded-2xl border-2 border-green-dark bg-yellow p-5 sm:p-6"
+                    style={{ transform: "rotate(-1.5deg)" }}
+                  >
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-yellow-strong/70"
+                    />
+                    <div className="relative flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-green-dark/75">
+                      <span className="rounded bg-green-dark px-1.5 py-0.5 text-yellow">
+                        BR
+                      </span>
+                      Prêmio extra · só times brasileiros
+                    </div>
+                    <p className="relative mt-4 font-heading text-[clamp(2.6rem,5vw,3.4rem)] font-black uppercase leading-[0.85] tracking-[-0.03em] text-green-dark [font-stretch:118%]">
+                      US$ 5 mil
+                    </p>
+                    <p className="relative mt-2 font-heading text-base font-bold text-green-dark">
+                      + mentoria da Superteam Brasil
+                    </p>
+                    <div className="relative mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t-2 border-dashed border-green-dark/40 pt-4">
+                      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-green-dark/80">
+                        Trilha Brasil · fecha 12 out
+                      </p>
+                      <a
+                        href={withPlatformUtm(
+                          "https://superteam.fun/earn/s/superteambr",
+                          {
+                            content: "lp_trilha_brasil",
+                            campaign: "colosseum-2026",
+                          },
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-green-dark px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-yellow transition-colors duration-(--dur-instant) ease-entrada hover:bg-emerald-deep"
+                      >
+                        Ver no Earn
+                        <ArrowUpRightIcon aria-hidden size={13} weight="bold" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
                 <div className="relative mt-auto flex p-5 pt-6 sm:p-6 sm:pt-7">
                   <TrackedCta
-                    href={withPlatformUtm(
-                      "https://superteam.fun/earn/s/superteambr",
-                      {
-                        content: "lp_trilha_brasil",
-                        campaign: "colosseum-2026",
-                      },
-                    )}
-                    event="campaign_link_clicked"
-                    properties={{ target: "earn", location: "lp" }}
-                    className="btn-cut btn-cut-outline inline-flex w-fit items-center whitespace-nowrap px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"
+                    href={cadastroHref}
+                    event="cta_clicked"
+                    properties={{ cta: "cadastro", location: "trilha_brasil" }}
+                    className="btn-cut inline-flex w-fit items-center whitespace-nowrap bg-emerald-deep px-8 py-3.5 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark"
                   >
-                    <span className="relative">Ver oportunidades no Earn</span>
+                    <span>{ctaLabel}</span>
                   </TrackedCta>
                 </div>
               </article>
@@ -1132,7 +1101,16 @@ export default async function HomePage() {
                       gratuito.
                     </p>
                   </header>
-                  <ul className="mt-6 grid flex-1 auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-xl border-2 border-green-dark bg-green-dark shadow-sticker sm:grid-cols-3">
+                  <TrackedCta
+                    href={WHATSAPP_COMMUNITY_URL}
+                    event="campaign_link_clicked"
+                    properties={{ target: "whatsapp", location: "recursos" }}
+                    className="btn-cut mt-6 inline-flex w-full items-center justify-center gap-2.5 bg-emerald-deep px-8 py-4 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark"
+                  >
+                    <WhatsappLogoIcon aria-hidden size={20} weight="bold" />
+                    <span>Entrar no grupo do WhatsApp</span>
+                  </TrackedCta>
+                  <ul className="mt-4 grid flex-1 auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-xl border-2 border-green-dark bg-green-dark shadow-sticker sm:grid-cols-4">
                     {RESOURCES.map((r) => {
                       const Icon = r.icon;
                       return (
@@ -1189,7 +1167,7 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-10 grid border-t border-dashed border-green-dark/35 lg:grid-cols-2 lg:gap-x-14 xl:gap-x-24">
-            {[FAQ_ITEMS.slice(0, 6), FAQ_ITEMS.slice(6)].map((column, c) => (
+            {[faq.slice(0, 6), faq.slice(6)].map((column, c) => (
               <div key={c}>
                 {column.map((f, i) => (
                   <Reveal key={f.q} index={i} tone="texto">
@@ -1227,18 +1205,18 @@ export default async function HomePage() {
               before the person had even looked. It also closes the gap that
               was left between the last row and the next section. */}
           <Reveal index={2} tone="texto">
-            <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-12 flex flex-col items-center gap-4 text-center">
               <p className="text-pretty font-heading text-lg font-bold leading-snug text-ink">
-                Ficou faltando alguma?
+                Ficou faltando alguma? Todas as novidades saem no grupo.
               </p>
               <TrackedCta
                 href={WHATSAPP_COMMUNITY_URL}
                 event="campaign_link_clicked"
                 properties={{ target: "whatsapp", location: "faq" }}
-                className="btn-cut inline-flex w-fit items-center gap-2.5 whitespace-nowrap bg-emerald-deep px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark"
+                className="btn-cut inline-flex items-center gap-2.5 whitespace-nowrap bg-emerald-deep px-10 py-4 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark sm:px-14 sm:text-lg"
               >
-                <WhatsappLogoIcon aria-hidden size={18} weight="bold" />
-                <span>Pergunta no WhatsApp</span>
+                <WhatsappLogoIcon aria-hidden size={20} weight="bold" />
+                <span>Entrar no grupo do WhatsApp</span>
               </TrackedCta>
             </div>
           </Reveal>
@@ -1307,7 +1285,7 @@ export default async function HomePage() {
                     href={cadastroHref}
                     event="cta_clicked"
                     properties={{ cta: "cadastro", location: "fechamento" }}
-                    className="btn-cut inline-flex items-center whitespace-nowrap bg-yellow px-8 py-3.5 text-sm font-semibold text-green-dark transition-colors duration-(--dur-instant) ease-entrada hover:bg-yellow-strong sm:px-10 sm:text-base"
+                    className="btn-cut inline-flex items-center whitespace-nowrap bg-yellow px-9 py-4 text-base font-bold text-green-dark transition-colors duration-(--dur-instant) ease-entrada hover:bg-yellow-strong sm:px-12 sm:text-lg"
                   >
                     <span>{ctaLabel}</span>
                   </TrackedCta>
@@ -1315,7 +1293,7 @@ export default async function HomePage() {
                     href={WHATSAPP_COMMUNITY_URL}
                     event="campaign_link_clicked"
                     properties={{ target: "whatsapp", location: "fechamento" }}
-                    className="btn-cut btn-cut-outline inline-flex items-center whitespace-nowrap px-8 py-3.5 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada sm:px-10 sm:text-base [--btn-cut-edge-color:color-mix(in_srgb,var(--color-surface)_35%,transparent)] [--btn-cut-fill:var(--color-emerald-deep)]"
+                    className="btn-cut btn-cut-outline inline-flex items-center whitespace-nowrap px-6 py-3 text-sm font-semibold text-surface transition-colors duration-(--dur-instant) ease-entrada [--btn-cut-edge-color:color-mix(in_srgb,var(--color-surface)_35%,transparent)] [--btn-cut-fill:var(--color-emerald-deep)]"
                   >
                     <span>Entrar no grupo do WhatsApp</span>
                   </TrackedCta>
