@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import {
   COLOSSEUM_DEADLINE_FALLBACK,
   COLOSSEUM_SLUG,
+  TRILHA_BRASIL_EARN_URL,
   WHATSAPP_COMMUNITY_URL,
 } from "./pre-registro/constants";
 import { getHackathonBySlug } from "@/lib/hackathon";
@@ -32,9 +33,7 @@ import { FaqHalftone } from "@/components/home/faq-halftone";
 import { EventTicket } from "@/components/campaign/event-ticket";
 import { TicketFlip } from "@/components/campaign/ticket-flip";
 import { CasesFan } from "@/components/home/cases-fan";
-import {
-  CommunityPreview,
-} from "@/components/home/bento-previews";
+import { CommunityPreview } from "@/components/home/bento-previews";
 import {
   CalendarTrack,
   type CalendarItem,
@@ -356,7 +355,7 @@ export default async function HomePage() {
 
   const faq = faqItems({
     colosseumHref,
-    earnHref: withPlatformUtm("https://superteam.fun/earn/s/superteambr", {
+    earnHref: withPlatformUtm(TRILHA_BRASIL_EARN_URL, {
       content: "lp_faq",
       campaign: "colosseum-2026",
     }),
@@ -662,10 +661,7 @@ export default async function HomePage() {
               stays visible around the ticket, which is what makes the card
               look SET DOWN on the sand instead of pasted over it. */}
           <div className="mx-auto mt-8 hidden sm:mt-10 lg:block lg:max-w-[84%] xl:max-w-[78%]">
-            <TicketFlip
-              facts={COLOSSEUM_FACTS}
-              note={rulesLink}
-            />
+            <TicketFlip facts={COLOSSEUM_FACTS} note={rulesLink} />
           </div>
 
           <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:hidden">
@@ -1008,9 +1004,9 @@ export default async function HomePage() {
                     Trilha Brasil
                   </h3>
                   <p className="mt-3 text-pretty text-sm leading-relaxed text-green-dark/70">
-                    Além dos prêmios da competição global, times brasileiros
-                    com projeto na Solana concorrem à Trilha Brasil: US$ 5 mil
-                    em prêmios e mentoria da Superteam Brasil, publicada no
+                    Além dos prêmios da competição global, times brasileiros com
+                    projeto na Solana concorrem à Trilha Brasil: US$ 5 mil em
+                    prêmios e mentoria da Superteam Brasil, publicada no
                     Superteam Earn. O mesmo projeto concorre nas duas.
                   </p>
                 </header>
@@ -1018,7 +1014,9 @@ export default async function HomePage() {
                   <div
                     aria-hidden
                     className="absolute inset-0 translate-x-2.5 translate-y-2.5 rounded-2xl bg-green-dark"
-                    style={{ transform: "translate(10px, 10px) rotate(-1.5deg)" }}
+                    style={{
+                      transform: "translate(10px, 10px) rotate(-1.5deg)",
+                    }}
                   />
                   <div
                     className="relative overflow-hidden rounded-2xl border-2 border-green-dark bg-yellow p-5 sm:p-6"
@@ -1045,13 +1043,10 @@ export default async function HomePage() {
                         Trilha Brasil · fecha 12 out
                       </p>
                       <a
-                        href={withPlatformUtm(
-                          "https://superteam.fun/earn/s/superteambr",
-                          {
-                            content: "lp_trilha_brasil",
-                            campaign: "colosseum-2026",
-                          },
-                        )}
+                        href={withPlatformUtm(TRILHA_BRASIL_EARN_URL, {
+                          content: "lp_trilha_brasil",
+                          campaign: "colosseum-2026",
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 rounded-md bg-green-dark px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-yellow transition-colors duration-(--dur-instant) ease-entrada hover:bg-emerald-deep"
