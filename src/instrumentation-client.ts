@@ -3,8 +3,10 @@ import posthog from "posthog-js";
 import { hasAnalyticsConsent } from "@/lib/consent";
 
 // LGPD: analytics only runs after the cookie banner's "Aceitar". Until then
-// PostHog boots opted-out and persists nothing. Flags, session replay and
-// heatmaps are off: none are used, and each would call home on init.
+// PostHog boots opted-out and persists nothing, and no recording starts.
+// Flags and heatmaps stay off: neither is used, and each would call home on
+// init. Session replay is on, with every input masked, because rage clicks
+// on the landing page and the registration form had no way to be looked at.
 
 if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
@@ -18,7 +20,11 @@ if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     opt_out_capturing_by_default: !hasAnalyticsConsent(),
     opt_out_persistence_by_default: !hasAnalyticsConsent(),
     advanced_disable_flags: true,
-    disable_session_recording: true,
+    disable_session_recording: false,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: "[data-ph-mask]",
+    },
     capture_heatmaps: false,
   });
 }
