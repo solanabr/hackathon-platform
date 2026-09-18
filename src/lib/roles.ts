@@ -38,10 +38,9 @@ export function resolveRoles(
 // collapses them into one platform_roles read.
 const loadRoles = cache(async (userId: string): Promise<PlatformRole[]> => {
   const supabase = await createServiceRoleClient();
-  const result = await supabase
-    .from("platform_roles")
-    .select("*")
-    .eq("user_id", userId);
+  const result = await withClockSkewRetry(() =>
+    supabase.from("platform_roles").select("*").eq("user_id", userId),
+  );
   // A failed read here would silently demote every admin and judge.
   return (unwrap(result, "roles.loadRoles") as PlatformRole[] | null) ?? [];
 });

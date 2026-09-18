@@ -131,11 +131,9 @@ export const resolveAuthenticatedUserState = cache(async (): Promise<Authenticat
   if (!claims) return null;
 
   const supabase = await createServerSupabaseClient();
-  const { data: profile, error: profileError } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", claims.userId)
-    .maybeSingle();
+  const { data: profile, error: profileError } = await withClockSkewRetry(() =>
+    supabase.from("users").select("*").eq("id", claims.userId).maybeSingle(),
+  );
   if (profileError) logQueryError("userState.resolveAuthenticatedUserState.profile", profileError);
 
   return { ...claims, profile: profile as User | null };

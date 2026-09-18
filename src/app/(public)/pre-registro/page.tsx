@@ -25,12 +25,14 @@ export const dynamic = "force-dynamic";
 
 async function loadRegistration(userId: string, hackathonId: string) {
   const supabase = await createServerSupabaseClient();
-  const result = await supabase
-    .from("hackathon_registrations")
-    .select("hackathon_id, luma_confirmed_at")
-    .eq("hackathon_id", hackathonId)
-    .eq("user_id", userId)
-    .maybeSingle();
+  const result = await withClockSkewRetry(() =>
+    supabase
+      .from("hackathon_registrations")
+      .select("hackathon_id, luma_confirmed_at")
+      .eq("hackathon_id", hackathonId)
+      .eq("user_id", userId)
+      .maybeSingle(),
+  );
   return unwrap(result, "preRegistro.checkRegistration");
 }
 

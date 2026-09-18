@@ -7,6 +7,23 @@ type QueryError = {
   hint?: string;
 };
 
+/**
+ * PostgREST rejects a token minted a moment ago when its clock runs a second
+ * behind Auth's ("JWT issued at future", PGRST303). The page then fails on the
+ * very first request after login; the same query succeeds a second later. One
+ * retry covers it. Callers pass a factory because a query builder is not
+ * reusable once awaited.
+ */
+export async function withClockSkewRetry<T extends { error: QueryError | null }>(
+  run: () => PromiseLike<T>,
+  delayMs = 1000,
+): Promise<T> {
+  const first = await run();
+  if (first.error?.code !== "PGRST303") return first;
+  await new Promise((resolve) => setTimeout(resolve, delayMs));
+  return run();
+}
+
 export function logQueryError(site: string, error: QueryError): void {
   console.error(`[${site}] query failed`, {
     code: error.code,
