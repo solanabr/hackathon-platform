@@ -28,6 +28,15 @@ export function AuthActions({
     return () => window.removeEventListener(AUTH_DIALOG_EVENT, onOpen);
   }, []);
 
+  // A failed OAuth round trip comes back from Supabase as ?error= on the Site
+  // URL, i.e. this page, with no login card in sight. 15 people hit that in
+  // the first two weeks and saw a plain landing page. Open the card so the
+  // form can show the message it already knows how to render.
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).get("error")) return;
+    setNext(pathname === "/" ? "/pre-registro" : (pathname ?? ""));
+  }, [pathname]);
+
   return (
     <>
       <button

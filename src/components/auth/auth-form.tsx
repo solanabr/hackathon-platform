@@ -23,6 +23,10 @@ const PROVIDER_LABELS: Record<Provider, string> = {
 };
 
 const CALLBACK_ERRORS: Record<string, string> = {
+  // Supabase answers a lost or expired OAuth state on the Site URL, so this
+  // one lands on the home page, not on /auth.
+  invalid_request:
+    "O login com o Google não foi concluído: a sessão expirou no caminho de volta. Tente de novo.",
   link_invalid:
     "O link de acesso expirou ou já foi usado. Peça um novo código abaixo.",
   provider_error:
