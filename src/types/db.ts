@@ -10,12 +10,17 @@ export type User = {
   whatsapp: string | null;
   // Cidade/Estado, free text from the Colosseum interest form (00063).
   location: string | null;
+  // Founder onboarding (00064): "CEO, CTO..." and how the person works.
+  job_title: string | null;
+  work_type: WorkType | null;
   avatar_url: string | null;
   headline: string | null;
   bio: string | null;
   created_at: string;
   updated_at: string;
 };
+
+export type WorkType = "engineer" | "creator" | "business" | "investor" | "policy_law_tax" | "not_provided";
 
 export type SubmissionMode = "platform" | "external";
 
@@ -236,6 +241,40 @@ export type CampaignInterest = {
   project_url: string | null;
   project_socials: string | null;
   notes: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type StartupVertical =
+  | "stablecoins" | "payments" | "rwa" | "institutional" | "ai" | "gaming" | "infra" | "dev_tooling"
+  | "depin" | "wallets" | "consumer" | "defi" | "desci" | "daos" | "socialfi" | "security" | "creators"
+  | "quantum" | "biotech" | "robotics" | "climate" | "space" | "hardware" | "fintech" | "crypto" | "other";
+export type StartupStage =
+  | "early" | "bootstrapped" | "raising_preseed" | "preseed_closed" | "raising_seed" | "seed_closed"
+  | "raising_a" | "a_closed" | "exited" | "wound_down";
+export type StartupHiring = "yes" | "no" | "not_sure";
+export type StartupTargetCustomers = "b2c" | "b2b" | "institutions" | "government" | "other";
+export type StartupTokenLaunch = "live" | "future" | "no" | "not_sure";
+export type StartupTechTeam = "in_house" | "out_house" | "mixed_with_cto" | "mixed_without_cto" | "none";
+
+export type Startup = {
+  user_id: string;
+  hackathon_id: string | null;
+  name: string | null;
+  one_liner: string | null;
+  vertical: StartupVertical | null;
+  stage: StartupStage | null;
+  website: string | null;
+  pitch_deck_url: string | null;
+  twitter: string | null;
+  logo_url: string | null;
+  hiring: StartupHiring | null;
+  target_customers: StartupTargetCustomers | null;
+  token_launch: StartupTokenLaunch | null;
+  tech_team: StartupTechTeam | null;
+  heard_from: string | null;
+  help_needed: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

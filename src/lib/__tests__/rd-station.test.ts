@@ -98,6 +98,33 @@ describe("buildRdPayload", () => {
   });
 });
 
+describe("buildRdPayload — startup", () => {
+  it("carries the startup identifier, date and name", () => {
+    expect(
+      buildRdPayload({
+        identifier: "startup",
+        email: "ana@example.com",
+        name: "Ana Souza",
+        fields: {
+          cf_global_data_do_cadastro_startup_brt: "2026-09-11 12:13:22",
+          cf_global_startup_nome: "Foo Labs",
+        },
+      }),
+    ).toEqual({
+      event_type: "CONVERSION",
+      event_family: "CDP",
+      payload: {
+        conversion_identifier: "global_2026_startup_cadastro",
+        email: "ana@example.com",
+        name: "Ana Souza",
+        tags: ["global_2026_cadastro_plataforma"],
+        cf_global_data_do_cadastro_startup_brt: "2026-09-11 12:13:22",
+        cf_global_startup_nome: "Foo Labs",
+      },
+    });
+  });
+});
+
 describe("sendRdConversion", () => {
   const fetchMock = vi.fn();
 

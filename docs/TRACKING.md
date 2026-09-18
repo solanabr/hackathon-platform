@@ -48,6 +48,9 @@ both sides land on one person.
 | `colosseum_registration_confirmed` | server | `edition` | `confirmColosseumRegistration`, self-attestation on `/pre-registro` |
 | `interest_form_viewed` | client | — | `InterestForm` mount on `/pre-registro` (step Sobre você) |
 | `interest_form_saved` | server | `edition`, `completed` (`true` for "Salvar e continuar", `false` for "Salvar e terminar depois"), `has_project`, `looking_for_team` | `saveInterest`, on every successful save; not a funnel KPI, the flag says which button |
+| `startup_form_viewed` | client | `step` (`1`, `2`, `3`) | `StartupForm` mount on `/startup-registration` |
+| `startup_form_error` | client | `field`, `step` | `StartupForm`, on a rejected submit |
+| `startup_registered` | server | `has_vertical`, `stage` | `saveStartup`, on the first completion only, never on a re-save |
 | `team_created` | client | `edition` | `NewTeamForm`, after `create_team_with_leader` succeeds |
 | `member_invited` | server | `edition`, `team_id`, `via` (`email`, `board`), `has_account` | `addMemberToTeam` (team page form and team-up board invite) |
 | `invite_accepted` | client | `edition`, `team_id` | `PendingInviteActions` on the team page |
@@ -66,7 +69,8 @@ PostHog under the `2026-05-30` defaults; there is no pageview component.
 ## RD Station
 
 Marketing keeps its contact base in RD Station Marketing. The Colosseum
-registration flow (`src/app/(public)/pre-registro/actions.ts`) posts a
+registration flow (`src/app/(public)/pre-registro/actions.ts`) and the startup
+form (`src/app/(public)/startup-registration/actions.ts`) post a
 conversion event through `sendRdConversion()` (`src/lib/rd-station.ts`) to
 `POST https://api.rd.services/platform/conversions`, authenticated with
 `RD_STATION_API_KEY` (no-op while unset). It runs in `after()` and is not
@@ -74,7 +78,7 @@ consent-gated: it mirrors the registration the person just submitted, not
 behavioural analytics.
 
 The contact key is the account e-mail (`state.email`, never form data). A
-conversion for an existing e-mail updates that contact, so the three events are
+conversion for an existing e-mail updates that contact, so the four events are
 one upsert each with the fields that changed. Every event carries the tag
 `global_2026_cadastro_plataforma`.
 
@@ -83,6 +87,7 @@ one upsert each with the fields that changed. Every event carries the tag
 | Cadastro | `global_2026_cadastro_plataforma` | `preRegister`, first completed registration only |
 | Confirmação Colosseum | `global_2026_confirmacao_colosseum` | `confirmColosseumRegistration`, on the attestation |
 | Formulário "Sobre você" | `global_2026_formulario_sobre_voce` | `saveInterest`, when the form is completed |
+| Cadastro de startup | `global_2026_startup_cadastro` | `saveStartup` (`/startup-registration`), first completion only |
 
 | RD field | Source |
 | --- | --- |
@@ -92,6 +97,8 @@ one upsert each with the fields that changed. Every event carries the tag
 | `cf_global_data_do_cadastro_brt` | `hackathon_registrations.registered_at` |
 | `cf_global_data_da_confirmacao_colosseum_brt` | `hackathon_registrations.luma_confirmed_at` |
 | `cf_data_da_confirmacao_colosseum_brt` | `campaign_interest.completed_at` |
+| `cf_global_data_do_cadastro_startup_brt` | `startups.completed_at` |
+| `cf_global_startup_nome` | `startups.name` |
 | `cf_global_utm_source` / `_medium` / `_campaign` / `_content` | `hackathon_registrations.utm_*` |
 
 Dates are `YYYY-MM-DD HH:mm:ss` in America/Sao_Paulo (`formatBrt()` in
