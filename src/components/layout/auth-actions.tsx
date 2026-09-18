@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { trackClient } from "@/lib/analytics-browser";
 import { AUTH_DIALOG_EVENT, AuthDialog } from "@/components/auth/auth-dialog";
@@ -8,6 +8,8 @@ import { AUTH_DIALOG_EVENT, AuthDialog } from "@/components/auth/auth-dialog";
 /** Entrar and Fazer cadastro open the login card over the page. Entrar carries
  *  the page it was clicked on, so login returns the visitor there instead of
  *  defaulting to their painel; cadastro keeps sending people to /pre-registro. */
+const subscribeNoop = () => () => {};
+
 export function AuthActions({
   signInClassName,
   signUpClassName,
@@ -17,7 +19,6 @@ export function AuthActions({
 }) {
   const pathname = usePathname();
   const [next, setNext] = useState<string | null>(null);
-  const close = useCallback(() => setNext(null), []);
 
   // Every /auth link on the page routes here instead of navigating: one card,
   // one mounted dialog, wherever the visitor clicked.
@@ -31,11 +32,25 @@ export function AuthActions({
   // A failed OAuth round trip comes back from Supabase as ?error= on the Site
   // URL, i.e. this page, with no login card in sight. 15 people hit that in
   // the first two weeks and saw a plain landing page. Open the card so the
-  // form can show the message it already knows how to render.
-  useEffect(() => {
-    if (!new URLSearchParams(window.location.search).get("error")) return;
-    setNext(pathname === "/" ? "/pre-registro" : (pathname ?? ""));
-  }, [pathname]);
+  // form can show the message it already knows how to render. The URL is
+  // read as an external store; the server snapshot says "no error".
+  const oauthError = useSyncExternalStore(
+    subscribeNoop,
+    () => new URLSearchParams(window.location.search).has("error"),
+    () => false,
+  );
+  const [errorDismissed, setErrorDismissed] = useState(false);
+  const errorNext =
+    oauthError && !errorDismissed
+      ? pathname === "/"
+        ? "/pre-registro"
+        : (pathname ?? "")
+      : null;
+  const openNext = next ?? errorNext;
+  const closeAll = useCallback(() => {
+    setNext(null);
+    setErrorDismissed(true);
+  }, []);
 
   return (
     <>
@@ -57,9 +72,9 @@ export function AuthActions({
         <span>Criar conta</span>
       </button>
       <AuthDialog
-        open={next !== null}
-        onClose={close}
-        defaultNext={next || undefined}
+        open={openNext !== null}
+        onClose={closeAll}
+        defaultNext={openNext || undefined}
       />
     </>
   );
