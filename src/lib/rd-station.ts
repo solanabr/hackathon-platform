@@ -14,6 +14,7 @@ export const RD_CONVERSION_IDENTIFIERS = {
   cadastro: "global_2026_cadastro_plataforma",
   confirmacao: "global_2026_confirmacao_colosseum",
   formulario: "global_2026_formulario_sobre_voce",
+  startup: "global_2026_startup_cadastro",
 } as const;
 
 export const RD_TAGS = ["global_2026_cadastro_plataforma"] as const;
@@ -23,6 +24,8 @@ export const RD_FIELD = {
   registered_at: "cf_global_data_do_cadastro_brt",
   colosseum_confirmed_at: "cf_global_data_da_confirmacao_colosseum_brt",
   interest_completed_at: "cf_data_da_confirmacao_colosseum_brt",
+  startup_completed_at: "cf_global_data_do_cadastro_startup_brt",
+  startup_name: "cf_global_startup_nome",
   utm_source: "cf_global_utm_source",
   utm_medium: "cf_global_utm_medium",
   utm_campaign: "cf_global_utm_campaign",

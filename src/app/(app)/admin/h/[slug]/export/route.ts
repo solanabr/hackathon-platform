@@ -187,6 +187,78 @@ const TEAMS_HEADER = [
   "projeto", "enviado_em", "github", "video", "site", "finalista", "colocacao", "criado_em",
 ];
 
+type FounderCols = UserCols & { job_title: string | null; work_type: string | null };
+type StartupRow = {
+  user_id: string;
+  name: string | null;
+  one_liner: string | null;
+  vertical: string | null;
+  stage: string | null;
+  website: string | null;
+  pitch_deck_url: string | null;
+  twitter: string | null;
+  logo_url: string | null;
+  hiring: string | null;
+  target_customers: string | null;
+  token_launch: string | null;
+  tech_team: string | null;
+  heard_from: string | null;
+  help_needed: string | null;
+  completed_at: string | null;
+  created_at: string;
+  user: FounderCols | FounderCols[] | null;
+};
+
+async function startupsCsv(hackathonId: string): Promise<CsvCell[][]> {
+  const supabase = await createServiceRoleClient();
+  const result = await supabase
+    .from("startups")
+    .select(`*, user:users(${USER_COLS}, job_title, work_type)`)
+    .eq("hackathon_id", hackathonId)
+    .order("created_at", { ascending: true });
+  const rows = (unwrap(result, "admin.export.startups") as unknown as StartupRow[] | null) ?? [];
+  return rows.map((r) => {
+    const u = one(r.user);
+    return [
+      u?.full_name,
+      u?.email,
+      u?.whatsapp,
+      u?.telegram_handle,
+      u?.linkedin_url,
+      u?.job_title,
+      u?.work_type,
+      u?.location,
+      r.name,
+      r.one_liner,
+      r.vertical,
+      r.stage,
+      r.website,
+      r.pitch_deck_url,
+      r.twitter,
+      r.logo_url,
+      r.hiring,
+      r.target_customers,
+      r.token_launch,
+      r.tech_team,
+      r.heard_from,
+      r.help_needed,
+      r.completed_at,
+      r.created_at,
+    ];
+  });
+}
+const STARTUPS_HEADER = [
+  "nome", "email", "whatsapp", "telegram", "linkedin", "cargo", "tipo_de_trabalho", "cidade_estado",
+  "startup", "resumo", "vertical", "estagio", "site", "pitch_deck", "twitter", "logo",
+  "contratando", "clientes", "token", "time_tecnico", "como_soube", "ajuda", "concluido_em", "criado_em",
+];
+
+const EXPORTS = {
+  users: { header: USERS_HEADER, rows: usersCsv, file: "inscritos" },
+  teams: { header: TEAMS_HEADER, rows: teamsCsv, file: "times" },
+  startups: { header: STARTUPS_HEADER, rows: startupsCsv, file: "startups" },
+} as const;
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const gate = await requireEditionAdminBySlug(slug);
@@ -194,17 +266,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Sem permissão." }, { status: gate.reason === "unauthenticated" ? 401 : 403 });
   }
   const type = request.nextUrl.searchParams.get("type");
-  if (type !== "users" && type !== "teams") {
+  if (type !== "users" && type !== "teams" && type !== "startups") {
     return NextResponse.json({ error: "Tipo inválido." }, { status: 400 });
   }
 
-  const hackathonId = gate.hackathon.id;
-  const csv =
-    type === "users"
-      ? toCsv(USERS_HEADER, await usersCsv(hackathonId))
-      : toCsv(TEAMS_HEADER, await teamsCsv(hackathonId));
+  const target = EXPORTS[type];
+  const csv = toCsv([...target.header], await target.rows(gate.hackathon.id));
   const day = new Date().toISOString().slice(0, 10);
-  const name = `${slug}-${type === "users" ? "inscritos" : "times"}-${day}.csv`;
+  const name = `${slug}-${target.file}-${day}.csv`;
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

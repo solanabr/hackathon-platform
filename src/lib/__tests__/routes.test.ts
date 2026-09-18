@@ -67,6 +67,10 @@ describe("the /h hub and pre-registro are public", () => {
   it("lets anon into pre-registro", () => {
     expect(isPublicRoute("/pre-registro")).toBe(true);
   });
+
+  it("lets anon into startup-registration", () => {
+    expect(isPublicRoute("/startup-registration")).toBe(true);
+  });
 });
 describe("builder profiles are public", () => {
   it("lets anon into a profile by id", () => {

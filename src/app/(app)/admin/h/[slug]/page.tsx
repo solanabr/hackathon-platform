@@ -52,7 +52,7 @@ export default async function AdminEditionPage({
   const round = ratingRound(hackathon);
   // Everything keyed only on the edition loads as one batch; assignments and
   // ratings genuinely depend on the submitted ids and follow as a second one.
-  const [registrations, teams, submittedResult, judgeRoles, acceptedResult] = await Promise.all([
+  const [registrations, teams, submittedResult, judgeRoles, acceptedResult, startupsResult] = await Promise.all([
     listRegistrationsForEdition(hackathon.id),
     listTeamsForEdition(hackathon.id),
     supabase
@@ -70,7 +70,13 @@ export default async function AdminEditionPage({
       .select("user_id, teams!inner(name)")
       .eq("hackathon_id", hackathon.id)
       .eq("status", "accepted"),
+    supabase
+      .from("startups")
+      .select("user_id, completed_at")
+      .eq("hackathon_id", hackathon.id),
   ]);
+  const startupRows = (unwrap(startupsResult, "admin.overview.startups") as { completed_at: string | null }[] | null) ?? [];
+  const startupsCompleted = startupRows.filter((s) => s.completed_at).length;
   const submittedTeams = teams.filter(
     (t) => t.submission?.status === "submitted",
   ).length;
@@ -254,6 +260,32 @@ export default async function AdminEditionPage({
             <p className="mt-5 font-mono text-sm text-muted">Nenhuma inscrição ainda.</p>
           ) : (
             <RegistrationsTable rows={registrationRows} />
+          )}
+        </Card>
+
+        <Card sticker className="p-6 sm:p-7">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">
+                Fundadores
+              </p>
+              <h2 className="mt-1 font-heading text-lg font-bold">Startups</h2>
+              <p className="mt-1 text-sm text-muted">
+                <span className="font-mono tabular-nums">{startupRows.length}</span>{" "}
+                {startupRows.length === 1 ? "cadastro" : "cadastros"} ·
+                <span className="font-mono tabular-nums"> {startupsCompleted}</span>{" "}
+                {startupsCompleted === 1 ? "concluído" : "concluídos"}
+              </p>
+            </div>
+            {startupRows.length > 0 && (
+              <a href={`/admin/h/${hackathon.slug}/export?type=startups`} className="btn-secondary px-5 py-2 text-sm">
+                <DownloadSimpleIcon size={16} weight="bold" aria-hidden />
+                Exportar CSV
+              </a>
+            )}
+          </div>
+          {startupRows.length === 0 && (
+            <p className="mt-5 font-mono text-sm text-muted">Nenhuma startup cadastrada ainda.</p>
           )}
         </Card>
 

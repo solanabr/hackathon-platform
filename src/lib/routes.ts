@@ -5,6 +5,7 @@ const PUBLIC_ROUTES = [
   "/privacidade",
   "/termos",
   "/pre-registro",
+  "/startup-registration",
   "/guias",
 ];
 
