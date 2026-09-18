@@ -13,7 +13,7 @@ import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { logQueryError } from "@/lib/supabase/unwrap";
+import { logQueryError, withClockSkewRetry } from "@/lib/supabase/unwrap";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
 
 import { EditionPageDoc } from "@/components/edition/page-doc";

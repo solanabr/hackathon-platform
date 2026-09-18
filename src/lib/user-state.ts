@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createServerSupabaseClient } from "./supabase/server";
-import { logQueryError } from "./supabase/unwrap";
+import { logQueryError, withClockSkewRetry } from "./supabase/unwrap";
 import { DEFAULT_AUTH_NEXT, pickAuthNext } from "./auth-next";
 import { editionStage } from "./hackathon";
 import type { Hackathon, User } from "@/types/db";

@@ -6,7 +6,7 @@ import {
 } from "./user-state";
 import { getHackathonBySlug } from "./hackathon";
 import { createServiceRoleClient } from "./supabase/server";
-import { unwrap } from "./supabase/unwrap";
+import { unwrap, withClockSkewRetry } from "./supabase/unwrap";
 import type { Hackathon, PlatformRole } from "@/types/db";
 
 type RoleCheck =

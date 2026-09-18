@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { withPlatformUtm } from "@/lib/attribution";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { unwrap } from "@/lib/supabase/unwrap";
+import { unwrap, withClockSkewRetry } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState, resolveSessionClaims } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
 import { InterestForm } from "./interest-form";
