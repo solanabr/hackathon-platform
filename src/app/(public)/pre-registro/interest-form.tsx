@@ -42,6 +42,31 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
   const lookingDefault =
     interest?.looking_for_team === true ? "yes" : interest?.looking_for_team === false ? "no" : "";
 
+  // The bottom alert sits two fieldsets below the "Situação" selects, so on a
+  // phone the person taps "Salvar e continuar", reads the error and never
+  // sees which field it is about. Take them to it.
+  const errorField = state.error && !edited ? state.field : null;
+  useEffect(() => {
+    if (!errorField || errorField === "server") return;
+    const el = document.getElementById(errorField);
+    el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    el?.focus({ preventScroll: true });
+  }, [errorField, state]);
+  const invalid = (field: InterestField) =>
+    errorField === field
+      ? {
+          "aria-invalid": true as const,
+          "aria-describedby": `${field}-error`,
+          className: "border-red-500 focus:border-red-500 focus:ring-red-500/30",
+        }
+      : {};
+  const fieldError = (field: InterestField) =>
+    errorField === field ? (
+      <p id={`${field}-error`} role="alert" className="mt-1.5 text-sm font-semibold text-red-700">
+        {state.error}
+      </p>
+    ) : null;
+
   return (
     <form onSubmit={submit} onChange={() => setEdited(true)} className="space-y-6">
       <fieldset className="space-y-4">
@@ -55,6 +80,7 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
             name="has_project"
             value={hasProject}
             onChange={(e) => setHasProject(e.target.value)}
+            {...invalid("has_project")}
           >
             <option value="">Selecione</option>
             {HAS_PROJECT_OPTIONS.map((o) => (
@@ -63,14 +89,21 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
               </option>
             ))}
           </Select>
+          {fieldError("has_project")}
         </div>
         <div>
           <Label htmlFor="looking_for_team">Está procurando time ou membros?</Label>
-          <Select id="looking_for_team" name="looking_for_team" defaultValue={lookingDefault}>
+          <Select
+            id="looking_for_team"
+            name="looking_for_team"
+            defaultValue={lookingDefault}
+            {...invalid("looking_for_team")}
+          >
             <option value="">Selecione</option>
             <option value="yes">Sim</option>
             <option value="no">Não</option>
           </Select>
+          {fieldError("looking_for_team")}
         </div>
       </fieldset>
 
@@ -81,16 +114,30 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
           </legend>
           <div>
             <Label htmlFor="project_name">Nome do projeto</Label>
-            <Input id="project_name" name="project_name" maxLength={120} defaultValue={interest?.project_name ?? ""} />
+            <Input
+              id="project_name"
+              name="project_name"
+              maxLength={120}
+              defaultValue={interest?.project_name ?? ""}
+              {...invalid("project_name")}
+            />
+            {fieldError("project_name")}
           </div>
           <div>
             <Label htmlFor="one_liner" hint="uma frase">O que ele faz?</Label>
-            <Input id="one_liner" name="one_liner" maxLength={280} defaultValue={interest?.one_liner ?? ""} />
+            <Input
+              id="one_liner"
+              name="one_liner"
+              maxLength={280}
+              defaultValue={interest?.one_liner ?? ""}
+              {...invalid("one_liner")}
+            />
+            {fieldError("one_liner")}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="stage">Estágio</Label>
-              <Select id="stage" name="stage" defaultValue={interest?.stage ?? ""}>
+              <Select id="stage" name="stage" defaultValue={interest?.stage ?? ""} {...invalid("stage")}>
                 <option value="">Selecione</option>
                 {STAGE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -98,6 +145,7 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
                   </option>
                 ))}
               </Select>
+              {fieldError("stage")}
             </div>
             <div>
               <Label htmlFor="team_size">Tamanho do time</Label>
@@ -109,7 +157,9 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
                 min={1}
                 max={20}
                 defaultValue={interest?.team_size ?? ""}
+                {...invalid("team_size")}
               />
+              {fieldError("team_size")}
             </div>
           </div>
           <div>
@@ -122,7 +172,9 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
               spellCheck={false}
               placeholder="https://"
               defaultValue={interest?.project_url ?? ""}
+              {...invalid("project_url")}
             />
+            {fieldError("project_url")}
           </div>
           <div>
             <Label htmlFor="project_socials" hint="opcional">Redes sociais do projeto</Label>
@@ -147,7 +199,7 @@ export function InterestForm({ interest }: { interest: CampaignInterest | null }
         />
       </div>
 
-      {state.error && !edited && (
+      {errorField === "server" && (
         <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
