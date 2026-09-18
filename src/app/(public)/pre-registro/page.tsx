@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { withPlatformUtm } from "@/lib/attribution";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { unwrap } from "@/lib/supabase/unwrap";
+import { unwrap, withClockSkewRetry } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState, resolveSessionClaims } from "@/lib/user-state";
 import { PreregForm } from "./prereg-form";
 import { InterestForm } from "./interest-form";
@@ -25,12 +25,14 @@ export const dynamic = "force-dynamic";
 
 async function loadRegistration(userId: string, hackathonId: string) {
   const supabase = await createServerSupabaseClient();
-  const result = await supabase
-    .from("hackathon_registrations")
-    .select("hackathon_id, luma_confirmed_at")
-    .eq("hackathon_id", hackathonId)
-    .eq("user_id", userId)
-    .maybeSingle();
+  const result = await withClockSkewRetry(() =>
+    supabase
+      .from("hackathon_registrations")
+      .select("hackathon_id, luma_confirmed_at")
+      .eq("hackathon_id", hackathonId)
+      .eq("user_id", userId)
+      .maybeSingle(),
+  );
   return unwrap(result, "preRegistro.checkRegistration");
 }
 

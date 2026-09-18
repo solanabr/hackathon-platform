@@ -13,7 +13,7 @@ import { getRegistration, isRegistrationComplete } from "@/lib/registration";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { resolveRoleState } from "@/lib/roles";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { logQueryError } from "@/lib/supabase/unwrap";
+import { logQueryError, withClockSkewRetry } from "@/lib/supabase/unwrap";
 import { listSponsors, groupByTier } from "@/lib/sponsors";
 
 import { EditionPageDoc } from "@/components/edition/page-doc";
@@ -94,12 +94,14 @@ export default async function EditionPage({ params }: { params: Promise<{ slug: 
   let finalists: Array<{ teamId: string; teamName: string; placement: number | null }> = [];
   if (isFinalistsVisible(hackathon)) {
     const sr = await createServiceRoleClient();
-    const { data: rows, error: finalistsError } = await sr
-      .from("teams")
-      .select("id, name, placement")
-      .eq("hackathon_id", hackathon.id)
-      .eq("is_finalist", true)
-      .order("placement", { ascending: true, nullsFirst: false });
+    const { data: rows, error: finalistsError } = await withClockSkewRetry(() =>
+      sr
+        .from("teams")
+        .select("id, name, placement")
+        .eq("hackathon_id", hackathon.id)
+        .eq("is_finalist", true)
+        .order("placement", { ascending: true, nullsFirst: false }),
+    );
     // The public reveal degrades to no list rather than an error banner.
     if (finalistsError) logQueryError("public.landing.finalists", finalistsError);
     finalists = ((rows as Array<{ id: string; name: string; placement: number | null }> | null) ??
