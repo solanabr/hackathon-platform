@@ -10,7 +10,7 @@ localStorage and mirrored into a cookie of the same name (1 year, `SameSite=Lax`
 
 | Surface | Without consent | With `"all"` |
 | --- | --- | --- |
-| PostHog browser (`src/instrumentation-client.ts`) | Boots opted out, persists nothing, no flags / replay / heatmap calls | `opt_in_capturing()`; autocaptured pageviews plus the client events below |
+| PostHog browser (`src/instrumentation-client.ts`) | Boots opted out, persists nothing, no flags / replay / heatmap calls | `opt_in_capturing()`; autocaptured pageviews, session replay with every input masked (`maskAllInputs`, plus anything under `[data-ph-mask]`), and the client events below |
 | PostHog server (`src/lib/analytics-server.ts` `track()`, `src/app/api/submit/route.ts`) | Returns before creating a client — nothing leaves the server | Captures with the Supabase user id as `distinct_id` |
 | Google Tag Manager (`src/components/analytics/google-tag-manager.tsx`) | Consent Mode v2 default `denied` | `consent update` to `granted` |
 | Sentry | Always on: error reports only, `sendDefaultPii: false` | same |

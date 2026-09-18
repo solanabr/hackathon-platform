@@ -47,7 +47,8 @@ export default function PrivacidadePage() {
               </li>
               <li>
                 <strong>Uso da plataforma:</strong> eventos de navegação
-                (páginas visitadas, cliques) via PostHog e, pelo Google Tag
+                (páginas visitadas, cliques e uma gravação da navegação, com
+                todos os campos de formulário mascarados) via PostHog e, pelo Google Tag
                 Manager, medição de campanhas do Google Analytics e Google Ads —
                 somente se você aceitar no aviso de cookies — e relatórios de
                 erro via Sentry,
