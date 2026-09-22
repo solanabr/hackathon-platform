@@ -53,6 +53,6 @@ describe("searchProjects", () => {
     const { searchProjects } = await import("@/lib/copilot/client");
     const out = await searchProjects({ query: "x", winnersOnly: true });
     expect(out.results[0].hackathon.year).toBe(2024);
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ query: "x", filter: { winnersOnly: true } });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ query: "x", filters: { winnersOnly: true } });
   });
 });

@@ -76,7 +76,7 @@ export const searchProjects = (input: SearchInput): Promise<{ results: ProjectCa
         query: input.query?.trim() || undefined,
         hackathons: input.hackathons, trackKeys: input.trackKeys,
         limit: input.limit ?? 10, offset: input.offset ?? 0,
-        filter: { winnersOnly: input.winnersOnly ?? false, clusterKeys: input.clusterKeys },
+        filters: { winnersOnly: input.winnersOnly ?? false, clusterKeys: input.clusterKeys },
       };
       const out = await copilotFetch<{ results: ApiProject[]; hasMore: boolean; totalFound: number }>("/search/projects", { method: "POST", body });
       return { results: out.results.map(mapProject), hasMore: out.hasMore, totalFound: out.totalFound };
