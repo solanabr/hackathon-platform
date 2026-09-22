@@ -20,6 +20,7 @@
 - `/guias/*` is already public in `src/lib/routes.ts`; no middleware change.
 - Query errors go through `logQueryError` from `src/lib/supabase/unwrap.ts`.
 - Branch `feat/copilot-page` off `main`. One commit per task.
+- **Design fidelity (audit 2026-09-22):** every section follows the LP rhythm, hat → heading → paragraph → content, each wrapped in `<Reveal>` (`tone="texto"` for type, `"papel"` for cards); section top padding `pt-24 lg:pt-28 xl:pt-32`; the eyebrow is the LP's `SectionHat` (lifted to `src/components/ui/section-hat.tsx`); highlights are the yellow sticker `bg-yellow … text-green-dark shadow-sticker`; guide steps sit in `card-cut` shells like the LP's Passo cards; form controls use the pre-registro focus idiom `focus:ring-2 focus:ring-emerald/30`. Outbound Colosseum links go through `withPlatformUtm`. Guides keep the narrower `max-w-4xl` reading measure on purpose, so `SectionRails` is not used.
 
 ## File structure
 
@@ -30,6 +31,7 @@
 - `src/lib/copilot/quota.ts` — idea-search count and record via service role.
 - `supabase/migrations/00065_copilot_queries.sql` — the table.
 - `src/app/api/copilot/search/route.ts` — POST handler.
+- `src/components/ui/section-hat.tsx` — the LP's eyebrow, lifted out of `page.tsx` so guides can use it.
 - `src/components/ui/copy-button.tsx` — generic copy button.
 - `src/app/(public)/guias/copilot/page.tsx` — server page, metadata, guide sections.
 - `src/app/(public)/guias/copilot/explorer.tsx` — client island: idea box, browse, results.
@@ -875,16 +877,37 @@ git commit -m "feat: /api/copilot/search for idea and browse, with the daily cap
 
 ---
 
-### Task 6: Copy button and project card
+### Task 6: SectionHat, copy button and project card
 
 **Files:**
-- Create: `src/components/ui/copy-button.tsx`, `src/app/(public)/guias/copilot/project-card.tsx`
+- Create: `src/components/ui/section-hat.tsx`, `src/components/ui/copy-button.tsx`, `src/app/(public)/guias/copilot/project-card.tsx`
+- Modify: `src/app/(public)/page.tsx:210-230` (delete the local `SectionHat`, import the shared one)
 
 **Interfaces (produces):**
 ```tsx
 export function CopyButton({ text, label, event, className }: { text: string; label: string; event?: { name: string; properties?: Record<string, unknown> }; className?: string })
 export function ProjectCardView({ card }: { card: ProjectCard })
 ```
+
+- [ ] **Step 0: Lift `SectionHat` out of the LP**
+
+Create the shared component with the LP's exact markup:
+
+```tsx
+// src/components/ui/section-hat.tsx
+import type { ReactNode } from "react";
+
+export function SectionHat({ children, centered = false, onDark = false }: { children: ReactNode; centered?: boolean; onDark?: boolean }) {
+  return (
+    <p className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.22em] ${onDark ? "text-surface" : "text-ink/75"} ${centered ? "justify-center" : ""}`}>
+      <span aria-hidden className={`h-[7px] w-[18px] shrink-0 rounded-[2px] ${onDark ? "bg-yellow" : "bg-emerald"}`} />
+      {children}
+    </p>
+  );
+}
+```
+
+In `src/app/(public)/page.tsx` delete the local `function SectionHat(...)` (lines ~210-230) and add `import { SectionHat } from "@/components/ui/section-hat";`. The eight call sites keep working unchanged. Verify with `npx tsc --noEmit -p .` and by loading `/` once: no visual change.
 
 - [ ] **Step 1: Copy button**
 
@@ -983,8 +1006,8 @@ export function ProjectCardView({ card }: { card: ProjectCard }) {
 
 ```bash
 npx tsc --noEmit -p . && npx eslint src/components/ui/copy-button.tsx 'src/app/(public)/guias/copilot'
-git add src/components/ui/copy-button.tsx 'src/app/(public)/guias/copilot/project-card.tsx'
-git commit -m "feat: copy button and Copilot project card"
+git add src/components/ui/section-hat.tsx src/components/ui/copy-button.tsx 'src/app/(public)/guias/copilot/project-card.tsx' 'src/app/(public)/page.tsx'
+git commit -m "feat: shared SectionHat, copy button and Copilot project card"
 ```
 
 ---
@@ -1007,6 +1030,8 @@ git commit -m "feat: copy button and Copilot project card"
 import { useState, useTransition, type FormEvent } from "react";
 import { openAuthDialog } from "@/components/auth/auth-dialog";
 import { CopyButton } from "@/components/ui/copy-button";
+import { Reveal } from "@/components/ui/reveal";
+import { SectionHat } from "@/components/ui/section-hat";
 import { trackClient } from "@/lib/analytics-browser";
 import type { ProjectCard, Reading } from "@/lib/copilot/types";
 import { ProjectCardView } from "./project-card";
@@ -1070,12 +1095,17 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
 
   return (
     <section id="valide" className="scroll-mt-28">
-      <form onSubmit={submit} className="rounded-3xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker sm:p-7">
+      <Reveal tone="texto">
+        <SectionHat>Valide antes de codar</SectionHat>
+        <h2 className="mt-4 font-heading text-3xl font-black uppercase leading-[0.95] text-ink [font-stretch:115%] sm:text-4xl">Sua ideia, contra 5.400 projetos</h2>
+        <p className="mt-3 max-w-2xl text-ink/75">Uma frase basta. Você vê quem já tentou, quão disputada é a área e leva o resultado para o seu agente.</p>
+      </Reveal>
+      <form onSubmit={submit} className="mt-8 rounded-3xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker sm:p-7">
         <label htmlFor="idea" className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-deep">Sua ideia em uma frase</label>
         <textarea
           id="idea" value={idea} onChange={(e) => setIdea(e.target.value)} maxLength={300} rows={3} required minLength={8}
           placeholder="Ex.: um app de pagamentos em stablecoin para motoristas de aplicativo"
-          className="mt-3 w-full resize-none rounded-xl border-2 border-green-dark/30 bg-surface px-4 py-3 text-base leading-relaxed text-ink outline-none focus:border-green-dark"
+          className="mt-3 w-full resize-none rounded-xl border-2 border-green-dark/30 bg-surface px-4 py-3 text-base leading-relaxed text-ink outline-none focus:border-green-dark focus:ring-2 focus:ring-emerald/30"
         />
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="submit" disabled={pending || idea.trim().length < 8}
@@ -1091,21 +1121,23 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
       {result && (
         <div className="mt-8 space-y-10">
           {result.crowdedness && (
-            <p className="rounded-2xl bg-green-dark px-6 py-4 font-heading text-lg font-bold leading-snug text-surface shadow-sticker">{result.crowdedness}</p>
+            <Reveal tone="papel">
+              <p className="rounded-2xl bg-green-dark px-6 py-4 font-heading text-lg font-bold leading-snug text-surface shadow-sticker">{result.crowdedness}</p>
+            </Reveal>
           )}
           <div>
-            <h3 className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">Projetos parecidos</h3>
+            <Reveal tone="texto"><h3 className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">Projetos parecidos</h3></Reveal>
             {result.projects.length === 0 ? (
               <p className="mt-3 text-ink/75">Nada parecido nos hackathons anteriores. Isso pode ser bom sinal, ou sinal de que ninguém achou um mercado. Leve para o seu agente.</p>
             ) : (
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {result.projects.map((c) => <ProjectCardView key={c.slug} card={c} />)}
+                {result.projects.map((c, i) => <Reveal key={c.slug} index={i} tone="papel" className="h-full"><ProjectCardView card={c} /></Reveal>)}
               </div>
             )}
           </div>
           {result.readings.length > 0 && (
             <div>
-              <h3 className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">Leituras</h3>
+              <Reveal tone="texto"><h3 className="font-heading text-2xl font-black uppercase text-ink [font-stretch:115%]">Leituras</h3></Reveal>
               <ul className="mt-5 divide-y-2 divide-green-dark/15 rounded-2xl border-2 border-green-dark bg-surface-raised shadow-sticker">
                 {result.readings.map((r) => (
                   <li key={r.id} className="px-5 py-4">
@@ -1117,7 +1149,8 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
               </ul>
             </div>
           )}
-          <div className="rounded-3xl border-2 border-green-dark bg-yellow p-5 shadow-sticker sm:p-7">
+          <Reveal tone="papel">
+          <div className="-rotate-1 rounded-3xl border-2 border-green-dark bg-yellow p-5 shadow-sticker sm:p-7">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-green-dark/80">Leve para o seu agente</p>
             <p className="mt-2 text-sm text-green-dark">O julgamento de verdade acontece no Claude Code ou Codex com a skill do Copilot. Cole este prompt lá.</p>
             <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-surface-raised p-4 font-mono text-sm leading-relaxed text-ink">{result.prompt}</pre>
@@ -1126,6 +1159,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
               <a href="#use-no-seu-agente" className="inline-flex items-center px-2 py-2 text-sm font-bold text-green-dark underline underline-offset-2">Ainda não instalou? Veja como</a>
             </div>
           </div>
+          </Reveal>
         </div>
       )}
     </section>
@@ -1158,8 +1192,11 @@ function BrowseSection({ filters }: { filters: ExplorerFilters }) {
 
   return (
     <section id="explore" className="scroll-mt-28">
-      <h2 className="font-heading text-3xl font-black uppercase text-ink [font-stretch:115%] sm:text-4xl">Explore o que já foi construído</h2>
-      <p className="mt-3 max-w-2xl text-ink/75">5.400 projetos de cinco hackathons do Colosseum. Filtre e veja quem venceu, o que construíram e onde estão os links.</p>
+      <Reveal tone="texto">
+        <SectionHat>Explore</SectionHat>
+        <h2 className="mt-4 font-heading text-3xl font-black uppercase leading-[0.95] text-ink [font-stretch:115%] sm:text-4xl">O que já foi construído</h2>
+        <p className="mt-3 max-w-2xl text-ink/75">5.400 projetos de cinco hackathons do Colosseum. Filtre e veja quem venceu, o que construíram e onde estão os links.</p>
+      </Reveal>
       <div className="mt-6 flex flex-wrap gap-2">
         {filters.hackathons.map((h) => (
           <button key={h.slug} type="button" className={chip(hackathon === h.slug)} onClick={() => { setHackathon(hackathon === h.slug ? undefined : h.slug); setTrackKey(undefined); }}>{h.name}</button>
@@ -1189,7 +1226,7 @@ function BrowseSection({ filters }: { filters: ExplorerFilters }) {
       {projects.length > 0 && (
         <>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((c) => <ProjectCardView key={c.slug} card={c} />)}
+            {projects.map((c, i) => <Reveal key={c.slug} index={i % 12} tone="papel" className="h-full"><ProjectCardView card={c} /></Reveal>)}
           </div>
           {hasMore && (
             <button type="button" onClick={() => load(projects.length, false)} disabled={pending}
@@ -1237,8 +1274,13 @@ Run `npx vitest run src/lib/__tests__/routes.test.ts`; it passes already because
 // src/app/(public)/guias/copilot/page.tsx
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRightIcon, WhatsappLogoIcon } from "@phosphor-icons/react/dist/ssr";
 import { CopyButton } from "@/components/ui/copy-button";
+import { Reveal } from "@/components/ui/reveal";
+import { SectionHat } from "@/components/ui/section-hat";
+import { TrackedCta } from "@/components/ui/tracked-cta";
+import { withPlatformUtm } from "@/lib/attribution";
+import { WHATSAPP_COMMUNITY_URL } from "@/app/(public)/pre-registro/constants";
 import { getFilters } from "@/lib/copilot/client";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { CopilotExplorer, type ExplorerFilters } from "./explorer";
@@ -1249,8 +1291,9 @@ export const metadata: Metadata = {
   openGraph: { title: "Colosseum Copilot · Guia da Superteam Brasil", description: "Saiba o que já foi construído antes de começar. Pesquisa gratuita, guia de instalação e prompts em português." },
 };
 
-const ARENA_TOKEN_URL = "https://colosseum.com/arena/copilot";
-const DOCS_URL = "https://docs.colosseum.com/copilot";
+const ARENA_TOKEN_URL = withPlatformUtm("https://colosseum.com/arena/copilot", { content: "guia_copilot_token" });
+const DOCS_URL = withPlatformUtm("https://docs.colosseum.com/copilot", { content: "guia_copilot_docs" });
+const SECTION = "px-4 pt-24 sm:px-6 lg:pt-28 xl:pt-32";
 const ENV_SNIPPET = `export COLOSSEUM_COPILOT_API_BASE="https://copilot.colosseum.com/api/v1"\nexport COLOSSEUM_COPILOT_PAT="cole-seu-token-aqui"`;
 const INSTALL = [
   { agent: "Claude Code", cmd: "npx skills add ColosseumOrg/colosseum-copilot" },
@@ -1282,13 +1325,13 @@ function Code({ code, label }: { code: string; label: string }) {
 
 function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
   return (
-    <div className="mt-10">
-      <h3 className="flex items-center gap-3 font-heading text-xl font-black text-ink sm:text-2xl">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-yellow font-mono text-sm text-green-dark">{n}</span>
-        {title}
-      </h3>
-      <div className="mt-3 leading-relaxed text-ink/85">{children}</div>
-    </div>
+    <Reveal index={n} tone="papel">
+      <div className={`card-cut mt-6 flex flex-col p-5 sm:p-6 ${n === 1 ? "" : "card-cut-kraft card-cut-open"}`}>
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/75">Passo {String(n).padStart(2, "0")}</p>
+        <h3 className="mt-3 font-heading text-xl font-black leading-snug text-ink [font-stretch:110%] sm:text-2xl">{title}</h3>
+        <div className="mt-3 leading-relaxed text-ink/85">{children}</div>
+      </div>
+    </Reveal>
   );
 }
 
@@ -1309,19 +1352,21 @@ export default async function CopilotGuidePage() {
     <div>
       <section className="px-4 pt-10 sm:px-6 sm:pt-14">
         <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald">Guia prático</p>
+          <Reveal tone="texto">
+          <SectionHat>Guia · Colosseum Copilot</SectionHat>
           <h1 className="mt-4 font-heading font-black uppercase leading-[0.95] tracking-tight text-ink">
             <span className="block text-5xl [font-stretch:120%] sm:text-7xl">Saiba o que já existe</span>
-            <span className="mt-3 inline-block -rotate-1 bg-green-dark px-4 py-1.5 text-3xl text-yellow [font-stretch:110%] sm:text-5xl">antes de construir</span>
+            <span className="mt-3 inline-block -rotate-1 border-2 border-green-dark bg-yellow px-4 py-1.5 text-3xl text-green-dark shadow-sticker [font-stretch:110%] sm:text-5xl">antes de construir</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink/80">
             O Colosseum Copilot pesquisa 5.400 projetos dos hackathons anteriores, 65 fontes de pesquisa e 6.300 produtos vivos.
             Escreva sua ideia, veja quem já tentou e quão disputada é a área. Depois, leve para o seu agente de código e peça uma avaliação honesta.
           </p>
+          </Reveal>
         </div>
       </section>
 
-      <section className="px-4 pt-12 sm:px-6">
+      <section className={SECTION}>
         <div className="mx-auto max-w-4xl">
           {filters ? (
             <CopilotExplorer filters={explorerFilters} signedIn={Boolean(state)} />
@@ -1331,12 +1376,15 @@ export default async function CopilotGuidePage() {
         </div>
       </section>
 
-      <section id="use-no-seu-agente" className="scroll-mt-28 px-4 pt-20 sm:px-6">
+      <section id="use-no-seu-agente" className={`scroll-mt-28 ${SECTION}`}>
         <div className="mx-auto max-w-4xl">
-          <h2 className="font-heading text-3xl font-black uppercase text-ink [font-stretch:115%] sm:text-4xl">Use no seu agente</h2>
-          <p className="mt-3 max-w-2xl text-ink/75">
-            A pesquisa aqui é uma amostra. A ferramenta completa roda dentro do Claude Code, do Codex ou do OpenClaw, com o seu próprio token e sem limite nosso. Cinco minutos de setup.
-          </p>
+          <Reveal tone="texto">
+            <SectionHat>Use no seu agente</SectionHat>
+            <h2 className="mt-4 font-heading text-3xl font-black uppercase leading-[0.95] text-ink [font-stretch:115%] sm:text-4xl">Cinco minutos de setup</h2>
+            <p className="mt-3 max-w-2xl text-ink/75">
+              A pesquisa aqui é uma amostra. A ferramenta completa roda dentro do Claude Code, do Codex ou do OpenClaw, com o seu próprio token e sem limite nosso.
+            </p>
+          </Reveal>
 
           <Step n={1} title="Crie sua conta no Colosseum e gere o token">
             <p>Entre no <Ext href={ARENA_TOKEN_URL}>Colosseum Arena</Ext> e clique em <strong>Generate your token</strong>. O token aparece uma vez só, copie na hora. Vale 90 dias, e é a mesma conta onde você se inscreve no hackathon.</p>
@@ -1373,10 +1421,30 @@ export default async function CopilotGuidePage() {
             </ul>
           </Step>
 
+          <Reveal tone="papel">
           <div className="mt-12 rounded-2xl border-2 border-green-dark bg-green px-6 py-5 text-surface shadow-sticker">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-yellow">O que o Copilot faz e não faz</p>
             <p className="mt-2 leading-relaxed">Ele pesquisa: projetos, fontes, dados do ecossistema. Ele não julga por você. Quem avalia é o seu agente, com as evidências que o Copilot traz, e quem decide é você. Documentação completa em <Ext href={DOCS_URL}>docs.colosseum.com/copilot</Ext> <ArrowUpRightIcon className="inline" size={14} weight="bold" aria-hidden />.</p>
           </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className={SECTION}>
+        <div className="mx-auto max-w-4xl">
+          <Reveal tone="papel">
+          <div className="rounded-3xl border-2 border-green-dark bg-surface-raised p-6 text-center shadow-sticker sm:p-8">
+            <SectionHat centered>Travou em algum passo?</SectionHat>
+            <p className="mx-auto mt-3 max-w-xl text-ink/80">O grupo do WhatsApp da Superteam Brasil responde rápido, e é onde saem os workshops de IA e vibe coding.</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <TrackedCta href={WHATSAPP_COMMUNITY_URL} event="campaign_link_clicked" properties={{ target: "whatsapp", location: "guia_copilot" }}
+                className="btn-cut inline-flex items-center gap-2.5 bg-emerald-deep px-8 py-3.5 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark">
+                <WhatsappLogoIcon aria-hidden size={18} weight="bold" /><span>Entrar no grupo</span>
+              </TrackedCta>
+              <a href="#valide" className="btn-cut btn-cut-outline inline-flex items-center px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]">Pesquisar outra ideia</a>
+            </div>
+          </div>
+          </Reveal>
         </div>
       </section>
     </div>
@@ -1435,6 +1503,8 @@ EOF
 ---
 
 ## Self-review
+
+Audit 2026-09-22 (two independent reviewers, correctness and design) folded in: `withPlatformUtm` on the Colosseum links; `SectionHat` lifted to a shared component; every section and result block wrapped in `Reveal`; LP section rhythm and hat → h2 → p lead-ins; yellow sticker highlight in the hero; guide steps in `card-cut` shells (JourneyPin/StepNumeral judged unfit: the pin is hardwired to three cards and scroll math); pre-registro focus ring on the textarea; a closing card so the page does not just stop. No blockers were found in the client, quota, route, migration or tests.
 
 - Spec coverage: idea box with projects, crowdedness, readings, prompt (T5, T7); browse with chips and load more (T7); guide steps 1–6 (T8); cache and semaphore (T2, T3); token in env only (T3, T9); session gate and 20/day cap with hand-off copy (T4, T5, T7); footer link (T8); analytics events (T6, T7, T8); error copy for cap, rate limit, down, signed out (T5, T7); public route (T8 test); migration via MCP (T4).
 - Placeholders: none.
