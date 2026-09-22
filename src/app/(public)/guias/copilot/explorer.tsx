@@ -29,7 +29,7 @@ async function post<T>(body: unknown): Promise<{ ok: true; data: T } | { ok: fal
 const CHIP = "rounded-full border-2 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-colors duration-(--dur-instant) ease-entrada";
 const chip = (on: boolean) => `${CHIP} ${on ? "border-green-dark bg-green-dark text-yellow" : "border-green-dark/30 text-ink hover:border-green-dark"}`;
 const FILTER_LABEL = "font-mono text-[10px] uppercase tracking-widest text-green-dark/70";
-const SELECT = "rounded-xl border-2 border-green-dark/30 bg-surface px-4 py-2.5 text-sm text-ink outline-none focus:border-green-dark focus:ring-2 focus:ring-emerald/30";
+const SELECT = "w-full max-w-full rounded-xl border-2 border-green-dark/30 bg-surface px-4 py-2.5 text-sm text-ink outline-none focus:border-green-dark focus:ring-2 focus:ring-emerald/30";
 
 export function CopilotExplorer({ filters, signedIn }: { filters: ExplorerFilters; signedIn: boolean }) {
   return (
@@ -120,7 +120,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
           <div className="-rotate-1 rounded-3xl border-2 border-green-dark bg-yellow p-5 shadow-sticker sm:p-7">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-green-dark/80">Leve para o seu agente</p>
             <p className="mt-2 text-sm text-green-dark">O julgamento de verdade acontece no Claude Code ou Codex com a skill do Copilot. Cole este prompt lá.</p>
-            <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-surface-raised p-4 font-mono text-sm leading-relaxed text-ink">{result.prompt}</pre>
+            <pre className="mt-4 whitespace-pre-wrap [overflow-wrap:anywhere] rounded-xl bg-surface-raised p-4 font-mono text-sm leading-relaxed text-ink">{result.prompt}</pre>
             <div className="mt-4 flex flex-wrap gap-3">
               <CopyButton text={result.prompt} label="Copiar prompt" event={{ name: "copilot_prompt_copied" }} />
               <a href="#use-no-seu-agente" className="inline-flex items-center px-2 py-2 text-sm font-bold text-green-dark underline underline-offset-2">Ainda não instalou? Veja como</a>
@@ -200,7 +200,7 @@ function BrowseSection({ filters }: { filters: ExplorerFilters }) {
       )}
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
-        <div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-[18rem]">
           <label htmlFor="tema" className={`${FILTER_LABEL} block`}>Tema</label>
           <select id="tema" className={`${SELECT} mt-2`} value={clusterKey ?? ""} onChange={(e) => setClusterKey(e.target.value || undefined)}>
             <option value="">Todos os temas</option>
@@ -221,7 +221,7 @@ function BrowseSection({ filters }: { filters: ExplorerFilters }) {
         </div>
       ) : projects.length > 0 ? (
         <>
-          <div className={`mt-6 grid gap-4 transition-opacity duration-(--dur-instant) ease-entrada sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${pending ? "opacity-60" : ""}`}>
+          <div className={`mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] transition-opacity duration-(--dur-instant) ease-entrada sm:grid sm:snap-none sm:overflow-visible sm:pb-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${pending ? "opacity-60" : ""}`}>
             {projects.map((c, i) => <Reveal key={c.slug} index={i % 12} tone="papel" className="h-full"><ProjectCardView card={c} /></Reveal>)}
           </div>
           {hasMore && (
