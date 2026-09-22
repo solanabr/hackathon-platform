@@ -30,7 +30,7 @@ Route group `(public)`, same shell as `/guias/do-earn-ao-pix`. Public route adde
 - *Leituras*: 3 archive documents, title, source, author, date, snippet, link.
 - *Leve para o seu agente*: a pre-filled prompt in pt-BR that embeds the idea ("Quero construir <ideia>. Alguém já fez isso nos hackathons do Colosseum? Como está o cenário competitivo e onde há espaço?") with a copy button, and a jump link to the guide below.
 
-Errors are copy, not dead ends: rate-limited → "Muita gente pesquisando agora, tente em N segundos" using `Retry-After`; upstream down → "O Copilot está fora do ar, tente mais tarde"; not signed in → the login dialog.
+Errors are copy, not dead ends: daily cap reached → the handoff message above with a jump to the guide; rate-limited upstream → "Muita gente pesquisando agora, tente em N segundos" using `Retry-After`; upstream down → "O Copilot está fora do ar, tente mais tarde"; not signed in → the login dialog.
 
 **Section 2, "Explore o que já foi construído".** Filter chips for hackathon, track (of the chosen hackathon), cluster and "só vencedores"; a results grid of the same cards; "Carregar mais" with `offset`. Works signed out. The filter catalog is rendered server-side from the cached `/filters`.
 
@@ -56,7 +56,7 @@ One module, the only place that knows the upstream.
 
 ## Route handler: `src/app/api/copilot/search/route.ts`
 
-`POST` with `{ idea }` or `{ filters, offset }`. Idea searches require a session (`resolveAuthenticatedUserState`), filter searches do not. Idea searches are also capped per user at 20 per day, counted in a new table `copilot_queries (user_id, kind, created_at)` written through the service role; over the cap returns `429` with a pt-BR message. The table doubles as usage telemetry (which ideas people search is not stored, only that they searched). RLS enabled, no policies, service role only, like `submission_ratings`. Migration `00065_copilot_queries.sql`, applied through the Supabase MCP.
+`POST` with `{ idea }` or `{ filters, offset }`. Idea searches require a session (`resolveAuthenticatedUserState`), filter searches do not. Idea searches are also capped per user at 20 per day, counted in a new table `copilot_queries (user_id, kind, created_at)` written through the service role; over the cap returns `429` with a pt-BR message that hands off instead of blocking: "Você usou as 20 pesquisas de hoje por aqui. Para continuar sem limite, gere seu próprio token no Colosseum e use o Copilot no seu agente", with a button that scrolls to the guide section. The cap is a nudge toward the real tool, not a wall. The table doubles as usage telemetry (which ideas people search is not stored, only that they searched). RLS enabled, no policies, service role only, like `submission_ratings`. Migration `00065_copilot_queries.sql`, applied through the Supabase MCP.
 
 Responses are the mapped cards, never the raw upstream JSON.
 
