@@ -7,6 +7,7 @@ const PUBLIC_ROUTES = [
   "/pre-registro",
   "/startup-registration",
   "/guias",
+  "/api/copilot/search",
 ];
 
 // Bare hub only — /h/[slug]... paths are gated separately below.
