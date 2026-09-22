@@ -1,4 +1,4 @@
-import type { ApiArchiveDoc, ApiProject, ClusterInfo, ProjectCard, Reading, SearchInput } from "./types";
+import type { ApiProject, ClusterInfo, ProjectCard, SearchInput } from "./types";
 
 const sorted = (xs?: string[]) => (xs ? [...xs].sort() : undefined);
 
@@ -26,10 +26,6 @@ export function mapProject(p: ApiProject): ProjectCard {
     links: { github: p.links.github, demo: p.links.demo ?? p.links.technicalDemo, colosseum: p.links.colosseum },
     cluster: p.cluster, crowdedness: p.crowdedness, similarity: p.similarity,
   };
-}
-
-export function mapReading(d: ApiArchiveDoc): Reading {
-  return { id: d.documentId, title: d.title, author: d.author, source: d.source, url: d.url, publishedAt: d.publishedAt, snippet: d.snippet };
 }
 
 export function crowdednessLine(cluster: ClusterInfo | null): string | null {

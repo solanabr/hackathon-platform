@@ -9,6 +9,7 @@ import { withPlatformUtm } from "@/lib/attribution";
 import { WHATSAPP_COMMUNITY_URL } from "@/app/(public)/pre-registro/constants";
 import { getFilters } from "@/lib/copilot/client";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { PAGE_SHELL } from "@/components/layout/container";
 import { CopilotExplorer, type ExplorerFilters } from "./explorer";
 
 export const metadata: Metadata = {
@@ -49,12 +50,13 @@ function Code({ code, label }: { code: string; label: string }) {
   );
 }
 
-function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+function Step({ n, title, why, children }: { n: number; title: string; why: string; children: ReactNode }) {
   return (
     <Reveal index={n} tone="papel">
       <div className={`card-cut mt-6 flex flex-col p-5 sm:p-6 ${n === 1 ? "" : "card-cut-kraft card-cut-open"}`}>
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-ink/75">Passo {String(n).padStart(2, "0")}</p>
         <h3 className="mt-3 font-heading text-xl font-black leading-snug text-ink [font-stretch:110%] sm:text-2xl">{title}</h3>
+        <p className="mt-1 text-sm text-green-dark/70">{why}</p>
         <div className="mt-3 leading-relaxed text-ink/85">{children}</div>
       </div>
     </Reveal>
@@ -68,7 +70,7 @@ export default async function CopilotGuidePage() {
   ]);
   const explorerFilters: ExplorerFilters = filters
     ? {
-        hackathons: filters.hackathons.map((h) => ({ slug: h.slug, name: h.name, projectCount: h.projectCount })),
+        hackathons: filters.hackathons.map((h) => ({ slug: h.slug, name: h.name, startDate: h.startDate, projectCount: h.projectCount })),
         tracks: filters.tracks.map((t) => ({ key: t.key, name: t.name, hackathonSlug: t.hackathonSlug })),
         clusters: filters.clusters.map((c) => ({ key: c.key, label: c.label, projectCount: c.projectCount })),
       }
@@ -77,7 +79,7 @@ export default async function CopilotGuidePage() {
   return (
     <div>
       <section className="px-4 pt-10 sm:px-6 sm:pt-14">
-        <div className="mx-auto max-w-4xl">
+        <div className={PAGE_SHELL}>
           <Reveal tone="texto">
           <SectionHat>Guia · Colosseum Copilot</SectionHat>
           <h1 className="mt-4 font-heading font-black uppercase leading-[0.95] tracking-tight text-ink">
@@ -85,15 +87,14 @@ export default async function CopilotGuidePage() {
             <span className="mt-3 inline-block -rotate-1 border-2 border-green-dark bg-yellow px-4 py-1.5 text-3xl text-green-dark shadow-sticker [font-stretch:110%] sm:text-5xl">antes de construir</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink/80">
-            O Colosseum Copilot pesquisa 5.400 projetos dos hackathons anteriores, 65 fontes de pesquisa e 6.300 produtos vivos.
-            Escreva sua ideia, veja quem já tentou e quão disputada é a área. Depois, leve para o seu agente de código e peça uma avaliação honesta.
+            O Colosseum Copilot é a base de dados dos hackathons do Colosseum: 5.400 projetos, quem venceu, o que construíram e onde estão os links. Aqui você explora essa base, testa sua ideia contra ela e aprende a usar o Copilot dentro do seu agente de código, em português.
           </p>
           </Reveal>
         </div>
       </section>
 
       <section className={SECTION}>
-        <div className="mx-auto max-w-4xl">
+        <div className={PAGE_SHELL}>
           {filters ? (
             <CopilotExplorer filters={explorerFilters} signedIn={Boolean(state)} />
           ) : (
@@ -103,25 +104,31 @@ export default async function CopilotGuidePage() {
       </section>
 
       <section id="use-no-seu-agente" className={`scroll-mt-28 ${SECTION}`}>
-        <div className="mx-auto max-w-4xl">
+        <div className={PAGE_SHELL}>
           <Reveal tone="texto">
             <SectionHat>Use no seu agente</SectionHat>
-            <h2 className="mt-4 font-heading text-3xl font-black uppercase leading-[0.95] text-ink [font-stretch:115%] sm:text-4xl">Cinco minutos de setup</h2>
+            <h2 className="mt-4 font-heading text-3xl font-black uppercase leading-[0.95] text-ink [font-stretch:115%] sm:text-4xl">Instale o Copilot no seu editor</h2>
             <p className="mt-3 max-w-2xl text-ink/75">
-              A pesquisa aqui é uma amostra. A ferramenta completa roda dentro do Claude Code, do Codex ou do OpenClaw, com o seu próprio token e sem limite nosso.
+              A skill é um pacote de instruções que ensina o Claude Code, o Codex ou o OpenClaw a consultar a base do Colosseum. Você instala uma vez e passa a perguntar em português dentro do seu editor.
+            </p>
+            <p className="mt-3 max-w-2xl text-ink/75">
+              É lá que a avaliação de verdade acontece: o agente compara sua ideia com os projetos anteriores, lista concorrentes vivos, traz leituras do ecossistema e diz, com evidências, se vale a pena seguir.
+            </p>
+            <p className="mt-3 max-w-2xl text-ink/75">
+              Custa nada: o token é gratuito para quem tem conta no Colosseum, a mesma conta onde você se inscreve no hackathon. Cinco minutos de setup.
             </p>
           </Reveal>
 
-          <Step n={1} title="Crie sua conta no Colosseum e gere o token">
+          <Step n={1} title="Crie sua conta no Colosseum e gere o token" why="O token identifica você para a API do Copilot.">
             <p>Entre no <Ext href={ARENA_TOKEN_URL}>Colosseum Arena</Ext> e clique em <strong>Generate your token</strong>. O token aparece uma vez só, copie na hora. Vale 90 dias, e é a mesma conta onde você se inscreve no hackathon.</p>
           </Step>
 
-          <Step n={2} title="Exporte as variáveis no terminal">
+          <Step n={2} title="Exporte as variáveis no terminal" why="As variáveis dizem ao agente onde está a API e qual token usar.">
             <p>Cole no seu <code>.zshrc</code> ou <code>.bashrc</code>, trocando pelo seu token:</p>
             <Code code={ENV_SNIPPET} label="env" />
           </Step>
 
-          <Step n={3} title="Instale a skill">
+          <Step n={3} title="Instale a skill" why="A skill é o que ensina o agente a usar a API.">
             {INSTALL.map((i) => (
               <div key={i.agent} className="mt-4">
                 <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-green-dark/80">{i.agent}</p>
@@ -130,12 +137,12 @@ export default async function CopilotGuidePage() {
             ))}
           </Step>
 
-          <Step n={4} title="Verifique a conexão">
+          <Step n={4} title="Verifique a conexão" why="Confirma que token e variáveis estão certos antes de perguntar.">
             <Code code={VERIFY} label="verify" />
             <p className="mt-3 text-sm text-ink/70">A resposta deve trazer <code>&quot;authenticated&quot;: true</code>.</p>
           </Step>
 
-          <Step n={5} title="Pergunte em português">
+          <Step n={5} title="Pergunte em português" why="Prompts prontos para o hackathon; copie e cole no agente.">
             <p>A skill entende português. Alguns prompts para começar:</p>
             <ul className="mt-4 space-y-3">
               {PROMPTS.map((p) => (
@@ -157,7 +164,7 @@ export default async function CopilotGuidePage() {
       </section>
 
       <section className={SECTION}>
-        <div className="mx-auto max-w-4xl">
+        <div className={PAGE_SHELL}>
           <Reveal tone="papel">
           <div className="rounded-3xl border-2 border-green-dark bg-surface-raised p-6 text-center shadow-sticker sm:p-8">
             <SectionHat centered>Travou em algum passo?</SectionHat>
@@ -176,3 +183,4 @@ export default async function CopilotGuidePage() {
     </div>
   );
 }
+

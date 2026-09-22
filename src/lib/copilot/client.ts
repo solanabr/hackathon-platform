@@ -1,8 +1,8 @@
 import { unstable_cache } from "next/cache";
 import { COPILOT_FILTERS_TAG } from "@/lib/cache-tags";
-import { cacheKeyFor, mapProject, mapReading } from "./helpers";
+import { cacheKeyFor, mapProject } from "./helpers";
 import { Semaphore } from "./semaphore";
-import type { ApiArchiveDoc, ApiCluster, ApiFilters, ApiProject, ClusterInfo, ProjectCard, Reading, SearchInput } from "./types";
+import type { ApiCluster, ApiFilters, ApiProject, ClusterInfo, ProjectCard, SearchInput } from "./types";
 
 const DEFAULT_BASE = "https://copilot.colosseum.com/api/v1";
 const TIMEOUT_MS = 10_000;
@@ -82,15 +82,5 @@ export const searchProjects = (input: SearchInput): Promise<{ results: ProjectCa
       return { results: out.results.map(mapProject), hasMore: out.hasMore, totalFound: out.totalFound };
     },
     ["copilot-search-projects", cacheKeyFor(input)],
-    { revalidate: 3_600 },
-  )();
-
-export const searchArchives = (query: string, limit = 3): Promise<Reading[]> =>
-  unstable_cache(
-    async () => {
-      const out = await copilotFetch<{ results: ApiArchiveDoc[] }>("/search/archives", { method: "POST", body: { query, limit, intent: "ideation" } });
-      return out.results.map(mapReading);
-    },
-    ["copilot-search-archives", cacheKeyFor({ query, limit })],
     { revalidate: 3_600 },
   )();

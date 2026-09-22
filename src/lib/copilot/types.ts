@@ -10,11 +10,6 @@ export type ApiProject = {
   crowdedness: number | null; cluster: { key: string; label: string } | null;
 };
 
-export type ApiArchiveDoc = {
-  documentId: string; title: string; author: string | null; source: string; url: string | null;
-  publishedAt: string | null; similarity: number | string; snippet: string; chunkIndex: number | string;
-};
-
 export type ApiFilters = {
   hackathons: { slug: string; name: string; startDate: string; projectCount: number; winnerCount: number }[];
   tracks: { key: string; name: string; hackathonSlug: string; projectCount: number }[];
@@ -30,11 +25,6 @@ export type ProjectCard = {
   evidence: string[];
   links: { github: string | null; demo: string | null; colosseum: string | null };
   cluster: { key: string; label: string } | null; crowdedness: number | null; similarity: number;
-};
-
-export type Reading = {
-  id: string; title: string; author: string | null; source: string; url: string | null;
-  publishedAt: string | null; snippet: string;
 };
 
 export type ClusterInfo = ApiCluster;

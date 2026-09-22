@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { CopilotNotConfigured, CopilotRateLimited, getCluster, getFilters, searchArchives, searchProjects } from "@/lib/copilot/client";
+import { CopilotNotConfigured, CopilotRateLimited, getCluster, getFilters, searchProjects } from "@/lib/copilot/client";
 import { agentPrompt, crowdednessLine } from "@/lib/copilot/helpers";
 import { IDEA_DAILY_CAP, ideaSearchesLast24h, recordIdeaSearch } from "@/lib/copilot/quota";
 import { SemaphoreTimeout } from "@/lib/copilot/semaphore";
@@ -51,10 +51,7 @@ export async function POST(request: NextRequest) {
     if (used === null) return NextResponse.json({ error: "O Copilot está fora do ar. Tente mais tarde.", code: "unavailable" }, { status: 503 });
     if (used >= IDEA_DAILY_CAP) return NextResponse.json({ error: CAP_MESSAGE, code: "quota" }, { status: 429 });
 
-    const [projects, readings] = await Promise.all([
-      searchProjects({ query: parsed.idea, limit: 6 }),
-      searchArchives(parsed.idea, 3),
-    ]);
+    const projects = await searchProjects({ query: parsed.idea, limit: 6 });
     const top = projects.results[0];
     const cluster = top?.cluster ? await getCluster(top.cluster.key) : null;
     await recordIdeaSearch(state!.userId);
@@ -62,7 +59,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       projects: projects.results,
       crowdedness: crowdednessLine(cluster),
-      readings,
       prompt: agentPrompt(parsed.idea),
       remaining: Math.max(IDEA_DAILY_CAP - used - 1, 0),
     });

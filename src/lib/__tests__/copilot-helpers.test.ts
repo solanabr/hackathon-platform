@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
-  cacheKeyFor, normalizeIdea, mapProject, mapReading, crowdednessLine, agentPrompt,
+  cacheKeyFor, normalizeIdea, mapProject, crowdednessLine, agentPrompt,
 } from "@/lib/copilot/helpers";
-import type { ApiProject, ApiArchiveDoc } from "@/lib/copilot/types";
+import type { ApiProject } from "@/lib/copilot/types";
 
 const apiProject: ApiProject = {
   slug: "agent-cred", name: "Agent-Cred",
@@ -52,13 +52,6 @@ describe("mapProject", () => {
     const card = mapProject({ ...apiProject, prize: { placement: 1 }, accelerator: { batch: "x" } });
     expect(card.isWinner).toBe(true);
     expect(card.inAccelerator).toBe(true);
-  });
-});
-
-describe("mapReading", () => {
-  it("maps an archive document", () => {
-    const doc: ApiArchiveDoc = { documentId: "d1", title: "T", author: "A", source: "a16z_crypto", url: "https://x", publishedAt: "2026-02-19", similarity: 0.7, snippet: "s", chunkIndex: 6 };
-    expect(mapReading(doc)).toEqual({ id: "d1", title: "T", author: "A", source: "a16z_crypto", url: "https://x", publishedAt: "2026-02-19", snippet: "s" });
   });
 });
 
