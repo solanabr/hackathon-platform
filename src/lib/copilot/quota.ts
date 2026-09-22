@@ -3,22 +3,25 @@ import { logQueryError } from "@/lib/supabase/unwrap";
 
 export const IDEA_DAILY_CAP = 20;
 
-export async function ideaSearchesLast24h(userId: string): Promise<number | null> {
+export type IdeaClaim = { id: string; remaining: number } | "cap" | null;
+
+// The RPC counts and inserts under a per-user lock, so the cap holds under
+// concurrency. null means the database failed: the caller must answer
+// unavailable, never open the gate.
+export async function claimIdeaSearch(userId: string): Promise<IdeaClaim> {
   const supabase = await createServiceRoleClient();
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { count, error } = await supabase
-    .from("copilot_queries")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("kind", "idea")
-    .gte("created_at", since);
-  // A failed count is reported as unavailable, never used to open the gate.
-  if (error) { logQueryError("copilot.quota.count", error); return null; }
-  return count ?? 0;
+  const { data, error } = await supabase
+    .rpc("claim_copilot_idea_search", { p_user_id: userId, p_cap: IDEA_DAILY_CAP })
+    .maybeSingle();
+  if (error) { logQueryError("copilot.quota.claim", error); return null; }
+  const row = data as { id: string | null; remaining: number } | null;
+  if (!row) return null;
+  return row.id ? { id: row.id, remaining: row.remaining } : "cap";
 }
 
-export async function recordIdeaSearch(userId: string): Promise<void> {
+// An upstream failure must not cost the user one of the twenty.
+export async function refundIdeaSearch(id: string): Promise<void> {
   const supabase = await createServiceRoleClient();
-  const { error } = await supabase.from("copilot_queries").insert({ user_id: userId, kind: "idea" });
-  if (error) logQueryError("copilot.quota.record", error);
+  const { error } = await supabase.from("copilot_queries").delete().eq("id", id);
+  if (error) logQueryError("copilot.quota.refund", error);
 }

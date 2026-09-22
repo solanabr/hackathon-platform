@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { CopilotNotConfigured, CopilotRateLimited, getCluster, getFilters, searchProjects } from "@/lib/copilot/client";
 import { agentPrompt, crowdednessLine } from "@/lib/copilot/helpers";
-import { IDEA_DAILY_CAP, ideaSearchesLast24h, recordIdeaSearch } from "@/lib/copilot/quota";
+import { IDEA_DAILY_CAP, claimIdeaSearch, refundIdeaSearch } from "@/lib/copilot/quota";
 import { SemaphoreTimeout } from "@/lib/copilot/semaphore";
 import { keepKnownKeys, parseSearchRequest } from "./parse";
 
@@ -47,21 +47,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ projects: out.results, hasMore: out.hasMore, totalFound: out.totalFound });
     }
 
-    const used = await ideaSearchesLast24h(state!.userId);
-    if (used === null) return NextResponse.json({ error: "O Copilot está fora do ar. Tente mais tarde.", code: "unavailable" }, { status: 503 });
-    if (used >= IDEA_DAILY_CAP) return NextResponse.json({ error: CAP_MESSAGE, code: "quota" }, { status: 429 });
+    const claim = await claimIdeaSearch(state!.userId);
+    if (claim === null) return NextResponse.json({ error: "O Copilot está fora do ar. Tente mais tarde.", code: "unavailable" }, { status: 503 });
+    if (claim === "cap") return NextResponse.json({ error: CAP_MESSAGE, code: "quota" }, { status: 429 });
 
-    const projects = await searchProjects({ query: parsed.idea, limit: 6 });
-    const top = projects.results[0];
-    const cluster = top?.cluster ? await getCluster(top.cluster.key) : null;
-    await recordIdeaSearch(state!.userId);
+    try {
+      const projects = await searchProjects({ query: parsed.idea, limit: 6 });
+      const top = projects.results[0];
+      const cluster = top?.cluster ? await getCluster(top.cluster.key) : null;
 
-    return NextResponse.json({
-      projects: projects.results,
-      crowdedness: crowdednessLine(cluster),
-      prompt: agentPrompt(parsed.idea),
-      remaining: Math.max(IDEA_DAILY_CAP - used - 1, 0),
-    });
+      return NextResponse.json({
+        projects: projects.results,
+        crowdedness: crowdednessLine(cluster),
+        prompt: agentPrompt(parsed.idea),
+        remaining: claim.remaining,
+      });
+    } catch (e) {
+      await refundIdeaSearch(claim.id);
+      return failure(e);
+    }
   } catch (e) {
     return failure(e);
   }
