@@ -26,6 +26,7 @@ const COLUMNS = [
       { label: "Wiki", href: "https://wiki.superteam.com.br" },
       { label: "Earn", href: withPlatformUtm("https://earn.superteam.fun", { content: "footer" }) },
       { label: "Guia: do Earn ao Pix", href: "/guias/do-earn-ao-pix" },
+      { label: "Guia: Colosseum Copilot", href: "/guias/copilot" },
     ],
   },
   {
