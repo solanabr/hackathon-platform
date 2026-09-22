@@ -117,7 +117,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
             )}
           </div>
           <Reveal tone="papel">
-          <div className="-rotate-1 rounded-3xl border-2 border-green-dark bg-yellow p-5 shadow-sticker sm:p-7">
+          <div className="rounded-3xl border-2 border-green-dark bg-yellow p-5 shadow-sticker sm:p-7">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-green-dark/80">Leve para o seu agente</p>
             <p className="mt-2 text-sm text-green-dark">O julgamento de verdade acontece no Claude Code ou Codex com a skill do Copilot. Cole este prompt lá.</p>
             <pre className="mt-4 whitespace-pre-wrap [overflow-wrap:anywhere] rounded-xl bg-surface-raised p-4 font-mono text-sm leading-relaxed text-ink">{result.prompt}</pre>
