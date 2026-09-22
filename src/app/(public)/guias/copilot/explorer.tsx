@@ -111,7 +111,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
             {result.projects.length === 0 ? (
               <p className="mt-3 text-ink/75">Nada parecido nos hackathons anteriores. Isso pode ser bom sinal, ou sinal de que ninguém achou um mercado. Leve para o seu agente.</p>
             ) : (
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] sm:grid sm:snap-none sm:overflow-visible sm:pb-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {result.projects.map((c, i) => <Reveal key={c.slug} index={i} tone="papel" className="h-full"><ProjectCardView card={c} /></Reveal>)}
               </div>
             )}
