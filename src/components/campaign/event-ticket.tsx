@@ -189,7 +189,7 @@ export function TicketFront() {
             </dt>
             <dd className="mt-[calc(0.375rem*var(--bu))]">
               <span className="inline-block whitespace-nowrap bg-yellow px-[calc(0.5rem*var(--bu))] font-heading text-[calc(1rem*var(--bu))] font-black uppercase leading-tight tracking-tight text-green-dark [font-stretch:112%] sm:text-[calc(1.125rem*var(--bu))] lg:text-[calc(1.25rem*var(--bu))]">
-                A anunciar
+                US$ 3,3 mi
               </span>
             </dd>
           </div>
