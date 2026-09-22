@@ -15,7 +15,7 @@ import { CopilotExplorer, type ExplorerFilters } from "./explorer";
 export const metadata: Metadata = {
   title: "Colosseum Copilot: valide sua ideia antes de construir",
   description: "Pesquise 5.400 projetos de hackathons anteriores, veja quão disputada é a sua área e leve a ideia para o Claude Code ou Codex com a skill do Colosseum Copilot. Guia em português.",
-  openGraph: { title: "Colosseum Copilot · Guia da Superteam Brasil", description: "Saiba o que já foi construído antes de começar. Pesquisa gratuita, guia de instalação e prompts em português." },
+  openGraph: { title: "Colosseum Copilot · Guia da Superteam Brasil", description: "Saiba o que já foi construído antes de começar. Pesquisa gratuita, guia de instalação e prompts em português.", images: [{ url: "/guias/copilot/og.png", width: 1200, height: 630 }] },
 };
 
 const ARENA_TOKEN_URL = withPlatformUtm("https://colosseum.com/arena/copilot", { content: "guia_copilot_token" });
@@ -43,7 +43,7 @@ function Ext({ href, children }: { href: string; children: ReactNode }) {
 function Code({ code, label }: { code: string; label: string }) {
   return (
     <div className="mt-3 flex flex-col gap-3 rounded-2xl border-2 border-green-dark bg-green-dark p-4 sm:flex-row sm:items-start sm:justify-between">
-      <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap font-mono text-sm leading-relaxed text-surface">{code}</pre>
+      <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap [overflow-wrap:anywhere] font-mono text-sm leading-relaxed text-surface">{code}</pre>
       <CopyButton text={code} label="Copiar" event={{ name: "copilot_install_copied", properties: { label } }}
         className="btn-cut inline-flex shrink-0 items-center gap-2 bg-yellow px-4 py-2 text-sm font-bold text-green-dark transition-colors duration-(--dur-instant) ease-entrada hover:bg-yellow-strong" />
     </div>

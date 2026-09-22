@@ -17,6 +17,7 @@ const NAV: Record<string, PageNav> = {
       { href: "#comunidade", label: "Comunidade" },
       { href: "#faq", label: "Dúvidas" },
     ],
+    accent: { href: "/guias/copilot", label: "Copilot" },
   },
   "/h": {
     links: [
