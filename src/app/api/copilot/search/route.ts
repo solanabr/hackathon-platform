@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
-import { CopilotNotConfigured, CopilotRateLimited, getCluster, searchArchives, searchProjects } from "@/lib/copilot/client";
+import { CopilotNotConfigured, CopilotRateLimited, getCluster, getFilters, searchArchives, searchProjects } from "@/lib/copilot/client";
 import { agentPrompt, crowdednessLine } from "@/lib/copilot/helpers";
 import { IDEA_DAILY_CAP, ideaSearchesLast24h, recordIdeaSearch } from "@/lib/copilot/quota";
 import { SemaphoreTimeout } from "@/lib/copilot/semaphore";
-import { parseSearchRequest } from "./parse";
+import { keepKnownKeys, parseSearchRequest } from "./parse";
 
 const CAP_MESSAGE =
   `Você usou as ${IDEA_DAILY_CAP} pesquisas de hoje por aqui. Para continuar sem limite, gere seu próprio token no Colosseum e use o Copilot no seu agente.`;
@@ -21,24 +21,34 @@ function failure(e: unknown) {
 }
 
 export async function POST(request: NextRequest) {
-  const parsed = parseSearchRequest(await request.json().catch(() => null));
-  if (!parsed) return NextResponse.json({ error: "Escreva sua ideia em pelo menos 8 caracteres.", code: "invalid" }, { status: 400 });
+  const body = await request.json().catch(() => null);
+  const parsed = parseSearchRequest(body);
+  if (!parsed) {
+    const mode = body && typeof body === "object" ? (body as Record<string, unknown>).mode : undefined;
+    if (mode === "browse") return NextResponse.json({ error: "Filtro inválido.", code: "invalid" }, { status: 400 });
+    return NextResponse.json({ error: "Escreva sua ideia em pelo menos 8 caracteres.", code: "invalid" }, { status: 400 });
+  }
+
+  const state = parsed.mode === "idea" ? await resolveAuthenticatedUserState().catch(() => null) : null;
+  if (parsed.mode === "idea" && !state) {
+    return NextResponse.json({ error: "Entre na sua conta para pesquisar uma ideia.", code: "unauthenticated" }, { status: 401 });
+  }
 
   try {
     if (parsed.mode === "browse") {
+      const catalog = await getFilters();
+      const filtered = keepKnownKeys(parsed, catalog);
       const out = await searchProjects({
-        hackathons: parsed.hackathon ? [parsed.hackathon] : undefined,
-        trackKeys: parsed.trackKey ? [parsed.trackKey] : undefined,
-        clusterKeys: parsed.clusterKey ? [parsed.clusterKey] : undefined,
-        winnersOnly: parsed.winnersOnly, limit: 12, offset: parsed.offset,
+        hackathons: filtered.hackathon ? [filtered.hackathon] : undefined,
+        trackKeys: filtered.trackKey ? [filtered.trackKey] : undefined,
+        clusterKeys: filtered.clusterKey ? [filtered.clusterKey] : undefined,
+        winnersOnly: filtered.winnersOnly, limit: 12, offset: filtered.offset,
       });
       return NextResponse.json({ projects: out.results, hasMore: out.hasMore, totalFound: out.totalFound });
     }
 
-    const state = await resolveAuthenticatedUserState();
-    if (!state) return NextResponse.json({ error: "Entre na sua conta para pesquisar uma ideia.", code: "unauthenticated" }, { status: 401 });
-
-    const used = await ideaSearchesLast24h(state.userId);
+    const used = await ideaSearchesLast24h(state!.userId);
+    if (used === null) return NextResponse.json({ error: "O Copilot está fora do ar. Tente mais tarde.", code: "unavailable" }, { status: 503 });
     if (used >= IDEA_DAILY_CAP) return NextResponse.json({ error: CAP_MESSAGE, code: "quota" }, { status: 429 });
 
     const [projects, readings] = await Promise.all([
@@ -47,7 +57,7 @@ export async function POST(request: NextRequest) {
     ]);
     const top = projects.results[0];
     const cluster = top?.cluster ? await getCluster(top.cluster.key) : null;
-    await recordIdeaSearch(state.userId);
+    await recordIdeaSearch(state!.userId);
 
     return NextResponse.json({
       projects: projects.results,
