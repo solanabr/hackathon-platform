@@ -483,7 +483,7 @@ describe("searchProjects", () => {
     const { searchProjects } = await import("@/lib/copilot/client");
     const out = await searchProjects({ query: "x", winnersOnly: true });
     expect(out.results[0].hackathon.year).toBe(2024);
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ query: "x", filter: { winnersOnly: true } });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ query: "x", filters: { winnersOnly: true } });
   });
 });
 ```
@@ -591,7 +591,7 @@ export const searchProjects = (input: SearchInput): Promise<{ results: ProjectCa
         query: input.query?.trim() || undefined,
         hackathons: input.hackathons, trackKeys: input.trackKeys,
         limit: input.limit ?? 10, offset: input.offset ?? 0,
-        filter: { winnersOnly: input.winnersOnly ?? false, clusterKeys: input.clusterKeys },
+        filters: { winnersOnly: input.winnersOnly ?? false, clusterKeys: input.clusterKeys },
       };
       const out = await copilotFetch<{ results: ApiProject[]; hasMore: boolean; totalFound: number }>("/search/projects", { method: "POST", body });
       return { results: out.results.map(mapProject), hasMore: out.hasMore, totalFound: out.totalFound };
@@ -1508,4 +1508,4 @@ Audit 2026-09-22 (two independent reviewers, correctness and design) folded in: 
 
 - Spec coverage: idea box with projects, crowdedness, readings, prompt (T5, T7); browse with chips and load more (T7); guide steps 1–6 (T8); cache and semaphore (T2, T3); token in env only (T3, T9); session gate and 20/day cap with hand-off copy (T4, T5, T7); footer link (T8); analytics events (T6, T7, T8); error copy for cap, rate limit, down, signed out (T5, T7); public route (T8 test); migration via MCP (T4).
 - Placeholders: none.
-- Names: `ProjectCard`, `Reading`, `ExplorerFilters`, `parseSearchRequest`, `CopilotRateLimited.retryAfterSeconds`, `IDEA_DAILY_CAP`, `ideaSearchesLast24h`, `recordIdeaSearch`, `agentPrompt`, `crowdednessLine` consistent across T1–T8. The `filter` object in `searchProjects` matches the upstream request shape (`winnersOnly`, `clusterKeys` inside `filter`; `hackathons`, `trackKeys` top-level).
+- Names: `ProjectCard`, `Reading`, `ExplorerFilters`, `parseSearchRequest`, `CopilotRateLimited.retryAfterSeconds`, `IDEA_DAILY_CAP`, `ideaSearchesLast24h`, `recordIdeaSearch`, `agentPrompt`, `crowdednessLine` consistent across T1–T8. The `filter` object in `searchProjects` matches the upstream request shape (`winnersOnly`, `clusterKeys` inside `filters`; `hackathons`, `trackKeys` top-level).
