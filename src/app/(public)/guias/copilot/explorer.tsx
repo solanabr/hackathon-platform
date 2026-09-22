@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { openAuthDialog } from "@/components/auth/auth-dialog";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Reveal } from "@/components/ui/reveal";
@@ -91,7 +91,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="submit" disabled={pending || idea.trim().length < 8}
             className="btn-cut inline-flex items-center bg-emerald-deep px-8 py-3.5 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark disabled:opacity-60">
-            {pending ? "Pesquisando…" : signedIn ? "Ver o que já existe" : "Entrar e pesquisar"}
+            <span>{pending ? "Pesquisando…" : signedIn ? "Ver o que já existe" : "Entrar e pesquisar"}</span>
           </button>
           <span className="text-xs text-muted">{idea.length}/300</span>
           {result && <span className="text-xs text-muted">{result.remaining} pesquisas restantes hoje</span>}
@@ -144,13 +144,16 @@ function BrowseSection({ filters }: { filters: ExplorerFilters }) {
   const [err, setErr] = useState<ApiError | null>(null);
   const [pending, start] = useTransition();
   const [firstLoad, setFirstLoad] = useState(true);
+  const requestId = useRef(0);
 
   const tracks = filters.tracks.filter((t) => !hackathon || t.hackathonSlug === hackathon).slice(0, 12);
 
   function load(offset: number, replace: boolean) {
+    const id = ++requestId.current;
     start(async () => {
       setErr(null);
       const r = await post<{ projects: ProjectCard[]; hasMore: boolean; totalFound: number }>({ mode: "browse", hackathon, trackKey, clusterKey, winnersOnly, offset });
+      if (id !== requestId.current) return;
       setFirstLoad(false);
       if (!r.ok) { setErr(r.err); return; }
       setProjects((prev) => (replace ? r.data.projects : [...prev, ...r.data.projects]));
@@ -218,13 +221,13 @@ function BrowseSection({ filters }: { filters: ExplorerFilters }) {
         </div>
       ) : projects.length > 0 ? (
         <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className={`mt-6 grid gap-4 transition-opacity duration-(--dur-instant) ease-entrada sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${pending ? "opacity-60" : ""}`}>
             {projects.map((c, i) => <Reveal key={c.slug} index={i % 12} tone="papel" className="h-full"><ProjectCardView card={c} /></Reveal>)}
           </div>
           {hasMore && (
             <button type="button" onClick={() => load(projects.length, false)} disabled={pending}
               className="btn-cut btn-cut-outline mt-6 inline-flex items-center px-7 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]">
-              {pending ? "Carregando…" : "Carregar mais"}
+              <span>{pending ? "Carregando…" : "Carregar mais"}</span>
             </button>
           )}
         </>

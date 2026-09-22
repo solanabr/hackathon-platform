@@ -174,7 +174,7 @@ export default async function CopilotGuidePage() {
                 className="btn-cut inline-flex items-center gap-2.5 bg-emerald-deep px-8 py-3.5 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark">
                 <WhatsappLogoIcon aria-hidden size={18} weight="bold" /><span>Entrar no grupo</span>
               </TrackedCta>
-              <a href="#valide" className="btn-cut btn-cut-outline inline-flex items-center px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]">Pesquisar outra ideia</a>
+              <a href="#valide" className="btn-cut btn-cut-outline inline-flex items-center px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"><span>Pesquisar outra ideia</span></a>
             </div>
           </div>
           </Reveal>
