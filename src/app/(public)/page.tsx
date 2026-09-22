@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import {
   COLOSSEUM_DEADLINE_FALLBACK,
   COLOSSEUM_SLUG,
@@ -19,6 +19,7 @@ import {
   YoutubeLogoIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Countdown } from "@/components/ui/countdown";
+import { SectionHat } from "@/components/ui/section-hat";
 import { CountUp, Reveal } from "@/components/ui/reveal";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { ColosseumScene } from "@/components/home/colosseum";
@@ -206,28 +207,6 @@ const RESOURCES = [
 // the same rails the header and footer ride. Narrow text measures
 // (max-w-2xl paragraphs etc.) stay local to their block.
 const LP_SECTION = "pt-24 lg:pt-28 xl:pt-32";
-
-function SectionHat({
-  children,
-  centered = false,
-  onDark = false,
-}: {
-  children: ReactNode;
-  centered?: boolean;
-  onDark?: boolean;
-}) {
-  return (
-    <p
-      className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.22em] ${onDark ? "text-surface" : "text-ink/75"} ${centered ? "justify-center" : ""}`}
-    >
-      <span
-        aria-hidden
-        className={`h-[7px] w-[18px] shrink-0 rounded-[2px] ${onDark ? "bg-yellow" : "bg-emerald"}`}
-      />
-      {children}
-    </p>
-  );
-}
 
 // The Solana hub, drawn as a network: one chip in the middle of a particle
 // sphere, the four numbers hanging off it on dotted wires. Coordinates below
