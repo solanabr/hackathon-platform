@@ -288,3 +288,5 @@ export type PlatformRole = {
   granted_by: string | null;
   granted_at: string;
 };
+
+export type CopilotQuery = { id: string; user_id: string; kind: "idea"; created_at: string };
