@@ -185,11 +185,11 @@ export function TicketFront() {
 
           <div className="mt-[calc(0.75rem*var(--bu))] w-full min-w-0 sm:ml-auto sm:mt-0 sm:w-auto sm:border-l sm:border-dotted sm:border-green-dark/40 sm:pl-[calc(1.25rem*var(--bu))] sm:text-right lg:ml-0 lg:mt-[calc(1rem*var(--bu))] lg:w-full lg:border-l-0 lg:border-t lg:pl-0 lg:pt-[calc(1rem*var(--bu))] lg:text-left">
             <dt className="bilhete-prensa font-mono text-[calc(8px*var(--bu))] font-bold uppercase tracking-[0.18em] text-green-dark/80 sm:text-[calc(9px*var(--bu))]">
-              Prêmios e investimento
+              Prêmios
             </dt>
             <dd className="mt-[calc(0.375rem*var(--bu))]">
               <span className="inline-block whitespace-nowrap bg-yellow px-[calc(0.5rem*var(--bu))] font-heading text-[calc(1rem*var(--bu))] font-black uppercase leading-tight tracking-tight text-green-dark [font-stretch:112%] sm:text-[calc(1.125rem*var(--bu))] lg:text-[calc(1.25rem*var(--bu))]">
-                A anunciar
+                US$ 840 mil
               </span>
             </dd>
           </div>
