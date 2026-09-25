@@ -7,7 +7,7 @@ export const COLOSSEUM_DEADLINE_FALLBACK = "2026-10-13T06:59:00.000Z";
 // Logged-out visitors get bounced to /signup without our referral, so it is
 // the second link, for people who already have an account.
 export const COLOSSEUM_ARENA_URL = "https://colosseum.com/arena/hackathon";
-export const WHATSAPP_COMMUNITY_URL = "https://chat.whatsapp.com/BVXYPlcB9R853QnvgzpCRT?mode=gi_t";
+export const WHATSAPP_COMMUNITY_URL = "https://chat.whatsapp.com/EaAkDKJ12NjET7YNkfp4A2";
 export const TRILHA_BRASIL_EARN_URL =
   "https://superteam.fun/earn/listing/side-track-superteam-brasil/";
 
