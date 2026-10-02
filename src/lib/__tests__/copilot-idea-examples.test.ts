@@ -31,5 +31,6 @@ describe("copilot idea examples", () => {
     const prompt = ideaAgentPrompt(IDEA_EXAMPLES[0]);
     expect(prompt).toContain(IDEA_EXAMPLES[0].pitch);
     expect(prompt).toContain("avaliação honesta");
+    expect(prompt.startsWith("Use o Colosseum Copilot")).toBe(true);
   });
 });
