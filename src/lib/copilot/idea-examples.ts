@@ -217,5 +217,5 @@ export const IDEA_EXAMPLES: IdeaExample[] = [
 ];
 
 export function ideaAgentPrompt(idea: IdeaExample): string {
-  return `Quero construir isto no hackathon do Colosseum: ${idea.pitch} Alguém já fez isso nos hackathons do Colosseum? Como está o cenário competitivo, o que os projetos anteriores erraram e onde ainda há espaço? Termine com uma avaliação honesta: vale a pena seguir com essa ideia ou não?`;
+  return `Use o Colosseum Copilot: quero construir isto no hackathon do Colosseum. ${idea.pitch} Alguém já fez isso nos hackathons do Colosseum? Como está o cenário competitivo, o que os projetos anteriores erraram e onde ainda há espaço? Termine com uma avaliação honesta: vale a pena seguir com essa ideia ou não?`;
 }
