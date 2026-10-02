@@ -141,20 +141,23 @@ export const YES_NO_OPTIONS: readonly Option<"yes" | "no">[] = [
   { value: "no", label: "Não" },
 ];
 
-/** What a submission is made of, for the "N de M itens" progress line. */
-const SUBMISSION_ITEMS: ((s: Startup) => boolean)[] = [
-  (s) => Boolean(s.colosseum_url),
-  (s) => Boolean(s.description),
-  (s) => Boolean(s.github_url),
-  (s) => Boolean(s.pitch_video_url),
-  (s) => Boolean(s.demo_video_url),
-  (s) => s.tracks.length > 0,
-  (s) => Boolean(s.prior_work),
-  (s) => Boolean(s.traction),
+/** What a submission is made of, for the progress line and the dashboard checklist. */
+const SUBMISSION_ITEMS: { label: string; has: (s: Startup) => boolean }[] = [
+  { label: "Link do projeto no Colosseum", has: (s) => Boolean(s.colosseum_url) },
+  { label: "Descrição", has: (s) => Boolean(s.description) },
+  { label: "Repositório", has: (s) => Boolean(s.github_url) },
+  { label: "Vídeo de pitch", has: (s) => Boolean(s.pitch_video_url) },
+  { label: "Vídeo de demo técnica", has: (s) => Boolean(s.demo_video_url) },
+  { label: "Trilhas", has: (s) => s.tracks.length > 0 },
+  { label: "Trabalho anterior declarado", has: (s) => Boolean(s.prior_work) },
+  { label: "Um número de tração", has: (s) => Boolean(s.traction) },
 ];
 export const SUBMISSION_ITEM_COUNT = SUBMISSION_ITEMS.length;
+export function submissionChecklist(startup: Startup | null): { label: string; done: boolean }[] {
+  return SUBMISSION_ITEMS.map((item) => ({ label: item.label, done: startup ? item.has(startup) : false }));
+}
 export function submissionItemsFilled(startup: Startup): number {
-  return SUBMISSION_ITEMS.filter((has) => has(startup)).length;
+  return SUBMISSION_ITEMS.filter((item) => item.has(startup)).length;
 }
 
 export function labelOf<T extends string>(options: readonly Option<T>[], value: string | null | undefined): string | null {

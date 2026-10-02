@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { SegmentedNav } from "@/components/ui/segmented";
+import { COLOSSEUM_SLUG } from "@/app/(public)/pre-registro/constants";
+import { STARTUP_PATH, SUBMISSION_STEP } from "@/app/(public)/startup-registration/constants";
 
 const TABS = [
   { path: "dashboard", label: "Visão geral" },
@@ -22,7 +24,11 @@ export function PainelNav({ slug, usesTeams = true }: { slug: string; usesTeams?
     <SegmentedNav
       label="Seções do painel"
       items={tabs.map((tab) => {
-        const href = `/h/${slug}/${tab.path}`;
+        // The Colosseum submission is kept on the startup form, not on a team.
+        const href =
+          tab.path === "submission" && slug === COLOSSEUM_SLUG
+            ? `${STARTUP_PATH}?step=${SUBMISSION_STEP}`
+            : `/h/${slug}/${tab.path}`;
         return {
           key: tab.path,
           href,
