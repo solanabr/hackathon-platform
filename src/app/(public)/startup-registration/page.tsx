@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
+import { UTM_FIELDS } from "@/lib/attribution";
 import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
 import { TrackedLink } from "../pre-registro/tracked-link";
 import { StartupForm } from "./startup-form";
@@ -192,13 +194,29 @@ function Hero({ signedIn, completed }: { signedIn: boolean; completed: boolean }
 export default async function StartupRegistrationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ step?: string; saved?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [state, { step, saved }] = await Promise.all([resolveAuthenticatedUserState(), searchParams]);
+  const [state, params] = await Promise.all([resolveAuthenticatedUserState(), searchParams]);
+  const step = typeof params.step === "string" ? params.step : undefined;
+  const saved = typeof params.saved === "string" ? params.saved : undefined;
   const startup = state ? await loadStartup(state.userId) : null;
   const completed = Boolean(startup?.completed_at);
 
   const requested = STEPS.find((s) => String(s.n) === step)?.n ?? null;
+  // A link straight to a step (the dashboard, an e-mail) must not strand a
+  // signed-out visitor on a page with nothing to show: log in, then come back.
+  // The campaign tags ride along twice: on /auth so the click is counted even
+  // if the person never logs in, and inside `next` so the form sees them too.
+  if (!state && requested) {
+    const utm = new URLSearchParams();
+    for (const key of UTM_FIELDS) {
+      const value = params[key];
+      if (typeof value === "string" && value) utm.set(key, value.slice(0, 120));
+    }
+    const tags = utm.toString();
+    const next = `${STARTUP_PATH}?step=${requested}${tags ? `&${tags}` : ""}`;
+    redirect(`/auth?next=${encodeURIComponent(next)}${tags ? `&${tags}` : ""}`);
+  }
   // Anyone who finished the registration or already told us about a submission
   // lands on the overview; a first-time or half-way founder lands on the form.
   const overview = !requested && startup && (completed || startup.submission_updated_at) ? startup : null;
