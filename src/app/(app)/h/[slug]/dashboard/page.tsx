@@ -40,6 +40,7 @@ import {
   labelOf,
   submissionChecklist,
 } from "@/app/(public)/startup-registration/constants";
+import { SubmissionNotice } from "@/app/(public)/startup-registration/submission-notice";
 import type { Startup } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -69,9 +70,9 @@ function OwnSubmissionCard({ startup }: { startup: Startup | null }) {
 
   return (
     <SectionCard sticker title="Submissão" action={{ href, label: started ? "Editar" : "Começar" }}>
-      <p className="text-sm leading-relaxed text-muted">
-        Conte como está sua submissão no Colosseum. É por aqui que o time da Superteam Brasil acompanha seu projeto e
-        manda feedback por e-mail. A submissão oficial continua sendo feita no site do Colosseum.
+      <SubmissionNotice location="dashboard" />
+      <p className="mt-5 text-sm leading-relaxed text-muted">
+        Conte aqui como está sua submissão. O feedback chega por e-mail.
       </p>
       {started ? (
         <>

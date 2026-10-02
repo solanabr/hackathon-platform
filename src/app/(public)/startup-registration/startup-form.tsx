@@ -342,9 +342,8 @@ export function StartupForm({
       {step === SUBMISSION_STEP && (
         <>
           <p className="text-sm leading-relaxed text-muted">
-            Conte como está sua submissão no Colosseum. Tudo é opcional: preencha o que já tem e volte para atualizar. É
-            por aqui que o time da Superteam Brasil acompanha seu projeto e manda feedback por e-mail. A submissão
-            oficial continua sendo feita no site do Colosseum.
+            Conte como está sua submissão. Tudo é opcional: preencha o que já tem e volte para atualizar. O feedback
+            chega por e-mail.
           </p>
 
           <fieldset className="space-y-4">

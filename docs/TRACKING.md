@@ -38,7 +38,7 @@ both sides land on one person.
 | Event | Side | Properties | Fires from |
 | --- | --- | --- | --- |
 | `cta_clicked` | client | `cta` (`"cadastro"`, `"dashboard"`), `location` (`header`, `hero`, `jornada`, `jornada_colosseum`, `sticky`, `pre_registro`), `edition` on the dashboard CTA | `TrackedCta` on the campaign LP and in the header dock, `MobileCtaBar`; the dashboard CTA is on the edition page and on the `/pre-registro` journey |
-| `campaign_link_clicked` | client | `target` (`colosseum`, `colosseum_arena`, `colosseum_site`, `whatsapp`, …), `location` (`lp`, `lp_colosseum`, `recursos`, `faq`, `pre_registro`, `dashboard`), `edition` on the dashboard panel | `TrackedCta` on the LP, `TrackedLink` on `/pre-registro`, `ExternalSubmissionPanel` |
+| `campaign_link_clicked` | client | `target` (`colosseum`, `colosseum_arena`, `colosseum_site`, `trilha_brasil`, `whatsapp`, …), `location` (`lp`, `lp_colosseum`, `recursos`, `faq`, `pre_registro`, `dashboard`, `startup_form`), `edition` on the dashboard panel and on the submission notice | `TrackedCta` on the LP, `TrackedLink` on `/pre-registro`, `ExternalSubmissionPanel`, `SubmissionNotice` on the startup form and the Colosseum dashboard |
 | `auth_provider_clicked` | client | `provider` (`google`, `github`, `email`, …) | `AuthForm`, on any sign-in attempt |
 | `auth_failed` | client | `provider`, `reason` (`oauth_request_failed`, `otp_request_failed`, `otp_verify_failed`, or the callback error) | `AuthForm` |
 | `auth_code_verified` | client | `provider: "email"` | `AuthForm`, after a valid OTP |

@@ -7,6 +7,7 @@ import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { WHATSAPP_COMMUNITY_URL } from "../pre-registro/constants";
 import { TrackedLink } from "../pre-registro/tracked-link";
 import { StartupForm } from "./startup-form";
+import { SubmissionNotice } from "./submission-notice";
 import {
   HERO,
   STARTUP_PATH,
@@ -222,6 +223,11 @@ export default async function StartupRegistrationPage({
               <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-ink">
                 {activeStep === SUBMISSION_STEP ? "Submissão no Colosseum" : STEPS[activeStep - 1].label}
               </h2>
+              {activeStep === SUBMISSION_STEP && (
+                <div className="mt-5">
+                  <SubmissionNotice location="startup_form" />
+                </div>
+              )}
               <div className="mt-6">
                 <StartupForm step={activeStep} profile={state.profile} email={state.email} startup={startup} />
               </div>
