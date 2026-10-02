@@ -14,26 +14,29 @@ import { CopilotExplorer, type ExplorerFilters } from "./explorer";
 
 export const metadata: Metadata = {
   title: "Colosseum Copilot: valide sua ideia antes de construir",
-  description: "Pesquise 5.400 projetos de hackathons anteriores, veja quão disputada é a sua área e leve a ideia para o Claude Code ou Codex com a skill do Colosseum Copilot. Guia em português.",
+  description: "Pesquise mais de 8 mil projetos de hackathons anteriores, veja quão disputada é a sua área e leve a ideia para o Claude Code ou Codex com a skill do Colosseum Copilot. Guia em português.",
   openGraph: { title: "Colosseum Copilot · Guia da Superteam Brasil", description: "Saiba o que já foi construído antes de começar. Pesquisa gratuita, guia de instalação e prompts em português.", images: [{ url: "/guias/copilot/og.png", width: 1200, height: 630 }] },
 };
 
-const ARENA_TOKEN_URL = withPlatformUtm("https://colosseum.com/arena/copilot", { content: "guia_copilot_token" });
+const SIGNUP_URL = withPlatformUtm("https://colosseum.com/signup?ref=lp", { content: "guia_copilot_conta" });
+const CONNECTIONS_URL = withPlatformUtm("https://colosseum.com/arena/copilot/connections", { content: "guia_copilot_conexoes" });
 const DOCS_URL = withPlatformUtm("https://docs.colosseum.com/copilot", { content: "guia_copilot_docs" });
 const SECTION = "px-4 pt-24 sm:px-6 lg:pt-28 xl:pt-32";
-const ENV_SNIPPET = `export COLOSSEUM_COPILOT_API_BASE="https://copilot.colosseum.com/api/v1"\nexport COLOSSEUM_COPILOT_PAT="cole-seu-token-aqui"`;
+const AGENT_SETUP_PROMPT = "Set up Colosseum Copilot for this agent using https://colosseum.com/copilot/onboard.md. Install the official ColosseumOrg/colosseum-copilot skill, let me approve Colosseum sign-in, and return to my task.";
 const INSTALL = [
-  { agent: "Claude Code", cmd: "npx skills add ColosseumOrg/colosseum-copilot" },
-  { agent: "Codex", cmd: "npx skills add ColosseumOrg/colosseum-copilot -a codex" },
-  { agent: "OpenClaw", cmd: "npx skills add ColosseumOrg/colosseum-copilot -a openclaw" },
+  { agent: "Claude Code", cmd: "npx skills add ColosseumOrg/colosseum-copilot -g -a claude-code" },
+  { agent: "Codex", cmd: "npx skills add ColosseumOrg/colosseum-copilot -g -a codex" },
+  { agent: "OpenClaw", cmd: "npx skills add ColosseumOrg/colosseum-copilot -g -a openclaw" },
 ];
-const VERIFY = `curl "$COLOSSEUM_COPILOT_API_BASE/status" -H "Authorization: Bearer $COLOSSEUM_COPILOT_PAT"`;
+const LOGIN = "npx @colosseum-org/copilot-connect login";
+const LOGIN_DEVICE = "npx @colosseum-org/copilot-connect login --device";
+const STATUS = "npx @colosseum-org/copilot-connect status";
 const PROMPTS = [
-  "Quero construir pagamentos em stablecoin para agentes de IA na Solana. Quem já fez isso nos hackathons do Colosseum e o que deu errado?",
-  "Compare os projetos vencedores de DeFi do Breakout e do Cypherpunk. O que os vencedores tinham em comum?",
-  "Existe espaço para um app de consumo de privacidade na Solana? Liste os concorrentes vivos e os que morreram.",
-  "Quais projetos de DePIN passaram para o acelerador? O que os diferenciou dos que não passaram?",
-  "Estou pensando em um marketplace B2B com liquidação em stablecoin. Vale a pena? Seja honesto.",
+  "Use o Colosseum Copilot: quero construir pagamentos em stablecoin para agentes de IA na Solana. Quem já fez isso nos hackathons do Colosseum e o que deu errado?",
+  "Use o Colosseum Copilot: compare os projetos vencedores de DeFi do Breakout e do Cypherpunk. O que os vencedores tinham em comum?",
+  "Use o Colosseum Copilot: existe espaço para um app de consumo de privacidade na Solana? Liste os concorrentes vivos e os que morreram.",
+  "Use o Colosseum Copilot: quais projetos de DePIN passaram para o acelerador? O que os diferenciou dos que não passaram?",
+  "Use o Colosseum Copilot: quais ferramentas da minha chain servem para um marketplace B2B com liquidação em stablecoin, e o que times parecidos já construíram?",
 ];
 
 function Ext({ href, children }: { href: string; children: ReactNode }) {
@@ -87,7 +90,7 @@ export default async function CopilotGuidePage() {
             <span className="mt-3 inline-block -rotate-1 border-2 border-green-dark bg-yellow px-4 py-1.5 text-3xl text-green-dark shadow-sticker [font-stretch:110%] sm:text-5xl">antes de construir</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink/80">
-            O Colosseum Copilot é a base de dados dos hackathons do Colosseum: 5.400 projetos, quem venceu, o que construíram e onde estão os links. Aqui você explora essa base, testa sua ideia contra ela e aprende a usar o Copilot dentro do seu agente de código, em português.
+            O Colosseum Copilot é a base de dados dos hackathons do Colosseum: 8.286 projetos de cinco hackathons, quem venceu, o que construíram e onde estão os links. Aqui você explora essa base, testa sua ideia contra ela e aprende a usar o Copilot dentro do seu agente de código, em português.
           </p>
           </Reveal>
         </div>
@@ -115,35 +118,45 @@ export default async function CopilotGuidePage() {
               É lá que a avaliação de verdade acontece: o agente compara sua ideia com os projetos anteriores, lista concorrentes vivos, traz leituras do ecossistema e diz, com evidências, se vale a pena seguir.
             </p>
             <p className="mt-3 max-w-2xl text-ink/75">
-              Custa nada: o token é gratuito para quem tem conta no Colosseum, a mesma conta onde você se inscreve no hackathon. Cinco minutos de setup.
+              Não custa nada. Você precisa de uma conta no Colosseum, a mesma onde se inscreve no hackathon, e do Node.js 20 ou mais novo. Cinco minutos de setup.
+            </p>
+            <p className="mt-5 max-w-2xl rounded-2xl border-2 border-green-dark bg-yellow/30 px-5 py-4 text-sm leading-relaxed text-ink">
+              <strong>Seguiu a versão antiga deste guia?</strong> O Colosseum trocou o token manual por um login no navegador. Os tokens antigos param de funcionar em 28 de outubro e não trazem o hackathon Frontier. Refaça os passos abaixo e apague <code>COLOSSEUM_COPILOT_PAT</code> e <code>COLOSSEUM_COPILOT_API_BASE</code> do seu <code>.zshrc</code> ou <code>.bashrc</code>.
             </p>
           </Reveal>
 
-          <Step n={1} title="Crie sua conta no Colosseum e gere o token" why="O token identifica você para a API do Copilot.">
-            <p>Entre no <Ext href={ARENA_TOKEN_URL}>Colosseum Arena</Ext> e clique em <strong>Generate your token</strong>. O token aparece uma vez só, copie na hora. Vale 90 dias, e é a mesma conta onde você se inscreve no hackathon.</p>
+          <Step n={1} title="Tenha uma conta no Colosseum" why="É com ela que você entra no Copilot e se inscreve no hackathon.">
+            <p>Se ainda não tem, <Ext href={SIGNUP_URL}>crie sua conta no Colosseum</Ext>. É grátis e leva um minuto.</p>
           </Step>
 
-          <Step n={2} title="Exporte as variáveis no terminal" why="As variáveis dizem ao agente onde está a API e qual token usar.">
-            <p>Cole no seu <code>.zshrc</code> ou <code>.bashrc</code>, trocando pelo seu token:</p>
-            <Code code={ENV_SNIPPET} label="env" />
+          <Step n={2} title="Peça para o seu agente configurar" why="O jeito mais rápido: o agente instala a skill e abre o login para você.">
+            <p>Cole este pedido no Claude Code, no Codex ou no OpenClaw. Ele está em inglês porque é o texto oficial do Colosseum:</p>
+            <Code code={AGENT_SETUP_PROMPT} label="agent-setup" />
+            <p className="mt-3">O agente instala a skill e abre uma página do Colosseum no navegador. Confira se ela mostra a sua conta e clique em <strong>Approve</strong>. Deu certo? Pule para o passo 5.</p>
           </Step>
 
-          <Step n={3} title="Instale a skill" why="A skill é o que ensina o agente a usar a API.">
+          <Step n={3} title="Ou instale a skill você mesmo" why="Os mesmos passos, rodando os comandos no terminal.">
             {INSTALL.map((i) => (
               <div key={i.agent} className="mt-4">
                 <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-green-dark/80">{i.agent}</p>
                 <Code code={i.cmd} label={i.agent} />
               </div>
             ))}
+            <p className="mt-3 text-sm text-ink/70">Depois abra uma nova sessão do agente, para ele carregar a skill.</p>
           </Step>
 
-          <Step n={4} title="Verifique a conexão" why="Confirma que token e variáveis estão certos antes de perguntar.">
-            <Code code={VERIFY} label="verify" />
-            <p className="mt-3 text-sm text-ink/70">A resposta deve trazer <code>&quot;authenticated&quot;: true</code>.</p>
+          <Step n={4} title="Entre com a sua conta" why="O login acontece no navegador. Não há mais token para copiar.">
+            <Code code={LOGIN} label="login" />
+            <p className="mt-3">Uma página do Colosseum abre no navegador. Confira a conta e clique em <strong>Approve</strong>. A caixa <strong>Help improve Copilot</strong> é opcional e vem desmarcada: se você marcar, suas perguntas e as respostas do agente são compartilhadas com o Colosseum.</p>
+            <p className="mt-4 text-sm text-ink/70">Sem navegador, ou trabalhando por SSH? Este comando mostra um link e um código para usar em qualquer navegador:</p>
+            <Code code={LOGIN_DEVICE} label="login-device" />
+            <p className="mt-4 text-sm text-ink/70">Para conferir a conexão, rode o comando abaixo. A resposta deve trazer <code>ready</code>.</p>
+            <Code code={STATUS} label="status" />
+            <p className="mt-3 text-sm text-ink/70">O login vale 90 dias, ou até você passar 30 dias sem usar. Em <Ext href={CONNECTIONS_URL}>Connected agents</Ext> você vê e revoga os agentes conectados.</p>
           </Step>
 
           <Step n={5} title="Pergunte em português" why="Prompts prontos para o hackathon; copie e cole no agente.">
-            <p>A skill entende português. Alguns prompts para começar:</p>
+            <p>A skill entende português. Cite o Copilot no pedido, para o agente saber que deve usá-lo. Alguns prompts para começar:</p>
             <ul className="mt-4 space-y-3">
               {PROMPTS.map((p) => (
                 <li key={p} className="flex flex-col gap-3 rounded-2xl border-2 border-green-dark bg-surface-raised p-4 shadow-sticker sm:flex-row sm:items-center sm:justify-between">
@@ -157,7 +170,7 @@ export default async function CopilotGuidePage() {
           <Reveal tone="papel">
           <div className="mt-12 rounded-2xl border-2 border-green-dark bg-green px-6 py-5 text-surface shadow-sticker">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-yellow">O que o Copilot faz e não faz</p>
-            <p className="mt-2 leading-relaxed">Ele pesquisa: projetos, fontes, dados do ecossistema. Ele não julga por você. Quem avalia é o seu agente, com as evidências que o Copilot traz, e quem decide é você. Documentação completa em <Ext href={DOCS_URL}>docs.colosseum.com/copilot</Ext> <ArrowUpRightIcon className="inline" size={14} weight="bold" aria-hidden />.</p>
+            <p className="mt-2 leading-relaxed">Ele pesquisa: os projetos dos hackathons, uma biblioteca de pesquisa, as ferramentas de cada chain do hackathon atual e as perguntas frequentes dos programas do Colosseum. Ele sabe o que os times enviaram, não o que está no ar hoje, e conhece melhor a Solana do que as outras chains. Ele não julga por você: quem avalia é o seu agente, com as evidências que o Copilot traz, e quem decide é você. Documentação completa em <Ext href={DOCS_URL}>docs.colosseum.com/copilot</Ext> <ArrowUpRightIcon className="inline" size={14} weight="bold" aria-hidden />.</p>
           </div>
           </Reveal>
         </div>

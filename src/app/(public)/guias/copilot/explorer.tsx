@@ -45,7 +45,7 @@ function ErrorLine({ err }: { err: ApiError }) {
     <div className="mt-4 rounded-2xl border-2 border-green-dark bg-yellow/30 px-5 py-4 text-sm leading-relaxed text-ink">
       <p>{err.error}</p>
       {err.code === "quota" && (
-        <a href="#use-no-seu-agente" className="mt-2 inline-block font-bold text-emerald-deep underline underline-offset-2">Ver como gerar seu token</a>
+        <a href="#use-no-seu-agente" className="mt-2 inline-block font-bold text-emerald-deep underline underline-offset-2">Ver como usar no seu agente</a>
       )}
     </div>
   );
