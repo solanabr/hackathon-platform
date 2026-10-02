@@ -96,9 +96,6 @@ export default function CopilotGuidePage() {
             <p className="mt-3 max-w-2xl text-ink/75">
               Não custa nada. Você precisa de uma conta no Colosseum, a mesma onde se inscreve no hackathon, e do Node.js 20 ou mais novo. Cinco minutos de setup.
             </p>
-            <p className="mt-5 max-w-2xl rounded-2xl border-2 border-green-dark bg-yellow/30 px-5 py-4 text-sm leading-relaxed text-ink">
-              <strong>Seguiu a versão antiga deste guia?</strong> O Colosseum trocou o token manual por um login no navegador. Os tokens antigos param de funcionar em 28 de outubro e não trazem o hackathon Frontier. Refaça os passos abaixo e apague <code>COLOSSEUM_COPILOT_PAT</code> e <code>COLOSSEUM_COPILOT_API_BASE</code> do seu <code>.zshrc</code> ou <code>.bashrc</code>.
-            </p>
           </Reveal>
 
           <Step n={1} title="Tenha uma conta no Colosseum" why="É com ela que você entra no Copilot e se inscreve no hackathon.">
