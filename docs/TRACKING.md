@@ -37,7 +37,7 @@ both sides land on one person.
 
 | Event | Side | Properties | Fires from |
 | --- | --- | --- | --- |
-| `cta_clicked` | client | `cta` (`"cadastro"`), `location` (`header`, `hero`, `jornada`, `jornada_colosseum`, `sticky`) | `TrackedCta` on the campaign LP and in the header dock, `MobileCtaBar` |
+| `cta_clicked` | client | `cta` (`"cadastro"`, `"dashboard"`), `location` (`header`, `hero`, `jornada`, `jornada_colosseum`, `sticky`, `pre_registro`), `edition` on the dashboard CTA | `TrackedCta` on the campaign LP and in the header dock, `MobileCtaBar`; the dashboard CTA is on the edition page and on the `/pre-registro` journey |
 | `campaign_link_clicked` | client | `target` (`colosseum`, `colosseum_arena`, `colosseum_site`, `whatsapp`, …), `location` (`lp`, `lp_colosseum`, `recursos`, `faq`, `pre_registro`, `dashboard`), `edition` on the dashboard panel | `TrackedCta` on the LP, `TrackedLink` on `/pre-registro`, `ExternalSubmissionPanel` |
 | `auth_provider_clicked` | client | `provider` (`google`, `github`, `email`, …) | `AuthForm`, on any sign-in attempt |
 | `auth_failed` | client | `provider`, `reason` (`oauth_request_failed`, `otp_request_failed`, `otp_verify_failed`, or the callback error) | `AuthForm` |
