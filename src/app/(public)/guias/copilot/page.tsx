@@ -11,6 +11,7 @@ import { getFilters } from "@/lib/copilot/client";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { PAGE_SHELL } from "@/components/layout/container";
 import { CopilotExplorer, type ExplorerFilters } from "./explorer";
+import { IdeaExamples } from "./idea-examples";
 
 export const metadata: Metadata = {
   title: "Colosseum Copilot: valide sua ideia antes de construir",
@@ -103,6 +104,12 @@ export default async function CopilotGuidePage() {
           ) : (
             <p className="rounded-2xl border-2 border-green-dark bg-yellow/30 px-5 py-4 text-ink">A pesquisa está indisponível agora. O guia abaixo continua valendo.</p>
           )}
+        </div>
+      </section>
+
+      <section className={SECTION}>
+        <div className={PAGE_SHELL}>
+          <IdeaExamples canTest={Boolean(filters)} />
         </div>
       </section>
 
