@@ -18,6 +18,8 @@ import {
 import { getTeamForHackathon } from "@/lib/team";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { COLOSSEUM_SLUG } from "@/app/(public)/pre-registro/constants";
+import { STARTUP_PATH, SUBMISSION_STEP } from "@/app/(public)/startup-registration/constants";
 import {
   DAY_MONTH as DAY,
   DAY_MONTH_LONG_TIME as FULL,
@@ -34,6 +36,7 @@ export default async function SubmissionPage({
   const { slug } = await params;
   const [state, hackathon] = await Promise.all([requireUser(), getHackathonBySlug(slug)]);
   if (!hackathon || hackathon.status === "draft") notFound();
+  if (slug === COLOSSEUM_SLUG) redirect(`${STARTUP_PATH}?step=${SUBMISSION_STEP}`);
 
   if (!isProfileComplete(state.profile)) redirect(`/account?next=/h/${slug}/submission`);
 

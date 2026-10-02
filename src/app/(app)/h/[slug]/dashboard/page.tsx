@@ -32,6 +32,16 @@ import { getMentorshipBoard } from "@/lib/mentorship-server";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
+import { COLOSSEUM_SLUG } from "@/app/(public)/pre-registro/constants";
+import {
+  STARTUP_PATH,
+  SUBMISSION_STATUS_OPTIONS,
+  SUBMISSION_STEP,
+  labelOf,
+  submissionChecklist,
+} from "@/app/(public)/startup-registration/constants";
+import { SubmissionNotice } from "@/app/(public)/startup-registration/submission-notice";
+import type { Startup } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +60,50 @@ const REQUIRED: Array<{ key: string; label: string }> = [
   { key: "github_url", label: "Repositório" },
   { key: "github_access_granted", label: "Acesso ao repositório" },
 ];
+
+function OwnSubmissionCard({ startup }: { startup: Startup | null }) {
+  const href = `${STARTUP_PATH}?step=${SUBMISSION_STEP}`;
+  const items = submissionChecklist(startup);
+  const done = items.filter((i) => i.done).length;
+  const started = Boolean(startup?.submission_updated_at);
+  const status = labelOf(SUBMISSION_STATUS_OPTIONS, startup?.submission_status);
+
+  return (
+    <SectionCard sticker title="Submissão" action={{ href, label: started ? "Editar" : "Começar" }}>
+      <SubmissionNotice location="dashboard" />
+      <p className="mt-5 text-sm leading-relaxed text-muted">
+        Conte aqui como está sua submissão. O feedback chega por e-mail.
+      </p>
+      {started ? (
+        <>
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <p className="text-sm text-muted">{status ?? "Status não informado"}</p>
+            <p className="shrink-0 font-mono text-xs tabular-nums text-ink">
+              {done}/{items.length} itens
+            </p>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-deep">
+            <div
+              className="h-1.5 rounded-full bg-emerald transition-[width]"
+              style={{ width: `${(done / items.length) * 100}%` }}
+            />
+          </div>
+          <ul className="mt-4 space-y-2.5">
+            {items.map((item) => (
+              <CheckRow key={item.label} done={item.done}>
+                {item.label}
+              </CheckRow>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <Link href={href} className="btn-primary mt-4 inline-block px-5 py-2 text-sm">
+          Contar da minha submissão
+        </Link>
+      )}
+    </SectionCard>
+  );
+}
 
 export default async function PainelPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -80,6 +134,17 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
   if (scheduleResult.error) logQueryError("painel.scheduleCount", scheduleResult.error);
   const totalCount = scheduleResult.count;
+
+  // On the Colosseum edition the submission lives on the person's startup row,
+  // not on a team: the official submission happens on colosseum.com and this
+  // copy is what the Superteam Brasil team follows to send feedback.
+  const ownSubmission = slug === COLOSSEUM_SLUG;
+  let startup: Startup | null = null;
+  if (ownSubmission) {
+    const startupResult = await supabase.from("startups").select("*").eq("user_id", state.userId).maybeSingle();
+    if (startupResult.error) logQueryError("painel.startup", startupResult.error);
+    startup = (startupResult.data as Startup | null) ?? null;
+  }
 
   if (target.mode === "external") {
     return (
@@ -301,6 +366,9 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
             )}
           </SectionCard>
 
+          {ownSubmission ? (
+            <OwnSubmissionCard startup={startup} />
+          ) : (
           <SectionCard
             sticker
             title="Submissão"
@@ -386,6 +454,7 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
               </>
             )}
           </SectionCard>
+          )}
           </div>
 
           <aside className="space-y-6">

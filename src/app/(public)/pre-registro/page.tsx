@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import { TrackedCta } from "@/components/ui/tracked-cta";
 import { getHackathonBySlug } from "@/lib/hackathon";
 import { withPlatformUtm } from "@/lib/attribution";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -294,6 +295,40 @@ export default async function PreRegistroPage({
                   )}
                 </div>
               </li>
+              )}
+
+              {colosseumConfirmed ? (
+                <li className={JOURNEY_STEP}>
+                  <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark bg-yellow font-heading text-lg font-black text-green-dark">
+                    →
+                  </span>
+                  <div className="flex-1 rounded-2xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker">
+                    <p className="font-heading text-base font-bold uppercase text-ink">Abra seu painel</p>
+                    <p className="mt-1 text-sm text-muted">
+                      No painel você conta como está sua submissão para receber feedback do time da Superteam Brasil, monta ou encontra um time e acessa os conteúdos.
+                    </p>
+                    <TrackedCta
+                      href={`/h/${COLOSSEUM_SLUG}/dashboard`}
+                      event="cta_clicked"
+                      properties={{ cta: "dashboard", location: "pre_registro", edition: COLOSSEUM_SLUG }}
+                      className="mt-4 inline-block whitespace-nowrap rounded-full bg-yellow px-6 py-2.5 text-sm font-bold text-green-dark transition-transform duration-(--dur-instant) ease-mola hover:-translate-y-0.5"
+                    >
+                      Abrir meu painel
+                    </TrackedCta>
+                  </div>
+                </li>
+              ) : (
+                <li className={JOURNEY_STEP}>
+                  <span className="z-10 mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-green-dark/25 bg-surface font-heading text-lg font-black text-muted">
+                    3
+                  </span>
+                  <div className="flex-1 rounded-2xl border-2 border-green-dark/15 bg-surface p-5">
+                    <p className="font-heading text-base font-bold uppercase text-muted">Seu painel</p>
+                    <p className="mt-1 text-sm text-muted">
+                      Abre depois que você declarar sua inscrição na Colosseum, no passo acima. É lá que você conta como está sua submissão para receber feedback, monta um time e acessa os conteúdos.
+                    </p>
+                  </div>
+                </li>
               )}
 
               <li className={JOURNEY_STEP}>

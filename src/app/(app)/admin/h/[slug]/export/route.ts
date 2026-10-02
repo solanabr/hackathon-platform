@@ -204,6 +204,19 @@ type StartupRow = {
   tech_team: string | null;
   heard_from: string | null;
   help_needed: string | null;
+  submission_status: string | null;
+  colosseum_url: string | null;
+  description: string | null;
+  github_url: string | null;
+  pitch_video_url: string | null;
+  demo_video_url: string | null;
+  tracks: string[] | null;
+  prior_work: string | null;
+  traction: string | null;
+  team_size: number | null;
+  team_registered: boolean | null;
+  submission_notes: string | null;
+  submission_updated_at: string | null;
   completed_at: string | null;
   created_at: string;
   user: FounderCols | FounderCols[] | null;
@@ -244,6 +257,19 @@ async function startupsCsv(hackathonId: string): Promise<CsvCell[][]> {
       r.help_needed,
       r.completed_at,
       r.created_at,
+      r.submission_status,
+      r.colosseum_url,
+      r.description,
+      r.tracks?.join(" | "),
+      r.github_url,
+      r.pitch_video_url,
+      r.demo_video_url,
+      r.prior_work,
+      r.traction,
+      r.team_size,
+      r.team_registered,
+      r.submission_notes,
+      r.submission_updated_at,
     ];
   });
 }
@@ -251,6 +277,8 @@ const STARTUPS_HEADER = [
   "nome", "email", "whatsapp", "telegram", "linkedin", "cargo", "tipo_de_trabalho", "cidade_estado",
   "startup", "resumo", "vertical", "estagio", "site", "pitch_deck", "twitter", "logo",
   "contratando", "clientes", "token", "time_tecnico", "como_soube", "ajuda", "concluido_em", "criado_em",
+  "submissao_status", "link_colosseum", "descricao", "trilhas", "repositorio", "video_pitch", "video_demo",
+  "trabalho_anterior", "tracao", "tamanho_time", "time_inscrito", "pedido_feedback", "submissao_atualizada_em",
 ];
 
 const EXPORTS = {

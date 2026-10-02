@@ -1,9 +1,12 @@
 import type {
   StartupHiring,
+  Startup,
   StartupStage,
+  StartupSubmissionStatus,
   StartupTargetCustomers,
   StartupTechTeam,
   StartupTokenLaunch,
+  StartupTrack,
   StartupVertical,
   WorkType,
 } from "@/types/db";
@@ -25,8 +28,12 @@ export const STEPS = [
   { n: 1, label: "Seus dados" },
   { n: 2, label: "Sua startup" },
   { n: 3, label: "Mais detalhes" },
+  { n: 4, label: "Submissão" },
 ] as const;
 export type StartupStep = (typeof STEPS)[number]["n"];
+// Steps 1 to 3 are the registration; step 4 is updated on its own afterwards.
+export const LAST_REGISTRATION_STEP: StartupStep = 3;
+export const SUBMISSION_STEP: StartupStep = 4;
 
 type Option<T extends string> = { value: T; label: string };
 
@@ -109,6 +116,49 @@ export const TECH_TEAM_OPTIONS: readonly Option<StartupTechTeam>[] = [
   { value: "mixed_without_cto", label: "Misto, sem CTO" },
   { value: "none", label: "Ainda não temos" },
 ];
+
+export const SUBMISSION_STATUS_OPTIONS: readonly Option<StartupSubmissionStatus>[] = [
+  { value: "not_started", label: "Ainda não comecei" },
+  { value: "draft", label: "Tenho um rascunho" },
+  { value: "submitted", label: "Já enviei" },
+];
+
+export const TRACK_OPTIONS: readonly Option<StartupTrack>[] = [
+  { value: "solana", label: "Solana" },
+  { value: "tempo", label: "Tempo" },
+  { value: "hyperliquid", label: "Hyperliquid" },
+  { value: "zcash", label: "Zcash" },
+  { value: "ethereum", label: "Ethereum" },
+  { value: "base", label: "Base" },
+  { value: "arbitrum", label: "Arbitrum" },
+  { value: "robinhood", label: "Robinhood Chain" },
+  { value: "university", label: "Universitária" },
+  { value: "public_goods", label: "Bens públicos" },
+];
+
+export const YES_NO_OPTIONS: readonly Option<"yes" | "no">[] = [
+  { value: "yes", label: "Sim" },
+  { value: "no", label: "Não" },
+];
+
+/** What a submission is made of, for the progress line and the dashboard checklist. */
+const SUBMISSION_ITEMS: { label: string; has: (s: Startup) => boolean }[] = [
+  { label: "Link do projeto no Colosseum", has: (s) => Boolean(s.colosseum_url) },
+  { label: "Descrição", has: (s) => Boolean(s.description) },
+  { label: "Repositório", has: (s) => Boolean(s.github_url) },
+  { label: "Vídeo de pitch", has: (s) => Boolean(s.pitch_video_url) },
+  { label: "Vídeo de demo técnica", has: (s) => Boolean(s.demo_video_url) },
+  { label: "Trilhas", has: (s) => s.tracks.length > 0 },
+  { label: "Trabalho anterior declarado", has: (s) => Boolean(s.prior_work) },
+  { label: "Um número de tração", has: (s) => Boolean(s.traction) },
+];
+export const SUBMISSION_ITEM_COUNT = SUBMISSION_ITEMS.length;
+export function submissionChecklist(startup: Startup | null): { label: string; done: boolean }[] {
+  return SUBMISSION_ITEMS.map((item) => ({ label: item.label, done: startup ? item.has(startup) : false }));
+}
+export function submissionItemsFilled(startup: Startup): number {
+  return SUBMISSION_ITEMS.filter((item) => item.has(startup)).length;
+}
 
 export function labelOf<T extends string>(options: readonly Option<T>[], value: string | null | undefined): string | null {
   return options.find((o) => o.value === value)?.label ?? null;

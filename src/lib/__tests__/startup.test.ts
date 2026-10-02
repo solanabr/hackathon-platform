@@ -141,3 +141,71 @@ describe("validateStartup — step 3", () => {
     expect(result.ok && result.startup?.help_needed?.length).toBe(1000);
   });
 });
+
+describe("validateStartup — step 4", () => {
+  it("accepts an empty submission and clears every field", () => {
+    expect(validateStartup(4, {}, "continue")).toEqual({
+      ok: true,
+      startup: {
+        submission_status: null,
+        colosseum_url: null,
+        github_url: null,
+        pitch_video_url: null,
+        demo_video_url: null,
+        description: null,
+        tracks: [],
+        prior_work: null,
+        traction: null,
+        team_size: null,
+        team_registered: null,
+        submission_notes: null,
+      },
+    });
+  });
+
+  it("normalises links, tracks and the team answers", () => {
+    expect(
+      validateStartup(
+        4,
+        {
+          submission_status: "draft",
+          colosseum_url: "arena.colosseum.org/projects/acme",
+          github_url: "https://github.com/acme/app",
+          pitch_video_url: "",
+          tracks: "solana,base",
+          team_size: "3",
+          team_registered: "no",
+          traction: " 120 usuários ",
+        },
+        "continue",
+      ),
+    ).toMatchObject({
+      ok: true,
+      startup: {
+        submission_status: "draft",
+        colosseum_url: "https://arena.colosseum.org/projects/acme",
+        github_url: "https://github.com/acme/app",
+        pitch_video_url: null,
+        tracks: ["solana", "base"],
+        team_size: 3,
+        team_registered: false,
+        traction: "120 usuários",
+      },
+    });
+  });
+
+  it("refuses values the table would refuse", () => {
+    expect(validateStartup(4, { submission_status: "won" }, "continue")).toMatchObject({ ok: false, field: "submission_status" });
+    expect(validateStartup(4, { tracks: "solana,dogecoin" }, "continue")).toMatchObject({ ok: false, field: "tracks" });
+    expect(validateStartup(4, { team_size: "0" }, "continue")).toMatchObject({ ok: false, field: "team_size" });
+    expect(validateStartup(4, { team_size: "2.5" }, "continue")).toMatchObject({ ok: false, field: "team_size" });
+    expect(validateStartup(4, { github_url: "not a link" }, "continue")).toMatchObject({ ok: false, field: "github_url" });
+  });
+
+  it("writes the project name only when one is given", () => {
+    const withName = validateStartup(4, { name: " Acme " }, "continue");
+    expect(withName).toMatchObject({ ok: true, startup: { name: "Acme" } });
+    const without = validateStartup(4, {}, "continue");
+    expect(without.ok && "name" in (without.startup ?? {})).toBe(false);
+  });
+});
