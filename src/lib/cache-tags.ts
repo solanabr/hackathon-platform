@@ -4,4 +4,3 @@
 export const HACKATHONS_TAG = "hackathons";
 export const hackathonTag = (slug: string) => `hackathon:${slug}`;
 export const sponsorsTag = (hackathonId: string) => `sponsors:${hackathonId}`;
-export const COPILOT_FILTERS_TAG = "copilot:filters";

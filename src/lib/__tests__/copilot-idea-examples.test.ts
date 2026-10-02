@@ -1,20 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { IDEA_EXAMPLES, IDEA_MAX_LENGTH, ideaAgentPrompt } from "@/lib/copilot/idea-examples";
+import { IDEA_EXAMPLES, ideaAgentPrompt } from "@/lib/copilot/idea-examples";
 
 describe("copilot idea examples", () => {
   it("has unique ids", () => {
     expect(new Set(IDEA_EXAMPLES.map((i) => i.id)).size).toBe(IDEA_EXAMPLES.length);
   });
 
-  it("keeps every pitch inside the idea search limits", () => {
+  it("fills the pitch, the differential and the risk on every card", () => {
     for (const idea of IDEA_EXAMPLES) {
-      expect(idea.pitch.length, idea.id).toBeGreaterThanOrEqual(8);
-      expect(idea.pitch.length, idea.id).toBeLessThanOrEqual(IDEA_MAX_LENGTH);
-    }
-  });
-
-  it("fills the differential and the risk on every card", () => {
-    for (const idea of IDEA_EXAMPLES) {
+      expect(idea.pitch.trim(), idea.id).not.toBe("");
       expect(idea.edge.trim(), idea.id).not.toBe("");
       expect(idea.risk.trim(), idea.id).not.toBe("");
     }

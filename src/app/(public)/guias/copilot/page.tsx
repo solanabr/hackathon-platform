@@ -7,16 +7,13 @@ import { SectionHat } from "@/components/ui/section-hat";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { withPlatformUtm } from "@/lib/attribution";
 import { WHATSAPP_COMMUNITY_URL } from "@/app/(public)/pre-registro/constants";
-import { getFilters } from "@/lib/copilot/client";
-import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { PAGE_SHELL } from "@/components/layout/container";
-import { CopilotExplorer, type ExplorerFilters } from "./explorer";
 import { IdeaExamples } from "./idea-examples";
 
 export const metadata: Metadata = {
   title: "Colosseum Copilot: valide sua ideia antes de construir",
-  description: "Pesquise mais de 8 mil projetos de hackathons anteriores, veja quão disputada é a sua área e leve a ideia para o Claude Code ou Codex com a skill do Colosseum Copilot. Guia em português.",
-  openGraph: { title: "Colosseum Copilot · Guia da Superteam Brasil", description: "Saiba o que já foi construído antes de começar. Pesquisa gratuita, guia de instalação e prompts em português.", images: [{ url: "/guias/copilot/og.png", width: 1200, height: 630 }] },
+  description: "Use o Colosseum Copilot no Claude Code ou no Codex para pesquisar mais de 8 mil projetos de hackathons anteriores e validar sua ideia. Guia de instalação, ideias e prompts em português.",
+  openGraph: { title: "Colosseum Copilot · Guia da Superteam Brasil", description: "Saiba o que já foi construído antes de começar. Guia de instalação, ideias e prompts em português.", images: [{ url: "/guias/copilot/og.png", width: 1200, height: 630 }] },
 };
 
 const SIGNUP_URL = withPlatformUtm("https://colosseum.com/signup?ref=lp", { content: "guia_copilot_conta" });
@@ -67,19 +64,7 @@ function Step({ n, title, why, children }: { n: number; title: string; why: stri
   );
 }
 
-export default async function CopilotGuidePage() {
-  const [filters, state] = await Promise.all([
-    getFilters().catch(() => null),
-    resolveAuthenticatedUserState().catch(() => null),
-  ]);
-  const explorerFilters: ExplorerFilters = filters
-    ? {
-        hackathons: filters.hackathons.map((h) => ({ slug: h.slug, name: h.name, startDate: h.startDate, projectCount: h.projectCount })),
-        tracks: filters.tracks.map((t) => ({ key: t.key, name: t.name, hackathonSlug: t.hackathonSlug })),
-        clusters: filters.clusters.map((c) => ({ key: c.key, label: c.label, projectCount: c.projectCount })),
-      }
-    : { hackathons: [], tracks: [], clusters: [] };
-
+export default function CopilotGuidePage() {
   return (
     <div>
       <section className="px-4 pt-10 sm:px-6 sm:pt-14">
@@ -91,25 +76,9 @@ export default async function CopilotGuidePage() {
             <span className="mt-3 inline-block -rotate-1 border-2 border-green-dark bg-yellow px-4 py-1.5 text-3xl text-green-dark shadow-sticker [font-stretch:110%] sm:text-5xl">antes de construir</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink/80">
-            O Colosseum Copilot é a base de dados dos hackathons do Colosseum: 8.286 projetos de cinco hackathons, quem venceu, o que construíram e onde estão os links. Aqui você explora essa base, testa sua ideia contra ela e aprende a usar o Copilot dentro do seu agente de código, em português.
+            O Colosseum Copilot é a base de dados dos hackathons do Colosseum: 8.286 projetos de cinco hackathons, quem venceu, o que construíram e onde estão os links. Aqui você aprende a usar o Copilot dentro do seu agente de código, em português, e encontra ideias para começar.
           </p>
           </Reveal>
-        </div>
-      </section>
-
-      <section className={SECTION}>
-        <div className={PAGE_SHELL}>
-          {filters ? (
-            <CopilotExplorer filters={explorerFilters} signedIn={Boolean(state)} />
-          ) : (
-            <p className="rounded-2xl border-2 border-green-dark bg-yellow/30 px-5 py-4 text-ink">A pesquisa está indisponível agora. O guia abaixo continua valendo.</p>
-          )}
-        </div>
-      </section>
-
-      <section className={SECTION}>
-        <div className={PAGE_SHELL}>
-          <IdeaExamples canTest={Boolean(filters)} />
         </div>
       </section>
 
@@ -185,6 +154,12 @@ export default async function CopilotGuidePage() {
 
       <section className={SECTION}>
         <div className={PAGE_SHELL}>
+          <IdeaExamples />
+        </div>
+      </section>
+
+      <section className={SECTION}>
+        <div className={PAGE_SHELL}>
           <Reveal tone="papel">
           <div className="rounded-3xl border-2 border-green-dark bg-surface-raised p-6 text-center shadow-sticker sm:p-8">
             <SectionHat centered>Travou em algum passo?</SectionHat>
@@ -194,7 +169,7 @@ export default async function CopilotGuidePage() {
                 className="btn-cut inline-flex items-center gap-2.5 bg-emerald-deep px-8 py-3.5 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark">
                 <WhatsappLogoIcon aria-hidden size={18} weight="bold" /><span>Entrar no grupo</span>
               </TrackedCta>
-              <a href="#valide" className="btn-cut btn-cut-outline inline-flex items-center px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"><span>Pesquisar outra ideia</span></a>
+              <a href="#ideias" className="btn-cut btn-cut-outline inline-flex items-center px-6 py-3 text-sm font-bold text-ink transition-colors duration-(--dur-instant) ease-entrada hover:text-surface [--btn-cut-fill:var(--color-surface-raised)]"><span>Ver as ideias</span></a>
             </div>
           </div>
           </Reveal>

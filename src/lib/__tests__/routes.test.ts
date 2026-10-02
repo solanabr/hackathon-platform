@@ -26,10 +26,6 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/guias/copilot")).toBe(true);
   });
 
-  it("the Copilot search route is public for browse", () => {
-    expect(isPublicRoute("/api/copilot/search")).toBe(true);
-  });
-
   it("keeps auth and cron routes public", () => {
     expect(isPublicRoute("/auth")).toBe(true);
     expect(isPublicRoute("/auth/callback")).toBe(true);

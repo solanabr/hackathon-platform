@@ -1,6 +1,3 @@
-export const USE_IDEA_EVENT = "copilot:use-idea";
-export const IDEA_MAX_LENGTH = 300;
-
 export type IdeaStatus = "clear" | "adjacent" | "house";
 
 export type IdeaExample = {
