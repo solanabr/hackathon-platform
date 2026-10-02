@@ -6,6 +6,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHat } from "@/components/ui/section-hat";
 import { trackClient } from "@/lib/analytics-browser";
+import { IDEA_MAX_LENGTH, USE_IDEA_EVENT } from "@/lib/copilot/idea-examples";
 import type { ProjectCard } from "@/lib/copilot/types";
 import { ProjectCardView } from "./project-card";
 
@@ -61,6 +62,18 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
   const [err, setErr] = useState<ApiError | null>(null);
   const [pending, start] = useTransition();
 
+  useEffect(() => {
+    function onUseIdea(e: Event) {
+      const text = (e as CustomEvent<unknown>).detail;
+      if (typeof text !== "string") return;
+      setIdea(text.slice(0, IDEA_MAX_LENGTH));
+      setResult(null);
+      setErr(null);
+    }
+    window.addEventListener(USE_IDEA_EVENT, onUseIdea);
+    return () => window.removeEventListener(USE_IDEA_EVENT, onUseIdea);
+  }, []);
+
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!signedIn) { openAuthDialog(AUTH_NEXT); return; }
@@ -84,7 +97,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
       <form onSubmit={submit} className="mt-8 rounded-3xl border-2 border-green-dark bg-surface-raised p-5 shadow-sticker sm:p-7">
         <label htmlFor="idea" className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-deep">Sua ideia em uma frase</label>
         <textarea
-          id="idea" value={idea} onChange={(e) => setIdea(e.target.value)} maxLength={300} rows={3} required minLength={8}
+          id="idea" value={idea} onChange={(e) => setIdea(e.target.value)} maxLength={IDEA_MAX_LENGTH} rows={3} required minLength={8}
           placeholder="Ex.: um app de pagamentos em stablecoin para motoristas de aplicativo"
           className="mt-3 w-full resize-none rounded-xl border-2 border-green-dark/30 bg-surface px-4 py-3 text-base leading-relaxed text-ink outline-none focus:border-green-dark focus:ring-2 focus:ring-emerald/30"
         />
@@ -93,7 +106,7 @@ function IdeaSection({ signedIn }: { signedIn: boolean }) {
             className="btn-cut inline-flex items-center bg-emerald-deep px-8 py-3.5 text-base font-bold text-surface transition-colors duration-(--dur-instant) ease-entrada hover:bg-green-dark disabled:opacity-60">
             <span>{pending ? "Pesquisando…" : signedIn ? "Ver o que já existe" : "Entrar e pesquisar"}</span>
           </button>
-          <span className="text-xs text-muted">{idea.length}/300</span>
+          <span className="text-xs text-muted">{idea.length}/{IDEA_MAX_LENGTH}</span>
           {result && <span className="text-xs text-muted">{result.remaining} pesquisas restantes hoje</span>}
         </div>
         {err && <ErrorLine err={err} />}
