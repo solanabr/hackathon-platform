@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -199,6 +200,11 @@ export default async function StartupRegistrationPage({
   const completed = Boolean(startup?.completed_at);
 
   const requested = STEPS.find((s) => String(s.n) === step)?.n ?? null;
+  // A link straight to a step (the dashboard, an e-mail) must not strand a
+  // signed-out visitor on a page with nothing to show: log in, then come back.
+  if (!state && requested) {
+    redirect(`/auth?next=${encodeURIComponent(`${STARTUP_PATH}?step=${requested}`)}`);
+  }
   // Anyone who finished the registration or already told us about a submission
   // lands on the overview; a first-time or half-way founder lands on the form.
   const overview = !requested && startup && (completed || startup.submission_updated_at) ? startup : null;
