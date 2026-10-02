@@ -1,14 +1,17 @@
 import { sanitizeText, sanitizeUrl } from "@/lib/security";
 import { normalizeWhatsapp } from "@/lib/phone";
-import type { Startup, User } from "@/types/db";
+import type { Startup, StartupTrack, User } from "@/types/db";
 import {
   HIRING_OPTIONS,
   STAGE_OPTIONS,
+  SUBMISSION_STATUS_OPTIONS,
   TARGET_CUSTOMERS_OPTIONS,
   TECH_TEAM_OPTIONS,
   TOKEN_LAUNCH_OPTIONS,
+  TRACK_OPTIONS,
   VERTICAL_OPTIONS,
   WORK_TYPE_OPTIONS,
+  YES_NO_OPTIONS,
   type StartupStep,
 } from "./constants";
 
@@ -36,6 +39,18 @@ export type StartupField =
   | "tech_team"
   | "heard_from"
   | "help_needed"
+  | "submission_status"
+  | "colosseum_url"
+  | "description"
+  | "github_url"
+  | "pitch_video_url"
+  | "demo_video_url"
+  | "tracks"
+  | "prior_work"
+  | "traction"
+  | "team_size"
+  | "team_registered"
+  | "submission_notes"
   | "server";
 
 export type StartupFields = Partial<Record<Exclude<StartupField, "server">, string | null>>;
@@ -60,6 +75,18 @@ export type StartupPatch = Partial<
     | "tech_team"
     | "heard_from"
     | "help_needed"
+    | "submission_status"
+    | "colosseum_url"
+    | "description"
+    | "github_url"
+    | "pitch_video_url"
+    | "demo_video_url"
+    | "tracks"
+    | "prior_work"
+    | "traction"
+    | "team_size"
+    | "team_registered"
+    | "submission_notes"
   >
 >;
 
@@ -98,6 +125,8 @@ function pickUrl(raw: string | null | undefined, strict: boolean): UrlPick {
  * Fields the step does not show are never written, so a step 3 save cannot
  * blank step 2. Cross-step requirements for `complete` (a startup name, the
  * step 1 contact fields) are checked by the action against the stored rows.
+ * Step 4 is the Colosseum submission: every field is optional, and `tracks`
+ * arrives as the checked values joined by commas.
  */
 export function validateStartup(step: StartupStep, fields: StartupFields, intent: StartupIntent): StartupValidation {
   const strict = intent !== "later";
@@ -171,6 +200,54 @@ export function validateStartup(step: StartupStep, fields: StartupFields, intent
         ...("url" in pitchDeck && { pitch_deck_url: pitchDeck.url }),
         twitter: sanitizeText(fields.twitter, 60)?.replace(/^@/, "") ?? null,
         ...("url" in logo && { logo_url: logo.url }),
+      },
+    };
+  }
+
+  if (step === 4) {
+    const status = pickOption(SUBMISSION_STATUS_OPTIONS, fields.submission_status);
+    if (status === undefined) return { ok: false, error: INVALID_OPTION, field: "submission_status" };
+    const registered = pickOption(YES_NO_OPTIONS, fields.team_registered);
+    if (registered === undefined) return { ok: false, error: INVALID_OPTION, field: "team_registered" };
+
+    const picked = (fields.tracks ?? "").split(",").filter(Boolean);
+    if (picked.some((t) => !TRACK_OPTIONS.some((o) => o.value === t))) {
+      return { ok: false, error: INVALID_OPTION, field: "tracks" };
+    }
+
+    const sizeText = sanitizeText(fields.team_size, 4);
+    const size = sizeText ? Number(sizeText) : null;
+    if (size !== null && !(Number.isInteger(size) && size >= 1 && size <= 20)) {
+      return { ok: false, error: "Informe um tamanho de time entre 1 e 20.", field: "team_size" };
+    }
+
+    const links = {
+      colosseum_url: "Informe um link válido do projeto no Colosseum.",
+      github_url: "Informe um link válido do repositório.",
+      pitch_video_url: "Informe um link válido do vídeo de pitch.",
+      demo_video_url: "Informe um link válido do vídeo de demo.",
+    } as const;
+    const urls: Pick<StartupPatch, keyof typeof links> = {};
+    for (const key of Object.keys(links) as (keyof typeof links)[]) {
+      const link = pickUrl(fields[key], strict);
+      if ("invalid" in link) return { ok: false, error: links[key], field: key };
+      if ("url" in link) urls[key] = link.url;
+    }
+
+    const name = sanitizeText(fields.name, 120);
+    return {
+      ok: true,
+      startup: {
+        ...(name && { name }),
+        submission_status: status,
+        ...urls,
+        description: sanitizeText(fields.description, 3000),
+        tracks: picked as StartupTrack[],
+        prior_work: sanitizeText(fields.prior_work, 1000),
+        traction: sanitizeText(fields.traction, 200),
+        team_size: size,
+        team_registered: registered === null ? null : registered === "yes",
+        submission_notes: sanitizeText(fields.submission_notes, 1000),
       },
     };
   }

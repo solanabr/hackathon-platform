@@ -32,6 +32,14 @@ import { getMentorshipBoard } from "@/lib/mentorship-server";
 import { requireUser } from "@/lib/user-state";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { logQueryError } from "@/lib/supabase/unwrap";
+import { COLOSSEUM_SLUG } from "@/app/(public)/pre-registro/constants";
+import {
+  STARTUP_PATH,
+  SUBMISSION_ITEM_COUNT,
+  SUBMISSION_STEP,
+  submissionItemsFilled,
+} from "@/app/(public)/startup-registration/constants";
+import type { Startup } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +88,14 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
 
   if (scheduleResult.error) logQueryError("painel.scheduleCount", scheduleResult.error);
   const totalCount = scheduleResult.count;
+
+  // The startup form belongs to the Colosseum campaign only.
+  let startup: Startup | null = null;
+  if (slug === COLOSSEUM_SLUG) {
+    const startupResult = await supabase.from("startups").select("*").eq("user_id", state.userId).maybeSingle();
+    if (startupResult.error) logQueryError("painel.startup", startupResult.error);
+    startup = (startupResult.data as Startup | null) ?? null;
+  }
 
   if (target.mode === "external") {
     return (
@@ -389,6 +405,27 @@ export default async function PainelPage({ params }: { params: Promise<{ slug: s
           </div>
 
           <aside className="space-y-6">
+            {slug === COLOSSEUM_SLUG && (
+              <Card sticker className="p-6 sm:p-7">
+                <h2 className="font-heading text-xl font-bold">Sua startup</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  {startup
+                    ? "Mantenha os dados da startup e da submissão no Colosseum em dia. É por eles que o time acompanha seu projeto e manda feedback."
+                    : "Tem uma startup ou um projeto? Cadastre e conte como está sua submissão no Colosseum para receber feedback do time."}
+                </p>
+                {startup && (
+                  <p className="mt-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-emerald">
+                    Submissão no Colosseum: {submissionItemsFilled(startup)} de {SUBMISSION_ITEM_COUNT} itens
+                  </p>
+                )}
+                <Link
+                  href={startup ? `${STARTUP_PATH}?step=${SUBMISSION_STEP}` : STARTUP_PATH}
+                  className="btn-primary mt-4 inline-block px-5 py-2 text-sm"
+                >
+                  {startup ? "Atualizar submissão no Colosseum" : "Cadastrar startup"}
+                </Link>
+              </Card>
+            )}
             <EditionInfoCard hackathon={hackathon} />
             {mentorship && (mentorship.mentors.length > 0 || mentorship.bookings.length > 0) && (
               <Card sticker className="p-6 sm:p-7">

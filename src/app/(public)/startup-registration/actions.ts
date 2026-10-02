@@ -10,7 +10,7 @@ import { track } from "@/lib/analytics-server";
 import { RD_FIELD, sendRdConversion } from "@/lib/rd-station";
 import { formatBrt } from "@/lib/dates";
 import { COLOSSEUM_SLUG } from "../pre-registro/constants";
-import { STARTUP_PATH, STEPS, type StartupStep } from "./constants";
+import { LAST_REGISTRATION_STEP, STARTUP_PATH, STEPS, SUBMISSION_STEP, type StartupStep } from "./constants";
 import { validateStartup, type StartupField, type StartupFields, type StartupIntent } from "./startup";
 
 const SAVE_ERROR = "Não foi possível salvar. Tente novamente.";
@@ -21,6 +21,10 @@ const STEP_FIELDS: Record<StartupStep, (keyof StartupFields)[]> = {
   1: ["full_name", "whatsapp", "location", "telegram_handle", "linkedin_url", "job_title", "work_type"],
   2: ["name", "one_liner", "vertical", "stage", "website", "pitch_deck_url", "twitter", "logo_url"],
   3: ["hiring", "target_customers", "token_launch", "tech_team", "heard_from", "help_needed"],
+  4: [
+    "name", "submission_status", "colosseum_url", "description", "github_url", "pitch_video_url", "demo_video_url",
+    "prior_work", "traction", "team_size", "team_registered", "submission_notes",
+  ],
 };
 
 function parseStep(raw: FormDataEntryValue | null): StartupStep {
@@ -38,15 +42,19 @@ export async function saveStartup(
 ): Promise<StartupError> {
   const state = await requireUser();
   const step = parseStep(formData.get("step"));
-  // Only step 3 can finish the form; an old tab posting complete from step 1
-  // would otherwise mark a startup done without a name.
+  // Only the last registration step can finish the form; an old tab posting
+  // complete from step 1 would otherwise mark a startup done without a name.
   const rawIntent = parseIntent(formData.get("intent"));
-  const intent: StartupIntent = rawIntent === "complete" && step !== 3 ? "continue" : rawIntent;
+  const intent: StartupIntent =
+    rawIntent === "complete" && step !== LAST_REGISTRATION_STEP ? "continue" : rawIntent;
 
   const fields: StartupFields = {};
   for (const name of STEP_FIELDS[step]) {
     const v = formData.get(name);
     fields[name] = typeof v === "string" ? v : null;
+  }
+  if (step === SUBMISSION_STEP) {
+    fields.tracks = formData.getAll("tracks").filter((v): v is string => typeof v === "string").join(",");
   }
   const validation = validateStartup(step, fields, intent);
   if (!validation.ok) return validation;
@@ -93,6 +101,7 @@ export async function saveStartup(
         user_id: state.userId,
         ...(!prior && hackathon && { hackathon_id: hackathon.id }),
         ...validation.startup,
+        ...(step === SUBMISSION_STEP && { submission_updated_at: completedAt }),
         ...(firstCompletion && { completed_at: completedAt }),
       },
       { onConflict: "user_id" },
@@ -120,8 +129,17 @@ export async function saveStartup(
     });
   }
 
+  if (step === SUBMISSION_STEP) {
+    track(state.userId, "startup_submission_saved", {
+      status: validation.startup?.submission_status ?? null,
+      has_repo: Boolean(validation.startup?.github_url),
+      has_pitch_video: Boolean(validation.startup?.pitch_video_url),
+    });
+  }
+
   revalidatePath(STARTUP_PATH);
   if (intent === "later") redirect(`${STARTUP_PATH}?step=1&saved=1`);
   if (intent === "complete") redirect(`${STARTUP_PATH}?step=done`);
+  if (step === SUBMISSION_STEP) redirect(`${STARTUP_PATH}?step=done&saved=1`);
   redirect(`${STARTUP_PATH}?step=${step + 1}`);
 }

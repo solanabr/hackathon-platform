@@ -257,6 +257,10 @@ export type StartupHiring = "yes" | "no" | "not_sure";
 export type StartupTargetCustomers = "b2c" | "b2b" | "institutions" | "government" | "other";
 export type StartupTokenLaunch = "live" | "future" | "no" | "not_sure";
 export type StartupTechTeam = "in_house" | "out_house" | "mixed_with_cto" | "mixed_without_cto" | "none";
+export type StartupSubmissionStatus = "not_started" | "draft" | "submitted";
+export type StartupTrack =
+  | "solana" | "tempo" | "hyperliquid" | "zcash" | "ethereum" | "base" | "arbitrum" | "robinhood"
+  | "university" | "public_goods";
 
 export type Startup = {
   user_id: string;
@@ -275,6 +279,19 @@ export type Startup = {
   tech_team: StartupTechTeam | null;
   heard_from: string | null;
   help_needed: string | null;
+  submission_status: StartupSubmissionStatus | null;
+  colosseum_url: string | null;
+  description: string | null;
+  github_url: string | null;
+  pitch_video_url: string | null;
+  demo_video_url: string | null;
+  tracks: StartupTrack[];
+  prior_work: string | null;
+  traction: string | null;
+  team_size: number | null;
+  team_registered: boolean | null;
+  submission_notes: string | null;
+  submission_updated_at: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

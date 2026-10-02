@@ -8,13 +8,18 @@ import { trackClient } from "@/lib/analytics-browser";
 import { saveStartup } from "./actions";
 import {
   HIRING_OPTIONS,
+  LAST_REGISTRATION_STEP,
   STAGE_OPTIONS,
   STARTUP_PATH,
+  SUBMISSION_STATUS_OPTIONS,
+  SUBMISSION_STEP,
   TARGET_CUSTOMERS_OPTIONS,
   TECH_TEAM_OPTIONS,
   TOKEN_LAUNCH_OPTIONS,
+  TRACK_OPTIONS,
   VERTICAL_OPTIONS,
   WORK_TYPE_OPTIONS,
+  YES_NO_OPTIONS,
   type StartupStep,
 } from "./constants";
 import type { StartupField } from "./startup";
@@ -56,6 +61,40 @@ function RadioCards({
     </div>
   );
 }
+
+function CheckCards({
+  name,
+  options,
+  defaultValues,
+  invalid,
+}: {
+  name: string;
+  options: readonly { value: string; label: string }[];
+  defaultValues: readonly string[];
+  invalid: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((o) => (
+        <span key={o.value} className="contents">
+          <input
+            type="checkbox"
+            id={`${name}-${o.value}`}
+            name={name}
+            value={o.value}
+            defaultChecked={defaultValues.includes(o.value)}
+            className="peer sr-only"
+          />
+          <label htmlFor={`${name}-${o.value}`} className={`${RADIO_CARD} ${invalid ? "border-red-500" : ""}`}>
+            {o.label}
+          </label>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const LEGEND = "mb-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald";
 
 export function StartupForm({
   step,
@@ -300,28 +339,138 @@ export function StartupForm({
         </fieldset>
       )}
 
+      {step === SUBMISSION_STEP && (
+        <>
+          <p className="text-sm leading-relaxed text-muted">
+            Conte como está sua submissão no Colosseum. Tudo é opcional: preencha o que já tem e volte para atualizar. É
+            por aqui que o time da Superteam Brasil acompanha seu projeto e manda feedback por e-mail. A submissão
+            oficial continua sendo feita no site do Colosseum.
+          </p>
+
+          <fieldset className="space-y-4">
+            <legend className={LEGEND}>Status</legend>
+            <div {...group("submission_status")}>
+              <Label>Como está sua submissão no Colosseum?</Label>
+              <RadioCards name="submission_status" options={SUBMISSION_STATUS_OPTIONS} defaultValue={startup?.submission_status} invalid={errorField === "submission_status"} />
+              {fieldError("submission_status")}
+            </div>
+            <div>
+              <Label htmlFor="colosseum_url" hint="opcional">Link do projeto no Colosseum</Label>
+              <Input id="colosseum_url" name="colosseum_url" type="text" inputMode="url" spellCheck={false} placeholder="https://" defaultValue={startup?.colosseum_url ?? ""} {...invalid("colosseum_url")} />
+              {fieldError("colosseum_url")}
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-4">
+            <legend className={LEGEND}>O projeto</legend>
+            {!startup?.name && (
+              <div>
+                <Label htmlFor="name">Nome do projeto</Label>
+                <Input id="name" name="name" maxLength={120} defaultValue="" />
+              </div>
+            )}
+            <div>
+              <Label htmlFor="description" hint="como está no Colosseum, em inglês">Descrição</Label>
+              <Textarea id="description" name="description" rows={6} maxLength={3000} defaultValue={startup?.description ?? ""} />
+            </div>
+            <div {...group("tracks")}>
+              <Label hint="marque as que você vai disputar">Trilhas</Label>
+              <CheckCards name="tracks" options={TRACK_OPTIONS} defaultValues={startup?.tracks ?? []} invalid={errorField === "tracks"} />
+              {fieldError("tracks")}
+            </div>
+            <div>
+              <Label htmlFor="prior_work" hint="o Colosseum pede">O que já existia antes de 14 de setembro?</Label>
+              <Textarea id="prior_work" name="prior_work" rows={3} maxLength={1000} placeholder="Nada, começamos no hackathon. Ou: o contrato X e o site já existiam..." defaultValue={startup?.prior_work ?? ""} />
+            </div>
+            <div>
+              <Label htmlFor="traction" hint="opcional">Um número de tração</Label>
+              <Input id="traction" name="traction" maxLength={200} placeholder="120 usuários ativos, US$ 3 mil em volume..." defaultValue={startup?.traction ?? ""} />
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-4">
+            <legend className={LEGEND}>Links da submissão</legend>
+            <div>
+              <Label htmlFor="github_url" hint="precisa estar público">Repositório</Label>
+              <Input id="github_url" name="github_url" type="text" inputMode="url" spellCheck={false} placeholder="https://github.com/..." defaultValue={startup?.github_url ?? ""} {...invalid("github_url")} />
+              {fieldError("github_url")}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="pitch_video_url" hint="2 a 3 min">Vídeo de pitch</Label>
+                <Input id="pitch_video_url" name="pitch_video_url" type="text" inputMode="url" spellCheck={false} placeholder="https://" defaultValue={startup?.pitch_video_url ?? ""} {...invalid("pitch_video_url")} />
+                {fieldError("pitch_video_url")}
+              </div>
+              <div>
+                <Label htmlFor="demo_video_url">Vídeo de demo técnica</Label>
+                <Input id="demo_video_url" name="demo_video_url" type="text" inputMode="url" spellCheck={false} placeholder="https://" defaultValue={startup?.demo_video_url ?? ""} {...invalid("demo_video_url")} />
+                {fieldError("demo_video_url")}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-4">
+            <legend className={LEGEND}>Time</legend>
+            <div className="max-w-40">
+              <Label htmlFor="team_size">Pessoas no time</Label>
+              <Input id="team_size" name="team_size" type="number" inputMode="numeric" min={1} max={20} defaultValue={startup?.team_size ?? ""} {...invalid("team_size")} />
+            </div>
+            {fieldError("team_size")}
+            <div {...group("team_registered")}>
+              <Label>Todo mundo do time já se inscreveu no colosseum.com?</Label>
+              <RadioCards
+                name="team_registered"
+                options={YES_NO_OPTIONS}
+                defaultValue={startup?.team_registered == null ? null : startup.team_registered ? "yes" : "no"}
+                invalid={errorField === "team_registered"}
+              />
+              {fieldError("team_registered")}
+            </div>
+          </fieldset>
+
+          <div>
+            <Label htmlFor="submission_notes" hint="opcional">Quer feedback em algo específico?</Label>
+            <Textarea id="submission_notes" name="submission_notes" rows={3} maxLength={1000} placeholder="O pitch, a demo, a escolha da trilha..." defaultValue={startup?.submission_notes ?? ""} />
+          </div>
+        </>
+      )}
+
       {errorField === "server" && (
         <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       )}
 
-      <div className="flex flex-col gap-3">
-        <Button type="submit" name="intent" value={step === 3 ? "complete" : "continue"} fullWidth disabled={pending}>
-          {pending ? "Salvando..." : step === 3 ? "Concluir cadastro" : "Salvar e continuar"}
-        </Button>
-        <Button type="submit" name="intent" value="later" variant="secondary" fullWidth disabled={pending}>
-          Salvar e terminar depois
-        </Button>
-        {step > 1 && (
+      {step === SUBMISSION_STEP ? (
+        <div className="flex flex-col gap-3">
+          <Button type="submit" name="intent" value="continue" fullWidth disabled={pending}>
+            {pending ? "Salvando..." : "Salvar submissão"}
+          </Button>
           <Link
-            href={`${STARTUP_PATH}?step=${step - 1}`}
+            href={`${STARTUP_PATH}?step=done`}
             className="self-center text-sm font-semibold text-muted underline underline-offset-4 hover:text-ink"
           >
-            Voltar
+            Voltar sem salvar
           </Link>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <Button type="submit" name="intent" value={step === LAST_REGISTRATION_STEP ? "complete" : "continue"} fullWidth disabled={pending}>
+            {pending ? "Salvando..." : step === LAST_REGISTRATION_STEP ? "Concluir cadastro" : "Salvar e continuar"}
+          </Button>
+          <Button type="submit" name="intent" value="later" variant="secondary" fullWidth disabled={pending}>
+            Salvar e terminar depois
+          </Button>
+          {step > 1 && (
+            <Link
+              href={`${STARTUP_PATH}?step=${step - 1}`}
+              className="self-center text-sm font-semibold text-muted underline underline-offset-4 hover:text-ink"
+            >
+              Voltar
+            </Link>
+          )}
+        </div>
+      )}
     </form>
   );
 }
