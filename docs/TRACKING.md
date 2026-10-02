@@ -48,9 +48,10 @@ both sides land on one person.
 | `colosseum_registration_confirmed` | server | `edition` | `confirmColosseumRegistration`, self-attestation on `/pre-registro` |
 | `interest_form_viewed` | client | — | `InterestForm` mount on `/pre-registro` (step Sobre você) |
 | `interest_form_saved` | server | `edition`, `completed` (`true` for "Salvar e continuar", `false` for "Salvar e terminar depois"), `has_project`, `looking_for_team` | `saveInterest`, on every successful save; not a funnel KPI, the flag says which button |
-| `startup_form_viewed` | client | `step` (`1`, `2`, `3`) | `StartupForm` mount on `/startup-registration` |
+| `startup_form_viewed` | client | `step` (`1`, `2`, `3`, `4`) | `StartupForm` mount on `/startup-registration` |
 | `startup_form_error` | client | `field`, `step` | `StartupForm`, on a rejected submit |
 | `startup_registered` | server | `has_vertical`, `stage` | `saveStartup`, on the first completion only, never on a re-save |
+| `startup_submission_saved` | server | `edition`, `status` (`not_started`, `draft`, `submitted` or null), `has_repo`, `has_pitch_video` | `saveStartup`, on every successful save of step 4 (the Colosseum submission) |
 | `team_created` | client | `edition` | `NewTeamForm`, after `create_team_with_leader` succeeds |
 | `member_invited` | server | `edition`, `team_id`, `via` (`email`, `board`), `has_account` | `addMemberToTeam` (team page form and team-up board invite) |
 | `invite_accepted` | client | `edition`, `team_id` | `PendingInviteActions` on the team page |

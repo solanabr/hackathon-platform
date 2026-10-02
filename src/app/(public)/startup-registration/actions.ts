@@ -131,6 +131,7 @@ export async function saveStartup(
 
   if (step === SUBMISSION_STEP) {
     track(state.userId, "startup_submission_saved", {
+      edition: COLOSSEUM_SLUG,
       status: validation.startup?.submission_status ?? null,
       has_repo: Boolean(validation.startup?.github_url),
       has_pitch_video: Boolean(validation.startup?.pitch_video_url),
