@@ -31,6 +31,11 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/auth/callback")).toBe(true);
   });
 
+  it("keeps the perk pages public", () => {
+    expect(isPublicRoute("/perks/helius")).toBe(true);
+    expect(isPublicRoute("/perksx")).toBe(false);
+  });
+
   it("keeps the legal pages public", () => {
     expect(isPublicRoute("/privacidade")).toBe(true);
     expect(isPublicRoute("/termos")).toBe(true);

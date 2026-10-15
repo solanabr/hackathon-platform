@@ -57,6 +57,17 @@ export default async function AdminPage() {
     }
   }
 
+  // Perks are not tied to an edition, so only global admins see them.
+  let heliusApplications = 0;
+  if (supabase && !scoped) {
+    const { count, error: perkError } = await supabase
+      .from("perk_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("perk", "helius");
+    if (perkError) logQueryError("admin.index.perks", perkError);
+    heliusApplications = count ?? 0;
+  }
+
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
@@ -123,6 +134,28 @@ export default async function AdminPage() {
             />
           )}
         </div>
+
+        {!scoped && (
+          <div className="mt-10">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-emerald">Perks</p>
+            <Card sticker className="mt-3 p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-heading text-xl font-bold">Helius</h2>
+                  <p className="font-mono text-sm tabular-nums text-muted">/perks/helius</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <p className="font-mono text-sm tabular-nums text-muted">
+                    {heliusApplications} {heliusApplications === 1 ? "aplicação" : "aplicações"}
+                  </p>
+                  <a href="/admin/perks/export?perk=helius" className="btn-secondary min-h-11 px-5 py-2 text-sm">
+                    Baixar CSV
+                  </a>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
