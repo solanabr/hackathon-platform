@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { TrackedCta } from "@/components/ui/tracked-cta";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { unwrap } from "@/lib/supabase/unwrap";
+import { logQueryError, unwrap } from "@/lib/supabase/unwrap";
 import { resolveAuthenticatedUserState } from "@/lib/user-state";
 import { DAY_MONTH, stripPeriods } from "@/lib/dates";
 import { WHATSAPP_COMMUNITY_URL } from "../../pre-registro/constants";
 import { TrackedLink } from "../../pre-registro/tracked-link";
-import { PerkForm } from "./perk-form";
+import { PerkForm, type ProjectPrefill } from "./perk-form";
 import { HELIUS_PERK_PATH, HERO, HOW_IT_WORKS, PERK, TIERS } from "./constants";
+import { PERK_LIMITS } from "./application";
 import type { PerkApplication } from "@/types/db";
 
 export const metadata = {
@@ -32,6 +33,42 @@ async function loadApplication(userId: string) {
     .eq("user_id", userId)
     .maybeSingle();
   return unwrap(result, "perks.helius.loadApplication") as PerkApplication | null;
+}
+
+/**
+ * A first-time applicant who already told us about a project, on the startup
+ * form or on "Sobre você", starts with it filled in. Both fields come from
+ * the same source so a startup name never sits beside another project's
+ * summary. A failed read only costs the prefill.
+ */
+async function loadProjectPrefill(userId: string): Promise<ProjectPrefill | null> {
+  const supabase = await createServerSupabaseClient();
+  const [startupResult, interestResult] = await Promise.all([
+    supabase.from("startups").select("name, one_liner, description").eq("user_id", userId).maybeSingle(),
+    supabase
+      .from("campaign_interest")
+      .select("project_name, one_liner")
+      .eq("user_id", userId)
+      .not("project_name", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  if (startupResult.error) logQueryError("perks.helius.prefillStartup", startupResult.error);
+  if (interestResult.error) logQueryError("perks.helius.prefillInterest", interestResult.error);
+
+  const startup = startupResult.data;
+  const interest = interestResult.data;
+  const source = startup?.name
+    ? { name: startup.name, summary: startup.description ?? startup.one_liner }
+    : interest?.project_name
+      ? { name: interest.project_name, summary: interest.one_liner }
+      : null;
+  if (!source) return null;
+  return {
+    project_name: source.name.slice(0, PERK_LIMITS.project_name),
+    project_summary: source.summary?.slice(0, PERK_LIMITS.project_summary) ?? null,
+  };
 }
 
 function Hero({ cta }: { cta: "auth" | "form" | null }) {
@@ -134,6 +171,7 @@ export default async function HeliusPerkPage({
 }) {
   const [state, params] = await Promise.all([resolveAuthenticatedUserState(), searchParams]);
   const application = state ? await loadApplication(state.userId) : null;
+  const prefill = state && !application ? await loadProjectPrefill(state.userId) : null;
   const editing = params.editar === "1";
   const showForm = Boolean(state) && (!application || editing);
 
@@ -153,7 +191,7 @@ export default async function HeliusPerkPage({
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted">Leva uns dois minutos. Todos os campos são obrigatórios.</p>
               <div className="mt-6">
-                <PerkForm profile={state.profile} email={state.email} application={application} />
+                <PerkForm profile={state.profile} email={state.email} application={application} prefill={prefill} />
               </div>
             </Card>
           </div>

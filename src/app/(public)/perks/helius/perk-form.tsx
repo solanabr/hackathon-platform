@@ -11,16 +11,20 @@ import type { PerkApplication, User } from "@/types/db";
 
 type State = { ok: false; error: string; field: PerkField };
 
+export type ProjectPrefill = { project_name: string; project_summary: string | null };
+
 const LEGEND = "mb-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald";
 
 export function PerkForm({
   profile,
   email,
   application,
+  prefill,
 }: {
   profile: User | null;
   email: string;
   application: PerkApplication | null;
+  prefill: ProjectPrefill | null;
 }) {
   const [state, formAction, pending] = useActionState(
     async (prev: State, formData: FormData) => {
@@ -108,13 +112,18 @@ export function PerkForm({
 
       <fieldset className="space-y-4">
         <legend className={LEGEND}>Seu projeto</legend>
+        {prefill && (
+          <p className="rounded-xl bg-yellow/30 px-4 py-3 text-sm leading-relaxed text-ink">
+            Trouxemos o que você já contou para a gente em outro formulário. Confira antes de enviar.
+          </p>
+        )}
         <div>
           <Label htmlFor="project_name">Nome do projeto</Label>
           <Input
             id="project_name"
             name="project_name"
             maxLength={PERK_LIMITS.project_name}
-            defaultValue={application?.project_name ?? ""}
+            defaultValue={application?.project_name ?? prefill?.project_name ?? ""}
             {...invalid("project_name")}
           />
           {fieldError("project_name")}
@@ -126,7 +135,7 @@ export function PerkForm({
             name="project_summary"
             rows={4}
             maxLength={PERK_LIMITS.project_summary}
-            defaultValue={application?.project_summary ?? ""}
+            defaultValue={application?.project_summary ?? prefill?.project_summary ?? ""}
             {...invalid("project_summary")}
           />
           {fieldError("project_summary")}
