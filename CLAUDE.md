@@ -46,6 +46,7 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
 
 - `create-next-app` fails in non-empty dirs. The project was scaffolded by hand (mirroring `superteam-maker`'s approach).
 - **The DB was repurposed from `supabase-solana-lms`**, which dropped the `ALTER DEFAULT PRIVILEGES` rows that normally auto-grant `anon`/`authenticated`/`service_role` on every new table. Migrations 00009/00010 restore them explicitly. If you ever fork to a fresh Supabase project, those two migrations become no-ops but should still run for parity. Symptom of missing grants: every PostgREST call 403s with "permission denied for table X" *before* RLS even runs.
+- **Default table privileges are trimmed (00069):** a new table gives `anon` SELECT and `authenticated` SELECT/INSERT/UPDATE, nothing more. A table with a DELETE policy needs `grant delete ... to authenticated` next to it. A new `public_*` view needs `revoke all ... from anon, authenticated` plus `grant select`: those views are owned by postgres, so an auto-updatable one otherwise accepts INSERT/UPDATE past RLS.
 - Supabase Auth doesn't backfill the `users` mirror table for accounts that existed before the trigger was added. For a fresh project this won't bite, but if you re-apply migrations to a DB with pre-existing auth users:
   ```sql
   INSERT INTO public.users (id, email)
