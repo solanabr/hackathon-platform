@@ -37,7 +37,7 @@ both sides land on one person.
 
 | Event | Side | Properties | Fires from |
 | --- | --- | --- | --- |
-| `cta_clicked` | client | `cta` (`"cadastro"`, `"dashboard"`), `location` (`header`, `hero`, `jornada`, `jornada_colosseum`, `sticky`, `pre_registro`), `edition` on the dashboard CTA | `TrackedCta` on the campaign LP and in the header dock, `MobileCtaBar`; the dashboard CTA is on the edition page and on the `/pre-registro` journey |
+| `cta_clicked` | client | `cta` (`"cadastro"`, `"dashboard"`, `"startup"`, `"perk_helius"`), `location` (`header`, `hero`, `jornada`, `jornada_colosseum`, `sticky`, `pre_registro`), `edition` on the dashboard CTA | `TrackedCta` on the campaign LP and in the header dock, `MobileCtaBar`; the dashboard CTA is on the edition page and on the `/pre-registro` journey |
 | `campaign_link_clicked` | client | `target` (`colosseum`, `colosseum_arena`, `colosseum_site`, `trilha_brasil`, `whatsapp`, …), `location` (`lp`, `lp_colosseum`, `recursos`, `faq`, `pre_registro`, `dashboard`, `startup_form`), `edition` on the dashboard panel and on the submission notice | `TrackedCta` on the LP, `TrackedLink` on `/pre-registro`, `ExternalSubmissionPanel`, `SubmissionNotice` on the startup form and the Colosseum dashboard |
 | `auth_provider_clicked` | client | `provider` (`google`, `github`, `email`, …) | `AuthForm`, on any sign-in attempt |
 | `auth_failed` | client | `provider`, `reason` (`oauth_request_failed`, `otp_request_failed`, `otp_verify_failed`, or the callback error) | `AuthForm` |
@@ -52,6 +52,9 @@ both sides land on one person.
 | `startup_form_error` | client | `field`, `step` | `StartupForm`, on a rejected submit |
 | `startup_registered` | server | `has_vertical`, `stage` | `saveStartup`, on the first completion only, never on a re-save |
 | `startup_submission_saved` | server | `edition`, `status` (`not_started`, `draft`, `submitted` or null), `has_repo`, `has_pitch_video` | `saveStartup`, on every successful save of step 4 (the Colosseum submission) |
+| `perk_form_viewed` | client | `perk` (`helius`), `editing` | `PerkForm` mount on `/perks/helius` |
+| `perk_form_error` | client | `perk`, `field` | `PerkForm`, on a rejected submit |
+| `perk_applied` | server | `perk` | `applyForHeliusPerk`, on the first application only, never on an edit |
 | `team_created` | client | `edition` | `NewTeamForm`, after `create_team_with_leader` succeeds |
 | `member_invited` | server | `edition`, `team_id`, `via` (`email`, `board`), `has_account` | `addMemberToTeam` (team page form and team-up board invite) |
 | `invite_accepted` | client | `edition`, `team_id` | `PendingInviteActions` on the team page |
@@ -71,7 +74,8 @@ PostHog under the `2026-05-30` defaults; there is no pageview component.
 
 Marketing keeps its contact base in RD Station Marketing. The Colosseum
 registration flow (`src/app/(public)/pre-registro/actions.ts`) and the startup
-form (`src/app/(public)/startup-registration/actions.ts`) post a
+form (`src/app/(public)/startup-registration/actions.ts`) and the Helius perk
+form (`src/app/(public)/perks/helius/actions.ts`) post a
 conversion event through `sendRdConversion()` (`src/lib/rd-station.ts`) to
 `POST https://api.rd.services/platform/conversions`, authenticated with
 `RD_STATION_API_KEY` (no-op while unset). It runs in `after()` and is not
@@ -79,7 +83,7 @@ consent-gated: it mirrors the registration the person just submitted, not
 behavioural analytics.
 
 The contact key is the account e-mail (`state.email`, never form data). A
-conversion for an existing e-mail updates that contact, so the four events are
+conversion for an existing e-mail updates that contact, so the five events are
 one upsert each with the fields that changed. Every event carries the tag
 `global_2026_cadastro_plataforma`.
 
@@ -89,6 +93,7 @@ one upsert each with the fields that changed. Every event carries the tag
 | Confirmação Colosseum | `global_2026_confirmacao_colosseum` | `confirmColosseumRegistration`, on the attestation |
 | Formulário "Sobre você" | `global_2026_formulario_sobre_voce` | `saveInterest`, when the form is completed |
 | Cadastro de startup | `global_2026_startup_cadastro` | `saveStartup` (`/startup-registration`), first completion only |
+| Perk Helius | `global_2026_perk_helius` | `applyForHeliusPerk` (`/perks/helius`), first application only |
 
 | RD field | Source |
 | --- | --- |

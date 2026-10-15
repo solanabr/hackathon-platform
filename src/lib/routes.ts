@@ -6,6 +6,7 @@ const PUBLIC_ROUTES = [
   "/termos",
   "/pre-registro",
   "/startup-registration",
+  "/perks",
   "/guias",
 ];
 

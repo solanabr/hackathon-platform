@@ -15,6 +15,7 @@ export const RD_CONVERSION_IDENTIFIERS = {
   confirmacao: "global_2026_confirmacao_colosseum",
   formulario: "global_2026_formulario_sobre_voce",
   startup: "global_2026_startup_cadastro",
+  perk_helius: "global_2026_perk_helius",
 } as const;
 
 export const RD_TAGS = ["global_2026_cadastro_plataforma"] as const;
