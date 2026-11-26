@@ -4,17 +4,20 @@
       "Bash(npm test)",
       "Bash(npm run lint)",
       "Bash(npm run build)",
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(git show*)",
-      "Bash(git fetch*)",
-      "Bash(gh pr view*)",
-      "Bash(gh pr list*)",
-      "Bash(gh pr diff*)",
-      "Bash(gh pr checks*)",
-      "Bash(gh run list*)",
-      "Bash(gh run view*)"
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git grep *)",
+      "Bash(git fetch *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)"
     ],
     "ask": [
       "Bash(git push * main)",
@@ -22,20 +25,85 @@
       "Bash(git push --force*)",
       "Bash(git push * --force*)",
       "Bash(git push -f*)",
-      "Bash(git push * -f*)",
-      "Bash(gh pr merge*)",
-      "mcp__*__apply_migration"
+      "Bash(git push * -f *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh api -X *)",
+      "Bash(gh api --method *)",
+      "Bash(vercel env pull*)",
+      "Bash(vercel --prod*)",
+      "Bash(vercel deploy --prod*)",
+      "mcp__*__apply_migration",
+      "mcp__*__execute_sql",
+      "mcp__*__create_project",
+      "mcp__*__pause_project",
+      "mcp__*__restore_project",
+      "mcp__*__confirm_cost",
+      "mcp__*__create_branch",
+      "mcp__*__delete_branch",
+      "mcp__*__merge_branch",
+      "mcp__*__reset_branch",
+      "mcp__*__deploy_edge_function",
+      "mcp__*__create_project_env",
+      "mcp__*__edit_project_env",
+      "mcp__*__update_project",
+      "mcp__*__add_project_domain",
+      "mcp__*__create_record",
+      "mcp__*__update_record",
+      "mcp__*__replace_domain_dns_records",
+      "mcp__*__create_deployment",
+      "mcp__*__request_promote",
+      "mcp__*__request_rollback",
+      "mcp__*__assign_alias",
+      "mcp__*__create-domain",
+      "mcp__*__remove-domain",
+      "mcp__*__create-api-key",
+      "mcp__*__create-webhook",
+      "mcp__*__send-email",
+      "mcp__*__send-batch-emails"
     ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",
       "Read(./.env.*.local)",
       "Read(./.env.production*)",
+      "Read(./.env.development*)",
       "Bash(cat .env*)",
       "Bash(printenv*)",
       "Bash(psql*)",
       "Bash(supabase db*)",
-      "Bash(npx supabase db*)"
+      "Bash(npx supabase db*)",
+      "Bash(git reset --hard)",
+      "Bash(git reset --hard *)",
+      "Bash(git add -A)",
+      "Bash(git add -A *)",
+      "Bash(git add --all)",
+      "Bash(git add --all *)",
+      "Bash(* --no-verify)",
+      "Bash(* --no-verify *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\"",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\"",
+            "timeout": 20
+          }
+        ]
+      }
     ]
   }
 }
