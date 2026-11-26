@@ -1,11 +1,12 @@
 # Superteam Brasil — Hackathon Platform
 
-Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackathon platform for Superteam Brasil (born as the BH Onchain submission flow); current live edition is Hackathon Solana & Cursor, Sep 2026.
+Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackathon platform for Superteam Brasil (born as the BH Onchain submission flow). Editions are rows in `hackathons`; their `status` says which one is live.
 
 ## Quick reference
 
 - `npm run dev` — start dev server
 - `npm test` — run vitest tests
+- `npm run lint` — eslint
 - `npm run build` — production build (catches type errors)
 
 ## Architecture
@@ -14,12 +15,22 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
 - **Supabase clients:**
   - `createClient()` (browser) — user-scoped, RLS-enforced.
   - `createServerSupabaseClient()` (server) — same scoping, used in server components and route handlers.
-  - `createServiceRoleClient()` — bypasses RLS. Used by admin server actions (gated by `requireAdmin()`), cross-team reads in `/admin`, cron auto-lock, and the team-leader manual add-member action.
+  - `createServiceRoleClient()` — bypasses RLS. Used by admin and judge server actions behind their gates, cross-team reads in `/admin` and `/judge`, role resolution (`src/lib/roles.ts`), the public finalists section and gallery overlay, mentorship and team-up actions, e-mail, and the team-leader manual add-member action. Never from a client component.
 - **Cross-table mutations** route through one of two patterns:
   1. `SECURITY DEFINER` RPCs with explicit `auth.uid()` checks — `create_team_with_leader`, `accept_pending_membership`/`decline_pending_membership`, `submit_team`, `leave_team`, `remove_team_member`, `transfer_team_leadership`, `delete_team`. Used by member-facing flows.
   2. Server actions that gate on `requireUser()` / `requireAdmin()` / `requireEditionAdmin(hackathonId)` / `requireEditionAdminBySlug(slug)` then write with `createServiceRoleClient()`. An `admin` row in `platform_roles` with a NULL `hackathon_id` is global; with an id it scopes the person to that one edition (organizer) — everything under `/admin/h/[slug]` gates on the edition variants, never bare `requireAdmin()`. `requireEditionAdminBySlug` returns the resolved hackathon: every service-role mutation in a slug-gated action MUST filter on `gate.hackathon.id` as well as the row id, or a scoped admin of edition A can write to edition B by passing B's row ids.
   Single-table RLS handles everything else.
 - **Auto-rows via triggers:** inserting a team creates the submission row and the leader's `team_members` row. Inserting an `auth.users` row creates the mirror `users` row **and** auto-links any pending `team_members` ghost rows (`user_id is null`, matching `invited_email`) — see migration 00012.
+- **New gated pages** mirror `src/lib/user-state.ts`: call `requireUser()` server-side and redirect when profile fields are missing.
+
+## Outbound services
+
+- **Resend** — app e-mail (`src/lib/email.ts`) and Supabase Auth's SMTP, from `no-reply@hackathon.superteam.com.br`.
+- **RD Station Marketing** — conversions and a tag (`src/lib/rd-station.ts`); skipped when the key is unset.
+- **PostHog** — client and server analytics, proxied through `/relay-hx9`. The client reads consent from `localStorage["stbr-consent"]`, the server from the cookie.
+- **Google Tag Manager** (`GTM-TC7KKF57`) — consent-gated, feeds GA4.
+- **Sentry** — `@sentry/nextjs`, tunnelled through `/sentry-tunnel`.
+- **ST Cloud** (Superteam Brasil's CRM) — only its versioned `/v1` API writes to it. The platform's history was loaded into production ST Cloud on 27 Oct 2026. There's no live push yet: the client sits on branch `feat/crm-backfill`, and its provider string is `hackathon`.
 
 ## Conventions
 
@@ -39,7 +50,12 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
   and keeps the orchestration — never disable animation wholesale.
 - **Date formatting:** named `Intl` formatters live in `src/lib/dates.ts` (`DAY_MONTH`, `TIME_HM`, `stripPeriods`, …) — don't hand-roll new ones.
 - **Supabase queries:** use `.maybeSingle()` over `.single()` — `.single()` throws on 0 rows.
+- **Migrations:** write `supabase/migrations/NNNNN_name.sql`, then apply it with the Supabase connector's `apply_migration` (snake_case name without the number). The file stays the source of truth. There's no psql or Supabase CLI on the dev machine.
+- **Privilege and RLS changes** are proven by impersonating a real user in SQL (`set local role authenticated` plus `request.jwt.claims`, including the `email` claim) inside a rolled-back block, for both the allowed and the denied case.
+- **Secrets:** never print the service-role key or any env value, in output, logs, PRs or chat.
+- **`submissions` fields are additive:** `submit_team` and `SubmissionEditor` reference column names directly.
 - **Dynamic pages:** every `(app)/` page exports `dynamic = 'force-dynamic'`.
+- **No backwards-compatibility shims** for removed code. Delete cleanly.
 - **No code comments** by default. If you write one, explain WHY, not WHAT.
 
 ## Gotchas
@@ -57,7 +73,12 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
 - Image upload uses the public `project-images` bucket. RLS policy keys upload paths to `{team_id}/...`, so callers MUST prefix the team id (the `ImageUpload` component does this).
 - Luma "verification" is self-attestation (`hackathon_registrations.luma_confirmed_at`; the old `users.luma_registered_at` column is gone). Cross-reference manually with a CSV export from the Luma organizer dashboard.
 - Auto-lock runs as a `pg_cron` job inside Postgres (`lock-overdue-submissions`, every minute), not as an HTTP endpoint. The deadline itself is enforced by `submit_team` and the submissions update policy; the job only materialises the locked state.
-- **Three required env vars:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (plus optional `RESEND_API_KEY`/`RESEND_FROM`/`NEXT_PUBLIC_SITE_URL` for email, and optional `RD_STATION_API_KEY` for RD Station Marketing conversions). Admin and judge are rows in `platform_roles`, not an env allowlist — grant them at `/admin/people`.
+- **Three required env vars:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+  - Optional, for e-mail: `RESEND_API_KEY`, `RESEND_FROM`, `NEXT_PUBLIC_SITE_URL`.
+  - Optional, for the other services: `RD_STATION_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_SENTRY_DSN`.
+  - Build-time only, for Sentry source maps: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
+
+  Admin and judge are rows in `platform_roles`, not an env allowlist — grant them at `/admin/people`.
 - **`submission_ratings` table** has RLS enabled but **no policies** — only `service_role` can touch it. Mutations route through `src/app/(app)/judge/actions.ts` (gated by `requireJudge` + the per-round assignment check). Don't query it from the browser client; you'll silently get zero rows.
 - **Mentorship is opt-in per edition** (`hackathons.mentorship_enabled`, migration 00060; `editionUsesMentorship()` also requires platform teams). `hackathon_mentors` / `mentorship_bookings` have RLS enabled with **no policies**, like `submission_ratings`: members read and write only through the `mentorship_board` / `book_mentorship` RPCs (both gate on a complete registration and the flag), admin writes go through the service role, and `booking_url` is returned only inside a team's own bookings to its leader — never in the catalog.
 - **Manual add-member flow** always inserts `status='pending'`: existing accounts accept/decline on the team page (`accept_pending_membership`); unknown emails become ghost rows (`user_id is null`) that `handle_new_user` links and auto-accepts per edition at signup. No token-based invites exist anymore.
