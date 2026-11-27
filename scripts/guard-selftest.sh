@@ -408,6 +408,38 @@ b deny 'git push origin' "$WT"
 git -C "$MAIN" config --unset remote.origin.push
 b pass 'git push origin' "$WT"
 
+# A program word built by the shell can't be read.
+b deny 'g=gh; $g pr merge 5'
+b deny '"$GH" pr merge 5'
+b deny 'X=git; $X push origin main'
+b deny '$(which gh) pr merge 5'
+b deny '`which gh` pr merge 5'
+b pass '"$CLAUDE_PROJECT_DIR/scripts/run.sh"'
+b pass 'FOO=$(date) npm test'
+b pass 'echo "done; $(date)"'
+
+# A shell that reads its commands from stdin, a heredoc, a here-string or a substitution.
+b deny "echo 'gh pr merge 5' | sh"
+b deny "printf 'npm test' | bash"
+b deny "sh <<< 'npm test'"
+b deny $'bash <<EOF\nnpm test\nEOF'
+b deny 'bash -s < x.sh'
+b deny 'bash /dev/stdin'
+b deny 'bash <(echo npm test)'
+b deny 'source /dev/stdin'
+b deny '. <(echo npm test)'
+b deny 'echo npm test | zsh'
+b deny 'echo npm test | dash'
+b deny 'echo npm test | ksh'
+b pass 'bash scripts/guard-selftest.sh'
+b pass "sh -c 'git status'"
+b pass 'source scripts/setup.sh'
+
+# gh aliases can stand for a refused command.
+b deny "gh alias set m 'pr merge'"
+b deny 'gh alias import aliases.yml'
+b pass 'gh alias list'
+
 # A hook that can't run must refuse: the settings command exits 2, which blocks the call.
 cmd=$(node -e 'console.log(require(process.argv[1]).hooks.PreToolUse[0].hooks[0].command)' "$REPO/.claude/settings.json")
 printf '{}' | CLAUDE_PROJECT_DIR=$TMP/no-hook sh -c "$cmd" >/dev/null 2>&1

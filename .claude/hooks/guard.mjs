@@ -61,7 +61,7 @@ const WRAPPERS = {
   nohup: [],
   eval: [],
 };
-// gh subcommands that merge, change access, secrets or releases, run workflows, or print the token.
+// gh subcommands that merge, change access, secrets or releases, run workflows, add aliases, or print the token.
 const GH_DENIED = {
   secret: /^(set|delete|remove)$/,
   variable: /^(set|delete|remove)$/,
@@ -69,6 +69,7 @@ const GH_DENIED = {
   release: /^(create|delete|edit|upload|delete-asset)$/,
   workflow: /^(run|enable|disable)$/,
   auth: /^(token|login|logout|refresh|switch|setup-git)$/,
+  alias: /^(set|import)$/,
   "ssh-key": /^(add|delete)$/,
   "gpg-key": /^(add|delete)$/,
 };
@@ -98,6 +99,8 @@ const VERCEL_DENIED_SUBCOMMANDS = new Set(["env", "pull", "promote", "rollback",
 // Programs that run code the guard can't read. A guard path inside that code is refused.
 const INTERPRETER = /^(python[\d.]*|pypy[\d.]*|node|nodejs|deno|bun|ruby|perl|php|osascript|lua|Rscript|swift|tclsh)$/;
 const GUARD_IN_CODE = /\.claude\/(settings|hooks)|guard\.mjs|\.mcp\.json|\.claude\.json/i;
+const SHELLS = new Set(["sh", "bash", "zsh", "dash", "ksh", "fish"]);
+const STDIN_FILE = /^(-|\/dev\/stdin|\/dev\/fd\/\d+|\/proc\/self\/fd\/\d+)$/;
 const EXTRACTORS = new Set(["tar", "bsdtar", "gtar", "unzip", "cpio"]);
 const MAIN_REF = /^(refs\/)?(heads\/)?main$/;
 // Git config keys that change what a later `git push` or an unknown subcommand does.
@@ -311,7 +314,7 @@ function closingParen(s, open) {
 // The words of the one command that starts at `start`, read with shell quoting: quotes are removed, redirects are
 // dropped, and the command ends at the first separator outside quotes and substitutions. `segmentsOf` splits inside
 // quotes, which hides the words after a quoted `;`; this reading doesn't. `dynamic` marks a word the shell expands,
-// `glob` one with an unquoted pattern.
+// `glob` one with an unquoted pattern. `end` is where the command stops.
 function shellWords(command, start) {
   const words = [];
   let text = "";
@@ -325,7 +328,8 @@ function shellWords(command, start) {
     text = "";
     open = dynamic = glob = false;
   };
-  for (let i = start; i < command.length; i++) {
+  let i = start;
+  for (; i < command.length; i++) {
     const c = command[i];
     if (c === "\\") {
       text += command[++i] ?? "";
@@ -376,6 +380,7 @@ function shellWords(command, start) {
     }
   }
   flush();
+  words.end = i;
   return words;
 }
 
@@ -660,7 +665,7 @@ function checkGh(words, lexed) {
   const at = ghPositional(words);
   const [group, action] = [words[at[0]], words[at[1]] ?? ""];
   if (group === "pr" && action === "merge") deny("Merges go through the release gate, not an agent's command.");
-  if (GH_DENIED[group]?.test(action)) deny(`\`gh ${group} ${action}\` changes access, secrets, releases or workflows, or prints the token.`);
+  if (GH_DENIED[group]?.test(action)) deny(`\`gh ${group} ${action}\` changes access, secrets, releases, workflows or aliases, or prints the token.`);
   if (group === "auth" && action === "status" && words.some((w) => /^(-t|--show-token)$/.test(w))) deny("This prints the GitHub token into the transcript.");
   if (group === "api" && lexed) checkGhApi(lexed.slice(at[0] + 1), words.join(" "));
 }
@@ -695,7 +700,16 @@ function checkVercel(words) {
   if (VERCEL_DENIED_SUBCOMMANDS.has(sub)) deny(`\`vercel ${sub}\` reads secrets or changes production.`);
 }
 
-function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv }) {
+// A shell that takes its commands from stdin, a heredoc, a here-string or a substitution runs text the guard can't read.
+function checkShell(first, args, text) {
+  const flags = args.filter((w) => w.startsWith("-") && w !== "-");
+  const script = args.find((w) => !w.startsWith("-") || w === "-");
+  const inline = SHELLS.has(first) && flags.some((f) => /^-[a-zA-Z]*c[a-zA-Z]*$/.test(f));
+  const fromStdin = script === undefined || STDIN_FILE.test(script) || flags.some((f) => /^-[a-zA-Z]*s[a-zA-Z]*$/.test(f)) || /<<|<\(/.test(text);
+  if (!inline && fromStdin) deny("A shell that reads its commands from stdin, a heredoc or a substitution can't be checked; run the commands directly.");
+}
+
+function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv, text }) {
   const first = words[0];
   if (!first) return;
   const args = words.slice(1);
@@ -714,6 +728,7 @@ function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv }) {
     if (inCode || (fromStdin && GUARD_IN_CODE.test(command)))
       deny("This runs code that names a guard-rail path, and the guard can't read what the code does. Use the file tools on a worktree copy.");
   }
+  if (SHELLS.has(first) || first === "source" || first === ".") checkShell(first, args, text);
   if (EXTRACTORS.has(first)) checkExtract(first, args, cwd);
 
   if (first === "git") checkGit(words, cwd, gitEnv, viaXargs);
@@ -728,6 +743,7 @@ function checkBash(input, cwd0, depth = 0) {
   // `GIT_DIR=… git reset` and `export GIT_DIR=…; git reset` aim git at another checkout, like `--git-dir`.
   const gitEnv = [...command.matchAll(/\bGIT_(?:DIR|WORK_TREE|COMMON_DIR)=([^\s;&|]*)/g)].map((m) => m[1]);
   let cwd = cwd0;
+  let lexedEnd = 0;
   const dirStack = [];
   for (const { text, start } of segmentsOf(command)) {
     for (const m of text.matchAll(/>[>|&]?\s*([^\s;&|<>()]+)/g)) {
@@ -735,9 +751,15 @@ function checkBash(input, cwd0, depth = 0) {
       checkGuardWrite(m[1], cwd, "redirect");
     }
     const lexed = shellWords(command, start);
+    // A segment that starts inside the previous command's quotes is text, not a command of its own.
+    const insideQuotes = start < lexedEnd;
+    lexedEnd = Math.max(lexedEnd, lexed.end);
     for (const word of lexed) checkEnvGlob(word, cwd);
     const quoted = programOf(lexed.map((w) => w.text));
     const plain = programOf(text.split(/\s+/));
+    const head = lexed[quoted.dropped];
+    if (!insideQuotes && head?.dynamic && /[$`]/.test(expandWord(head.text)))
+      deny("The program name is built by the shell, so the guard can't read it; spell the program out.");
 
     const [first, ...args] = quoted.words;
     if (first === "cd" || first === "pushd") {
@@ -751,7 +773,7 @@ function checkBash(input, cwd0, depth = 0) {
       continue;
     }
 
-    const context = { cwd, command, gitEnv };
+    const context = { cwd, command, gitEnv, text };
     if (plain.words.join("\n") !== quoted.words.join("\n")) checkCommand(plain, null, context);
     checkCommand(quoted, lexed.slice(quoted.dropped), context);
   }
