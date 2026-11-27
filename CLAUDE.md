@@ -50,10 +50,9 @@ Next.js 16 App Router, TypeScript, Tailwind v4, Supabase. Multi-edition hackatho
   and keeps the orchestration — never disable animation wholesale.
 - **Date formatting:** named `Intl` formatters live in `src/lib/dates.ts` (`DAY_MONTH`, `TIME_HM`, `stripPeriods`, …) — don't hand-roll new ones.
 - **Supabase queries:** use `.maybeSingle()` over `.single()` — `.single()` throws on 0 rows.
-- **Migrations:** write `supabase/migrations/NNNNN_name.sql`, and a person runs it in the Supabase SQL editor. The file stays the source of truth, and there's no psql or Supabase CLI on the dev machine.
-
-  Agents can't run SQL here. The guard (`.claude/hooks/guard.mjs`) refuses the connector's `execute_sql` and `apply_migration` on any project not on its non-production list, and that list is empty.
-- **Privilege and RLS changes** are proven by impersonating a real user in SQL (`set local role authenticated` plus `request.jwt.claims`, including the `email` claim) inside a rolled-back block, for both the allowed and the denied case. The agent writes the block; a person runs it in the SQL editor and shares the result.
+- **SQL on production asks Gabriel first.** Before any `execute_sql` or `apply_migration` through the Supabase connector, read-only queries included, show Gabriel the statement in chat and wait for his yes. The guard marks these calls "ask", but in auto mode an ask doesn't prompt, so the rule is the agent's to keep.
+- **Migrations:** write `supabase/migrations/NNNNN_name.sql`, then apply it with the connector's `apply_migration` (snake_case name without the number) once Gabriel says yes. The file stays the source of truth, and there's no psql or Supabase CLI on the dev machine.
+- **Privilege and RLS changes** are proven by impersonating a real user in SQL (`set local role authenticated` plus `request.jwt.claims`, including the `email` claim) inside a rolled-back block, for both the allowed and the denied case.
 - **Guard rails** (`.claude/settings.json`, `.claude/hooks/`) change only through a PR from a separate worktree. The hook refuses edits to them inside the session's project or the main checkout.
 - **Secrets:** never print the service-role key or any env value, in output, logs, PRs or chat.
 - **`submissions` fields are additive:** `submit_team` and `SubmissionEditor` reference column names directly.
