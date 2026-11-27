@@ -174,7 +174,14 @@
       "mcp__*__create-api-key",
       "mcp__*__create-webhook",
       "mcp__*__send-email",
-      "mcp__*__send-batch-emails"
+      "mcp__*__send-batch-emails",
+      "mcp__*__send-broadcast",
+      "mcp__*__rebase_branch",
+      "mcp__*__buy_domain",
+      "mcp__*__deploy_to_vercel",
+      "mcp__*__get_project_env",
+      "mcp__*__filter_project_envs",
+      "mcp__*__get_shared_env_var"
     ]
   },
   "hooks": {
