@@ -220,12 +220,25 @@ const touchesLiveGuard = (targets) => targets.some((abs) => isLiveGuardFile(abs)
 // `mode` is "redirect" for a redirect target, "writer" for an in-place writer's argument and "word" for any other
 // argument. The first two expand globs; a plain word is checked only when it looks like a guard path.
 // In the main checkout a path the shell builds can be a live guard file, and the guard can't read it.
-const mayBeMainCheckout = (cwd) => cwd === null || isMainCheckout(cwd);
+// From any other folder it can still be one when the command names the main checkout or a guard word.
+const GUARD_WORD = /\.claude|\.mcp\.json|settings|hooks|guard/i;
+let commandText = "";
+
+function namesMainCheckout(text) {
+  const main = mainCheckout();
+  for (const m of text.matchAll(/(~|\$\{?HOME\}?)?\/[^\s'"`;|&<>()$]*/g)) {
+    const abs = real(path.resolve(m[0].replace(/^(~|\$\{?HOME\}?)/, HOME)));
+    if (abs !== path.parse(abs).root && (inside(main, abs) || inside(abs, main))) return true;
+  }
+  return false;
+}
+
+const builtTargetMayBeGuard = (cwd) => cwd === null || isMainCheckout(cwd) || GUARD_WORD.test(commandText) || namesMainCheckout(commandText);
 const shellBuilt = (text) => /[$`]/.test(expandWord(text));
-const BUILT_PATH = "This writes to or removes a path built by the shell while in the main checkout. Spell the path out, or work in a worktree.";
+const BUILT_PATH = "This writes to or removes a path built by the shell, and the command names the main checkout or a guard-rail path. Spell the path out.";
 
 function checkGuardWrite(word, cwd, mode = "word") {
-  if (mode === "redirect" && shellBuilt(word) && mayBeMainCheckout(cwd)) deny(BUILT_PATH);
+  if (mode === "redirect" && shellBuilt(word) && builtTargetMayBeGuard(cwd)) deny(BUILT_PATH);
   const eq = word.indexOf("=");
   for (const w of eq > 0 ? [word, word.slice(eq + 1)] : [word]) {
     const glob = GLOB.test(w);
@@ -575,6 +588,11 @@ function mainCheckoutAllows(sub, rest, repo) {
     if (flags.some((f) => /^(--get(-all|-regexp|-urlmatch)?|--list|-l)$/.test(f)) || args[0] === "get" || args[0] === "list") return true;
     return args.length === 1 && flags.every((f) => CONFIG_SCOPE_FLAG.test(f));
   }
+  if (sub === "tag")
+    return flags.every((f) => /^(-l|--list|-n\d*|--sort=.*|--format=.*|--column|--no-column|-i|--ignore-case)$/.test(f)) && (args.length === 0 || flags.some((f) => f === "-l" || f === "--list"));
+  if (sub === "notes") return args[0] === "list";
+  if (sub === "fsck") return !flags.some((f) => f === "--lost-found");
+  if (["count-objects", "cherry", "show-branch", "range-diff", "whatchanged"].includes(sub)) return true;
   if (sub === "symbolic-ref") return args.length === 1 && flags.every((f) => /^(-q|--quiet|--short)$/.test(f));
   if (sub === "stash") return args[0] === "list" || args[0] === "show";
   if (sub === "reflog") return !["expire", "delete", "drop"].includes(args[0]);
@@ -753,7 +771,7 @@ function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv, text }
   if (viaXargs && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && GUARDISH.test(command))
     deny("This pipes paths that may be guard-rail files into a program that removes or rewrites them.");
   // `lexed` knows which words the shell expands; single-quoted text like awk's `$1` isn't one of them.
-  if (lexed && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && mayBeMainCheckout(cwd) && lexed.slice(1).some((w) => w.dynamic && shellBuilt(w.text)))
+  if (lexed && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && builtTargetMayBeGuard(cwd) && lexed.slice(1).some((w) => w.dynamic && shellBuilt(w.text)))
     deny(BUILT_PATH);
   if (viaXargs && vercelArgs(words)) deny("A Vercel command whose arguments come from stdin can't be checked; spell them out.");
 
@@ -837,23 +855,30 @@ function checkMcp(tool, input) {
 let raw = "";
 for await (const chunk of process.stdin) raw += chunk;
 
+// The hook always prints JSON. `{}` leaves the call to the normal permission flow; the settings command refuses the
+// call when the hook prints nothing, so an empty or broken hook fails closed.
+let decision = null;
 try {
   const event = JSON.parse(raw);
   const tool = event.tool_name ?? "";
   const cwd = real(path.resolve(event.cwd ?? projectDir));
-  if (tool === "Bash") checkBash(event.tool_input?.command ?? "", cwd);
-  else if (tool.startsWith("mcp__")) checkMcp(tool, event.tool_input);
+  if (tool === "Bash") {
+    commandText = event.tool_input?.command ?? "";
+    checkBash(commandText, cwd);
+  } else if (tool.startsWith("mcp__")) checkMcp(tool, event.tool_input);
   else checkFileTool(tool, event.tool_input, cwd);
 } catch (error) {
   // A guard error refuses rather than failing open; fix the hook in a worktree.
-  const decision = error instanceof Decision ? error : new Decision("deny", `The guard hit an error (${error.message}); the call was refused.`);
-  process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        permissionDecision: decision.decision,
-        permissionDecisionReason: decision.reason,
-      },
-    }),
-  );
+  decision = error instanceof Decision ? error : new Decision("deny", `The guard hit an error (${error.message}); the call was refused.`);
 }
+process.stdout.write(
+  decision
+    ? JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: decision.decision,
+          permissionDecisionReason: decision.reason,
+        },
+      })
+    : "{}",
+);

@@ -20,11 +20,14 @@ git -C "$MAIN" config branch.main.merge refs/heads/main
 NO_GLOB="--import data:text/javascript,import%20fs%20from%20%27node:fs%27;delete%20fs.globSync"
 NODE_ARGS=
 
+# The hook always prints JSON: a decision, or `{}` to leave it to the permission flow. No output means it didn't run.
+DECISION='let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(s?JSON.parse(s).hookSpecificOutput?.permissionDecision??"pass":"no output"))'
+
 pass=0; fail=0
 t() { # project cwd expected label json
   local out got
   out=$(printf '%s' "$5" | CLAUDE_PROJECT_DIR=$1 node $NODE_ARGS "$HOOK")
-  got=$(printf '%s' "$out" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(s?JSON.parse(s).hookSpecificOutput.permissionDecision:"pass"))')
+  got=$(printf '%s' "$out" | node -e "$DECISION")
   if [ "$got" = "$3" ]; then pass=$((pass+1)); else fail=$((fail+1)); printf 'FAIL  expected %-5s got %-5s %s\n' "$3" "$got" "$4"; fi
 }
 bash_ev() { node -e 'console.log(JSON.stringify({tool_name:"Bash",cwd:process.argv[2],tool_input:{command:process.argv[1]}}))' "$1" "$2"; }
@@ -454,7 +457,8 @@ for cmd in \
   'echo x >> "$OUT"' \
   'echo x >| $OUT'; do
   b deny "$cmd"
-  b pass "$cmd" "$WT"
+  # From a worktree only a command that names a guard word is refused.
+  case $cmd in *.claude*) b deny "$cmd" "$WT" ;; *) b pass "$cmd" "$WT" ;; esac
 done
 b pass "awk '{print \$1}' notes.txt"
 b pass 'echo "$USER" > out.txt'
@@ -495,10 +499,61 @@ b pass 'git ls-remote origin'
 b pass 'git commit -m x' "$WT"
 b pass 'git add src' "$WT"
 
-# A hook that can't run must refuse: the settings command exits 2, which blocks the call.
+# From any checkout, a target built by the shell is refused when the command names the main checkout or a guard word.
+b deny "f=$MAIN/.claude/settings.json; echo x > \$f" "$WT"
+b deny "f=$MAIN/.claude/hooks/guard.mjs; rm \$f" "$WT"
+b deny "f=$MAIN/.claude/hooks/guard.mjs; cp /dev/null \$f" "$WT"
+b deny "d=$MAIN/.claude; rm -rf \$d" "$WT"
+b deny "f=$MAIN/.claude/settings.json; echo x >> \"\$f\"" "$WT"
+b deny "d=$MAIN; rm -rf \$d/src" "$WT"
+b deny 'f=x/Settings.JSON; echo x > $f' "$WT"
+b deny 'echo x > $OUT # hooks' "$WT"
+b pass 'out=/tmp/x; echo hi > $out' "$WT"
+b pass 'rm -rf "$tmp"' "$WT"
+b pass 'for f in src/*.ts; do sed -i "" s/a/b/ "$f"; done' "$WT"
+# The same through `~` and `$HOME`, with the home folder set to the folder that holds the main checkout.
+h() { local out got
+  out=$(bash_ev "$2" "$WT" | HOME=$TMP CLAUDE_PROJECT_DIR=$MAIN node $NODE_ARGS "$HOOK")
+  got=$(printf '%s' "$out" | node -e "$DECISION")
+  if [ "$got" = "$1" ]; then pass=$((pass+1)); else fail=$((fail+1)); printf 'FAIL  expected %-5s got %-5s %s (home)\n' "$1" "$got" "$2"; fi
+}
+h deny 'd=~/main; rm -rf $d/src'
+h deny 'd=$HOME/main; rm -rf $d/src'
+h deny 'd=${HOME}/main; echo x > $d/x'
+h pass 'd=~/other; rm -rf $d/src'
+
+# git commands that only read pass in the main checkout; ones that create or delete stay refused.
+for cmd in 'git tag' 'git tag -l' "git tag --list 'v*'" 'git count-objects -v' 'git notes list' 'git cherry' 'git show-branch' \
+  'git range-diff main~1...main' 'git fsck' 'git whatchanged -1'; do
+  b pass "$cmd"
+done
+for cmd in 'git tag v1' 'git tag -d v1' 'git tag -a v1 -m x' 'git notes add -m x' 'git fsck --lost-found' 'git branch -d feature' 'git branch feature'; do
+  b deny "$cmd"
+done
+
+# A hook that can't run, is empty or can't be read must refuse: the settings command exits 2, which blocks the call.
+commands=$(node -e 'const h=require(process.argv[1]).hooks.PreToolUse; console.log(new Set(h.map(x=>x.hooks[0].command)).size)' "$REPO/.claude/settings.json")
+if [ "$commands" = 1 ]; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL  the PreToolUse matchers run different commands"; fi
 cmd=$(node -e 'console.log(require(process.argv[1]).hooks.PreToolUse[0].hooks[0].command)' "$REPO/.claude/settings.json")
-printf '{}' | CLAUDE_PROJECT_DIR=$TMP/no-hook sh -c "$cmd" >/dev/null 2>&1
-if [ $? -eq 2 ]; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL  a missing hook didn't exit 2"; fi
+run_settings() { # expected-exit label project-dir
+  local code
+  bash_ev 'npm test' "$MAIN" | CLAUDE_PROJECT_DIR=$3 sh -c "$cmd" >/dev/null 2>&1
+  code=$?
+  if [ "$code" = "$1" ]; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL  $2: expected exit $1, got $code"; fi
+}
+for kind in missing empty unreadable working; do
+  mkdir -p "$TMP/hook-$kind/.claude/hooks"
+  case $kind in
+    empty) : > "$TMP/hook-$kind/.claude/hooks/guard.mjs" ;;
+    unreadable) cp "$HOOK" "$TMP/hook-$kind/.claude/hooks/guard.mjs"; chmod 000 "$TMP/hook-$kind/.claude/hooks/guard.mjs" ;;
+    working) cp "$HOOK" "$TMP/hook-$kind/.claude/hooks/guard.mjs" ;;
+  esac
+done
+run_settings 2 "a missing hook" "$TMP/hook-missing"
+run_settings 2 "an empty hook" "$TMP/hook-empty"
+run_settings 2 "an unreadable hook" "$TMP/hook-unreadable"
+run_settings 0 "a working hook" "$TMP/hook-working"
+chmod 600 "$TMP/hook-unreadable/.claude/hooks/guard.mjs"
 
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
