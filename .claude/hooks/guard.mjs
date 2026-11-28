@@ -219,7 +219,13 @@ const touchesLiveGuard = (targets) => targets.some((abs) => isLiveGuardFile(abs)
 
 // `mode` is "redirect" for a redirect target, "writer" for an in-place writer's argument and "word" for any other
 // argument. The first two expand globs; a plain word is checked only when it looks like a guard path.
+// In the main checkout a path the shell builds can be a live guard file, and the guard can't read it.
+const mayBeMainCheckout = (cwd) => cwd === null || isMainCheckout(cwd);
+const shellBuilt = (text) => /[$`]/.test(expandWord(text));
+const BUILT_PATH = "This writes to or removes a path built by the shell while in the main checkout. Spell the path out, or work in a worktree.";
+
 function checkGuardWrite(word, cwd, mode = "word") {
+  if (mode === "redirect" && shellBuilt(word) && mayBeMainCheckout(cwd)) deny(BUILT_PATH);
   const eq = word.indexOf("=");
   for (const w of eq > 0 ? [word, word.slice(eq + 1)] : [word]) {
     const glob = GLOB.test(w);
@@ -551,6 +557,32 @@ function checkMainRef(sub, rest, mainOrUnknown) {
   }
 }
 
+// The git commands the main checkout takes: reads, fetch, worktree management, and the one pull that moves main.
+const MAIN_GIT_READERS = new Set([
+  "status", "log", "diff", "show", "blame", "rev-parse", "rev-list", "ls-files", "ls-tree", "ls-remote", "cat-file", "for-each-ref",
+  "show-ref", "describe", "shortlog", "grep", "merge-base", "name-rev", "check-ignore", "version", "help", "fetch",
+]);
+const BRANCH_READ_FLAG = /^(--list|-l|-a|--all|-r|--remotes|-v|-vv|--verbose|--show-current|--no-color|--color(=.*)?|--sort=.*|--format=.*)$/;
+const CONFIG_SCOPE_FLAG = /^(--(global|local|system|worktree|show-origin|show-scope|null|bool|int|type=.*)|-z)$/;
+
+function mainCheckoutAllows(sub, rest, repo) {
+  if (sub === undefined || MAIN_GIT_READERS.has(sub)) return true;
+  const flags = rest.filter((w) => w.startsWith("-"));
+  const args = rest.filter((w) => !w.startsWith("-")).map(unquote);
+  if (sub === "branch") return flags.every((f) => BRANCH_READ_FLAG.test(f)) && (args.length === 0 || flags.some((f) => f === "--list" || f === "-l"));
+  if (sub === "remote") return args.length === 0 || args[0] === "show" || args[0] === "get-url";
+  if (sub === "config") {
+    if (flags.some((f) => /^(--get(-all|-regexp|-urlmatch)?|--list|-l)$/.test(f)) || args[0] === "get" || args[0] === "list") return true;
+    return args.length === 1 && flags.every((f) => CONFIG_SCOPE_FLAG.test(f));
+  }
+  if (sub === "symbolic-ref") return args.length === 1 && flags.every((f) => /^(-q|--quiet|--short)$/.test(f));
+  if (sub === "stash") return args[0] === "list" || args[0] === "show";
+  if (sub === "reflog") return !["expire", "delete", "drop"].includes(args[0]);
+  if (sub === "worktree") return ["add", "list", "remove", "prune"].includes(args[0]);
+  if (sub === "pull") return isFastForwardOfMain(rest, repo);
+  return false;
+}
+
 function checkGit(words, cwd, gitEnv, viaXargs = false, depth = 0) {
   const { chdir, aimed, plain, globals, sub, rest } = gitArgs(words);
   const repo = chdir.reduce((at, dir) => resolveWord(dir, at), cwd);
@@ -572,11 +604,10 @@ function checkGit(words, cwd, gitEnv, viaXargs = false, depth = 0) {
   // Putting the main checkout back on main is the one branch change it takes.
   const backToMain = (sub === "switch" || sub === "checkout") && rest.filter((w) => !/^(-q|--quiet)$/.test(w)).map(unquote).join(" ") === "main";
   if (backToMain) return;
-  if (GIT_HEAD_MOVERS.has(sub) || (sub === "pull" && (inMain || unknown) && !isFastForwardOfMain(rest, repo))) {
-    if (inMain)
-      deny("This would move HEAD or rewrite files in the main checkout, whose guard rails every session runs. Work in a worktree; `git fetch` and `git pull --ff-only origin main` stay allowed.");
-    if (unknown) deny("The guard can't tell which checkout this git command runs in; spell the folder out.");
-  }
+  if (inMain && !mainCheckoutAllows(sub, rest, repo))
+    deny("Every session runs the main checkout's guard rails, so it takes only read-only git, `git fetch`, `git worktree`, `git switch main` and `git pull --ff-only origin main`. Work in a worktree.");
+  if (unknown && (GIT_HEAD_MOVERS.has(sub) || (sub === "pull" && !isFastForwardOfMain(rest, repo))))
+    deny("The guard can't tell which checkout this git command runs in; spell the folder out.");
   if (sub === "apply" && rest.some((w) => w.startsWith("--unsafe-paths"))) deny("`git apply --unsafe-paths` writes outside the working tree.");
   if (!(GIT_READERS.has(sub) && plain && !rest.some((w) => w.startsWith("--output")))) {
     for (const word of globals) checkGuardWrite(word, cwd);
@@ -721,6 +752,10 @@ function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv, text }
     for (const word of args) checkGuardWrite(word, cwd, IN_PLACE_WRITERS.has(first) ? "writer" : "word");
   if (viaXargs && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && GUARDISH.test(command))
     deny("This pipes paths that may be guard-rail files into a program that removes or rewrites them.");
+  // `lexed` knows which words the shell expands; single-quoted text like awk's `$1` isn't one of them.
+  if (lexed && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && mayBeMainCheckout(cwd) && lexed.slice(1).some((w) => w.dynamic && shellBuilt(w.text)))
+    deny(BUILT_PATH);
+  if (viaXargs && vercelArgs(words)) deny("A Vercel command whose arguments come from stdin can't be checked; spell them out.");
 
   if (INTERPRETER.test(first)) {
     const inCode = args.some((w) => GUARDISH.test(expandWord(w)) && /[^\w./~@:+=,-]/.test(expandWord(w)));

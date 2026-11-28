@@ -440,6 +440,61 @@ b deny "gh alias set m 'pr merge'"
 b deny 'gh alias import aliases.yml'
 b pass 'gh alias list'
 
+# In the main checkout a write target built by the shell can be a live guard file.
+for cmd in \
+  'f=.claude/settings.json; echo x > $f' \
+  'f=.claude/settings.json; echo x > "$f"' \
+  'f=.claude/hooks/guard.mjs; rm $f' \
+  'cp /dev/null $f' \
+  'echo x | tee $f' \
+  "sed -i '' s/a/b/ \$f" \
+  ': > $f' \
+  'ls .claude/hooks/*.mjs | while read f; do rm "$f"; done' \
+  'echo x > $TARGET' \
+  'echo x >> "$OUT"' \
+  'echo x >| $OUT'; do
+  b deny "$cmd"
+  b pass "$cmd" "$WT"
+done
+b pass "awk '{print \$1}' notes.txt"
+b pass 'echo "$USER" > out.txt'
+
+# Vercel arguments that come from stdin can't be read.
+b deny 'echo --prod | xargs vercel'
+b deny 'echo env pull | xargs vercel'
+b deny 'echo --prod | xargs npx vercel'
+b deny 'xargs vercel < args.txt'
+b deny 'xargs -n1 vercel deploy'
+b pass 'echo hi | xargs echo'
+
+# The main checkout takes read-only git, fetch, worktree commands, `switch main` and the fast-forward pull.
+b deny 'git sparse-checkout set docs'
+b deny 'git commit -m x'
+b deny 'git add .'
+b deny 'git config core.worktree /tmp'
+b deny 'git config core.hooksPath x'
+b deny 'git replace HEAD w1'
+b deny 'git gc --prune=now'
+b deny 'git lfs pull'
+b deny 'git branch feature'
+b deny 'git stash'
+b deny 'git reflog expire --all'
+b pass 'git stash list'
+b pass 'git stash show'
+b pass 'git worktree add -b feat/x .claude/worktrees/x main'
+b pass 'git worktree list'
+b pass 'git switch main'
+b pass 'git pull --ff-only origin main'
+b pass 'git status'
+b pass 'git log --oneline -3'
+b pass 'git branch'
+b pass 'git branch --list "feat/*"'
+b pass 'git remote -v'
+b pass 'git config --get user.name'
+b pass 'git ls-remote origin'
+b pass 'git commit -m x' "$WT"
+b pass 'git add src' "$WT"
+
 # A hook that can't run must refuse: the settings command exits 2, which blocks the call.
 cmd=$(node -e 'console.log(require(process.argv[1]).hooks.PreToolUse[0].hooks[0].command)' "$REPO/.claude/settings.json")
 printf '{}' | CLAUDE_PROJECT_DIR=$TMP/no-hook sh -c "$cmd" >/dev/null 2>&1
