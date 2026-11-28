@@ -21,7 +21,8 @@ NO_GLOB="--import data:text/javascript,import%20fs%20from%20%27node:fs%27;delete
 NODE_ARGS=
 
 # The hook always prints JSON: a decision, or `{}` to leave it to the permission flow. No output means it didn't run.
-DECISION='let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(s?JSON.parse(s).hookSpecificOutput?.permissionDecision??"pass":"no output"))'
+# A deny that comes from a hook error is reported as "error", so a crash can't pass for a correct deny.
+DECISION='let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{if(!s)return console.log("no output");const o=JSON.parse(s).hookSpecificOutput;console.log(!o?"pass":/guard hit an error/.test(o.permissionDecisionReason)?"error":o.permissionDecision)})'
 
 pass=0; fail=0
 t() { # project cwd expected label json
@@ -507,7 +508,39 @@ b deny "d=$MAIN/.claude; rm -rf \$d" "$WT"
 b deny "f=$MAIN/.claude/settings.json; echo x >> \"\$f\"" "$WT"
 b deny "d=$MAIN; rm -rf \$d/src" "$WT"
 b deny 'f=x/Settings.JSON; echo x > $f' "$WT"
-b deny 'echo x > $OUT # hooks' "$WT"
+b pass 'echo x > $OUT # hooks' "$WT"
+# Only path-shaped guard words count, so a project folder named hooks stays usable from a worktree.
+b pass 'for f in src/hooks/*.ts; do sed -i "" s/a/b/ "$f"; done' "$WT"
+b pass "f=src/hooks/use-x.ts; echo '// x' >> \$f" "$WT"
+b pass 'tmp=$(mktemp -d); cp -r src/hooks "$tmp"/' "$WT"
+b deny 'f=x/hooks/guard.mjs; rm $f' "$WT"
+b deny 'f=x/settings.local.json; echo x > $f' "$WT"
+b deny 'f=x/.mcp.json; echo x > $f' "$WT"
+# Quotes and backslashes can split a guard word; it is read with them removed.
+b deny 'echo x > "$p/.cl""aude/sett""ings.json"' "$WT"
+b deny 'echo x > $p/.cl\aude/x' "$WT"
+b deny 'echo x > .cl\aude/settings.json'
+b deny 'echo x > .cl\aude/sett\ings.json'
+b deny "echo x > '.cl''aude/settings.json'"
+# In-place writers beyond sed and perl.
+for cmd in \
+  "ruby -i -pe 's/a/b/' \$f" \
+  "ruby -i.bak -pe 's/a/b/' \"\$f\"" \
+  "ruby -pi -e 's/a/b/' \$f" \
+  "gawk -i inplace '{print}' \$f" \
+  "awk -i inplace '{print}' \$f" \
+  'echo x | sponge $f' \
+  'sort -o $f a.txt' \
+  'curl -o $f https://example.com' \
+  'wget -O $f https://example.com'; do
+  b deny "$cmd"
+  b deny "f=$MAIN/.claude/settings.json; $cmd" "$WT"
+  b pass "$cmd" "$WT"
+done
+b deny "ruby -i -pe 's/a/b/' .claude/settings.json"
+b deny "gawk -i inplace '{print}' .claude/hooks/guard.mjs"
+b pass "ruby -Ilib test.rb"
+b pass "ruby -i -pe 's/a/b/' src/x.rb"
 b pass 'out=/tmp/x; echo hi > $out' "$WT"
 b pass 'rm -rf "$tmp"' "$WT"
 b pass 'for f in src/*.ts; do sed -i "" s/a/b/ "$f"; done' "$WT"
@@ -531,9 +564,61 @@ for cmd in 'git tag v1' 'git tag -d v1' 'git tag -a v1 -m x' 'git notes add -m x
   b deny "$cmd"
 done
 
+# A script's arguments can be a command that it runs, like the shared job-queue wrapper's, so they get every check.
+H=$TMP/ops/heavy.sh
+for cmd in \
+  "bash $H git push origin main" \
+  "bash $H gh pr merge 5" \
+  "bash $H npx vercel --prod" \
+  "HEAVY_ALL=1 bash $H vercel deploy --prod" \
+  'sh ./run.sh gh pr merge 5' \
+  "env X=1 bash $H gh pr merge 5" \
+  "/bin/bash $H gh pr merge 5" \
+  "bash -x $H gh pr merge 5" \
+  "bash -o pipefail $H gh pr merge 5" \
+  "bash -- $H gh pr merge 5" \
+  "source $H gh pr merge 5" \
+  ". $H gh pr merge 5" \
+  "exec bash $H gh pr merge 5" \
+  "nohup bash $H gh pr merge 5" \
+  "timeout 60 bash $H gh pr merge 5" \
+  "nice -n 5 bash $H gh pr merge 5" \
+  "zsh $H git push origin main" \
+  "dash $H git push origin main" \
+  "ksh $H git push origin main" \
+  "bash $H $H git push origin main" \
+  "bash $H heavy.sh git push origin main" \
+  "bash $H bash $H gh pr merge 5" \
+  "bash $H env X=1 gh pr merge 5" \
+  "$H gh pr merge 5" \
+  './run.sh gh pr merge 5' \
+  'HEAVY_ALL=1 ./heavy.sh vercel deploy --prod' \
+  '~/ops/heavy.sh gh pr merge 5' \
+  'bash ~/ops/heavy.sh gh pr merge 5' \
+  "bash -e $H gh pr merge 5" \
+  "sh $H git push origin main" \
+  'bash notes.txt gh pr merge 5' \
+  "HEAVY_ALL=1 env X=1 sh -e -- $H gh pr merge 5" \
+  "bash $H rm -rf .claude"; do
+  b deny "$cmd"
+done
+for cmd in \
+  "bash $H npm test" \
+  "HEAVY_ALL=1 bash $H npm run build" \
+  "$H npm test" \
+  'bash scripts/x.sh main' \
+  'bash -x scripts/x.sh' \
+  './node_modules/.bin/vitest run' \
+  "bash -c 'npm test' x y"; do
+  b pass "$cmd"
+done
+
 # A hook that can't run, is empty or can't be read must refuse: the settings command exits 2, which blocks the call.
 commands=$(node -e 'const h=require(process.argv[1]).hooks.PreToolUse; console.log(new Set(h.map(x=>x.hooks[0].command)).size)' "$REPO/.claude/settings.json")
 if [ "$commands" = 1 ]; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL  the PreToolUse matchers run different commands"; fi
+# A hook that times out or fails blocks the call only with onFailure "block".
+blocking=$(node -e 'const h=require(process.argv[1]).hooks.PreToolUse; console.log(h.every(x=>x.hooks.every(y=>y.onFailure==="block")))' "$REPO/.claude/settings.json")
+if [ "$blocking" = true ]; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL  a PreToolUse hook lacks onFailure \"block\""; fi
 cmd=$(node -e 'console.log(require(process.argv[1]).hooks.PreToolUse[0].hooks[0].command)' "$REPO/.claude/settings.json")
 run_settings() { # expected-exit label project-dir
   local code

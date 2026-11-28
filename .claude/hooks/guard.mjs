@@ -44,7 +44,13 @@ const ENV_MESSAGE = "Env files hold secrets: their values never go into the tran
 const GLOB = /[*?[{]/;
 const READ_ONLY = new Set(["cat", "head", "tail", "less", "grep", "rg", "wc", "ls", "file", "diff", "jq"]);
 const DESTRUCTIVE = new Set(["rm", "rmdir", "mv", "cp", "rsync", "ln", "chmod", "chown", "truncate", "unlink", "shred", "install"]);
-const IN_PLACE_WRITERS = new Set(["sed", "perl", "tee", "patch", "awk", "gawk", "dd"]);
+const IN_PLACE_WRITERS = new Set(["sed", "perl", "tee", "patch", "awk", "gawk", "mawk", "nawk", "dd", "sponge", "sd", "ed", "ex"]);
+// Programs that write a file in place or to a named output only with a flag.
+function writesInPlace(first, args) {
+  if (IN_PLACE_WRITERS.has(first)) return true;
+  const flag = { ruby: /^-[a-hj-zA-HJ-Z]*i/, sort: /^(-[a-zA-Z]*o|--output)/, curl: /^(-[a-zA-Z]*[oO]|--output|--remote-name)/, wget: /^(-[a-zA-Z]*O|--output-document)/ }[first];
+  return flag !== undefined && args.some((w) => flag.test(w));
+}
 const FIND_WRITES = /^-(delete|exec|execdir|ok|okdir|fprint0?|fprintf|fls)$/;
 const KEYWORDS = new Set(["then", "do", "else", "elif", "if", "while", "until"]);
 // Programs that run another program, with their options that take a value.
@@ -181,7 +187,7 @@ function isMainCheckout(dir) {
 }
 
 function unquote(word) {
-  return word.replace(/['"]/g, "");
+  return word.replace(/\\(.)/g, "$1").replace(/['"]/g, "");
 }
 
 const programName = (word) => path.basename(word.replace(/['"\\]/g, ""));
@@ -221,7 +227,9 @@ const touchesLiveGuard = (targets) => targets.some((abs) => isLiveGuardFile(abs)
 // argument. The first two expand globs; a plain word is checked only when it looks like a guard path.
 // In the main checkout a path the shell builds can be a live guard file, and the guard can't read it.
 // From any other folder it can still be one when the command names the main checkout or a guard word.
-const GUARD_WORD = /\.claude|\.mcp\.json|settings|hooks|guard/i;
+// Path-shaped guard words, read with quotes and backslashes removed so `.cl""aude` and `.cl\aude` count.
+const GUARD_WORD = /\.claude|\.mcp\.json|settings(\.local)?\.json|hooks\/guard/i;
+const flatten = (text) => text.replace(/['"\\]/g, "");
 let commandText = "";
 
 function namesMainCheckout(text) {
@@ -233,7 +241,7 @@ function namesMainCheckout(text) {
   return false;
 }
 
-const builtTargetMayBeGuard = (cwd) => cwd === null || isMainCheckout(cwd) || GUARD_WORD.test(commandText) || namesMainCheckout(commandText);
+const builtTargetMayBeGuard = (cwd) => cwd === null || isMainCheckout(cwd) || GUARD_WORD.test(flatten(commandText)) || namesMainCheckout(flatten(commandText));
 const shellBuilt = (text) => /[$`]/.test(expandWord(text));
 const BUILT_PATH = "This writes to or removes a path built by the shell, and the command names the main checkout or a guard-rail path. Spell the path out.";
 
@@ -242,9 +250,9 @@ function checkGuardWrite(word, cwd, mode = "word") {
   const eq = word.indexOf("=");
   for (const w of eq > 0 ? [word, word.slice(eq + 1)] : [word]) {
     const glob = GLOB.test(w);
-    const guardish = GUARDISH.test(w);
+    const guardish = GUARDISH.test(unquote(w));
     if (!guardish && !(mode !== "word" && glob)) continue;
-    const targets = mode !== "word" || !glob ? targetsOf(w, cwd) : null;
+    const targets = targetsOf(w, cwd);
     if (targets === UNEXPANDED) deny("This command writes through a glob that can't be expanded here; spell the path out.");
     if (targets === null) {
       if (guardish || (mode === "redirect" && glob)) deny("This command writes to a path that may be a guard-rail file and can't be resolved; spell the path out.");
@@ -259,7 +267,7 @@ function checkDestructive(words, cwd) {
     const targets = targetsOf(word, cwd);
     if (targets === UNEXPANDED) deny("This command removes or moves paths through a glob that can't be expanded here; spell the paths out.");
     if (targets === null) {
-      if (GUARDISH.test(word)) deny("This command removes or moves a path that may hold guard-rail files and can't be resolved.");
+      if (GUARDISH.test(unquote(word))) deny("This command removes or moves a path that may hold guard-rail files and can't be resolved.");
       continue;
     }
     if (touchesLiveGuard(targets)) deny("This would remove, move or overwrite live guard-rail files.");
@@ -758,7 +766,34 @@ function checkShell(first, args, text) {
   if (!inline && fromStdin) deny("A shell that reads its commands from stdin, a heredoc or a substitution can't be checked; run the commands directly.");
 }
 
-function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv, text }) {
+// A script's arguments can be a command it runs (`bash heavy.sh git push origin main`), so they are read as one.
+// That holds for a shell, `source` or `.` given a script file, and for a script run by its path or a `.sh` name.
+const SHELL_VALUE_FLAGS = new Set(["-o", "+o", "-O", "+O", "--rcfile", "--init-file"]);
+const hasOwnChecks = (name) =>
+  ["git", "gh", "printenv", "find", "cd", "pushd", "popd"].includes(name) || isVercel(name) || VERCEL_RUNNERS.has(name) ||
+  INTERPRETER.test(name) || SHELLS.has(name) || READ_ONLY.has(name) || DESTRUCTIVE.has(name) || IN_PLACE_WRITERS.has(name) ||
+  EXTRACTORS.has(name);
+
+function scriptArgs(first, words, lexed) {
+  let at = null;
+  if (SHELLS.has(first) || first === "source" || first === ".") {
+    let i = 1;
+    for (; i < words.length && /^[-+]./.test(words[i]) && words[i] !== "--"; i++) {
+      if (SHELLS.has(first) && /^-[a-zA-Z]*c[a-zA-Z]*$/.test(words[i])) return null;
+      if (SHELL_VALUE_FLAGS.has(words[i])) i++;
+    }
+    if (words[i] === "--") i++;
+    at = i + 1;
+  } else {
+    const raw = lexed?.[0]?.text;
+    if (raw && (raw.includes("/") || /\.(sh|bash|zsh|ksh)$/.test(raw)) && !hasOwnChecks(first)) at = 1;
+  }
+  if (at === null || at >= words.length) return null;
+  return { words: words.slice(at), lexed: lexed ? lexed.slice(at) : null };
+}
+
+function checkCommand({ words, viaXargs }, lexed, context) {
+  const { cwd, command, gitEnv, text } = context;
   const first = words[0];
   if (!first) return;
   const args = words.slice(1);
@@ -767,11 +802,11 @@ function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv, text }
   const ghGroup = first === "gh" ? words[ghPositional(words)[0]] : null;
   if (DESTRUCTIVE.has(first) || (first === "find" && args.some((w) => FIND_WRITES.test(w)))) checkDestructive(args, cwd);
   else if (!READ_ONLY.has(first) && first !== "find" && first !== "git" && !GH_TEXT_ONLY.has(ghGroup))
-    for (const word of args) checkGuardWrite(word, cwd, IN_PLACE_WRITERS.has(first) ? "writer" : "word");
-  if (viaXargs && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && GUARDISH.test(command))
+    for (const word of args) checkGuardWrite(word, cwd, writesInPlace(first, args) ? "writer" : "word");
+  if (viaXargs && (DESTRUCTIVE.has(first) || writesInPlace(first, args)) && GUARDISH.test(flatten(command)))
     deny("This pipes paths that may be guard-rail files into a program that removes or rewrites them.");
   // `lexed` knows which words the shell expands; single-quoted text like awk's `$1` isn't one of them.
-  if (lexed && (DESTRUCTIVE.has(first) || IN_PLACE_WRITERS.has(first)) && builtTargetMayBeGuard(cwd) && lexed.slice(1).some((w) => w.dynamic && shellBuilt(w.text)))
+  if (lexed && (DESTRUCTIVE.has(first) || writesInPlace(first, args)) && builtTargetMayBeGuard(cwd) && lexed.slice(1).some((w) => w.dynamic && shellBuilt(w.text)))
     deny(BUILT_PATH);
   if (viaXargs && vercelArgs(words)) deny("A Vercel command whose arguments come from stdin can't be checked; spell them out.");
 
@@ -782,6 +817,11 @@ function checkCommand({ words, viaXargs }, lexed, { cwd, command, gitEnv, text }
       deny("This runs code that names a guard-rail path, and the guard can't read what the code does. Use the file tools on a worktree copy.");
   }
   if (SHELLS.has(first) || first === "source" || first === ".") checkShell(first, args, text);
+  const script = scriptArgs(first, words, lexed);
+  if (script) {
+    const inner = programOf(script.words);
+    checkCommand(inner, script.lexed?.slice(inner.dropped) ?? null, context);
+  }
   if (EXTRACTORS.has(first)) checkExtract(first, args, cwd);
 
   if (first === "git") checkGit(words, cwd, gitEnv, viaXargs);

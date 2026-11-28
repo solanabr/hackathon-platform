@@ -192,7 +192,8 @@
           {
             "type": "command",
             "command": "out=$(node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\") && [ -n \"$out\" ] && printf '%s' \"$out\" || { echo 'Guard hook failed to run; refusing the call.' >&2; exit 2; }",
-            "timeout": 20
+            "timeout": 20,
+            "onFailure": "block"
           }
         ]
       },
@@ -202,7 +203,8 @@
           {
             "type": "command",
             "command": "out=$(node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\") && [ -n \"$out\" ] && printf '%s' \"$out\" || { echo 'Guard hook failed to run; refusing the call.' >&2; exit 2; }",
-            "timeout": 20
+            "timeout": 20,
+            "onFailure": "block"
           }
         ]
       },
@@ -212,7 +214,8 @@
           {
             "type": "command",
             "command": "out=$(node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\") && [ -n \"$out\" ] && printf '%s' \"$out\" || { echo 'Guard hook failed to run; refusing the call.' >&2; exit 2; }",
-            "timeout": 20
+            "timeout": 20,
+            "onFailure": "block"
           }
         ]
       }
